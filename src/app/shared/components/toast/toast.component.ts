@@ -2,10 +2,12 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService } from '../../services/toast.service';
 import { Toast, ToastType } from '../../models/toast.model';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-toast',
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule, MatIconModule],
   templateUrl: './toast.component.html',
   styleUrl: './toast.component.css'
 })
@@ -31,9 +33,9 @@ export class ToastComponent implements OnInit {
   // Lấy toàn class Icon Toast
   protected getIconPath(type: ToastType): string {
     const iconMap: Record<ToastType, string> = {
-      [ToastType.Success]: 'icons/success.svg',
-      [ToastType.Error]: 'icons/error.svg',
-      [ToastType.Warning]: 'icons/warning.svg'
+      [ToastType.Success]: 'ic_success',
+      [ToastType.Error]: 'ic_error',
+      [ToastType.Warning]: 'ic_warning'
     };
     return iconMap[type];
   }

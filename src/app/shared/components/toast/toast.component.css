@@ -30,6 +30,19 @@
 /* Toast Icon */
 .toast-icon {
   @apply w-6 h-6 shrink-0;
+  @apply flex items-center justify-center;
+}
+
+.toast-success .toast-icon {
+  @apply text-[#16A34A];
+}
+
+.toast-error .toast-icon {
+  @apply text-[#DC2626];
+}
+
+.toast-warning .toast-icon {
+  @apply text-[#F59E0B];
 }
 
 /* Toast Message */
@@ -42,13 +55,12 @@
 .toast-close {
   @apply shrink-0 w-6 h-6 flex items-center justify-center;
   @apply text-[#6B7280] hover:text-[#111827];
-  @apply text-xl leading-none cursor-pointer;
-  @apply transition-colors duration-200;
-  @apply bg-transparent border-none;
+  @apply cursor-pointer transition-colors duration-200;
+  @apply bg-transparent border-none p-0;
 }
 
-.toast-close:hover {
-  @apply text-[#111827];
+.toast-close mat-icon {
+  @apply w-5 h-5 text-xl;
 }
 
 /* Responsive Design */
