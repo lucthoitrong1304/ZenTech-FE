@@ -6,7 +6,11 @@ import { Toast, ToastType } from '../models/toast.model';
   providedIn: 'root'
 })
 export class ToastService {
+  // Kho lưu trữ state
+  // Bộ phát sự kiện
   private toastsSubject = new BehaviorSubject<Toast[]>([]);
+  // Kênh phát sống ra ngoài
+  // asObservable() => Che giấu các method next, complete. Chỉ expose method subscribe => Nhận dữ liệu / không chỉnh sửa được dữ liệu.
   public toasts$: Observable<Toast[]> = this.toastsSubject.asObservable();
 
   // Generate ID 

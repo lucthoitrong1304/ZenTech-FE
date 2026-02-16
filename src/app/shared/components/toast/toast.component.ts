@@ -17,10 +17,6 @@ export class ToastComponent implements OnInit {
   constructor(private toastService: ToastService) {}
 
   ngOnInit(): void {
-    this.toastService.success('Profile updated successfully');
-    this.toastService.error('This action cannot be undone');
-    this.toastService.warning('Failed to connect to server');  
-
     this.toastService.toasts$.subscribe(toasts => {
       this.toasts.set(toasts);
     });
