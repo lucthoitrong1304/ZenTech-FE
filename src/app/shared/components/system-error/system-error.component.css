@@ -1,0 +1,38 @@
+@reference "../../../../styles.css";
+
+.error-container {
+  @apply min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center p-4;
+  font-family: 'Inter', sans-serif;
+}
+
+.error-card {
+  @apply bg-white rounded-2xl w-full max-w-lg p-8 sm:p-12 text-center flex flex-col items-center;
+}
+
+.icon-container {
+  @apply bg-red-50 text-[#DC2626] rounded-full p-6 flex items-center justify-center;
+}
+
+.error-icon {
+  @apply text-5xl h-12 w-12;
+}
+
+.error-title {
+  @apply text-[#111827] text-2xl font-bold mb-3;
+}
+
+.error-code-badge {
+  @apply bg-[#F59E0B]/10 text-[#F59E0B] px-3 py-1 rounded-full text-sm font-medium tracking-wide;
+}
+
+.error-message {
+  @apply text-[#6B7280] text-[15px] leading-relaxed max-w-sm;
+}
+
+.action-container {
+  @apply w-full pt-4;
+}
+
+.btn-go-home {
+  @apply w-full sm:w-auto px-8 py-6 rounded-xl bg-[#1E40AF] hover:bg-[#1E3A8A] text-white font-medium text-[15px] transition-colors shadow-sm;
+}

@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
   templateUrl: './confirm.component.html',
-  styleUrls: ['./confirm.component.scss']
+  styleUrls: ['./confirm.component.css']
 })
 export class ConfirmComponent {
   constructor(
