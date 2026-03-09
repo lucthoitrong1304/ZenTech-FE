@@ -2,8 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ConfirmComponent } from '../components/confirm/confirm.component';
-import { ConfirmDialogData, ConfirmSize } from '../models/confirm.model';
+import { ConfirmComponent } from './confirm.component';
+import { ConfirmDialogData, ConfirmSize } from './confirm.model';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +19,7 @@ export class ConfirmService {
   open(data: ConfirmDialogData): Observable<boolean> {
     const size = data.size || ConfirmSize.SMALL;
     let width = '400px';
-    
+
     switch (size) {
       case ConfirmSize.MEDIUM:
         width = '600px';

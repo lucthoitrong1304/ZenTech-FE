@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Toast, ToastType } from '../models/toast.model';
+import { Toast, ToastType } from './toast.model';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ export class ToastService {
   // asObservable() => Che giấu các method next, complete. Chỉ expose method subscribe => Nhận dữ liệu / không chỉnh sửa được dữ liệu.
   public toasts$: Observable<Toast[]> = this.toastsSubject.asObservable();
 
-  // Generate ID 
+  // Generate ID
   private generateId(): string {
     return `toast-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
   }

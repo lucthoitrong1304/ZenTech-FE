@@ -34,5 +34,5 @@
 }
 
 .btn-go-home {
-  @apply w-full sm:w-auto px-8 py-6 rounded-xl bg-[#1E40AF] hover:bg-[#1E3A8A] text-white font-medium text-[15px] transition-colors shadow-sm;
+  @apply w-full sm:w-auto px-8 py-6 rounded-xl bg-[#00FFCC] hover:shadow-[0_0_15px_rgba(0,255,204,0.6)] text-[#050505] font-medium text-[15px] transition-colors shadow-sm;
 }

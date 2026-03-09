@@ -1,8 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastService } from '../../services/toast.service';
-import { Toast, ToastType } from '../../models/toast.model';
 import { MatIconModule } from '@angular/material/icon';
+import { Toast, ToastType } from './toast.model';
+import { ToastService } from './toast.service';
 
 @Component({
   selector: 'app-toast',
