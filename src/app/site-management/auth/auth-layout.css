@@ -1,7 +1,11 @@
 @reference "../../../styles.css";
 
+/* =========================================================
+   1. BỐ CỤC & NỀN (LAYOUT & BACKGROUND)
+   ========================================================= */
 .auth-wrapper {
-  @apply min-h-screen bg-[#F9FAFB] flex flex-col justify-center py-12 sm:px-6 lg:px-8;
+  /* Nền trang chính màu trắng theo chuẩn E-commerce */
+  @apply min-h-screen bg-[#FFFFFF] flex flex-col justify-center py-12 sm:px-6 lg:px-8;
   font-family: 'Inter', sans-serif;
 }
 
@@ -9,32 +13,72 @@
   @apply sm:mx-auto sm:w-full sm:max-w-md;
 }
 
-.auth-title {
-  @apply mt-6 text-center text-3xl font-extrabold text-[#111827];
-}
-
-.auth-subtitle {
-  @apply mt-2 text-[#6B7280] text-sm md:text-[15px] mb-8 text-center;
-}
-
 .auth-body {
   @apply mt-8 sm:mx-auto sm:w-full sm:max-w-md;
 }
 
 .auth-card {
-  @apply bg-white py-8 px-4 shadow-xl sm:rounded-2xl sm:px-10 border border-[#E5E7EB];
+  @apply bg-[#F9FAFB] py-8 px-4 sm:rounded-2xl sm:px-10 border border-[#E5E7EB] shadow-sm;
 }
 
+.auth-card-centered {
+  @apply bg-[#F9FAFB] py-8 px-4 sm:rounded-2xl sm:px-10 border border-[#E5E7EB] shadow-sm text-center mt-0;
+}
+
+.auth-icon-container {
+  @apply mb-4;
+}
+
+.auth-form-actions {
+  @apply pt-2;
+}
+
+.auth-footer {
+  @apply mt-6 text-center;
+}
+
+.auth-text-muted-wrapper {
+  @apply mt-8 text-center text-[14px];
+}
+
+.auth-text-muted {
+  @apply text-[#6B7280];
+}
+
+.auth-input-container {
+  @apply flex justify-center flex-col text-left;
+}
+
+/* =========================================================
+   2. TYPOGRAPHY (FONT SYSTEM)
+   ========================================================= */
+.auth-title {
+  /* H2 chuẩn: 20px / 600 */
+  @apply text-center text-[20px] font-semibold text-[#111827] mt-6;
+}
+
+.auth-subtitle {
+  /* Body Medium: 14px / 400 */
+  @apply mt-2 text-center text-[14px] font-normal text-[#6B7280] mb-8;
+}
+
+/* =========================================================
+   3. FORMS & INPUTS
+   ========================================================= */
 .auth-form {
   @apply space-y-6;
 }
 
-.auth-input {
+.auth-input, .auth-input-dense {
   @apply w-full;
 }
 
 .auth-input-dense {
-  @apply w-full -mt-2;
+  @apply -mt-2;
+}
+
+.auth-input-otp {
+  @apply tracking-[0.5em] text-center font-bold text-[20px] text-[#111827];
 }
 
 .auth-utils {
@@ -42,17 +86,49 @@
 }
 
 .auth-util-text {
-  @apply text-sm;
+  @apply text-[14px];
+}
+
+/* Override viền của Angular Material sang màu Tím Secondary khi Focus */
+::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__leading,
+::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__notch,
+::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__trailing {
+  border-color: #5A31F4 !important;
+}
+
+::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label {
+  color: #5A31F4 !important;
+}
+
+/* =========================================================
+   4. BUTTONS & LINKS (BRAND ACCENT)
+   ========================================================= */
+.auth-btn-primary {
+  /* Primary CTA: Vàng, bo tròn hoàn toàn, không shadow glow */
+  @apply w-full bg-[#FFC700]! text-[#111827]! py-3! rounded-full! text-[14px] font-medium hover:bg-[#FFD633]! transition-colors border-none shadow-none!;
+}
+
+.auth-btn-secondary {
+  /* Nút phụ */
+  @apply w-full flex justify-center py-3 px-4 border border-[#E5E7EB] rounded-full shadow-sm bg-[#FFFFFF] text-[14px] font-medium text-[#374151] hover:bg-gray-50 transition-colors cursor-pointer;
 }
 
 .auth-link {
-  @apply font-medium text-[#00FFCC] hover:shadow-[0_0_10px_rgba(0,255,204,0.3)] transition-all;
+  /* Secondary CTA Color: Tím */
+  @apply font-medium text-[14px] text-[#5A31F4] hover:text-[#4C1FD8] transition-colors;
 }
 
-.auth-btn-primary {
-  @apply w-full bg-[#00FFCC]! text-[#050505]! py-6! rounded-xl! text-[15px] hover:shadow-[0_0_15px_rgba(0,255,204,0.6)]! transition-all;
+.auth-link-secondary {
+  @apply text-[14px] font-medium text-[#6B7280] hover:text-[#374151] cursor-pointer flex items-center justify-center gap-1;
 }
 
+.auth-resend-btn {
+  @apply font-medium text-[#5A31F4] hover:text-[#4C1FD8] bg-transparent border-0 cursor-pointer p-0 underline transition-colors text-[14px];
+}
+
+/* =========================================================
+   5. SEPARATORS & ICONS
+   ========================================================= */
 .auth-separator {
   @apply mt-6 relative;
 }
@@ -66,41 +142,19 @@
 }
 
 .auth-separator-text-wrapper {
-  @apply relative flex justify-center text-sm;
+  @apply relative flex justify-center text-[13px];
 }
 
 .auth-separator-text {
-  @apply px-2 bg-white text-[#6B7280];
-}
-
-.auth-footer {
-  @apply mt-6;
-}
-
-.auth-btn-secondary {
-  @apply w-full flex justify-center py-3 px-4 border border-[#E5E7EB] rounded-xl shadow-sm bg-white text-sm font-medium text-[#374151] hover:bg-gray-50 transition-colors cursor-pointer;
+  /* Match với background của card */
+  @apply px-2 bg-[#F9FAFB] text-[#6B7280];
 }
 
 .auth-icon-wrapper {
-  @apply bg-[rgba(0,255,204,0.1)] text-[#00FFCC] p-4 rounded-full inline-block;
+  /* Nền xám nhạt, icon màu Tím Secondary */
+  @apply bg-[#F3F4F6] text-[#5A31F4] p-4 rounded-full inline-block;
 }
 
 .auth-icon {
   @apply h-8 w-8;
-}
-
-.auth-input-otp {
-  @apply tracking-[0.5em] text-center font-bold text-xl;
-}
-
-.auth-link-secondary {
-  @apply text-sm font-medium text-[#6B7280] hover:text-[#374151] cursor-pointer flex items-center justify-center gap-1;
-}
-
-.auth-resend-btn {
-  @apply font-medium text-[#00FFCC] hover:shadow-[0_0_10px_rgba(0,255,204,0.3)] bg-transparent border-0 cursor-pointer p-0 underline transition-all;
-}
-
-.auth-text-center {
-  @apply text-center text-sm;
 }

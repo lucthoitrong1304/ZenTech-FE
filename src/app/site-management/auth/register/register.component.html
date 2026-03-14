@@ -8,7 +8,7 @@
   <div class="auth-body">
     <div class="auth-card">
       <form class="auth-form" (ngSubmit)="onRegister()">
-        
+
         <mat-form-field appearance="outline" class="auth-input">
           <mat-label>Họ và tên</mat-label>
           <input matInput type="text" placeholder="Nhập họ tên đầy đủ" required>
@@ -29,7 +29,7 @@
           <input matInput type="password" placeholder="Xác nhận mật khẩu" required>
         </mat-form-field>
 
-        <div class="pt-2">
+        <div class="auth-form-actions">
           <button type="submit" mat-flat-button class="auth-btn-primary">
             Tạo tài khoản
           </button>
@@ -47,7 +47,7 @@
         </div>
       </div>
 
-      <div class="auth-footer text-center">
+      <div class="auth-footer">
         <a routerLink="/auth/login" class="auth-link">
           Đăng nhập ngay
         </a>
