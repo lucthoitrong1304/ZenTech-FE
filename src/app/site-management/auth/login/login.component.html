@@ -1,0 +1,55 @@
+<div class="auth-wrapper">
+  <div class="auth-header">
+    <h2 class="auth-title">
+      Đăng nhập tài khoản
+    </h2>
+  </div>
+
+  <div class="auth-body">
+    <div class="auth-card">
+      <form class="auth-form" (ngSubmit)="onLogin()">
+        
+        <mat-form-field appearance="outline" class="auth-input">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" placeholder="Nhập địa chỉ email" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="auth-input-dense">
+          <mat-label>Mật khẩu</mat-label>
+          <input matInput type="password" placeholder="Nhập mật khẩu" required>
+        </mat-form-field>
+
+        <div class="auth-utils">
+          <div class="auth-util-text">
+            <a routerLink="/auth/forgot-password" class="auth-link">
+              Quên mật khẩu?
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" mat-flat-button class="auth-btn-primary">
+            Đăng nhập
+          </button>
+        </div>
+      </form>
+
+      <div class="auth-separator">
+        <div class="auth-separator-line-wrapper">
+          <div class="auth-separator-line"></div>
+        </div>
+        <div class="auth-separator-text-wrapper">
+          <span class="auth-separator-text">
+            Chưa có tài khoản?
+          </span>
+        </div>
+      </div>
+
+      <div class="auth-footer">
+        <a routerLink="/auth/register" class="auth-btn-secondary">
+          Đăng ký ngay
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

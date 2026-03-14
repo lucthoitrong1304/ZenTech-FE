@@ -1,0 +1,57 @@
+<div class="auth-wrapper">
+  <div class="auth-header">
+    <h2 class="auth-title">
+      Tạo tài khoản mới
+    </h2>
+  </div>
+
+  <div class="auth-body">
+    <div class="auth-card">
+      <form class="auth-form" (ngSubmit)="onRegister()">
+        
+        <mat-form-field appearance="outline" class="auth-input">
+          <mat-label>Họ và tên</mat-label>
+          <input matInput type="text" placeholder="Nhập họ tên đầy đủ" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="auth-input-dense">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" placeholder="Nhập địa chỉ email" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="auth-input-dense">
+          <mat-label>Mật khẩu</mat-label>
+          <input matInput type="password" placeholder="Nhập mật khẩu" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="auth-input-dense">
+          <mat-label>Nhập lại mật khẩu</mat-label>
+          <input matInput type="password" placeholder="Xác nhận mật khẩu" required>
+        </mat-form-field>
+
+        <div class="pt-2">
+          <button type="submit" mat-flat-button class="auth-btn-primary">
+            Tạo tài khoản
+          </button>
+        </div>
+      </form>
+
+      <div class="auth-separator">
+        <div class="auth-separator-line-wrapper">
+          <div class="auth-separator-line"></div>
+        </div>
+        <div class="auth-separator-text-wrapper">
+          <span class="auth-separator-text">
+            Đã có tài khoản?
+          </span>
+        </div>
+      </div>
+
+      <div class="auth-footer text-center">
+        <a routerLink="/auth/login" class="auth-link">
+          Đăng nhập ngay
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

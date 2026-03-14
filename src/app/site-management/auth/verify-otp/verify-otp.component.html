@@ -1,0 +1,42 @@
+<div class="auth-wrapper">
+  <div class="auth-card auth-body text-center mt-0">
+    
+    <div class="mb-4">
+      <span class="auth-icon-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" class="auth-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+        </svg>
+      </span>
+    </div>
+
+    <h2 class="auth-title">
+      Nhập mã xác nhận
+    </h2>
+    <p class="auth-subtitle">
+      Mã gồm 6 chữ số đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư đến.
+    </p>
+
+    <form class="auth-form" (ngSubmit)="onVerify()">
+      <div class="flex justify-center flex-col text-left">
+        <mat-form-field appearance="outline" class="auth-input">
+          <mat-label>Mã OTP</mat-label>
+          <input matInput type="text" placeholder="123456" maxlength="6" class="auth-input-otp" required>
+        </mat-form-field>
+      </div>
+
+      <div>
+        <button type="submit" mat-flat-button class="auth-btn-primary">
+          Xác nhận
+        </button>
+      </div>
+    </form>
+
+    <div class="mt-8 auth-text-center">
+      <span class="text-[#6B7280]">Không nhận được mã? </span>
+      <button class="auth-resend-btn">
+        Gửi lại mã
+      </button>
+    </div>
+
+  </div>
+</div>
