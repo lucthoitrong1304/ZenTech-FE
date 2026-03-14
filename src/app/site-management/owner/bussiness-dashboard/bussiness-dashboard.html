@@ -1,0 +1,350 @@
+<main class="dashboard">
+  <div class="dashboard__body">
+
+    <!-- Heading row -->
+    <div class="dashboard__heading-row">
+      <div>
+        <h2 class="dashboard__title">Kết Quả Kinh Doanh</h2>
+        <p class="dashboard__subtitle">Dữ liệu thống kê dựa trên chi nhánh và mốc thời gian đã chọn.</p>
+      </div>
+      <div class="dashboard__filters">
+        <select class="dashboard__branch-select">
+          <option>Tất cả chi nhánh</option>
+          <option>HCM - Quận 1</option>
+          <option>HN - Đống Đa</option>
+        </select>
+        <div class="dashboard__time-filter" id="time-filter-group">
+          <button class="filter-btn" data-compare="so với hôm qua">Hôm nay</button>
+          <button class="filter-btn active" data-compare="so với 7 ngày trước">7 ngày qua</button>
+          <button class="filter-btn" data-compare="so với 30 ngày trước">30 ngày qua</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── KPI Cards ─────────────────────────────── -->
+    <div class="dashboard__kpi-grid">
+
+      <!-- Card 1: Revenue (dark) -->
+      <div class="stat-card stat-card--dark">
+        <div class="stat-card__header">
+          <p class="stat-card__label stat-card__label--dark">Tổng Doanh Thu</p>
+          <div class="stat-card__icon stat-card__icon--emerald">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-card__body">
+          <h3 id="revenue-amount" class="stat-card__value stat-card__value--white">245,600K</h3>
+          <p class="stat-card__trend stat-card__trend--up">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+            <span id="revenue-percent">+24.5%</span>
+            <span id="revenue-compare-text" class="stat-card__trend-compare">so với 7 ngày trước</span>
+          </p>
+        </div>
+        <!-- Sparkline wave -->
+        <div class="stat-card__wave">
+          <svg viewBox="0 0 200 50" preserveAspectRatio="none" style="width:100%;height:100%">
+            <path d="M0,50 L0,20 C20,30 40,10 60,25 C80,40 100,15 120,30 C140,45 160,20 180,35 C200,50 200,50 200,50 Z"
+                  fill="url(#emeraldGradient)"/>
+            <path d="M0,20 C20,30 40,10 60,25 C80,40 100,15 120,30 C140,45 160,20 180,35 L200,50"
+                  fill="none" stroke="#10b981" stroke-width="2"/>
+            <defs>
+              <linearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#10b981" stop-opacity="0.8"/>
+                <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Card 2: New customers (light) -->
+      <div class="stat-card stat-card--light">
+        <div class="stat-card__header">
+          <p class="stat-card__label stat-card__label--light">Khách Hàng Mới</p>
+          <div class="stat-card__icon stat-card__icon--indigo">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-card__body">
+          <h3 class="stat-card__value stat-card__value--dark">
+            342 <span class="stat-card__unit">người</span>
+          </h3>
+          <div style="margin-top: 12px;">
+            <div class="stat-card__progress-header">
+              <span class="stat-card__progress-label">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Tỷ lệ quay lại
+              </span>
+              <span class="stat-card__progress-pct">28.5%</span>
+            </div>
+            <div class="stat-card__progress-bar">
+              <div class="stat-card__progress-fill" style="width: 28.5%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Orders (light) -->
+      <div class="stat-card stat-card--light">
+        <div class="stat-card__header">
+          <p class="stat-card__label stat-card__label--light">Tổng Đơn Hàng</p>
+          <div class="stat-card__icon stat-card__icon--blue">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-card__body" style="display:flex;align-items:flex-end;justify-content:space-between;">
+          <div>
+            <h3 class="stat-card__value stat-card__value--dark">
+              522 <span class="stat-card__unit">đơn</span>
+            </h3>
+            <p style="font-size:13px;color:#64748b;font-weight:500;margin-top:4px;">
+              Chờ duyệt: <span style="color:#f97316;font-weight:700;">18</span> | Hủy: 1.2%
+            </p>
+          </div>
+          <div class="stat-card__mini-chart">
+            <div class="stat-card__bar" style="height:12px;background:#bfdbfe;"></div>
+            <div class="stat-card__bar" style="height:16px;background:#93c5fd;"></div>
+            <div class="stat-card__bar" style="height:24px;background:#60a5fa;"></div>
+            <div class="stat-card__bar" style="height:20px;background:#3b82f6;"></div>
+            <div class="stat-card__bar" style="height:32px;background:#2563eb;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: AIOps Alerts (alert) -->
+      <div class="stat-card stat-card--alert">
+        <div class="stat-card__top-strip"></div>
+        <div class="stat-card__header">
+          <p class="stat-card__label stat-card__label--alert">AIOps Alerts Tổng</p>
+          <div class="stat-card__icon stat-card__icon--red">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-card__body">
+          <h3 class="stat-card__value stat-card__value--red">
+            2 <span class="stat-card__unit">sự cố h/tại</span>
+          </h3>
+          <div class="stat-card__badges">
+            <span class="stat-card__badge stat-card__badge--high">1 High</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- end KPI grid -->
+
+    <!-- ── Live Traffic & AIOps Events ───────────── -->
+    <div class="dashboard__traffic-section">
+      <div class="saas-card dashboard__traffic-panel">
+
+        <div class="dashboard__traffic-panel-header">
+          <div>
+            <h2 class="dashboard__traffic-panel-title">
+              Live Traffic &amp; AIOps Events
+              <span class="dashboard__live-badge">
+                <span class="dashboard__live-dot"></span>
+                Trực tiếp
+              </span>
+              <span class="dashboard__online-badge">
+                Online: <span id="realtime-online-count" class="dashboard__online-count">150</span>
+              </span>
+            </h2>
+            <p class="dashboard__traffic-panel-sub">
+              Giám sát tương quan giữa lưu lượng truy cập trực tiếp và tình trạng hệ thống.
+            </p>
+          </div>
+          <div class="dashboard__traffic-legend">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="dashboard__legend-dot" style="background:#3b82f6;"></div>
+              Lưu lượng (Users)
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="dashboard__legend-dot" style="background:#ef4444;border-radius:50%;animation:pulse 1.4s infinite;"></div>
+              AIOps Error
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard__chart-layout">
+          <div class="dashboard__chart-area">
+            <div style="width:100%;height:100%;position:relative;">
+              <canvas id="liveTrafficChart"></canvas>
+            </div>
+          </div>
+          <div class="dashboard__aiops-pane">
+            <h3 class="dashboard__aiops-pane-label">NHẬT KÝ SỰ CỐ AIOPS</h3>
+            <div id="aiops-log-container" class="dashboard__aiops-log">
+              <div class="dashboard__aiops-empty" id="empty-log-msg">
+                Đang giám sát... Chưa phát hiện sự cố nào.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Bottom grid: Chatbot log + Products ─── -->
+    <div class="dashboard__bottom-grid">
+
+      <!-- Chatbot Log table -->
+      <div class="saas-card dashboard__chatbot-panel">
+
+        <div class="dashboard__panel-header">
+          <div>
+            <h2 class="dashboard__panel-title">
+              AI Chatbot Log
+              <span class="dashboard__panel-badge">Mới nhất</span>
+            </h2>
+            <p class="dashboard__panel-sub">
+              Giám sát các phiên tư vấn khách hàng đang và vừa diễn ra.
+            </p>
+          </div>
+          <button class="dashboard__view-all-btn">Xem tất cả</button>
+        </div>
+
+        <div style="overflow-x:auto;flex:1;">
+          <table class="dashboard__table">
+            <thead>
+              <tr>
+                <th>Khách Hàng</th>
+                <th>Ý Định (Intent)</th>
+                <th>Thời gian</th>
+                <th style="text-align:right;">Trạng Thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <span class="dashboard__table-customer">
+                    <span class="dashboard__table-avatar" style="background:#dbeafe;color:#1d4ed8;">
+                      M
+                      <span class="dashboard__table-avatar-dot"></span>
+                    </span>
+                    Minh Tuấn
+                  </span>
+                </td>
+                <td>So sánh V60 Pro và K1 Pro</td>
+                <td>Vừa xong</td>
+                <td style="text-align:right;">
+                  <span class="dashboard__status-pill dashboard__status-pill--green">Chốt Sale: 2.500k</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="dashboard__table-customer">
+                    <span class="dashboard__table-avatar" style="background:#ede9fe;color:#7c3aed;">
+                      H
+                      <span class="dashboard__table-avatar-dot"></span>
+                    </span>
+                    Hoàng Oanh
+                  </span>
+                </td>
+                <td>Xin mã giảm giá sinh viên</td>
+                <td>2 phút trước</td>
+                <td style="text-align:right;">
+                  <span class="dashboard__status-pill dashboard__status-pill--blue">Đã gửi Voucher</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="dashboard__table-customer">
+                    <span class="dashboard__table-avatar" style="background:#f1f5f9;color:#475569;">A</span>
+                    Khách Ẩn Danh
+                  </span>
+                </td>
+                <td>Lỗi kết nối Bluetooth</td>
+                <td>5 phút trước</td>
+                <td style="text-align:right;">
+                  <span class="dashboard__status-pill dashboard__status-pill--orange">Chuyển CSKH</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- Products panel -->
+      <div class="saas-card dashboard__products-panel">
+
+        <div class="dashboard__products-header">
+          <h2 class="dashboard__products-title">Sản Phẩm Nổi Bật</h2>
+        </div>
+
+        <div class="dashboard__products-list">
+
+          <div class="dashboard__product-item">
+            <div class="dashboard__product-thumb">
+              <img src="https://cdn.shopify.com/s/files/1/0080/0679/5361/files/V60_Pro_HE_Keyboard.png" alt="V60 Pro"/>
+            </div>
+            <div class="dashboard__product-info">
+              <h4 class="dashboard__product-name">V60 Pro HE Keyboard</h4>
+              <p class="dashboard__product-revenue">
+                Doanh thu: <span class="dashboard__product-revenue-green">120Tr</span>
+              </p>
+            </div>
+            <span class="dashboard__product-rank dashboard__product-rank--1">Top 1</span>
+          </div>
+
+          <div class="dashboard__product-item">
+            <div class="dashboard__product-thumb">
+              <img src="https://cdn.shopify.com/s/files/1/0080/0679/5361/products/M1_Pro_Cyberpunk_01.jpg" alt="M1 Pro"/>
+            </div>
+            <div class="dashboard__product-info">
+              <h4 class="dashboard__product-name">Mercury M1 Pro Mouse</h4>
+              <p class="dashboard__product-revenue">
+                Doanh thu: <span class="dashboard__product-revenue-green">85Tr</span>
+              </p>
+            </div>
+            <span class="dashboard__product-rank dashboard__product-rank--2">Top 2</span>
+          </div>
+
+        </div>
+
+        <!-- Inventory alert -->
+        <div class="dashboard__inventory-alert">
+          <p class="dashboard__inventory-alert-label">
+            <span class="dashboard__inventory-alert-dot"></span>
+            CẢNH BÁO TỒN KHO KHẨN CẤP
+          </p>
+          <div class="dashboard__inventory-card">
+            <div class="dashboard__inventory-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+            </div>
+            <div class="dashboard__inventory-text">
+              <p class="dashboard__inventory-product">Sirius Pro Earbuds (Màu xanh)</p>
+              <p class="dashboard__inventory-desc">
+                Tồn kho 30 ngày chưa xuất. Nhấn vào đây để tạo Flash Sale xả hàng ngay.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+    <!-- end bottom grid -->
+
+  </div>
+</main>

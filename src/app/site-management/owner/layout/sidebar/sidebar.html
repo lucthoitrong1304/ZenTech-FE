@@ -1,0 +1,169 @@
+<!-- =============================================
+     SIDEBAR – Store Owner Dashboard
+     selector: app-sidebar
+     Width: 260px | Full height | White bg
+     ============================================= -->
+<aside class="sidebar">
+
+  <!-- Logo area -->
+  <div class="sidebar__logo">
+    <img
+      src="/logos/gravastar_logo-2.avif"
+      alt="Gravastar Logo"
+      class="sidebar__logo-img"
+    />
+  </div>
+
+  <!-- Scrollable nav -->
+  <nav class="sidebar__nav">
+
+    <!-- 1. TỔNG QUAN HỆ THỐNG -->
+    <div class="sidebar__nav-group">
+      <p class="sidebar__nav-group-label">Tổng quan hệ thống</p>
+
+      <a href="#" class="sidebar__nav-link sidebar__nav-link--active">
+        <!-- Layout / dashboard icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 3h7v9H3zM14 3h7v5h-7zM14 10h7v11h-7zM3 14h7v7H3z"/>
+        </svg>
+        Bảng điều khiển tổng quan
+      </a>
+
+      <a href="#" class="sidebar__nav-link">
+        <!-- Trending up / impact icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+        </svg>
+        Phân tích tác động kinh doanh
+      </a>
+    </div>
+
+    <!-- 2. ĐƠN HÀNG -->
+    <div class="sidebar__nav-group">
+      <p class="sidebar__nav-group-label">Đơn hàng</p>
+
+      <a href="/owner/orders" class="sidebar__nav-link">
+        <!-- Shopping bag icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+        </svg>
+        Quản lý đơn hàng
+      </a>
+    </div>
+
+    <!-- 3. SẢN PHẨM -->
+    <div class="sidebar__nav-group">
+      <p class="sidebar__nav-group-label">Sản phẩm</p>
+
+      <a href="#" class="sidebar__nav-link">
+        <!-- Tag / product icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 7h.01M3 3h8l10 10a2 2 0 010 2.828l-5.172 5.172a2 2 0 01-2.828 0L3 11V3z"/>
+        </svg>
+        Quản lý sản phẩm
+      </a>
+
+    </div>
+
+    <!-- 4. KHO HÀNG -->
+    <div class="sidebar__nav-group">
+      <p class="sidebar__nav-group-label">Kho hàng</p>
+
+      <a href="#" class="sidebar__nav-link">
+        <!-- Cube / warehouse icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        Quản lý kho hàng
+      </a>
+    </div>
+
+    <!-- 5. KHÁCH HÀNG -->
+    <div class="sidebar__nav-group">
+      <p class="sidebar__nav-group-label">Khách hàng</p>
+
+      <a href="#" class="sidebar__nav-link">
+        <!-- Users icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Quản lý khách hàng
+      </a>
+
+    </div>
+
+    <!-- 6. MARKETING & KHUYẾN MÃI -->
+    <div class="sidebar__nav-group">
+      <p class="sidebar__nav-group-label">Marketing &amp; Khuyến mãi</p>
+
+      <a href="#" class="sidebar__nav-link">
+        <!-- Gift / promotion icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>
+        </svg>
+        Chương trình khuyến mãi
+      </a>
+    </div>
+
+    <!-- 7. QUẢN LÝ AI -->
+    <div class="sidebar__nav-group">
+      <p class="sidebar__nav-group-label">Quản lý AI</p>
+
+      <a href="#" class="sidebar__nav-link">
+        <!-- Book / knowledge icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+        Knowledge Base
+      </a>
+    </div>
+
+    <!-- 8. BÁO CÁO & THỐNG KÊ -->
+    <div class="sidebar__nav-group">
+      <p class="sidebar__nav-group-label">Báo cáo &amp; Thống kê</p>
+
+      <a href="#" class="sidebar__nav-link">
+        <!-- Chart bar icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        Tổng quan kinh doanh
+      </a>
+
+    </div>
+
+    <!-- 9. QUẢN TRỊ HỆ THỐNG -->
+    <div class="sidebar__nav-group">
+      <p class="sidebar__nav-group-label">Quản trị hệ thống</p>
+
+      <a href="#" class="sidebar__nav-link">
+        <!-- Users / team icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        Quản lý nhân viên
+      </a>
+
+      <a href="#" class="sidebar__nav-link">
+        <!-- Building office icon -->
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+        Quản lý chi nhánh
+      </a>
+    </div>
+
+  </nav>
+
+</aside>

@@ -1,0 +1,198 @@
+/* ==========================================================
+   Order Management Local Styling - Premium Design
+   Strictly following Rule 3: No inline Tailwind in HTML.
+   ========================================================== */
+@reference "../../../../styles.css";
+
+/* Page layout */
+.order-page {
+  @apply flex flex-col gap-6 p-8 min-h-[calc(100vh-64px)] w-full mx-auto bg-slate-50;
+  box-sizing: border-box;
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Group */
+.order-header {
+  @apply flex flex-col md:flex-row md:items-end justify-between gap-6 w-full mb-2;
+}
+
+.order-title-group {
+  @apply flex flex-col gap-2;
+}
+
+.order-title {
+  @apply text-3xl font-extrabold text-slate-900 m-0 tracking-tight;
+}
+
+.order-subtitle {
+  @apply text-sm text-slate-500 m-0 leading-relaxed max-w-2xl;
+}
+
+.order-actions {
+  @apply flex items-center gap-3 shrink-0;
+}
+
+/* Premium Export Button */
+.order-action-btn {
+  @apply bg-white border border-slate-200 text-slate-700 shadow-sm transition-all rounded-lg px-4 py-2 font-medium flex items-center gap-2;
+}
+
+.order-action-btn:hover {
+  @apply bg-slate-50 border-slate-300 shadow text-slate-900;
+  transform: translateY(-1px);
+}
+
+.order-icon-small {
+  @apply text-[20px] w-[20px] h-[20px];
+}
+
+/* Filters Card - Premium Glassmorphic style */
+.order-filters-card {
+  @apply p-5 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row gap-4 items-center w-full relative z-10;
+}
+
+.order-filter-field {
+  @apply w-full lg:flex-1 m-0;
+}
+
+/* Angular Material overrides for form fields in our card container */
+::ng-deep .order-filters-card .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+::ng-deep .order-filters-card .mdc-text-field--outlined {
+  @apply rounded-xl bg-slate-50/50 hover:bg-slate-50 transition-colors;
+}
+
+/* Table Card Wrapper */
+.order-table-card {
+  @apply bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full flex flex-col relative z-0;
+  transition: box-shadow 0.3s ease;
+}
+
+.order-table-card:hover {
+  @apply shadow-md;
+}
+
+.order-table-container {
+  @apply w-full overflow-x-auto;
+  ::ng-deep .mat-mdc-table {
+    background-color: transparent;
+  }
+}
+
+.order-table {
+  @apply w-full text-left border-collapse;
+}
+
+::ng-deep .order-table th.mat-header-cell {
+  @apply bg-slate-50/80 text-slate-500 font-semibold text-xs tracking-wider uppercase py-4 border-b border-slate-200;
+}
+
+::ng-deep .order-table td.mat-cell {
+  @apply py-4 border-b border-slate-100;
+}
+
+.order-table-row {
+  @apply transition-all hover:bg-slate-50 cursor-pointer;
+}
+
+/* Column Text Styling */
+.order-code-text {
+  @apply font-bold text-indigo-600 tracking-wide;
+}
+
+.order-date-text {
+  @apply text-sm text-slate-600;
+}
+
+.order-amount-text {
+  @apply font-extrabold text-slate-900 text-base;
+}
+
+.order-payment-text {
+  @apply text-xs text-slate-600 font-semibold bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200;
+}
+
+.order-table-cell--right {
+  @apply text-right pr-4;
+}
+
+/* Customer Complex Layout */
+.customer-info {
+  @apply flex items-center gap-3 py-1;
+}
+
+.customer-avatar {
+  @apply w-10 h-10 rounded-full object-cover shadow-sm bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center font-bold text-sm shrink-0 border border-white;
+}
+
+.customer-avatar--fallback {
+  @apply bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-700;
+}
+
+.customer-details {
+  @apply flex flex-col min-w-0 justify-center;
+}
+
+.customer-name {
+  @apply text-sm font-bold text-slate-900 truncate mb-0.5;
+}
+
+.customer-email {
+  @apply text-xs text-slate-500 truncate;
+}
+
+/* Premium Badges */
+.order-status-badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide shadow-sm border;
+}
+
+.order-status--pending {
+  @apply bg-orange-50 text-orange-700 border-orange-200;
+}
+
+.order-status--processing {
+  @apply bg-blue-50 text-blue-700 border-blue-200;
+}
+
+.order-status--shipped {
+  @apply bg-indigo-50 text-indigo-700 border-indigo-200;
+}
+
+.order-status--delivered {
+  @apply bg-emerald-50 text-emerald-700 border-emerald-200;
+}
+
+.order-status--canceled {
+  @apply bg-rose-50 text-rose-700 border-rose-200;
+}
+
+.order-status--returned {
+  @apply bg-slate-100 text-slate-700 border-slate-300;
+}
+
+.order-status--default {
+  @apply bg-slate-50 text-slate-600 border-slate-200;
+}
+
+/* Actions Menu */
+.order-menu-item--danger {
+  @apply text-rose-600;
+}
+
+.order-menu-text--danger {
+  @apply font-medium;
+}
+
+.order-no-data {
+  @apply p-12 text-center text-slate-500 flex flex-col items-center justify-center gap-4;
+}
+
+.order-paginator-wrap {
+  @apply border-t border-slate-200 bg-white px-4 py-2;
+}

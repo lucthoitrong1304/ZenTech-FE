@@ -1,26 +1,755 @@
 @reference "../../../styles.css";
 
-.home-container {
-  @apply h-screen bg-[#050505] flex flex-col items-center justify-center font-sans;
+/* ============================================================
+   home.component.css
+   GravaStar-style Home Page – semantic classes only, no Tailwind in template
+   ============================================================ */
+
+/* ── ANNOUNCEMENT BAR ───────────────────────────────────────── */
+.home__announce {
+  background-color: #18181b;
+  color: #d1d5db;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.home-title {
-  @apply text-4xl font-bold text-white mb-4 tracking-tight;
-  font-family: 'Inter', sans-serif;
+/* ── HERO SLIDER ────────────────────────────────────────────── */
+.home__hero {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000;
 }
 
-.home-description {
-  @apply text-[#D1D5DB] mb-8 max-w-md text-center text-lg;
+.home__hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 700ms ease-in-out;
+  z-index: 0;
 }
 
-.home-action-group {
-  @apply flex gap-4;
+.home__hero-slide--active {
+  opacity: 1;
+  z-index: 1;
 }
 
-.home-btn-primary {
-  @apply bg-[#00FFCC]! text-[#050505]! px-8! py-6! rounded-xl! text-[15px] hover:shadow-[0_0_15px_rgba(0,255,204,0.6)] transition-all;
+.home__hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
-.home-btn-secondary {
-  @apply px-8! py-6! rounded-xl! text-[15px] text-[#00FFCC]! border-[rgba(255,255,255,0.1)]! hover:shadow-[0_0_15px_rgba(0,255,204,0.6)] transition-all;
+/* Arrows */
+.home__hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 8px;
+  transition: color 250ms ease;
+}
+
+.home__hero-arrow:hover {
+  color: #FFC700;
+}
+
+.home__hero-arrow svg {
+  width: 56px;
+  height: 56px;
+}
+
+.home__hero-arrow--prev { left: 24px; }
+.home__hero-arrow--next { right: 24px; }
+
+/* Dots */
+.home__hero-dots {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 12px;
+}
+
+.home__hero-dot {
+  width: 48px;
+  height: 4px;
+  border-radius: 9999px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: background-color 250ms ease;
+  padding: 0;
+}
+
+.home__hero-dot--active {
+  background-color: #FFC700;
+}
+
+/* Bottom gradient bleed into next section */
+.home__hero-gradient {
+  position: absolute;
+  inset-x: 0;
+  bottom: 0;
+  height: 128px;
+  background: linear-gradient(to top, #f4f4f4, transparent);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ── LAYOUT UTILS ───────────────────────────────────────────── */
+.home__container {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+.home__section {
+  padding-block: 64px;
+}
+
+.home__section--gray {
+  background-color: #f4f4f4;
+}
+
+.home__section--pb {
+  padding-top: 0;
+}
+
+/* ── SHOP BY CATEGORY ───────────────────────────────────────── */
+.home__category-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  height: 700px;
+}
+
+.home__category-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
+.home__category-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  flex: 1;
+}
+
+/* Card base */
+.home__category-card {
+  position: relative;
+  display: block;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #18181b;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.home__category-card--tall      { flex: 0 0 60%; }
+.home__category-card--short     { width: 100%; height: 100%; }
+.home__category-card--medium-top { flex: 0 0 40%; }
+.home__category-card--medium-bot { flex: 1; }
+
+.home__category-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms ease;
+}
+
+.home__category-card:hover .home__category-img {
+  transform: scale(1.05);
+}
+
+.home__category-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+}
+
+.home__category-label {
+  position: absolute;
+  bottom: 24px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  z-index: 1;
+}
+
+/* ── TOP DEALS ──────────────────────────────────────────────── */
+.home__section-title-row {
+  margin-bottom: 32px;
+}
+
+.home__section-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+
+.home__section-heading-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 16px;
+}
+
+.home__section-heading {
+  font-size: 36px;
+  font-weight: 900;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.home__view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.home__view-all:hover { color: #000; }
+
+/* Deals grid */
+.home__deals-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.home__deal-card {
+  background-color: #ffffff;
+  border: 1px solid #f3f4f6;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  transition: box-shadow 300ms ease;
+}
+
+.home__deal-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.home__deal-image-wrap {
+  position: relative;
+  background-color: #0a0a0a;
+  height: 280px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home__deal-badges {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1;
+}
+
+.home__deal-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.home__deal-badge--new {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+}
+
+.home__deal-badge--sale {
+  background-color: #dc2626;
+  color: #fff;
+}
+
+.home__deal-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 500ms ease;
+}
+
+.home__deal-card:hover .home__deal-img {
+  transform: scale(1.05);
+}
+
+.home__deal-body {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: center;
+}
+
+.home__deal-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.4;
+  margin-bottom: 12px;
+  transition: color 150ms ease;
+}
+
+.home__deal-card:hover .home__deal-name { color: #4f46e5; }
+
+.home__deal-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.home__deal-price {
+  font-size: 15px;
+  font-weight: 700;
+  color: #dc2626;
+}
+
+.home__deal-price--original {
+  font-size: 12px;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+/* ── PROMO + HANDCRAFT ──────────────────────────────────────── */
+.home__promos {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Special offers horizontal banner */
+.home__promo-banner--dark {
+  display: flex;
+  flex-direction: row;
+  background-color: #000;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 400px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: box-shadow 300ms ease;
+}
+
+.home__promo-banner--dark:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.home__promo-copy {
+  width: 35%;
+  padding: 48px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.home__promo-heading {
+  font-size: 36px;
+  font-weight: 900;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+}
+
+.home__promo-desc {
+  font-size: 14px;
+  color: #d1d5db;
+  font-weight: 500;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  max-width: 240px;
+}
+
+.home__promo-link {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.home__promo-link:hover { color: #FFC700; }
+
+.home__promo-visual {
+  flex: 1;
+  overflow: hidden;
+}
+
+.home__promo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms ease;
+}
+
+.home__promo-banner--dark:hover .home__promo-img {
+  transform: scale(1.05);
+}
+
+/* HandCraft full-bleed banner */
+.home__handcraft {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  height: 600px;
+  background-color: #000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: box-shadow 300ms ease;
+}
+
+.home__handcraft:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.home__handcraft-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms ease;
+}
+
+.home__handcraft:hover .home__handcraft-bg {
+  transform: scale(1.05);
+}
+
+.home__handcraft-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.3), transparent);
+  z-index: 1;
+}
+
+.home__handcraft-copy {
+  position: absolute;
+  top: 64px;
+  left: 64px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.home__handcraft-eyebrow {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.home__handcraft-heading {
+  font-size: 64px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  margin-bottom: 24px;
+}
+
+.home__handcraft-btn {
+  background-color: #ffffff;
+  color: #000;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 28px;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.home__handcraft-btn:hover {
+  background-color: #e5e7eb;
+}
+
+/* ── BRAND / AI BANNER ──────────────────────────────────────── */
+.home__ai-banner {
+  display: flex;
+  background-color: #000;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: box-shadow 300ms ease;
+}
+
+.home__ai-banner:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.home__ai-video {
+  width: 50%;
+  height: 500px;
+  position: relative;
+  background-color: #18181b;
+  flex-shrink: 0;
+}
+
+.home__ai-vid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home__ai-copy {
+  width: 50%;
+  padding: 64px 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.home__ai-heading {
+  font-size: 40px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  margin-bottom: 24px;
+}
+
+.home__ai-desc {
+  font-size: 15px;
+  color: #d1d5db;
+  font-weight: 500;
+  line-height: 1.7;
+  margin-bottom: 40px;
+  max-width: 440px;
+}
+
+.home__ai-link {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.home__ai-link:hover { color: #FFC700; }
+
+/* ── TESTIMONIALS ───────────────────────────────────────────── */
+.home__testi-main-heading {
+  font-size: 28px;
+  font-weight: 900;
+  color: #000;
+  margin-bottom: 24px;
+}
+
+.home__testi-wrapper {
+  position: relative;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+  padding-block: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 320px;
+}
+
+.home__testi-quote-mark {
+  position: absolute;
+  top: 24px;
+  left: 48px;
+  font-size: 96px;
+  font-family: Georgia, serif;
+  color: #e5e7eb;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Slide stage */
+.home__testi-stage {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  height: 180px;
+}
+
+.home__testi-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 500ms ease;
+}
+
+.home__testi-slide--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.home__testi-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.home__testi-logo {
+  height: 36px;
+  object-fit: contain;
+}
+
+/* Controls */
+.home__testi-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.home__testi-arrow {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 150ms ease;
+}
+
+.home__testi-arrow:hover { color: #000; }
+
+.home__testi-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.home__testi-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background-color: #d1d5db;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 200ms ease;
+}
+
+.home__testi-dot--active { background-color: #000; }
+
+/* ── RESPONSIVE ─────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .home__category-grid {
+    height: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .home__deals-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .home__ai-banner {
+    flex-direction: column;
+  }
+
+  .home__ai-video,
+  .home__ai-copy {
+    width: 100%;
+  }
+
+  .home__ai-video { height: 300px; }
+
+  .home__promo-banner--dark {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .home__promo-copy {
+    width: 100%;
+    padding: 48px 32px;
+  }
+
+  .home__promo-visual { height: 280px; }
+
+  .home__handcraft-heading { font-size: 48px; }
+}
+
+@media (max-width: 768px) {
+  .home__hero { height: 65vh; }
+
+  .home__hero-arrow svg { width: 36px; height: 36px; }
+  .home__hero-arrow--prev { left: 8px; }
+  .home__hero-arrow--next { right: 8px; }
+
+  .home__section-heading { font-size: 28px; }
+  .home__category-grid   { height: auto; }
+  .home__category-col    { height: auto; }
+
+  .home__category-card--tall    { height: 280px; flex: none; }
+  .home__category-card--short   { height: 180px; }
+  .home__category-card--medium-top,
+  .home__category-card--medium-bot { height: 220px; flex: none; }
+
+  .home__handcraft { height: 380px; }
+  .home__handcraft-copy  { top: 32px; left: 32px; }
+  .home__handcraft-heading { font-size: 36px; }
+
+  .home__ai-copy { padding: 40px 28px; }
+  .home__ai-heading { font-size: 28px; }
+  .home__testi-text { font-size: 16px; }
+  .home__testi-stage { height: 220px; }
+}
+
+@media (max-width: 480px) {
+  .home__deals-grid { grid-template-columns: 1fr; }
+  .home__category-row { grid-template-columns: 1fr; }
+  .home__testi-main-heading { font-size: 20px; }
 }

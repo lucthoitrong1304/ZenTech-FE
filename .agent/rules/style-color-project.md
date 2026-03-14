@@ -1,57 +1,326 @@
----
-trigger: always_on
----
+\# Color Style – Summary
 
-# Color Style – Summary
 
-**Theme:** High-Contrast Dark Sci-Fi + Neon Accent
-**Direction:** Cyberpunk · Futuristic · Gaming · Edgy · Premium
-**Use Case:** Sci-Fi Gaming Gear E-commerce
 
-## Brand Accent (Primary)
+\*\*Theme:\*\* Premium Tech E-commerce
 
-* Primary: `#00FFCC` (Neon Cyan)
-* Hover / Active: `rgba(0, 255, 204, 0.6)` (With Neon Glow effect)
-* Alert / Highlight: `#DC2626` (Red - Used for discount tags, Play buttons)
-* Usage: Primary buttons, CTAs, active icons, neon borders.
-* Rule: **Must use box-shadow for glowing effect on active states. Do not use for long-form body text.**
+\*\*Direction:\*\* Clean · Professional · High Conversion · Subtle Cyberpunk
 
-## Background (Dual-Mode)
+\*\*Use Case:\*\* Gravastar-style Gaming Gear Store \& RAG AI Sales Assistant
 
-* Dark Page (Hero/Media): `#050505`
-* Dark Card / Surface: `#000000` or `#0A0A0A`
-* Light Page (Products/Footer): `#F9FAFB`
-* Light Card / Surface: `#FFFFFF`
+\*\*Design Goal:\*\* High-clarity product display, strong purchase CTA visibility, minimalistic sci-fi gaming aesthetic inspired by Gravastar.
 
-## Text Colors
 
-* Heading / Title: `#FFFFFF` (on dark background) / `#111827` (on light background)
-* Body Text: `#D1D5DB` (on dark background) / `#374151` (on light background)
-* Muted / Secondary: `rgba(255, 255, 255, 0.5)` (on dark background) / `#6B7280` (on light background)
 
-## Border / Divider
+\---
 
-* Dark Border color: `rgba(255, 255, 255, 0.1)`
-* Light Border color: `#E5E7EB`
 
-## Semantic Colors
 
-* Error: `#DC2626` (soft: `#FEF2F2` on light background / `rgba(220, 38, 38, 0.1)` on dark background)
-* Success: `#16A34A` (soft: `#ECFDF5` on light background / `rgba(22, 163, 74, 0.1)` on dark background)
-* Warning: `#F59E0B` (soft: `#FFFBEB` on light background / `rgba(245, 158, 11, 0.1)` on dark background)
-* Rule: Use strictly by semantic meaning only.
+\## Brand Accent (Primary \& Secondary)
 
-## Usage Principles
 
-* **Dual-Mode Balance:** Dark backgrounds are used for Hero, Video, and Storytelling sections (to create an immersive experience). Light backgrounds are used for Product Grids, Specs, and Footers (to optimize conversions and readability).
-* **Neon Accent:** Neon Cyan (`#00FFCC`) is used strictly as an accent color; absolutely do not overuse it for large background areas.
-* **Glowing Effect:** CTAs (Buttons) or Icons must have a glowing effect (Neon Glow) upon interaction (Hover/Active).
-* **High Contrast:** Avoid using muddy grays on dark backgrounds; maintain sharp, high contrast.
 
-## Visual Personality
+\* Primary CTA: `#FFC700` (Yellow – Main purchase action)
 
-* Cyberpunk & Futuristic
-* Edgy & Bold
-* Premium Gaming
-* High-Contrast & Tech-focused
-* Responsive-ready (desktop & mobile)
+\* Primary Hover: `#FFD633`
+
+\* Secondary CTA: `#5A31F4` (Purple – Secondary purchase action / UI accent)
+
+\* Secondary Hover: `#4C1FD8`
+
+\* Alert / Highlight: `#E11D48` (Rose Red – Used for discount tags, sale badges, error states)
+
+
+
+\*\*Usage\*\*
+
+
+
+\* Primary purchase buttons (\*\*Add to Cart\*\*)
+
+\* Secondary purchase buttons (\*\*Buy with Shop\*\*)
+
+\* Interactive focus states
+
+\* Chat input focus border
+
+\* Important conversion actions
+
+
+
+\*\*Rule\*\*
+
+
+
+\* All purchase buttons \*\*MUST use fully rounded corners (`rounded-full`)\*\*
+
+\* Use \*\*solid colors only\*\*
+
+\* \*\*DO NOT use neon glow effects\*\*
+
+\* \*\*Avoid heavy gradients or cyberpunk glow\*\*
+
+
+
+\---
+
+
+
+\## Background (High-Contrast Structure)
+
+
+
+\* Inverse Page (Topbar / Header): `#101010`
+
+\* Main Page (Products / Body): `#FFFFFF`
+
+\* Light Card / Surface / Chat Input: `#F9FAFB`
+
+\* AI Chat Bubble / Success Banner: `#F0FDF4`
+
+\* User Chat Bubble: `#F3F4F6`
+
+
+
+\*\*Usage\*\*
+
+
+
+\* `#101010` → navigation / header areas
+
+\* `#FFFFFF` → primary shopping content
+
+\* `#F9FAFB` → cards, surfaces, inputs
+
+\* Chat bubbles separated visually between \*\*AI and user\*\*
+
+
+
+\---
+
+
+
+\## Text Colors
+
+
+
+\* Heading / Product Title / Main Chat Text
+
+&#x20; \* `#111827` on light background
+
+&#x20; \* `#FFFFFF` on dark background
+
+
+
+\* Body Text / Product Features / Descriptions: `#374151`
+
+
+
+\* Muted / Secondary / Placeholders / Strikethrough Price: `#6B7280`
+
+
+
+\* Success / AI Accent Text: `#16A34A`
+
+
+
+\*\*Usage\*\*
+
+
+
+\* Headings and product titles must prioritize \*\*high readability\*\*
+
+\* Muted text only for \*\*secondary information\*\*
+
+
+
+\---
+
+
+
+\## Border / Divider
+
+
+
+\* Default Border color: `#E5E7EB`
+
+\* Active / Focus Border color: `#5A31F4`
+
+
+
+\*\*Rule\*\*
+
+
+
+\* Borders must be \*\*1px\*\*
+
+\* Maintain \*\*minimalist UI hierarchy\*\*
+
+\* Avoid strong or dark borders
+
+
+
+\---
+
+
+
+\## Semantic Colors
+
+
+
+\* Danger / Discount / Sale Tag: `#E11D48`
+
+\* Success / AI Assistance
+
+&#x20; \* Text: `#16A34A`
+
+&#x20; \* Background: `#F0FDF4`
+
+
+
+\*\*Rule\*\*
+
+
+
+\* Semantic colors must be used \*\*strictly according to meaning\*\*
+
+
+
+\---
+
+
+
+\## Usage Principles
+
+
+
+\*\*Brand Identity Contrast\*\*
+
+
+
+\* Header and navigation must use \*\*dark background (`#101010`)\*\*
+
+\* Product browsing area must use \*\*bright background (`#FFFFFF`)\*\*
+
+
+
+\---
+
+
+
+\*\*Clean E-commerce First\*\*
+
+
+
+Maintain hierarchy:
+
+
+
+1\. Product Image
+
+2\. Product Title
+
+3\. Price
+
+4\. Add to Cart CTA
+
+
+
+Use \*\*large whitespace between sections\*\*.
+
+
+
+\---
+
+
+
+\*\*Flat Design Focus\*\*
+
+
+
+Use:
+
+
+
+\* Solid colors
+
+\* Minimal shadows
+
+\* Clean typography
+
+
+
+Avoid:
+
+
+
+\* Strong gradients
+
+\* Heavy glow effects
+
+\* Overly stylized cyberpunk visuals
+
+
+
+\---
+
+
+
+\*\*RAG Chatbot Specifics\*\*
+
+
+
+\* AI Chat Bubble
+
+&#x20; \* Background: `#F0FDF4`
+
+&#x20; \* Shape: rounded with \*\*top-left corner square\*\*
+
+
+
+\* User Chat Bubble
+
+&#x20; \* Background: `#F3F4F6`
+
+&#x20; \* Shape: rounded with \*\*top-right corner square\*\*
+
+
+
+\* Chat Container
+
+&#x20; \* Uses soft shadow to separate from page content
+
+
+
+\* Chat Input
+
+&#x20; \* Background: `#F9FAFB`
+
+&#x20; \* Border: `#E5E7EB`
+
+&#x20; \* Focus Border: `#5A31F4`
+
+&#x20; \* Shape: \*\*fully rounded\*\*
+
+
+
+\---
+
+
+
+\## Visual Personality
+
+
+
+\* Clean \& Professional
+
+\* Premium Tech
+
+\* Subtle Cyberpunk Gaming Aesthetic
+
+\* High-Conversion \& Product-Focused
+
+\* Minimalist \& Flat
+
+\* Responsive-ready (Desktop, Tablet, Mobile)
+

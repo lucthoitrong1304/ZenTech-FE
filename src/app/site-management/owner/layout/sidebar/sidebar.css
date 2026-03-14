@@ -1,0 +1,261 @@
+/* ================================================
+   Sidebar – Store Owner Dashboard
+   Width: 260px | Full height | White bg
+   ================================================ */
+
+/* ── Host / outer aside ───────────────────────── */
+:host {
+  display: block;
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.sidebar {
+  width: 260px;
+  height: 100dvh;
+  background-color: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  z-index: 20;
+  position: relative;
+}
+
+/* ── Logo area ────────────────────────────────── */
+.sidebar__logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.sidebar__logo-text {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.sidebar__logo-accent {
+  color: #FFC700;
+}
+
+/* Logo image (replaces text when an actual logo file is used) */
+.sidebar__logo-img {
+  height: 36px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+  display: block;
+  filter: invert(1);
+}
+
+/* ── Scrollable navigation ────────────────────── */
+.sidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #e2e8f0 transparent;
+}
+.sidebar__nav::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar__nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar__nav::-webkit-scrollbar-thumb {
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+}
+
+/* ── Nav group ────────────────────────────────── */
+.sidebar__nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar__nav-group-label {
+  padding: 0 12px;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+
+/* ── Nav links ────────────────────────────────── */
+.sidebar__nav-link {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  gap: 12px;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, transform 120ms ease;
+  position: relative;
+  white-space: nowrap;
+}
+
+.sidebar__nav-link:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+  transform: translateX(2px);
+}
+
+/* Active state (dark pill – Stripe/Linear style) */
+.sidebar__nav-link--active,
+.sidebar__nav-link.active {
+  background-color: #0f172a;
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+
+.sidebar__nav-link--active:hover,
+.sidebar__nav-link.active:hover {
+  background-color: #1e293b;
+  color: #ffffff;
+  transform: none;
+}
+
+/* Sub-item – child nav link (indented, smaller) */
+.sidebar__nav-link--sub {
+  padding-left: 36px;
+  font-size: 13px;
+  color: #94a3b8;
+  position: relative;
+}
+
+.sidebar__nav-link--sub::before {
+  content: '';
+  position: absolute;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.sidebar__nav-link--sub:hover {
+  color: #0f172a;
+  background-color: #f8fafc;
+}
+
+.sidebar__nav-link--sub svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+}
+
+/* Icon inside link */
+.sidebar__nav-link svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  opacity: 0.75;
+  transition: opacity 150ms ease;
+}
+
+.sidebar__nav-link:hover svg,
+.sidebar__nav-link--active svg,
+.sidebar__nav-link.active svg {
+  opacity: 1;
+}
+
+/* ── Badge inside nav link (e.g. order count) ─── */
+.sidebar__nav-badge {
+  margin-left: auto;
+  background-color: #dbeafe;
+  color: #1d4ed8;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  line-height: 16px;
+}
+
+/* ── Space between label and nav links ─────────── */
+.sidebar__nav-group > *:not(.sidebar__nav-group-label) + *:not(.sidebar__nav-group-label) {
+  margin-top: 1px;
+}
+
+/* ── Bottom fixed utilities section ───────────── */
+.sidebar__footer {
+  padding: 16px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+/* Footer links reuse the same link style */
+.sidebar__footer-link {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  gap: 12px;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease, transform 120ms ease;
+}
+
+.sidebar__footer-link:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+  transform: translateX(2px);
+}
+
+.sidebar__footer-link svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  opacity: 0.75;
+  transition: opacity 150ms ease;
+}
+
+.sidebar__footer-link:hover svg {
+  opacity: 1;
+}
+
+/* ── Responsive: hide on mobile, show toggle ──── */
+@media (max-width: 768px) {
+  :host {
+    width: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    z-index: 50;
+    overflow: hidden;
+    transition: width 250ms ease;
+  }
+
+  .sidebar {
+    width: 260px;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  }
+}

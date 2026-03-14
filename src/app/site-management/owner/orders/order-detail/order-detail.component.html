@@ -1,0 +1,220 @@
+<div class="order-detail-page" *ngIf="order">
+  <!-- Back Link -->
+  <div class="order-detail__breadcrumb">
+    <a routerLink="/owner/orders" class="order-detail__back-link">
+      <mat-icon class="info-icon text-[18px]">arrow_back_ios_new</mat-icon>
+      Quay lại danh sách đơn hàng
+    </a>
+  </div>
+
+  <div class="order-detail__header-wrap">
+    <!-- Header -->
+    <div class="order-detail__header">
+      <div class="order-detail__title-group">
+        <h1 class="order-detail__title">Đơn hàng {{ order.orderCode }}</h1>
+        <p class="order-detail__subtitle">Đặt vào Thứ 5, {{ order.createdAt | date:'dd/MM/yyyy' }} bởi {{ order.customer.name }}</p>
+      </div>
+      
+      <div class="order-detail__actions">
+        <button mat-flat-button color="primary" class="order-detail__btn-primary" *ngIf="order.status === statusEnum.PENDING || order.status === statusEnum.PROCESSING">
+          <mat-icon>check_circle</mat-icon>
+          Xác nhận đơn
+        </button>
+        <button mat-stroked-button class="order-detail__btn-secondary" *ngIf="order.status === statusEnum.PROCESSING || order.status === statusEnum.SHIPPED">
+          Đánh dấu đang giao
+        </button>
+        <button mat-flat-button color="warn" class="order-detail__btn-danger">
+          <mat-icon>delete</mat-icon>
+          Hủy đơn
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="order-detail__grid">
+      
+      <!-- Left Column (Main Content) -->
+      <div class="order-detail__main-column">
+        
+        <!-- Products Card -->
+        <div class="saas-card">
+          <div class="saas-card__body--padded">
+            <h2 class="saas-card__title">Sản phẩm trong đơn hàng</h2>
+            
+            <div class="product-items-container">
+              <div class="order-item" *ngFor="let item of order.items">
+                <div class="order-item__image-wrap">
+                  <img [src]="item.imageUrl" [alt]="item.name" class="order-item__image">
+                </div>
+                <div class="order-item__details">
+                  <h3 class="order-item__name">{{ item.name }}</h3>
+                  <p class="order-item__sku">SKU: {{ item.sku }}</p>
+                  <p class="order-item__qty">
+                    Qty: {{ item.quantity }}
+                    <mat-icon class="info-icon text-[12px]">check_circle</mat-icon>
+                  </p>
+                </div>
+                <div class="order-item__prices">
+                  <span class="order-item__total">₫ {{ item.totalPrice | number }}</span>
+                  <span class="order-item__unit" *ngIf="item.quantity > 1">{{ item.quantity }} x ₫ {{ item.unitPrice | number }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="saas-card__body--gray">
+            <div class="summary-row">
+              <span class="summary-row__label">Tạm tính</span>
+              <div class="flex gap-4 items-center">
+                <span class="summary-row__label">Phí vận chuyển</span>
+                <span class="summary-row__value">₫ {{ order.shippingFee | number }}</span>
+                <span class="summary-row__value ml-4">₫ {{ order.totalAmount | number }}</span>
+              </div>
+            </div>
+            <div class="summary-row summary-row--total">
+              <span class="summary-row__label--total">Thành tiền</span>
+              <span class="summary-row__value--total">
+                Tổng tạm đơn.
+                <span class="summary-row__value-highlight">₫ {{ order.totalAmount | number }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Cards Row -->
+        <div class="info-cards-row">
+          <!-- Customer Info Box -->
+          <div class="saas-card">
+            <div class="saas-card__body">
+              <h2 class="saas-card__title--border">Thông tin khách hàng</h2>
+              <div class="info-header">
+                <div class="info-avatar">
+                  <img *ngIf="order.customer.avatarUrl; else noAvatarL" [src]="order.customer.avatarUrl" class="info-avatar__img">
+                  <ng-template #noAvatarL>{{ getInitial(order.customer.name) }}</ng-template>
+                </div>
+                <div class="info-name-group">
+                  <span class="info-name">{{ order.customer.name }}</span>
+                  <span class="info-email">{{ order.customer.email }}</span>
+                </div>
+              </div>
+              <div class="info-details">
+                <div class="info-row">
+                  <mat-icon class="info-icon">phone</mat-icon>
+                  <span>{{ order.customer.phone }}</span>
+                </div>
+                <div class="info-row">
+                  <mat-icon class="info-icon">badge</mat-icon>
+                  <span>{{ order.customer.id }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping Address Box -->
+          <div class="saas-card">
+            <div class="saas-card__body">
+              <h2 class="saas-card__title--border">Địa chỉ giao hàng</h2>
+              <div class="shipping-header">
+                <div class="shipping-icon-wrap">
+                  <mat-icon class="shipping-icon">check_circle</mat-icon>
+                </div>
+                <div class="shipping-details">
+                  <span class="shipping-name">{{ order.shippingAddress.recipientName }}</span>
+                  <span class="shipping-address-line">{{ order.shippingAddress.street }}</span>
+                  <span class="shipping-address-line">{{ order.shippingAddress.district }}, {{ order.shippingAddress.city }}</span>
+                  <span class="shipping-address-last">{{ order.shippingAddress.country }}</span>
+                  
+                  <div class="info-row mt-1">
+                    <mat-icon class="info-icon">phone</mat-icon>
+                    <span class="text-gray-600">{{ order.shippingAddress.phone }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column (Sidebar) -->
+      <div class="order-detail__side-column">
+        
+        <!-- Order Summary Box -->
+        <div class="saas-card">
+          <div class="saas-card__body">
+            <h2 class="saas-card__title">Order Summary</h2>
+            <div class="flex flex-col gap-3 mt-1">
+              <div class="summary-row">
+                <span class="summary-row__label">Tạm tính</span>
+                <span class="summary-row__value">₫ {{ order.subtotal | number }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-row__label">Phí vận chuyển</span>
+                <span class="summary-row__value">₫ {{ order.shippingFee | number }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-row__label">Giảm giá</span>
+                <span class="summary-row__value">₫ {{ order.discount | number }}</span>
+              </div>
+              <div class="summary-row summary-row--total">
+                <span class="summary-row__label--total">Thành tiền</span>
+                <span class="summary-row__value--total">₫ {{ order.totalAmount | number }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Customer Details (Named Địa chỉ giao hàng in mockup but contains customer info) -->
+        <div class="saas-card">
+          <div class="saas-card__body">
+            <h2 class="saas-card__title--border">Khách hàng</h2>
+            <div class="info-header">
+              <div class="info-avatar">
+                <img *ngIf="order.customer.avatarUrl; else noAvatarR" [src]="order.customer.avatarUrl" class="info-avatar__img">
+                <ng-template #noAvatarR>{{ getInitial(order.customer.name) }}</ng-template>
+              </div>
+              <div class="info-name-group">
+                <span class="info-name">{{ order.customer.name }}</span>
+                <span class="info-email">{{ order.customer.email }}</span>
+              </div>
+            </div>
+            <div class="info-details">
+              <div class="info-row">
+                <mat-icon class="info-icon">phone</mat-icon>
+                <span>{{ order.customer.phone }}</span>
+              </div>
+              <div class="info-row">
+                <mat-icon class="info-icon">badge</mat-icon>
+                <span>{{ order.customer.id }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline Box -->
+        <div class="saas-card">
+          <div class="saas-card__body">
+            <h2 class="saas-card__title--border">Dòng thời gian đơn hàng</h2>
+            <div class="timeline-container">
+              <!-- connecting line -->
+              <div class="timeline-line-bg"></div>
+              
+              <div class="timeline-step" *ngFor="let step of order.timeline; let last = last" [class.timeline-step--last]="last">
+                <div class="timeline-dot"
+                     [ngClass]="step.isCompleted ? 'timeline-dot--completed' : (step.isCurrent ? 'timeline-dot--current' : 'timeline-dot--pending')">
+                  <mat-icon class="text-[12px] w-[12px] h-[12px]" *ngIf="step.isCompleted">check</mat-icon>
+                  <div class="timeline-dot-inner" *ngIf="step.isCurrent"></div>
+                </div>
+                <div class="timeline-content">
+                  <span class="timeline-title" [ngClass]="step.isCompleted || step.isCurrent ? 'timeline-title--active' : 'timeline-title--inactive'">{{ step.status }}</span>
+                  <span class="timeline-time" *ngIf="step.isCompleted || step.isCurrent">{{ step.time | date:'dd Thg MM, HH:mm' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+
+    </div>
+  </div>
+</div>

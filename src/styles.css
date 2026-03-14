@@ -1,20 +1,552 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import "tailwindcss";
 
+/* ============================================================
+   GLOBAL DESIGN SYSTEM – ZenTech
+   Premium Tech E-commerce · Clean Flat · Subtle Cyberpunk
+   ============================================================ */
+
+/* ── 1. CSS VARIABLES ─────────────────────────────────────── */
+:root {
+  /* Brand */
+  --color-primary:          #FFC700;
+  --color-primary-hover:    #FFD633;
+  --color-primary-muted:    rgba(255, 199, 0, 0.12);
+
+  --color-secondary:        #5A31F4;
+  --color-secondary-hover:  #4C1FD8;
+  --color-secondary-muted:  rgba(90, 49, 244, 0.12);
+
+  --color-highlight:        #E11D48;   /* discount / alert */
+
+  /* Backgrounds */
+  --bg-header:    #101010;
+  --bg-dark:      #1A1A1A;
+  --bg-main:      #FFFFFF;
+  --bg-soft:      #F9FAFB;
+  --bg-card:      #FFFFFF;
+
+  /* Text */
+  --text-heading: #111827;
+  --text-body:    #374151;
+  --text-muted:   #6B7280;
+  --text-on-dark: #FFFFFF;
+
+  /* Border */
+  --border-default:  #E5E7EB;
+  --border-dark:     rgba(255, 255, 255, 0.1);
+
+  /* Semantic */
+  --success-bg:   #F0FDF4;
+  --success-text: #16A34A;
+  --warning-bg:   #FFFBEB;
+  --warning-text: #D97706;
+  --error-bg:     #FEF2F2;
+  --error-text:   #DC2626;
+
+  /* Chatbot */
+  --chat-user-bg:    #F3F4F6;
+  --chat-bot-bg:     #F0FDF4;   /* AI bubble → bg-success */
+  --chat-border:     #E5E7EB;
+
+  /* Spacing scale */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Border radius */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-full: 9999px;
+
+  /* Shadows – flat, no glow */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md:  0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,0.12);
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow:   300ms ease;
+
+  /* Legacy aliases – backward compat with existing components */
+  --color-primary:      var(--color-primary);
+  --color-secondary:    var(--color-secondary);
+  --color-discount:     var(--color-highlight);
+  --color-header:       var(--bg-header);
+  --color-bg-main:      var(--bg-main);
+  --color-bg-soft:      var(--bg-soft);
+  --color-title:        var(--text-heading);
+  --color-body:         var(--text-body);
+  --color-muted:        var(--text-muted);
+  --color-border:       var(--border-default);
+  --color-success-bg:   var(--success-bg);
+  --color-success-text: var(--success-text);
+  --color-chat-user:    var(--chat-user-bg);
+}
+
+/* ── 2. BASE RESET & TYPOGRAPHY ───────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-body);
+  background-color: var(--bg-main);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-heading);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+h1 { font-size: 24px; }
+h2 { font-size: 20px; }
+h3 { font-size: 18px; }
+h4 { font-size: 16px; }
+
+p  { color: var(--text-body); font-size: 14px; }
+small, .text-caption { font-size: 12px; color: var(--text-muted); }
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover { color: var(--color-primary-hover); }
+
+/* ── 3. LAYOUT ────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--space-lg);
+}
+
+.section {
+  padding-block: var(--space-3xl);
+}
+
+.section-sm {
+  padding-block: var(--space-2xl);
+}
+
+/* ── 4. HEADER ────────────────────────────────────────────── */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--space-lg);
+}
+
+/* ── 5. BUTTONS ───────────────────────────────────────────── */
+
+/* Primary – filled yellow, rounded-full */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  height: 44px;
+  padding-inline: var(--space-xl);
+  border-radius: var(--radius-full);
+  border: none;
+  background-color: var(--color-primary);
+  color: #000000;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+}
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+}
+.btn-primary:active { transform: translateY(0); }
+
+/* Secondary – outlined, rounded-full */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  height: 44px;
+  padding-inline: var(--space-xl);
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border-default);
+  background-color: transparent;
+  color: var(--text-heading);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+}
+.btn-secondary:hover {
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+  transform: translateY(-1px);
+}
+.btn-secondary:active { transform: translateY(0); }
+
+/* Ghost – text only */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  height: 36px;
+  padding-inline: var(--space-md);
+  border-radius: var(--radius-sm);
+  border: none;
+  background-color: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+.btn-ghost:hover {
+  color: var(--text-heading);
+  background-color: var(--bg-soft);
+}
+
+/* Size variants */
+.btn-sm { height: 36px; padding-inline: var(--space-lg); font-size: 13px; }
+.btn-lg { height: 52px; padding-inline: 40px;           font-size: 16px; }
+
+/* State */
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── 6. CARDS ─────────────────────────────────────────────── */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.card-product {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  overflow: hidden;
+  padding: 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+.card-product:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.card-product__image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background-color: var(--bg-soft);
+}
+
+.card-product__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+}
+
+.card-product__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-heading);
+  line-height: 1.4;
+}
+
+.card-product__price {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.card-product__price--original {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+/* ── 7. BADGES ────────────────────────────────────────────── */
+
+/* Discount badge – red */
+.badge-discount {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-highlight);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Status badges */
+.badge-success {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-warning {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-error {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── 8. FORM / INPUT ──────────────────────────────────────── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-heading);
+}
+
+.form-input {
+  width: 100%;
+  height: 44px;
+  padding-inline: var(--space-md);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-main);
+  color: var(--text-body);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+}
+.form-input::placeholder { color: var(--text-muted); }
+.form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-muted);
+}
+.form-input.is-error  { border-color: var(--error-text); }
+.form-input.is-error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+textarea.form-input {
+  height: auto;
+  min-height: 100px;
+  padding-block: var(--space-md);
+  resize: vertical;
+}
+
+/* ── 9. CHATBOT UI ────────────────────────────────────────── */
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--bg-main);
+  border: 1px solid var(--chat-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.chat-header__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.chat-header__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-on-dark);
+}
+
+.chat-header__subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.chat-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Chat bubbles */
+.chat-bubble {
+  max-width: 75%;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.chat-bubble--user {
+  background-color: var(--chat-user-bg);
+  color: var(--text-heading);
+  border-bottom-right-radius: var(--radius-sm);
+  align-self: flex-end;
+}
+.chat-bubble--bot {
+  background-color: var(--chat-bot-bg);   /* #F0FDF4 – success green */
+  color: var(--text-heading);
+  border-bottom-left-radius: var(--radius-sm);
+  align-self: flex-start;
+}
+
+.chat-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--border-default);
+  background-color: var(--bg-main);
+}
+
+.chat-input {
+  flex: 1;
+  height: 40px;
+  padding-inline: var(--space-md);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-body);
+  background-color: var(--bg-soft);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.chat-input:focus { border-color: var(--color-secondary); }  /* brand-secondary on focus */
+
+.chat-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--color-primary);
+  color: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+.chat-send-btn:hover { background-color: var(--color-primary-hover); }
+
+/* ── 10. DIVIDERS & UTILITIES ─────────────────────────────── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--border-default);
+  margin-block: var(--space-lg);
+}
+
+.text-primary  { color: var(--color-primary);  }
+.text-secondary{ color: var(--color-secondary); }
+.text-muted    { color: var(--text-muted);      }
+.text-heading  { color: var(--text-heading);    }
+
+/* ── 11. ANIMATIONS ───────────────────────────────────────── */
 @theme {
   @keyframes slide-in {
-    from {
-      transform: translateX(100%);
-      opacity: 0;
-    }
-    to {
-      transform: translateX(0);
-      opacity: 1;
-    }
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0);   }
   }
 
   --animate-slide-in: slide-in 0.3s ease-out;
+  --animate-fade-in:  fade-in 0.25s ease-out;
 }
 
 @layer utilities {}
+

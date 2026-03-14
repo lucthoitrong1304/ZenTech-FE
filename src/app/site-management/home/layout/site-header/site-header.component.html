@@ -1,0 +1,128 @@
+<!-- ============================================================
+     SITE HEADER – Customer-facing navigation
+     GravaStar style: sticky dark, logo center, nav left, actions right
+     ============================================================ -->
+<header class="site-header">
+  <div class="site-header__inner">
+
+    <!-- ── LEFT: Desktop nav ──────────────────────────────── -->
+    <div class="site-header__left">
+
+      <!-- Primary nav row -->
+      <nav class="site-header__nav" aria-label="Primary navigation">
+        @for (item of navItems; track item.label) {
+          <div class="site-header__nav-item">
+            <a href="#" class="site-header__nav-link">
+              {{ item.label }}
+              <svg class="site-header__nav-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </a>
+            <div class="site-header__dropdown">
+              <div class="site-header__dropdown-inner">
+                @for (sub of item.dropdownItems; track sub) {
+                  <a href="#" class="site-header__dropdown-item">{{ sub }}</a>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- More dropdown -->
+        <div class="site-header__nav-item">
+          <a href="#" class="site-header__nav-link">
+            More
+            <svg class="site-header__nav-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </a>
+          <div class="site-header__dropdown">
+            <div class="site-header__dropdown-inner">
+              <a href="#" class="site-header__dropdown-item">Accessories</a>
+              <a href="#" class="site-header__dropdown-item">Handcrafted Art</a>
+              <a href="#" class="site-header__dropdown-item">Bundles</a>
+              <a href="#" class="site-header__dropdown-item">Graphics Card</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+    </div>
+
+    <!-- ── CENTER: Logo ────────────────────────────────────── -->
+    <a routerLink="/" class="site-header__logo" aria-label="ZenTech Home">
+      <img src="/logos/gravastar_logo-2.avif" alt="ZenTech Logo" class="site-header__logo-img">
+    </a>
+
+    <!-- ── RIGHT: Desktop actions ─────────────────────────── -->
+    <div class="site-header__right">
+      <nav class="site-header__right-nav">
+        <a href="#" class="site-header__right-link">Contact</a>
+        <a href="#" class="site-header__right-link">Software Download</a>
+      </nav>
+      <div class="site-header__actions">
+        <!-- Country -->
+        <button class="site-header__country" aria-label="Select country">
+          <span class="site-header__flag">★</span>
+          <span>Vietnam (VND đ)</span>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="site-header__nav-chevron">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <!-- Search -->
+        <button class="site-header__icon-btn" aria-label="Search">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </button>
+        <!-- Account -->
+        <button class="site-header__icon-btn" aria-label="My account">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </button>
+        <!-- Cart -->
+        <button class="site-header__icon-btn site-header__cart-btn" aria-label="Shopping cart">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <span class="site-header__cart-dot site-header__cart-dot--ping"></span>
+          <span class="site-header__cart-dot site-header__cart-dot--solid"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── MOBILE: Hamburger + cart ───────────────────────── -->
+    <button class="site-header__mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Menu">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+    <button class="site-header__mobile-cart" aria-label="Cart">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+      </svg>
+    </button>
+
+  </div>
+</header>
+
+<!-- ── MOBILE DRAWER ────────────────────────────────────────── -->
+@if (mobileMenuOpen) {
+  <div class="site-header__mobile-overlay" (click)="closeMobileMenu()" aria-hidden="true"></div>
+  <nav class="site-header__mobile-drawer" aria-label="Mobile navigation">
+    <button class="site-header__mobile-close" (click)="closeMobileMenu()" aria-label="Close menu">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+    @for (item of navItems; track item.label) {
+      <div class="site-header__mobile-group">
+        <p class="site-header__mobile-group-label">{{ item.label }}</p>
+        @for (sub of item.dropdownItems; track sub) {
+          <a href="#" class="site-header__mobile-link" (click)="closeMobileMenu()">{{ sub }}</a>
+        }
+      </div>
+    }
+  </nav>
+}

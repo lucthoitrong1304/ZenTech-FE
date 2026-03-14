@@ -1,17 +1,250 @@
-<div class="home-container">
-  <h1 class="home-title">
-    Chào mừng đến với ZenTech
-  </h1>
-  <p class="home-description">
-    Hệ thống thương mại điện tử chuyên cung cấp thiết bị điện tử chính hãng. Đăng nhập để trải nghiệm.
-  </p>
-  
-  <div class="home-action-group">
-    <button mat-flat-button class="home-btn-primary" routerLink="/auth/login">
-      Đăng nhập
-    </button>
-    <button mat-stroked-button class="home-btn-secondary" routerLink="/auth/register">
-      Đăng ký ngay
-    </button>
-  </div>
+<!-- ============================================================
+     ZenTech Home Page – GravaStar Style
+     Section order: announce → hero → categories → deals →
+     promos → video-reviews + testimonials → brand-video
+     ============================================================ -->
+
+<!-- ── ANNOUNCEMENT BAR ─────────────────────────────────────── -->
+<div class="home__announce">
+  ✨ A new level. A new universe. NEW ARRIVAL – ZenTech V60 Pro HE Keyboard ✨
 </div>
+
+<!-- ── HERO SLIDER ───────────────────────────────────────────── -->
+<section class="home__hero" aria-label="Hero banner">
+
+  @for (slide of slides; track slide.src; let i = $index) {
+    <div class="home__hero-slide" [class.home__hero-slide--active]="i === currentSlide">
+      <img [src]="slide.src" [alt]="slide.alt" class="home__hero-img">
+    </div>
+  }
+
+  <button class="home__hero-arrow home__hero-arrow--prev" (click)="prevSlide()" aria-label="Previous slide">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/>
+    </svg>
+  </button>
+  <button class="home__hero-arrow home__hero-arrow--next" (click)="nextSlide()" aria-label="Next slide">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
+    </svg>
+  </button>
+
+  <div class="home__hero-dots">
+    @for (slide of slides; track slide.src; let i = $index) {
+      <button
+        class="home__hero-dot"
+        [class.home__hero-dot--active]="i === currentSlide"
+        (click)="goToSlide(i)"
+        [attr.aria-label]="'Slide ' + (i + 1)">
+      </button>
+    }
+  </div>
+
+  <div class="home__hero-gradient" aria-hidden="true"></div>
+</section>
+
+<!-- ── SHOP BY CATEGORY ──────────────────────────────────────── -->
+<section class="home__section home__section--gray">
+  <div class="home__container">
+    <div class="home__category-grid">
+
+      <div class="home__category-col">
+        <a class="home__category-card home__category-card--tall" routerLink="/products">
+          <img src="/images/categories/keyboard.webp" alt="Shop Keyboard" class="home__category-img">
+          <div class="home__category-overlay"></div>
+          <span class="home__category-label">Shop Keyboard</span>
+        </a>
+        <div class="home__category-row">
+          <a class="home__category-card home__category-card--short" routerLink="/products">
+            <img src="/images/categories/charger.webp" alt="Shop Charger" class="home__category-img">
+            <div class="home__category-overlay"></div>
+            <span class="home__category-label">Shop Charger</span>
+          </a>
+          <a class="home__category-card home__category-card--short" routerLink="/products">
+            <img src="/images/categories/earbud.webp" alt="Shop Earbud" class="home__category-img">
+            <div class="home__category-overlay"></div>
+            <span class="home__category-label">Shop Earbud</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="home__category-col">
+        <a class="home__category-card home__category-card--medium-top" routerLink="/products">
+          <img src="/images/categories/mouse.webp" alt="Shop Mouse" class="home__category-img">
+          <div class="home__category-overlay"></div>
+          <span class="home__category-label">Shop Mouse</span>
+        </a>
+        <a class="home__category-card home__category-card--medium-bot" routerLink="/products">
+          <img src="/images/categories/speaker.webp" alt="Shop Speaker" class="home__category-img">
+          <div class="home__category-overlay"></div>
+          <span class="home__category-label">Shop Speaker</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── TOP DEALS ─────────────────────────────────────────────── -->
+<section class="home__section home__section--gray">
+  <div class="home__container">
+
+    <div class="home__section-title-row">
+      <p class="home__section-eyebrow">Your Next-Level Loadout</p>
+      <div class="home__section-heading-row">
+        <h2 class="home__section-heading">Top Deals</h2>
+        <a routerLink="/products" class="home__view-all">
+          View all
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="home__deals-grid">
+      @for (deal of deals; track deal.name) {
+        <div class="home__deal-card">
+          <div class="home__deal-image-wrap">
+            <div class="home__deal-badges">
+              @for (badge of deal.badges; track badge.text) {
+                <span class="home__deal-badge"
+                  [class.home__deal-badge--new]="badge.variant === 'new'"
+                  [class.home__deal-badge--sale]="badge.variant === 'sale'">
+                  {{ badge.text }}
+                </span>
+              }
+            </div>
+            <img [src]="deal.image" [alt]="deal.alt" class="home__deal-img">
+          </div>
+          <div class="home__deal-body">
+            <h3 class="home__deal-name">{{ deal.name }}</h3>
+            <div class="home__deal-price-row">
+              <span class="home__deal-price">{{ deal.price }}</span>
+              @if (deal.originalPrice) {
+                <span class="home__deal-price--original">{{ deal.originalPrice }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+  </div>
+</section>
+
+<!-- ── SPECIAL OFFERS + HANDCRAFT ────────────────────────────── -->
+<section class="home__section home__section--gray home__section--pb">
+  <div class="home__container home__promos">
+
+    <div class="home__promo-banner home__promo-banner--dark">
+      <div class="home__promo-copy">
+        <h2 class="home__promo-heading">Special Offers</h2>
+        <p class="home__promo-desc">Check out this week's best deals on our top-tier gear.</p>
+        <a routerLink="/products" class="home__promo-link">Shop Now <span>→→</span></a>
+      </div>
+      <div class="home__promo-visual">
+        <img src="/images/promos/special-offers.webp" alt="Special Offers" class="home__promo-img">
+      </div>
+    </div>
+
+    <div class="home__handcraft">
+      <img src="/images/promos/handcraft.webp" alt="HandCraft Collection" class="home__handcraft-bg">
+      <div class="home__handcraft-overlay" aria-hidden="true"></div>
+      <div class="home__handcraft-copy">
+        <span class="home__handcraft-eyebrow">Discover Art In Technology</span>
+        <h2 class="home__handcraft-heading">HandCraft</h2>
+        <a routerLink="/products" class="home__handcraft-btn">Learn More</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── VIDEO REVIEWS + TESTIMONIALS ─────────────────────────── -->
+<section class="home__section home__section--gray">
+  <div class="home__container">
+
+    <h2 class="home__testi-main-heading">ZenTech—The Future of Gaming Design</h2>
+
+    <!-- YouTube-style video card grid -->
+    <div class="home__reviews-grid">
+      @for (video of videoReviews; track video.title) {
+        <div class="home__review-card">
+          <div class="home__review-thumb">
+            <img [src]="video.thumbnail" [alt]="video.title" class="home__review-thumb-img">
+            <div class="home__review-play">
+              <svg class="home__review-play-icon" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
+          </div>
+          <h3 class="home__review-title">{{ video.title }}</h3>
+          <p class="home__review-channel">{{ video.channel }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- Testimonials slider -->
+    <div class="home__testi-wrapper">
+      <span class="home__testi-quote-mark" aria-hidden="true">"</span>
+
+      <div class="home__testi-stage">
+        @for (testi of testimonials; track testi.logoAlt; let i = $index) {
+          <div class="home__testi-slide" [class.home__testi-slide--active]="i === currentTestimonial">
+            <p class="home__testi-text">{{ testi.quote }}</p>
+            <img [src]="testi.logo" [alt]="testi.logoAlt" class="home__testi-logo">
+          </div>
+        }
+      </div>
+
+      <div class="home__testi-controls">
+        <button class="home__testi-arrow" (click)="prevTestimonial()" aria-label="Previous review">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="home__testi-dots">
+          @for (testi of testimonials; track testi.logoAlt; let i = $index) {
+            <button
+              class="home__testi-dot"
+              [class.home__testi-dot--active]="i === currentTestimonial"
+              (click)="goToTestimonial(i)"
+              [attr.aria-label]="'Review ' + (i + 1)">
+            </button>
+          }
+        </div>
+        <button class="home__testi-arrow" (click)="nextTestimonial()" aria-label="Next review">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── WHERE ART MEETS TECHNOLOGY ───────────────────────────── -->
+<section class="home__section home__section--gray home__section--pb">
+  <div class="home__container">
+    <div class="home__ai-banner">
+
+      <div class="home__ai-video">
+        <video src="/videos/brand.mp4" autoplay loop muted playsinline class="home__ai-vid"></video>
+      </div>
+
+      <div class="home__ai-copy">
+        <h2 class="home__ai-heading">
+          Where Art Meets<br>Technology
+        </h2>
+        <p class="home__ai-desc">
+          At ZenTech, we blend advanced tech with unique designs. Our products combine sleek
+          functionality with artistic elegance. Experience innovative craftsmanship with ZenTech.
+        </p>
+        <a routerLink="/about" class="home__ai-link">About Us <span>→→</span></a>
+      </div>
+
+    </div>
+  </div>
+</section>

@@ -1,0 +1,72 @@
+<div class="dialog-wrapper">
+  <div class="dialog-header">
+    <h2 mat-dialog-title class="dialog-title">Cập nhật trạng thái đơn hàng</h2>
+    <button mat-icon-button (click)="onCancel()" class="dialog-close-btn" aria-label="Close dialog">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="dialog-content">
+    <div class="order-info">
+      <div class="order-icon-wrapper">
+        <mat-icon class="order-icon-large">receipt_long</mat-icon>
+      </div>
+      <div class="order-text-content">
+        <h3 class="order-code">{{ data.order.orderCode }}</h3>
+        <p class="order-email">{{ data.order.customer.email }}</p>
+      </div>
+    </div>
+
+    <div class="status-summary">
+      <p class="status-label">Trạng thái hiện tại</p>
+      <span class="order-status-badge" [ngClass]="getStatusClass(data.order.status)">
+        {{ data.order.status }}
+      </span>
+    </div>
+
+    <div class="dialog-body-grid">
+      <div class="history-column">
+        <h4 class="column-title">Lịch sử trạng thái</h4>
+        <div class="timeline">
+          <div class="timeline-item" *ngFor="let item of getHistory()">
+            <div class="timeline-icon-wrap">
+              <div class="timeline-dot" [class.timeline-dot--active]="item.done">
+                <mat-icon *ngIf="item.done" class="timeline-check">check</mat-icon>
+              </div>
+              <div class="timeline-line" *ngIf="item !== getHistory()[getHistory().length - 1]" [class.timeline-line--active]="item.done"></div>
+            </div>
+            <div class="timeline-content">
+              <p class="timeline-status" [class.timeline-status--active]="item.done">{{ item.status }}</p>
+              <p class="timeline-time">{{ item.time }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="action-column">
+        <div class="form-group">
+          <label class="column-title">Cập nhật trạng thái</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-select [(ngModel)]="selectedStatus">
+              <mat-option *ngFor="let status of statusOptions" [value]="status.value">
+                {{ status.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-group">
+          <label class="column-title">Ghi chú (không bắt buộc)</label>
+          <mat-form-field appearance="outline" class="full-width">
+            <textarea matInput [(ngModel)]="notes" placeholder="Thêm ghi chú..." rows="3"></textarea>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-stroked-button (click)="onCancel()" class="btn-cancel">Hủy bỏ</button>
+    <button mat-flat-button color="primary" (click)="onUpdate()" class="btn-update">Cập nhật</button>
+  </mat-dialog-actions>
+</div>

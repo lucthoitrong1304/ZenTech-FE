@@ -1,0 +1,161 @@
+/* ==========================================================
+   Order Status Dialog Component CSS
+   ========================================================== */
+@reference "../../../../../styles.css";
+
+.dialog-wrapper {
+  @apply flex flex-col p-2;
+}
+
+.dialog-header {
+  @apply flex items-center justify-between px-6 py-4 border-b border-gray-100;
+}
+
+.dialog-title {
+  @apply m-0 text-xl font-bold text-gray-900;
+}
+
+.dialog-close-btn {
+  @apply text-gray-400 hover:text-gray-600 transition-colors;
+}
+
+.dialog-content {
+  @apply px-6 py-4 flex flex-col gap-6;
+  max-width: none !important;
+}
+
+/* Order Info Header */
+.order-info {
+  @apply flex items-center gap-4;
+}
+
+.order-icon-wrapper {
+  @apply w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0;
+}
+
+.order-icon-large {
+  @apply w-6 h-6 flex items-center justify-center;
+}
+
+.order-text-content {
+  @apply flex flex-col gap-0.5;
+}
+
+.order-code {
+  @apply m-0 text-lg font-bold text-gray-900;
+}
+
+.order-email {
+  @apply m-0 text-sm text-gray-500;
+}
+
+/* Current Status Summary */
+.status-summary {
+  @apply flex flex-col gap-2 bg-gray-50 rounded-lg p-4;
+}
+
+.status-label {
+  @apply m-0 text-sm font-semibold text-gray-700;
+}
+
+.order-status-badge {
+  @apply inline-flex items-center px-3 py-1.5 rounded-full text-sm font-bold w-fit;
+}
+
+.order-status--pending { @apply bg-amber-50 text-amber-700 border border-amber-200; }
+.order-status--processing { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+.order-status--shipped { @apply bg-purple-50 text-purple-700 border border-purple-200; }
+.order-status--delivered { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
+.order-status--canceled { @apply bg-rose-50 text-rose-700 border border-rose-200; }
+.order-status--returned { @apply bg-slate-50 text-slate-700 border border-slate-200; }
+
+/* Grid Layout */
+.dialog-body-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-8;
+}
+
+.column-title {
+  @apply m-0 mb-4 text-sm font-semibold text-gray-900;
+}
+
+/* Timeline */
+.history-column {
+  @apply flex flex-col;
+}
+
+.timeline {
+  @apply flex flex-col mt-2;
+}
+
+.timeline-item {
+  @apply flex gap-4 min-h-[64px];
+}
+
+.timeline-icon-wrap {
+  @apply flex flex-col items-center;
+}
+
+.timeline-dot {
+  @apply w-5 h-5 rounded-full border-2 border-gray-300 bg-white z-10 flex items-center justify-center;
+}
+
+.timeline-dot--active {
+  @apply border-emerald-500 bg-emerald-500 text-white;
+}
+
+.timeline-check {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+}
+
+.timeline-line {
+  @apply w-0.5 h-full bg-gray-200 -mt-1;
+}
+
+.timeline-line--active {
+  @apply bg-emerald-500;
+}
+
+.timeline-content {
+  @apply pb-6 flex flex-col justify-start -mt-1;
+}
+
+.timeline-status {
+  @apply m-0 text-sm font-medium text-gray-500;
+}
+
+.timeline-status--active {
+  @apply text-gray-900 font-bold;
+}
+
+.timeline-time {
+  @apply m-0 text-xs text-gray-400 mt-1;
+}
+
+/* Form Action Column */
+.action-column {
+  @apply flex flex-col gap-4;
+}
+
+.form-group {
+  @apply flex flex-col gap-1;
+}
+
+.full-width {
+  @apply w-full;
+}
+
+/* Actions Footer */
+.dialog-actions {
+  @apply px-6 py-4 border-t border-gray-100 m-0 flex gap-3;
+}
+
+.btn-cancel {
+  @apply text-gray-700 border-gray-300 bg-white hover:bg-gray-50;
+}
+
+.btn-update {
+  @apply bg-amber-600 hover:bg-amber-700 text-white font-medium px-6;
+}

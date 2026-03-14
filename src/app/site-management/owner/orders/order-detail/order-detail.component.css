@@ -1,0 +1,300 @@
+/* ==========================================================
+   Order Detail Component CSS - Semantic Architecture
+   ========================================================== */
+@reference "../../../../../styles.css";
+
+.order-detail-page {
+  @apply bg-[#f4f4f4] min-h-screen text-gray-900;
+}
+
+/* Breadcrumb */
+.order-detail__breadcrumb {
+  @apply px-8 pt-6 pb-2;
+  font-family: inherit;
+}
+
+.order-detail__back-link {
+  @apply text-gray-500 hover:text-gray-800 flex items-center gap-2 text-sm font-medium transition-colors w-fit;
+}
+
+/* Header */
+.order-detail__header-wrap {
+  @apply px-8 pb-8;
+}
+
+.order-detail__header {
+  @apply flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6;
+}
+
+.order-detail__title-group {
+  @apply flex flex-col;
+}
+
+.order-detail__title {
+  @apply text-2xl font-bold text-gray-900 m-0 mb-1;
+}
+
+.order-detail__subtitle {
+  @apply text-sm text-gray-500 m-0;
+}
+
+.order-detail__actions {
+  @apply flex gap-3;
+}
+
+.order-detail__btn-primary {
+  @apply !bg-blue-600 !text-white !font-medium;
+}
+
+.order-detail__btn-secondary {
+  @apply !border-amber-400 !text-amber-700 !bg-amber-50 !font-medium hover:!bg-amber-100;
+}
+
+.order-detail__btn-danger {
+  @apply !bg-rose-600 !text-white !font-medium;
+}
+
+/* Layout Grid */
+.order-detail__grid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-6 items-start;
+}
+
+.order-detail__main-column {
+  @apply lg:col-span-2 flex flex-col gap-6;
+}
+
+.order-detail__side-column {
+  @apply flex flex-col gap-6;
+}
+
+/* Generic Card Styles */
+.saas-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-100 text-sm overflow-hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.saas-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.saas-card__body {
+  @apply p-6;
+}
+
+.saas-card__body--padded {
+  @apply p-6 border-b border-gray-100;
+}
+
+.saas-card__body--gray {
+  @apply p-6 bg-gray-50 flex flex-col gap-2;
+}
+
+.saas-card__title {
+  @apply text-base font-bold text-gray-900 m-0 mb-4;
+}
+
+.saas-card__title--border {
+  @apply text-base font-bold text-gray-900 m-0 border-b border-gray-100 pb-3 mb-4;
+}
+
+/* Products List */
+.product-items-container {
+  @apply flex flex-col gap-6;
+}
+
+.order-item {
+  @apply flex gap-4 items-center;
+}
+
+.order-item__image-wrap {
+  @apply w-20 h-20 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 overflow-hidden;
+}
+
+.order-item__image {
+  @apply max-w-full max-h-full object-contain mix-blend-multiply;
+}
+
+.order-item__details {
+  @apply flex-1 flex flex-col justify-center;
+}
+
+.order-item__name {
+  @apply text-sm font-semibold text-gray-900 m-0 mb-1;
+}
+
+.order-item__sku {
+  @apply text-xs text-gray-500 m-0 mb-2;
+}
+
+.order-item__qty {
+  @apply text-xs text-gray-500 m-0 flex items-center gap-1;
+}
+
+.order-item__prices {
+  @apply flex flex-col justify-center items-end text-right gap-1;
+}
+
+.order-item__total {
+  @apply text-sm font-semibold text-gray-900;
+}
+
+.order-item__unit {
+  @apply text-xs text-gray-500;
+}
+
+/* Order Summary */
+.summary-row {
+  @apply flex justify-between items-center text-sm;
+}
+
+.summary-row__label {
+  @apply text-gray-500 font-medium;
+}
+
+.summary-row__value {
+  @apply text-gray-900 font-semibold;
+}
+
+.summary-row--total {
+  @apply pt-3 border-t border-gray-200 mt-1;
+}
+
+.summary-row__label--total {
+  @apply text-gray-900 font-bold text-base;
+}
+
+.summary-row__value--total {
+  @apply text-gray-900 font-bold text-base;
+}
+
+.summary-row__value-highlight {
+  @apply ml-2 text-xl;
+}
+
+/* Customer & Shipping Info */
+.info-cards-row {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-6;
+}
+
+.info-header {
+  @apply flex items-center gap-3;
+}
+
+.info-avatar {
+  @apply w-10 h-10 rounded-full bg-blue-50 text-blue-600 font-bold flex items-center justify-center shrink-0 overflow-hidden;
+}
+
+.info-avatar__img {
+  @apply w-full h-full object-cover;
+}
+
+.info-name-group {
+  @apply flex flex-col;
+}
+
+.info-name {
+  @apply text-sm font-bold text-gray-900;
+}
+
+.info-email {
+  @apply text-sm text-gray-500;
+}
+
+.info-details {
+  @apply flex flex-col gap-2 text-sm text-gray-600 mt-2;
+}
+
+.info-row {
+  @apply flex items-center gap-2;
+}
+
+.info-icon {
+  @apply text-[16px] w-[16px] h-[16px] text-gray-400;
+}
+
+/* Shipping Details */
+.shipping-header {
+  @apply flex items-start gap-3;
+}
+
+.shipping-icon-wrap {
+  @apply mt-0.5;
+}
+
+.shipping-icon {
+  @apply text-[20px] w-[20px] h-[20px] text-emerald-500;
+}
+
+.shipping-details {
+  @apply flex flex-col text-sm;
+}
+
+.shipping-name {
+  @apply font-bold text-gray-900 mb-1;
+}
+
+.shipping-address-line {
+  @apply text-gray-500;
+}
+
+.shipping-address-last {
+  @apply text-gray-500 mb-2;
+}
+
+/* Timeline */
+.timeline-container {
+  @apply flex flex-col mt-2 py-1 pl-2 relative;
+}
+
+.timeline-line-bg {
+  @apply absolute left-[13px] top-6 bottom-6 w-0.5 bg-gray-200 z-0;
+}
+
+.timeline-step {
+  @apply flex gap-4 pb-6 relative z-10;
+}
+
+.timeline-step--last {
+  @apply pb-0;
+}
+
+.timeline-dot {
+  @apply w-5 h-5 rounded-full border-2 bg-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm;
+}
+
+.timeline-dot--completed {
+  @apply border-emerald-500 text-emerald-500;
+}
+
+.timeline-dot--current {
+  @apply border-amber-500 text-amber-500;
+}
+
+.timeline-dot--pending {
+  @apply border-gray-300 text-transparent;
+}
+
+.timeline-dot-inner {
+  @apply w-2 h-2 rounded-full bg-amber-500;
+}
+
+.timeline-content {
+  @apply flex flex-col;
+}
+
+.timeline-title {
+  @apply text-sm font-bold;
+}
+
+.timeline-title--active {
+  @apply text-gray-900;
+}
+
+.timeline-title--inactive {
+  @apply text-gray-500;
+}
+
+.timeline-time {
+  @apply text-xs text-gray-500 mt-0.5;
+}
