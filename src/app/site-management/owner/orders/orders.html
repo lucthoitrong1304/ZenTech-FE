@@ -3,7 +3,9 @@
   <div class="order-header">
     <div class="order-title-group">
       <h1 class="order-title">Quản lý Đơn hàng</h1>
-      <p class="order-subtitle">Theo dõi, cập nhật và quản lý toàn bộ quá trình giao dịch của khách hàng.</p>
+      <p class="order-subtitle">
+        Theo dõi, cập nhật và quản lý toàn bộ quá trình giao dịch của khách hàng.
+      </p>
     </div>
     <div class="order-actions">
       <button class="order-action-btn">
@@ -12,12 +14,12 @@
       </button>
     </div>
   </div>
-
+  <h1>Alo</h1>
   <!-- Filters Section -->
   <div class="order-filters-card">
     <mat-form-field appearance="outline" class="order-filter-field">
       <mat-label>Tìm kiếm đơn hàng</mat-label>
-      <input matInput placeholder="Mã đơn, Tên KH..." [(ngModel)]="searchQuery">
+      <input matInput placeholder="Mã đơn, Tên KH..." [(ngModel)]="searchQuery" />
       <mat-icon matPrefix class="text-slate-400 mr-2">search</mat-icon>
     </mat-form-field>
 
@@ -42,8 +44,12 @@
     </mat-form-field>
 
     <!-- Custom Date Range Picker Container handling -->
-    <div class="order-filter-time-group" [ngStyle]="{'display': 'flex', 'gap': '1rem', 'flex': '1'}" style="flex: 1; align-items: start;">
-      <mat-form-field appearance="outline" class="order-filter-field" [ngStyle]="{'flex': '1'}">
+    <div
+      class="order-filter-time-group"
+      [ngStyle]="{ display: 'flex', gap: '1rem', flex: '1' }"
+      style="flex: 1; align-items: start"
+    >
+      <mat-form-field appearance="outline" class="order-filter-field" [ngStyle]="{ flex: '1' }">
         <mat-label>Thời gian</mat-label>
         <mat-select [(ngModel)]="selectedTimeRange">
           <mat-option *ngFor="let range of timeRangeOptions" [value]="range.value">
@@ -52,11 +58,16 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="order-filter-field" [ngStyle]="{'flex': '1'}" *ngIf="selectedTimeRange === 'CUSTOM'">
+      <mat-form-field
+        appearance="outline"
+        class="order-filter-field"
+        [ngStyle]="{ flex: '1' }"
+        *ngIf="selectedTimeRange === 'CUSTOM'"
+      >
         <mat-label>Chọn ngày</mat-label>
         <mat-date-range-input [rangePicker]="picker">
-          <input matStartDate placeholder="Từ ngày">
-          <input matEndDate placeholder="Đến ngày">
+          <input matStartDate placeholder="Từ ngày" />
+          <input matEndDate placeholder="Đến ngày" />
         </mat-date-range-input>
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-date-range-picker #picker></mat-date-range-picker>
@@ -68,10 +79,9 @@
   <div class="order-table-card">
     <div class="order-table-container">
       <table mat-table [dataSource]="orders" class="order-table">
-
         <!-- Order Code Column -->
         <ng-container matColumnDef="orderCode">
-          <th mat-header-cell *matHeaderCellDef> Mã Đơn </th>
+          <th mat-header-cell *matHeaderCellDef>Mã Đơn</th>
           <td mat-cell *matCellDef="let order" (click)="viewOrderDetail(order.id)">
             <span class="order-code-text">{{ order.orderCode }}</span>
           </td>
@@ -79,10 +89,15 @@
 
         <!-- Customer Column -->
         <ng-container matColumnDef="customer">
-          <th mat-header-cell *matHeaderCellDef> Khách hàng </th>
+          <th mat-header-cell *matHeaderCellDef>Khách hàng</th>
           <td mat-cell *matCellDef="let order" (click)="viewOrderDetail(order.id)">
             <div class="customer-info">
-              <img *ngIf="order.customer.avatarUrl; else noAvatar" [src]="order.customer.avatarUrl" alt="Avatar" class="customer-avatar">
+              <img
+                *ngIf="order.customer.avatarUrl; else noAvatar"
+                [src]="order.customer.avatarUrl"
+                alt="Avatar"
+                class="customer-avatar"
+              />
               <ng-template #noAvatar>
                 <div class="customer-avatar customer-avatar--fallback">
                   {{ getInitial(order.customer.name) }}
@@ -98,23 +113,25 @@
 
         <!-- Date Column -->
         <ng-container matColumnDef="createdAt">
-          <th mat-header-cell *matHeaderCellDef> Ngày đặt </th>
+          <th mat-header-cell *matHeaderCellDef>Ngày đặt</th>
           <td mat-cell *matCellDef="let order" (click)="viewOrderDetail(order.id)">
-            <span class="order-date-text">{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            <span class="order-date-text">{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
           </td>
         </ng-container>
 
         <!-- Amount Column -->
         <ng-container matColumnDef="totalAmount">
-          <th mat-header-cell *matHeaderCellDef> Tổng tiền </th>
+          <th mat-header-cell *matHeaderCellDef>Tổng tiền</th>
           <td mat-cell *matCellDef="let order" (click)="viewOrderDetail(order.id)">
-            <span class="order-amount-text">{{ order.totalAmount | currency:'VND':'symbol':'1.0-0' }}</span>
+            <span class="order-amount-text">{{
+              order.totalAmount | currency: 'VND' : 'symbol' : '1.0-0'
+            }}</span>
           </td>
         </ng-container>
 
         <!-- Payment Method Column -->
         <ng-container matColumnDef="paymentMethod">
-          <th mat-header-cell *matHeaderCellDef> Thanh toán </th>
+          <th mat-header-cell *matHeaderCellDef>Thanh toán</th>
           <td mat-cell *matCellDef="let order" (click)="viewOrderDetail(order.id)">
             <span class="order-payment-text">{{ order.paymentMethod }}</span>
           </td>
@@ -122,7 +139,7 @@
 
         <!-- Status Column -->
         <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef> Trạng thái </th>
+          <th mat-header-cell *matHeaderCellDef>Trạng thái</th>
           <td mat-cell *matCellDef="let order" (click)="viewOrderDetail(order.id)">
             <span class="order-status-badge" [ngClass]="getStatusClass(order.status)">
               {{ order.status }}
@@ -134,7 +151,12 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let order" class="order-table-cell--right">
-            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Order actions" (click)="$event.stopPropagation()">
+            <button
+              mat-icon-button
+              [matMenuTriggerFor]="menu"
+              aria-label="Order actions"
+              (click)="$event.stopPropagation()"
+            >
               <mat-icon class="text-slate-500">more_vert</mat-icon>
             </button>
             <mat-menu #menu="matMenu" class="order-action-menu">
@@ -156,7 +178,7 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="order-table-row"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns" class="order-table-row"></tr>
 
         <!-- No Data Row -->
         <tr class="mat-row" *matNoDataRow>
@@ -170,7 +192,12 @@
 
     <!-- Paginator -->
     <div class="order-paginator-wrap">
-      <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons aria-label="Chọn trang" style="background-color: white"></mat-paginator>
+      <mat-paginator
+        [pageSizeOptions]="[10, 25, 50]"
+        showFirstLastButtons
+        aria-label="Chọn trang"
+        style="background-color: white"
+      ></mat-paginator>
     </div>
   </div>
 </div>

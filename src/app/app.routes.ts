@@ -61,18 +61,21 @@ export const routes: Routes = [
       {
         path: '',
         loadComponent: () =>
-          import('./site-management/owner/bussiness-dashboard/bussiness-dashboard').then((m) => m.BussinessDashboard),
+          import('./site-management/owner/bussiness-dashboard/bussiness-dashboard').then(
+            (m) => m.BussinessDashboard,
+          ),
       },
       {
-        path:'orders',
-        loadComponent: () =>
-          import('./site-management/owner/orders/orders').then((m) => m.Orders),
+        path: 'orders',
+        loadComponent: () => import('./site-management/owner/orders/orders').then((m) => m.Orders),
       },
       {
-        path:'orders/:id',
+        path: 'orders/:id',
         loadComponent: () =>
-          import('./site-management/owner/orders/order-detail/order-detail.component').then((m) => m.OrderDetailComponent),
-      }
+          import('./site-management/owner/orders/order-detail/order-detail.component').then(
+            (m) => m.OrderDetailComponent,
+          ),
+      },
     ],
   },
 ];
