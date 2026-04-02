@@ -20,8 +20,8 @@ import { Order, OrderStatus } from '../orders';
     MatInputModule,
     MatIconModule,
   ],
-  templateUrl: './order-status-dialog.component.html',
-  styleUrl: './order-status-dialog.component.css',
+  templateUrl: './order-status-dialog.html',
+  styleUrl: './order-status-dialog.css',
 })
 export class OrderStatusDialog {
   statusEnum = OrderStatus;

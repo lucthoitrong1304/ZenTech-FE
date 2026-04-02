@@ -15,7 +15,7 @@ export interface OrderItem {
   imageUrl: string;
 }
 
-export interface OrderDetail {
+export interface OrderDetailModel {
   id: string;
   orderCode: string;
   createdAt: Date;
@@ -53,18 +53,19 @@ export interface OrderDetail {
   selector: 'app-order-detail',
   standalone: true,
   imports: [CommonModule, RouterModule, MatIconModule, MatButtonModule],
-  templateUrl: './order-detail.component.html',
-  styleUrl: './order-detail.component.css'
+  templateUrl: './order-detail.html',
+  styleUrl: './order-detail.css',
 })
-export class OrderDetailComponent implements OnInit {
-  order: OrderDetail | null = null;
+export class OrderDetail implements OnInit {
+  // ✅ dùng đúng model
+  order: OrderDetailModel | null = null;
   statusEnum = OrderStatus;
 
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     const orderId = this.route.snapshot.paramMap.get('id');
-    // Fetch order by ID. Using mock data for now.
+
     this.order = {
       id: orderId || '1',
       orderCode: '#ORD-2026-001',
@@ -75,7 +76,7 @@ export class OrderDetailComponent implements OnInit {
         name: 'Nguyễn Văn A',
         email: 'nguyenv1@gmail.com',
         phone: '0901234567',
-        avatarUrl: ''
+        avatarUrl: '',
       },
       shippingAddress: {
         recipientName: 'Nguyễn Văn A',
@@ -84,7 +85,7 @@ export class OrderDetailComponent implements OnInit {
         district: 'Quận 1',
         city: 'TP.HCM',
         country: 'Vietnam',
-        phone: '0901234567'
+        phone: '0901234567',
       },
       items: [
         {
@@ -94,7 +95,8 @@ export class OrderDetailComponent implements OnInit {
           quantity: 1,
           unitPrice: 1250000,
           totalPrice: 1250000,
-          imageUrl: 'https://cdn.shopify.com/s/files/1/0285/1310/8043/products/marspro_black_01.jpg'
+          imageUrl:
+            'https://cdn.shopify.com/s/files/1/0285/1310/8043/products/marspro_black_01.jpg',
         },
         {
           id: 'item2',
@@ -103,19 +105,40 @@ export class OrderDetailComponent implements OnInit {
           quantity: 1,
           unitPrice: 3070000,
           totalPrice: 3070000,
-          imageUrl: 'https://cdn.shopify.com/s/files/1/0285/1310/8043/products/mouse_m1_black_01.jpg'
-        }
+          imageUrl:
+            'https://cdn.shopify.com/s/files/1/0285/1310/8043/products/mouse_m1_black_01.jpg',
+        },
       ],
       subtotal: 4320000,
       shippingFee: 30000,
       discount: 0,
       totalAmount: 4350000,
       timeline: [
-        { status: 'Đơn hàng đã đặt', time: new Date('2026-03-14T10:30:00'), isCompleted: true, isCurrent: false },
-        { status: 'Đã xác nhận đơn', time: new Date('2026-03-14T10:45:00'), isCompleted: true, isCurrent: false },
-        { status: 'Đang xử lý', time: new Date('2026-03-14T11:10:00'), isCompleted: true, isCurrent: true },
-        { status: 'Đã giao', time: new Date('2026-03-15T09:00:00'), isCompleted: false, isCurrent: false }
-      ]
+        {
+          status: 'Đơn hàng đã đặt',
+          time: new Date('2026-03-14T10:30:00'),
+          isCompleted: true,
+          isCurrent: false,
+        },
+        {
+          status: 'Đã xác nhận đơn',
+          time: new Date('2026-03-14T10:45:00'),
+          isCompleted: true,
+          isCurrent: false,
+        },
+        {
+          status: 'Đang xử lý',
+          time: new Date('2026-03-14T11:10:00'),
+          isCompleted: true,
+          isCurrent: true,
+        },
+        {
+          status: 'Đã giao',
+          time: new Date('2026-03-15T09:00:00'),
+          isCompleted: false,
+          isCurrent: false,
+        },
+      ],
     };
   }
 

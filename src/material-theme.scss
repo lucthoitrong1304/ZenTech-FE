@@ -1,7 +1,6 @@
 // ZenTech · Angular Material M3 Theme
-// Primary  → Yellow  (#FFC700) — matches --color-primary
-// Accent   → Deep Purple (#5A31F4) — matches --color-secondary
-// Learn more: https://material.angular.dev/guide/theming
+// Primary  → Yellow  (#FFC700)
+// Accent   → Deep Purple (#5A31F4)
 
 @use '@angular/material' as mat;
 
@@ -18,17 +17,11 @@ html {
 }
 
 body {
-  // Light color scheme – matches design spec's light surface strategy
   color-scheme: light;
-
-  // Override Material system vars to align with ZenTech design system
-  background-color: var(--bg-main, var(--mat-sys-surface));
-  color: var(--text-body, var(--mat-sys-on-surface));
-
-  // Inter font – matches style-font-project.md
+  background-color: var(--bg-main, #FFFFFF);
+  color: var(--text-body, #374151);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
   font-size: 14px;
-
   margin: 0;
   height: 100%;
 }

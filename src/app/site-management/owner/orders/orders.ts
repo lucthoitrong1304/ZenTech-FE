@@ -16,7 +16,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { OrderStatusDialog } from './order-status/order-status-dialog.component';
+import { OrderStatusDialog } from './order-status/order-status-dialog';
 
 export enum OrderStatus {
   PENDING = 'Chờ xác nhận',
@@ -238,4 +238,37 @@ export class Orders implements OnInit {
   viewOrderDetail(orderId: string): void {
     this.router.navigate(['/owner/orders', orderId]);
   }
+
+  // Cập nhật lại màu trạng thái cho phong phú
+  getDashboardStatusClass(status: OrderStatus): string {
+    switch (status) {
+      case OrderStatus.PENDING:
+        return 'dashboard__status-pill--orange';
+      case OrderStatus.PROCESSING:
+        return 'dashboard__status-pill--blue';
+      case OrderStatus.SHIPPED:
+        return 'dashboard__status-pill--purple'; // Đổi sang màu Tím
+      case OrderStatus.DELIVERED:
+        return 'dashboard__status-pill--green';
+      case OrderStatus.CANCELED:
+        return 'dashboard__status-pill--red';
+      case OrderStatus.RETURNED:
+        return 'dashboard__status-pill--slate'; // Đổi sang màu Xám đậm
+      default:
+        return '';
+    }
+  }
+
+  // Thêm hàm này để xử lý màu cho Phương thức thanh toán
+  getPaymentMethodClass(method: PaymentMethod): string {
+    switch (method) {
+      case PaymentMethod.COD:
+        return 'dashboard__status-pill--teal'; // Màu xanh lơ cho Tiền mặt
+      case PaymentMethod.BANK_TRANSFER:
+        return 'dashboard__status-pill--indigo'; // Màu xanh chàm cho Chuyển khoản
+      default:
+        return 'dashboard__status-pill--slate';
+    }
+  }
 }
+

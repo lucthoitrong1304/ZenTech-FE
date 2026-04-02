@@ -72,8 +72,8 @@ export const routes: Routes = [
       {
         path: 'orders/:id',
         loadComponent: () =>
-          import('./site-management/owner/orders/order-detail/order-detail.component').then(
-            (m) => m.OrderDetailComponent,
+          import('./site-management/owner/orders/order-detail/order-detail').then(
+            (m) => m.OrderDetail,
           ),
       },
     ],
