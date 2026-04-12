@@ -1,0 +1,121 @@
+<header
+  class="site-header sticky top-0 z-50 border-b border-white/10 bg-[rgba(10,10,10,0.9)] backdrop-blur-md"
+>
+  <div class="site-header__inner">
+    <div class="site-header__left">
+      <button
+        type="button"
+        class="site-header__icon-button site-header__mobile-trigger"
+        [matMenuTriggerFor]="categoryMenu"
+        aria-label="Open categories"
+      >
+        <svg lucideMenu class="site-header__action-icon" [attr.stroke-width]="2"></svg>
+      </button>
+
+      <nav class="site-header__nav" aria-label="Product categories">
+        @for (item of navItems(); track item.label) {
+          <a
+            [routerLink]="item.link || '/'"
+            class="site-header__nav-link text-[11px] font-bold uppercase tracking-[0.18em] transition-colors"
+            [ngClass]="isActive(item) ? 'text-white' : 'text-white/70'"
+          >
+            {{ item.label }}
+          </a>
+        }
+      </nav>
+    </div>
+
+    <a routerLink="/" class="site-header__brand" aria-label="ZenTech home">
+      <img
+        src="/brand/zentech-zt-badge.svg"
+        alt="ZenTech ZT logo"
+        class="site-header__logo"
+      />
+      <span class="site-header__wordmark text-xl font-black uppercase italic tracking-tight">
+        <span class="text-white">Zen</span>
+        <span class="text-white/40">Tech</span>
+      </span>
+    </a>
+
+    <div class="site-header__actions">
+      <button type="button" class="site-header__icon-button" aria-label="Search products">
+        <svg lucideSearch class="site-header__action-icon" [attr.stroke-width]="2"></svg>
+      </button>
+
+      <button type="button" class="site-header__icon-button relative" aria-label="Shopping cart">
+        <svg lucideShoppingCart class="site-header__action-icon" [attr.stroke-width]="2"></svg>
+        <span
+          class="absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-full border border-[#0a0a0a] bg-[#ffc700] text-[9px] font-black text-[#0a0a0a]"
+        >
+          {{ cartCount() }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="site-header__account-trigger"
+        [matMenuTriggerFor]="accountMenu"
+        [attr.aria-label]="accountTriggerLabel"
+      >
+        <span class="site-header__account-badge">
+          @if (hasAvatar) {
+            <img
+              [src]="currentUser()?.avatarUrl || ''"
+              [alt]="accountTriggerLabel"
+              class="h-full w-full rounded-full object-cover"
+            />
+          } @else if (shouldShowInitials) {
+            <span class="site-header__account-initials">{{ accountInitials }}</span>
+          } @else {
+            <svg
+              lucideCircleUserRound
+              class="site-header__account-icon"
+              [attr.stroke-width]="1.9"
+            ></svg>
+          }
+        </span>
+
+        <span
+          class="hidden text-[11px] font-bold uppercase tracking-[0.16em] text-white/65 2xl:block"
+        >
+          {{ isAuthenticated ? accountInitials : 'Guest' }}
+        </span>
+        <svg
+          lucideChevronDown
+          class="hidden h-4 w-4 text-white/50 2xl:block"
+          [attr.stroke-width]="2"
+        ></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<mat-menu #categoryMenu="matMenu" class="site-header__menu">
+  @for (item of navItems(); track trackByLabel($index, item)) {
+    <button mat-menu-item [routerLink]="item.link || '/'">
+      <span>{{ item.label }}</span>
+    </button>
+  }
+</mat-menu>
+
+<mat-menu #accountMenu="matMenu" class="site-header__menu">
+  @if (!isAuthenticated) {
+    <button mat-menu-item routerLink="/auth/login">
+      <svg lucideLogIn class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
+      <span>Đăng nhập</span>
+    </button>
+    <button mat-menu-item routerLink="/auth/register">
+      <svg lucideUserPlus class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
+      <span>Đăng ký</span>
+    </button>
+  } @else {
+    <button mat-menu-item type="button">
+      <svg lucideSettings class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
+      <span>Quản lý tài khoản</span>
+    </button>
+    <button mat-menu-item type="button">
+      <svg lucideLogOut class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
+      <span>Đăng xuất</span>
+    </button>
+  }
+</mat-menu>

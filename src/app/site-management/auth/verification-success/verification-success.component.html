@@ -1,0 +1,39 @@
+<app-auth-shell
+  layout="split"
+  [showBrand]="false"
+  visualImage="/auth/success-visual.webp"
+  visualAlt="ZenTech premium tech aesthetic"
+>
+  <div class="auth-page auth-page--compact">
+    <div class="auth-status-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1">
+        <path d="m5 13 4 4L19 7"></path>
+      </svg>
+    </div>
+
+    <header class="auth-page__hero">
+      <p class="auth-page__eyebrow">Verification Complete</p>
+      <h1 class="auth-page__title">Xác minh thành công</h1>
+      <p class="auth-page__subtitle">
+        Email của bạn đã được xác thực. Bạn có thể quay về đăng nhập hoặc trở lại
+        trang chủ để tiếp tục trải nghiệm ZenTech.
+      </p>
+    </header>
+
+    <div class="auth-form">
+      <a routerLink="/" mat-flat-button class="auth-btn-primary">
+        <span class="auth-btn-content">
+          <span>Về trang chủ</span>
+          <svg class="auth-button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14"></path>
+            <path d="m13 5 7 7-7 7"></path>
+          </svg>
+        </span>
+      </a>
+
+      <a routerLink="/auth/login" mat-flat-button class="auth-btn-secondary">
+        <span class="auth-btn-content">Quay lại đăng nhập</span>
+      </a>
+    </div>
+  </div>
+</app-auth-shell>

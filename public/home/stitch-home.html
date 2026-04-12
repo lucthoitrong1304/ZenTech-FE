@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "tertiary-container": "#ffbec0",
+              "secondary-fixed-dim": "#c3c0ff",
+              "on-tertiary-container": "#b20033",
+              "on-background": "#1c1b1b",
+              "primary-fixed": "#ffdf94",
+              "inverse-surface": "#313030",
+              "secondary-fixed": "#e2dfff",
+              "on-tertiary-fixed": "#40000c",
+              "primary-container": "#ffc700",
+              "on-surface-variant": "#4f4632",
+              "on-error": "#ffffff",
+              "on-tertiary": "#ffffff",
+              "on-primary": "#ffffff",
+              "secondary": "#4b41e1",
+              "on-primary-fixed": "#251a00",
+              "inverse-primary": "#f5bf00",
+              "surface-container-low": "#f6f3f2",
+              "surface-variant": "#e5e2e1",
+              "surface-tint": "#765b00",
+              "surface-dim": "#dcd9d9",
+              "surface-container-high": "#ebe7e7",
+              "primary-fixed-dim": "#f5bf00",
+              "on-primary-container": "#6e5400",
+              "background": "#fcf9f8",
+              "secondary-container": "#645efb",
+              "on-secondary-container": "#fffbff",
+              "surface-container-lowest": "#ffffff",
+              "on-secondary-fixed": "#0f0069",
+              "on-surface": "#1c1b1b",
+              "tertiary-fixed-dim": "#ffb3b6",
+              "on-tertiary-fixed-variant": "#920028",
+              "surface-container": "#f0edec",
+              "surface-bright": "#fcf9f8",
+              "surface-container-highest": "#e5e2e1",
+              "error-container": "#ffdad6",
+              "error": "#ba1a1a",
+              "on-secondary": "#ffffff",
+              "outline-variant": "#d2c5ab",
+              "tertiary": "#be0037",
+              "on-primary-fixed-variant": "#594400",
+              "outline": "#81765f",
+              "on-secondary-fixed-variant": "#3323cc",
+              "tertiary-fixed": "#ffdada",
+              "inverse-on-surface": "#f3f0ef",
+              "surface": "#fcf9f8",
+              "primary": "#765b00",
+              "on-error-container": "#93000a"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {
+              "DEFAULT": "0.125rem", 
+              "lg": "0.25rem", 
+              "xl": "0.5rem", 
+              "full": "0.75rem",
+              "zentech": "10px",
+              "zentech-img": "5px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .nav-link {
+            position: relative;
+            text-decoration: none;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -6px;
+            left: 0;
+            background-color: #FFC700;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/10 h-16">
+<div class="flex justify-between items-center h-full px-8 max-w-full mx-auto relative">
+<!-- Left: Navigation links -->
+<nav class="hidden lg:flex items-center gap-8 flex-1">
+<div class="relative group">
+<button class="flex items-center gap-1 font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white hover:text-white transition-colors duration-300 nav-link active">
+                        Keyboards
+                        <span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+<div class="absolute top-full left-0 mt-4 w-56 bg-[#101010] rounded-zentech p-2 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-white/5">
+<a class="block px-4 py-3 text-xs uppercase tracking-widest text-white/70 hover:text-[#FFC700] hover:bg-white/5 rounded" href="#">HE Keyboard</a>
+<a class="block px-4 py-3 text-xs uppercase tracking-widest text-white/70 hover:text-[#FFC700] hover:bg-white/5 rounded" href="#">Mechanical Keyboard</a>
+</div>
+</div>
+<a class="font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white/70 hover:text-white transition-colors duration-300 nav-link" href="#">Mice</a>
+<a class="font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white/70 hover:text-white transition-colors duration-300 nav-link" href="#">Speakers</a>
+<a class="font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white/70 hover:text-white transition-colors duration-300 nav-link" href="#">Earbuds</a>
+<a class="font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white/70 hover:text-white transition-colors duration-300 nav-link" href="#">Chargers</a>
+<a class="font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white/70 hover:text-white transition-colors duration-300 nav-link" href="#">Accessories</a>
+</nav>
+<!-- Center: Updated Logo Section -->
+<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-3">
+<div class="relative skew-x-[-15deg] w-10 h-9 p-[1.5px] rounded-[4px] bg-gradient-to-br from-[#FFC700] to-[#FF8A00]">
+<div class="w-full h-full bg-[#0a0a0a] rounded-[3px] flex items-center justify-center">
+<span class="text-transparent bg-clip-text bg-gradient-to-br from-[#FFC700] to-[#FF8A00] font-black text-[13px] italic tracking-tighter -skew-x-[-15deg] pr-[1px]">ZT</span>
+</div>
+</div>
+<div class="flex items-baseline font-black italic uppercase tracking-tighter text-xl">
+<span class="text-white">Zen</span>
+<span class="text-white/40">Tech</span>
+</div>
+</div>
+<!-- Right: Actions -->
+<div class="flex items-center justify-end gap-6 flex-1">
+<button class="text-white/80 hover:text-white transition-all duration-200 hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-xl" data-icon="search">search</span>
+</button>
+<button class="relative text-white/80 hover:text-white transition-all duration-200 hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-xl" data-icon="shopping_cart">shopping_cart</span>
+<span class="absolute -top-1 -right-1.5 bg-[#FFC700] text-[#0a0a0a] text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-[#0a0a0a]">2</span>
+</button>
+<button class="w-9 h-9 rounded-full overflow-hidden transition-transform hover:scale-105 active:scale-95">
+<img alt="User avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQCUxfqLI6bNbJKFxCs8bgYB1YZT6wUsEnVcmKUKdMWbYVBCw16FOgH4SPz4KcYJuPywfLbEVGU0I6ZKlfhLeDIOiDIlzxq4-XyRO89_FOOcooq-CMgo4aQtap9au19-N351rEsxzR090XsuxtSMrO9dyH_MCUIhnC9_nq4JHOlreZNQFXoiduPjca4NZ6rEH429Ec_quqj6nWmQ06xA9dl341q_jUqPBIS0tf7LROG2LghyQbS-499Y25tYc1kXyVN9xzBJ8W05E"/>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-16">
+<!-- Hero Section -->
+<section class="relative h-[921px] bg-[#101010] flex items-center overflow-hidden">
+<div class="absolute inset-0 opacity-40">
+<img alt="Mechanical Keyboard Hero" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASeORSl3etkw0N9c8obEjFQx11OrWyqAbjW_Z6XtJv0BWtCsuCiKxeMXya-cF9ip820rVw93GAA_YOwK7XuEwHDTsQF0GACjEX60Le2sAgfJg8AHZDCX6Jp_4BfaU0t_BcFfw-k5hA4oBC5cP3JgiBhZq5KdaWOZ__kZ6kAyU7nXiLK0iv58_bRU3n7lC17Ayd1rNX0qSxtPKQ_5SWTuM3UwuRvo9hPJ55FFJKYSD-CtdmOVcbuoFopwcpR_5AXRU7-jAwoiyTFUc"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-r from-[#101010] via-transparent to-transparent"></div>
+<div class="relative z-10 px-12 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+<div class="space-y-8">
+<div class="space-y-2">
+<span class="text-[#FFC700] font-bold tracking-[0.2em] text-xs uppercase">Aerospace Precision</span>
+<h1 class="text-white text-7xl md:text-8xl font-black tracking-tighter leading-none italic uppercase">
+                            MERCURY<br/>SERIES
+                        </h1>
+</div>
+<p class="text-white/60 text-lg max-w-md font-light leading-relaxed">
+                        Engineered with CNC-machined mercury-grade aluminum and HE magnetic switches. The apex of digital input.
+                    </p>
+<div class="flex gap-4">
+<button class="bg-[#FFC700] hover:bg-[#f5bf00] text-[#251a00] px-10 py-4 font-bold uppercase tracking-widest text-sm rounded-zentech transition-all hover:scale-105 active:scale-95 shadow-[0_20px_40px_-10px_rgba(255,199,0,0.3)]">
+                            Pre-Order Now
+                        </button>
+<button class="border border-white/20 hover:bg-white/10 text-white px-10 py-4 font-bold uppercase tracking-widest text-sm rounded-zentech transition-all">
+                            View Specs
+                        </button>
+</div>
+</div>
+</div>
+<div class="absolute bottom-12 right-12 hidden lg:flex flex-col gap-4 items-end">
+<div class="flex items-center gap-4 text-white/30">
+<span class="text-[10px] tracking-[0.4em] uppercase">Status: Operating</span>
+<div class="w-12 h-[1px] bg-white/20"></div>
+</div>
+<div class="flex items-center gap-4 text-white/30">
+<span class="text-[10px] tracking-[0.4em] uppercase">Core: Gen-4 Magnetic</span>
+<div class="w-12 h-[1px] bg-white/20"></div>
+</div>
+</div>
+</section>
+<!-- Category Immersive Grid -->
+<section class="py-24 bg-surface px-8">
+<div class="max-w-7xl mx-auto">
+<div class="flex justify-between items-end mb-16">
+<div>
+<h2 class="text-4xl font-black tracking-tighter text-on-surface uppercase italic">Featured Gear</h2>
+<div class="h-1 w-12 bg-secondary mt-2"></div>
+</div>
+</div>
+<!-- Immersive Category Blocks -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
+<!-- Keyboards - Large -->
+<div class="md:col-span-8 relative overflow-hidden rounded-zentech group cursor-pointer h-80 md:h-full">
+<img alt="Keyboards" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASeORSl3etkw0N9c8obEjFQx11OrWyqAbjW_Z6XtJv0BWtCsuCiKxeMXya-cF9ip820rVw93GAA_YOwK7XuEwHDTsQF0GACjEX60Le2sAgfJg8AHZDCX6Jp_4BfaU0t_BcFfw-k5hA4oBC5cP3JgiBhZq5KdaWOZ__kZ6kAyU7nXiLK0iv58_bRU3n7lC17Ayd1rNX0qSxtPKQ_5SWTuM3UwuRvo9hPJ55FFJKYSD-CtdmOVcbuoFopwcpR_5AXRU7-jAwoiyTFUc"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8">
+<h3 class="text-3xl font-black text-white italic uppercase">Keyboards</h3>
+<p class="text-white/60 text-sm mt-2 font-medium tracking-wide">PRECISION INSTRUMENTS</p>
+</div>
+</div>
+<!-- Mice - Secondary -->
+<div class="md:col-span-4 grid grid-rows-2 gap-6 h-80 md:h-full">
+<div class="relative overflow-hidden rounded-zentech group cursor-pointer">
+<img alt="Mice" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTwc_HBqpGcgAiFE2IQzGy8CQFDHBnCM97y0ZKrp9ynGuG-T5N0TWZEbiqHrCtZWpur7jpLeFBirfiUmpFhnUpxdphv82FJt96osCXnO5-3wXsAY-MgsEPvzEOkX0pZUAQ2XeDndRNmFU5RR0UY9y4vrn18QLOSvevkS14N6X_qxKH-sjUzuTCYi_zq1OtVQSAo11goPsSMp67LvH4Ni1yI917YwC4KNBLtiIo92yMMSbiCaQcM3XKm-gDGkZgenUdfsZ0N1_rpL8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+<h3 class="text-xl font-black text-white italic uppercase">Mice</h3>
+<p class="text-white/60 text-[10px] mt-1 font-bold tracking-widest">RAPID RESPONSE</p>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-zentech group cursor-pointer">
+<img alt="Speakers" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXd_sfpOB9WtoQv4ocys9x6gkd-hog-rpXbW-jKem6IDS0vKcv1NNrncVg6WrHWnbEQhBdok6ZOTV-LfniBpdK2w8f1tDHRy7Zo3mDtpLJ_AUBu8sxIDUcb9z1vEChn-eZ11FMohtUGqqAlLxDnYnaOWIp3Q1ktGV4sgvNo1iBELnaie8sSEHHcFXt_JjA_X57MpC9lGaJuEoMnSTns6mZ9_uW4eDXchcs-RtVLj2Qb3UMbYbaPiYBvpkHRHTV0CX-QhOlZd-fWvw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-6">
+<h3 class="text-xl font-black text-white italic uppercase">Speakers</h3>
+<p class="text-white/60 text-[10px] mt-1 font-bold tracking-widest">ACOUSTIC PURITY</p>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+<div class="relative overflow-hidden rounded-zentech group cursor-pointer h-64">
+<img alt="Earbuds" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhEtm9Ii-1g8MzV8egRToJecIqIXViNg3ixrNBLPcIARTkxsyrPMCokXm0JoOFDozn7201qj-sXgfLVOknUq8Hhl_uwhT1bkuMOtAqL4L7_SL8z1R8MjpF447ehBBJElzpY5chD1O20cuWYIMP7YSP3nImFko_seaFuZYvc4RKOo01ihWypWknkvSasGeed5y7mNIRWNO24_ZU4XZzqZZH6LR-grX1nl9GWXfrzXNiH5dWm_6C9YwCU5lFbLdRepb1xYVlZbDzpAk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-8">
+<h3 class="text-2xl font-black text-white italic uppercase">Earbuds</h3>
+<p class="text-white/60 text-xs mt-1 font-bold tracking-widest">SONIC FREEDOM</p>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-zentech group cursor-pointer h-64">
+<img alt="Chargers" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj6wJ0rGOjirh9o-xpotBwCSEswxxXjebl6jzOyHtAGsXauSS_3uIC4kAUli5KRAtdAMt51ERS_tV0QEzYZ8M1JokkAy1dpGH_-bXSug3tRDnrCYNl5DJeXlVCbQKuL4Xv4Say4mpwB0Qb0FQGxQQnMusL-CI0NG3HCy6zC8M_UAPMP-4kuTNYt320CSe5AqPoMkbKw-uyCu6ZDMSCvyQBbgMtDEm6jEGcV8TEbA6TYeLGRbJiZpRFgdKbnqnroCsNiwNFshtgkjI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-8">
+<h3 class="text-2xl font-black text-white italic uppercase">Chargers</h3>
+<p class="text-white/60 text-xs mt-1 font-bold tracking-widest">ETERNAL FLOW</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Flash Sales Section -->
+<section class="py-24 bg-surface-container-low px-8">
+<div class="max-w-7xl mx-auto">
+<div class="flex items-center gap-4 mb-16">
+<span class="material-symbols-outlined text-tertiary text-4xl animate-pulse" style="font-variation-settings: 'FILL' 1;">bolt</span>
+<h2 class="text-4xl font-black tracking-tighter text-on-surface uppercase italic">Flash Sales</h2>
+<div class="ml-auto flex items-center gap-2">
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Ends in:</span>
+<span class="bg-[#101010] text-white px-2 py-1 rounded text-xs font-mono">04:22:15</span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+<!-- Sale Item 1 -->
+<div class="bg-surface-container-lowest rounded-zentech p-4 border border-outline-variant/10 group">
+<div class="relative mb-6 overflow-hidden rounded-zentech-img">
+<span class="absolute top-3 left-3 z-10 bg-tertiary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Save 20%</span>
+<img alt="Sale Mouse" class="w-full aspect-square object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTwc_HBqpGcgAiFE2IQzGy8CQFDHBnCM97y0ZKrp9ynGuG-T5N0TWZEbiqHrCtZWpur7jpLeFBirfiUmpFhnUpxdphv82FJt96osCXnO5-3wXsAY-MgsEPvzEOkX0pZUAQ2XeDndRNmFU5RR0UY9y4vrn18QLOSvevkS14N6X_qxKH-sjUzuTCYi_zq1OtVQSAo11goPsSMp67LvH4Ni1yI917YwC4KNBLtiIo92yMMSbiCaQcM3XKm-gDGkZgenUdfsZ0N1_rpL8"/>
+</div>
+<div class="space-y-2">
+<h3 class="text-base font-bold text-on-surface">Mercury V60 Pro Deluxe</h3>
+<div class="flex items-center gap-3">
+<span class="text-tertiary font-black text-lg">$109.00</span>
+<span class="text-on-surface-variant/50 line-through text-xs">$139.00</span>
+</div>
+<button class="w-full py-3 mt-4 bg-on-surface text-white text-[10px] font-bold uppercase tracking-widest rounded-zentech hover:bg-secondary transition-colors">Add to Cart</button>
+</div>
+</div>
+<!-- Sale Item 2 -->
+<div class="bg-surface-container-lowest rounded-zentech p-4 border border-outline-variant/10 group">
+<div class="relative mb-6 overflow-hidden rounded-zentech-img">
+<span class="absolute top-3 left-3 z-10 bg-secondary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">New Drop</span>
+<img alt="Sale Keycaps" class="w-full aspect-square object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1KkPKqtyDmaLYSrod6B3vz3M89lHqiLlzcHvpHY-rpvM0vJpvEac_zm-n9oiAvhkeQmWsSs71skaFQZq-tlkCDSSuVe5b71OyNjmL0JwRDL6vilJzuZvj2Lk5XxbGVsZFlDpjnRB9ML1IBDdV90k8ywPir66pwMZSgscK8qZ7Hxf_VSOLCWOy9jPZjmhDPT027RX7mskvzWHocH8G1vtRjrx50s5MixnxVKxpLrW9pHvCidkImI4aTqFBlAE77x9fcTYVTo4t_Sw"/>
+</div>
+<div class="space-y-2">
+<h3 class="text-base font-bold text-on-surface">Neon Graffiti Edition</h3>
+<div class="flex items-center gap-3">
+<span class="text-tertiary font-black text-lg">$159.00</span>
+<span class="text-on-surface-variant/50 line-through text-xs">$199.00</span>
+</div>
+<button class="w-full py-3 mt-4 bg-on-surface text-white text-[10px] font-bold uppercase tracking-widest rounded-zentech hover:bg-secondary transition-colors">Add to Cart</button>
+</div>
+</div>
+<!-- Sale Item 3 -->
+<div class="bg-surface-container-lowest rounded-zentech p-4 border border-outline-variant/10 group">
+<div class="relative mb-6 overflow-hidden rounded-zentech-img">
+<span class="absolute top-3 left-3 z-10 bg-tertiary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Save 15%</span>
+<img alt="Sale Charger" class="w-full aspect-square object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj6wJ0rGOjirh9o-xpotBwCSEswxxXjebl6jzOyHtAGsXauSS_3uIC4kAUli5KRAtdAMt51ERS_tV0QEzYZ8M1JokkAy1dpGH_-bXSug3tRDnrCYNl5DJeXlVCbQKuL4Xv4Say4mpwB0Qb0FQGxQQnMusL-CI0NG3HCy6zC8M_UAPMP-4kuTNYt320CSe5AqPoMkbKw-uyCu6ZDMSCvyQBbgMtDEm6jEGcV8TEbA6TYeLGRbJiZpRFgdKbnqnroCsNiwNFshtgkjI"/>
+</div>
+<div class="space-y-2">
+<h3 class="text-base font-bold text-on-surface">Ion Core 120W Max</h3>
+<div class="flex items-center gap-3">
+<span class="text-tertiary font-black text-lg">$67.00</span>
+<span class="text-on-surface-variant/50 line-through text-xs">$79.00</span>
+</div>
+<button class="w-full py-3 mt-4 bg-on-surface text-white text-[10px] font-bold uppercase tracking-widest rounded-zentech hover:bg-secondary transition-colors">Add to Cart</button>
+</div>
+</div>
+<!-- Sale Item 4 -->
+<div class="bg-surface-container-lowest rounded-zentech p-4 border border-outline-variant/10 group">
+<div class="relative mb-6 overflow-hidden rounded-zentech-img">
+<span class="absolute top-3 left-3 z-10 bg-tertiary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Save $50</span>
+<img alt="Sale Audio" class="w-full aspect-square object-cover group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhEtm9Ii-1g8MzV8egRToJecIqIXViNg3ixrNBLPcIARTkxsyrPMCokXm0JoOFDozn7201qj-sXgfLVOknUq8Hhl_uwhT1bkuMOtAqL4L7_SL8z1R8MjpF447ehBBJElzpY5chD1O20cuWYIMP7YSP3nImFko_seaFuZYvc4RKOo01ihWypWknkvSasGeed5y7mNIRWNO24_ZU4XZzqZZH6LR-grX1nl9GWXfrzXNiH5dWm_6C9YwCU5lFbLdRepb1xYVlZbDzpAk"/>
+</div>
+<div class="space-y-2">
+<h3 class="text-base font-bold text-on-surface">Vortex Studio ANC</h3>
+<div class="flex items-center gap-3">
+<span class="text-tertiary font-black text-lg">$249.00</span>
+<span class="text-on-surface-variant/50 line-through text-xs">$299.00</span>
+</div>
+<button class="w-full py-3 mt-4 bg-on-surface text-white text-[10px] font-bold uppercase tracking-widest rounded-zentech hover:bg-secondary transition-colors">Add to Cart</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Promotional Bento -->
+<section class="py-12 px-8 bg-surface">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 h-[600px]">
+<div class="md:col-span-8 bg-[#101010] rounded-zentech relative overflow-hidden group">
+<img alt="Custom Shop" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1KkPKqtyDmaLYSrod6B3vz3M89lHqiLlzcHvpHY-rpvM0vJpvEac_zm-n9oiAvhkeQmWsSs71skaFQZq-tlkCDSSuVe5b71OyNjmL0JwRDL6vilJzuZvj2Lk5XxbGVsZFlDpjnRB9ML1IBDdV90k8ywPir66pwMZSgscK8qZ7Hxf_VSOLCWOy9jPZjmhDPT027RX7mskvzWHocH8G1vtRjrx50s5MixnxVKxpLrW9pHvCidkImI4aTqFBlAE77x9fcTYVTo4t_Sw"/>
+<div class="absolute inset-0 p-12 flex flex-col justify-end bg-gradient-to-t from-black/80 to-transparent">
+<span class="text-[#FFC700] font-bold tracking-widest uppercase text-xs mb-4">Custom Shop</span>
+<h2 class="text-5xl font-black text-white italic leading-tight max-w-lg uppercase">Build Your Signature Sound</h2>
+<p class="text-white/60 mt-4 max-w-sm">Experience our online customizer for the Mercury HE platform. Every switch, every spring, every plate tuned to your specific acoustic preference.</p>
+<button class="mt-8 bg-white text-[#101010] font-bold uppercase tracking-widest text-xs px-8 py-3 w-fit rounded-zentech hover:bg-[#FFC700] transition-colors">Start Customizing</button>
+</div>
+</div>
+<div class="md:col-span-4 grid grid-rows-2 gap-8">
+<div class="bg-secondary rounded-zentech p-8 flex flex-col justify-between overflow-hidden relative">
+<div class="relative z-10">
+<span class="text-white/70 font-bold tracking-widest uppercase text-[10px]">Ecosystem</span>
+<h3 class="text-2xl font-bold text-white mt-2 uppercase italic leading-tight">ZenLink Seamless Connectivity</h3>
+</div>
+<span class="material-symbols-outlined text-white/20 text-9xl absolute -right-4 -bottom-4" data-icon="sync" style="font-variation-settings: 'FILL' 1;">sync</span>
+</div>
+<div class="bg-surface-container-lowest rounded-zentech p-8 border border-outline-variant/15 flex flex-col justify-between">
+<div>
+<span class="text-secondary font-bold tracking-widest uppercase text-[10px]">Community</span>
+<h3 class="text-2xl font-bold text-on-surface mt-2 uppercase italic leading-tight">Join the Tech Vanguard</h3>
+</div>
+<div class="flex -space-x-4">
+<div class="w-12 h-12 rounded-full border-4 border-surface bg-surface-dim overflow-hidden">
+<img alt="Community Member" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4Ou4a1p0p-o3ztKKesXsxXSAGIxI32TAFw_hgT4lrosawBQJYLxrR0NM-zBnZ4u9IE4PNbHGowtF7QHV7BqeiJe5DcTurxOkLfOkMM2hc8NVtOolzE8XHkWvMiRSYvO4PdumH-yftmTg70I69aOo-xC6_SNMCk3WcIphutUWoRlUkUzV-bE2Oo-3LXBm95EXbwJAz4OBNumH9SDL498d9bHz36TbR8ogj2NR7R17irIHKsl1nXmfYd9A6WWlg6z6dkuTobFhUeH8"/>
+</div>
+<div class="w-12 h-12 rounded-full border-4 border-surface bg-surface-dim overflow-hidden">
+<img alt="Community Member" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWl6xOswYA7LELi1ZcRzOm46iHXQv7kkyMQth-mPb_Wdi3174VhRbogP3ZCP5PuBUBQEhudyzCfUn7L4oEYE3nfuUPmdUlvwuqJk1wvwlAnHCnTkIILgswkdrV95piPq7bV_rYE5YgpJlqhu4KtyrD0golFAu1FV0-YYf4dRx83maCxCpz4Ck_JeljwTrOAyDwD6IHrymQG9Z2uYWGN9Xfeo3C595qZqNoxL7H4WAqHMg47EP13WlyyWeo0l517SYPRocNwYSrjSA"/>
+</div>
+<div class="w-12 h-12 rounded-full border-4 border-surface bg-surface-dim overflow-hidden">
+<img alt="Community Member" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2OnnC6T9HCnxvj_oMZBIzCFn8HOsZ1ZAQ7o0YAtuNI5dhbEZLRVPRr-NVgx3nA2qzrqD0iwEP7LaqIBlVwHkDvb8HSSiy4Uaeoo7vDzFIt2lZBVnolukRMv4e3AWSagQULGdD66OBc6nve1y-5FvpKIN1IvR8KcqdN9lCeL1zcSNN2XlWI7-r9saxn3UPKbsKYgm7DpEGKf_2F8lNrmO-wgBMwpytzmnd9btCKRXgPzxCoJj6O_Ssi5pS5FWSQtGAdme5hBSqc14"/>
+</div>
+<div class="w-12 h-12 rounded-full border-4 border-surface bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-on-surface-variant">
+                                +42k
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-surface-container-lowest py-20 px-8 border-t border-outline-variant/10">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+<div class="space-y-6">
+<div class="text-2xl font-black tracking-tighter text-on-surface flex items-center gap-2">
+<div class="w-8 h-8 bg-gradient-to-br from-[#FFC700] to-[#FF8A00] p-[1.5px] rounded-sm flex items-center justify-center skew-x-[-12deg]">
+<div class="w-full h-full bg-[#101010] rounded-[1px] flex items-center justify-center">
+<span class="text-transparent bg-clip-text bg-gradient-to-br from-[#FFC700] to-[#FF8A00] font-black text-[10px] italic tracking-tighter">ZT</span>
+</div>
+</div>
+<div class="flex items-baseline">
+<span class="tracking-tighter uppercase italic text-on-surface">Zen</span>
+<span class="tracking-tighter uppercase italic text-on-surface-variant/60">Tech</span>
+</div>
+</div>
+<p class="text-on-surface-variant text-sm leading-relaxed max-w-xs">
+                    Redefining the boundaries of tech peripherals with precision engineering and minimal sci-fi aesthetics.
+                </p>
+</div>
+<div>
+<h4 class="font-bold text-xs uppercase tracking-[0.2em] mb-6">Product</h4>
+<ul class="space-y-4 text-sm text-on-surface-variant">
+<li><a class="hover:text-secondary transition-colors" href="#">Keyboards</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Mice</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Audio</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Power</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-xs uppercase tracking-[0.2em] mb-6">Company</h4>
+<ul class="space-y-4 text-sm text-on-surface-variant">
+<li><a class="hover:text-secondary transition-colors" href="#">About</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Press</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Careers</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Contact</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-xs uppercase tracking-[0.2em] mb-6">Newsletter</h4>
+<p class="text-sm text-on-surface-variant mb-4">Join the vanguard for exclusive drops.</p>
+<div class="flex gap-2">
+<input class="bg-surface-container-low border-none rounded-zentech text-xs px-4 py-3 flex-grow focus:ring-2 focus:ring-secondary" placeholder="Email Address" type="email"/>
+<button class="bg-[#101010] text-white px-4 py-2 rounded-zentech hover:bg-secondary transition-colors">
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto mt-20 pt-8 border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-6">
+<p class="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest">© 2024 ZenTech Systems Inc.</p>
+<div class="flex gap-8 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+<a class="hover:text-on-surface" href="#">Privacy</a>
+<a class="hover:text-on-surface" href="#">Terms</a>
+<a class="hover:text-on-surface" href="#">Accessibility</a>
+</div>
+</div>
+</footer>
+</body></html>

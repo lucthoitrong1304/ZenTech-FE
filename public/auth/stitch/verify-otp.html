@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZenTech | Verify Your Identity</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary-fixed-variant": "#3323cc",
+              "surface-bright": "#fcf9f8",
+              "inverse-on-surface": "#f3f0ef",
+              "on-tertiary-fixed": "#40000c",
+              "inverse-surface": "#313030",
+              "on-primary": "#ffffff",
+              "secondary-container": "#645efb",
+              "secondary-fixed": "#e2dfff",
+              "surface-dim": "#dcd9d9",
+              "surface-container-highest": "#e5e2e1",
+              "on-surface-variant": "#4f4632",
+              "outline": "#81765f",
+              "on-primary-fixed": "#251a00",
+              "on-secondary-fixed": "#0f0069",
+              "outline-variant": "#d2c5ab",
+              "inverse-primary": "#f5bf00",
+              "primary": "#765b00",
+              "on-secondary-container": "#fffbff",
+              "surface-variant": "#e5e2e1",
+              "on-error": "#ffffff",
+              "on-tertiary": "#ffffff",
+              "tertiary-container": "#ffbec0",
+              "primary-container": "#ffc700",
+              "tertiary-fixed": "#ffdada",
+              "background": "#fcf9f8",
+              "surface-tint": "#765b00",
+              "surface-container-high": "#ebe7e7",
+              "error": "#ba1a1a",
+              "on-surface": "#1c1b1b",
+              "error-container": "#ffdad6",
+              "on-tertiary-fixed-variant": "#920028",
+              "surface-container-lowest": "#ffffff",
+              "surface": "#fcf9f8",
+              "tertiary": "#be0037",
+              "on-secondary": "#ffffff",
+              "on-error-container": "#93000a",
+              "primary-fixed": "#ffdf94",
+              "secondary": "#4b41e1",
+              "on-background": "#1c1b1b",
+              "secondary-fixed-dim": "#c3c0ff",
+              "on-primary-fixed-variant": "#594400",
+              "on-tertiary-container": "#b20033",
+              "primary-fixed-dim": "#f5bf00",
+              "tertiary-fixed-dim": "#ffb3b6",
+              "surface-container-low": "#f6f3f2",
+              "surface-container": "#f0edec",
+              "on-primary-container": "#6e5400"
+            },
+            fontFamily: {
+              "headline": ["Inter", "sans-serif"],
+              "body": ["Inter", "sans-serif"],
+              "label": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen text-on-surface">
+<main class="w-full max-w-md px-6 py-12 flex flex-col items-center">
+<!-- Logo -->
+<div class="mb-16">
+<span class="text-3xl font-black tracking-tighter text-on-surface flex items-center gap-2">
+<span class="bg-primary-container p-1 rounded-sm text-on-primary-fixed leading-none">ZT</span>
+                ZenTech
+            </span>
+</div>
+<!-- Headline -->
+<div class="text-center mb-12">
+<h1 class="text-2xl font-black tracking-[0.15em] text-on-surface mb-2">VERIFY YOUR IDENTITY</h1>
+<p class="text-on-surface-variant text-sm font-medium tracking-wide">Enter the 6-digit code sent to your device</p>
+</div>
+<!-- OTP Input Area -->
+<div class="w-full flex justify-between gap-3 mb-10">
+<input class="w-12 h-16 md:w-14 md:h-20 text-center text-3xl font-bold bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary-container text-on-surface outline-none transition-all" maxlength="1" type="text" value="7"/>
+<input class="w-12 h-16 md:w-14 md:h-20 text-center text-3xl font-bold bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary-container text-on-surface outline-none transition-all" maxlength="1" type="text" value="2"/>
+<input class="w-12 h-16 md:w-14 md:h-20 text-center text-3xl font-bold bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary-container text-on-surface outline-none transition-all" maxlength="1" type="text"/>
+<input class="w-12 h-16 md:w-14 md:h-20 text-center text-3xl font-bold bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary-container text-on-surface outline-none transition-all" maxlength="1" type="text"/>
+<input class="w-12 h-16 md:w-14 md:h-20 text-center text-3xl font-bold bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary-container text-on-surface outline-none transition-all" maxlength="1" type="text"/>
+<input class="w-12 h-16 md:w-14 md:h-20 text-center text-3xl font-bold bg-surface-container-low border-none rounded-xl focus:ring-2 focus:ring-primary-container text-on-surface outline-none transition-all" maxlength="1" type="text"/>
+</div>
+<!-- Primary Action -->
+<button class="w-full py-5 bg-primary-container text-[#111827] font-bold text-lg rounded-full hover:bg-primary-fixed-dim transition-all active:scale-[0.98] mb-8">
+            Verify &amp; Proceed
+        </button>
+<!-- Secondary Actions -->
+<div class="flex flex-col items-center gap-4">
+<button class="text-on-surface font-semibold text-sm hover:opacity-70 transition-opacity tracking-wide underline underline-offset-8 decoration-primary-container decoration-2">
+                Resend Code
+            </button>
+<div class="flex items-center gap-2 text-on-surface-variant text-xs font-bold tracking-widest uppercase">
+<span class="material-symbols-outlined text-base">schedule</span>
+<span>01:59</span>
+</div>
+</div>
+<!-- Atmosphere Layer (Decorative Subtle Gradient) -->
+<div class="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(circle_at_50%_50%,_rgba(255,199,0,0.03)_0%,_rgba(252,249,248,0)_50%)]"></div>
+</main>
+<!-- Content Security / Bottom Visual Anchor -->
+<div class="fixed bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-6 opacity-20 grayscale pointer-events-none">
+<span class="text-[0.6rem] font-black tracking-[0.3em] uppercase">Secured by ZenTech Kinetic Protocol</span>
+</div>
+</body></html>

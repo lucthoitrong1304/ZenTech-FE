@@ -2,166 +2,118 @@
 trigger: always_on
 ---
 
-# Color Style – Summary
+# 🚀 UI/UX Design System Guide
 
 **Theme:** Premium Tech E-commerce  
 **Direction:** Clean · Professional · High Conversion · Subtle Cyberpunk  
-**Use Case:** Gravastar-style Gaming Gear Store & RAG AI Sales Assistant  
-**Design Goal:** High-clarity product display, strong purchase CTA visibility, minimalistic sci-fi gaming aesthetic inspired by Gravastar.
+**Use Case:** Gaming Gear Store & RAG AI Sales Assistant  
+**Design Goal:** High-clarity product display · Strong CTA visibility · Minimal sci-fi aesthetic
 
 ---
 
-## Brand Accent (Primary & Secondary)
+## 🎨 1. Color System
 
-* Primary CTA: `#FFC700` (Yellow – Main purchase action)
-* Primary Hover: `#FFD633`
-* Secondary CTA: `#5A31F4` (Purple – Secondary purchase action / UI accent)
-* Secondary Hover: `#4C1FD8`
-* Alert / Highlight: `#E11D48` (Rose Red – Used for discount tags, sale badges, error states)
+### Brand Accent (Primary & Secondary)
+Colors are focused on conversion rates and a refined technological aesthetic.
 
-**Usage**
+| Role | State/Target | Hex Code | Contrast / Rules |
+| :--- | :--- | :--- | :--- |
+| **Primary CTA** | Default | `#FFC700` | Must be the strongest visual element on the screen. |
+| | Hover | `#FFD633` | |
+| | Text on CTA | `#111827` | **CRITICAL:** Do not use white text to ensure readability. |
+| **Secondary CTA**| Default | `#4F46E5` | Refined Indigo tone (Tech hardware, not "web3"). |
+| | Hover | `#4338CA` | Use for "Buy Now" / Secondary Actions. |
+| **Semantic** | Alert/Error/Sale| `#E11D48` | Use for warnings or discount labels. |
 
-* Primary purchase buttons (**Add to Cart**)
-* Secondary purchase buttons (**Buy with Shop**)
-* Interactive focus states
-* Chat input focus border
-* Important conversion actions
+> **CTA Design Rules:**
+> * Must strictly use `rounded-full`.
+> * Solid colors only (No Glow, No Neon, No heavy gradients).
 
-**Rule**
+### Background System (Structured Layers)
+A background system that creates depth and clearly separates UI layers.
 
-* All purchase buttons **MUST use fully rounded corners (`rounded-full`)**
-* Use **solid colors only**
-* **DO NOT use neon glow effects**
-* **Avoid heavy gradients or cyberpunk glow**
+| Layer | Hex Code | Usage |
+| :--- | :--- | :--- |
+| **Header / Nav** | `#101010` | Creates high contrast for brand identity. |
+| **Main Content** | `#FFFFFF` | White background ensures maximum product image clarity. |
+| **Surface / Card** | `#F9FAFB` | Soft background to separate UI layers (Inputs, Cards). |
+| **AI Chat Bubble**| `#F0FDF4` | Background color for AI Assistant messages. |
+| **User Chat Bubble**|`#F3F4F6` | Background color for user messages. |
 
----
+### Typography & Text Colors
 
-## Background (High-Contrast Structure)
+| Hierarchy | Light Background | Dark Background | Usage / Rules |
+| :--- | :--- | :--- | :--- |
+| **Primary Text** | `#111827` | `#FFFFFF` | Titles must always have the highest contrast. |
+| **Secondary Text**| `#374151` | - | Standard body text. |
+| **Muted Text** | `#6B7280` | - | Placeholder / Metadata / Old price (Secondary info). |
+| **Semantic Text** | `#16A34A` | - | Success messages or AI status text. |
 
-* Inverse Page (Topbar / Header): `#101010`
-* Main Page (Products / Body): `#FFFFFF`
-* Light Card / Surface / Chat Input: `#F9FAFB`
-* AI Chat Bubble / Success Banner: `#F0FDF4`
-* User Chat Bubble: `#F3F4F6`
+> **🚨 E-commerce Pricing Rules:**
+> * **Original Price:** `#6B7280` + `line-through`.
+> * **Sale Price:** `#E11D48` + `font-semibold`. Never use low-contrast colors for pricing or CTAs.
 
-**Usage**
-
-* `#101010` → navigation / header areas
-* `#FFFFFF` → primary shopping content
-* `#F9FAFB` → cards, surfaces, inputs
-* Chat bubbles separated visually between **AI and user**
-
----
-
-## Text Colors
-
-* Heading / Product Title / Main Chat Text  
-  * `#111827` on light background  
-  * `#FFFFFF` on dark background
-
-* Body Text / Product Features / Descriptions: `#374151`
-
-* Muted / Secondary / Placeholders / Strikethrough Price: `#6B7280`
-
-* Success / AI Accent Text: `#16A34A`
-
-**Usage**
-
-* Headings and product titles must prioritize **high readability**
-* Muted text only for **secondary information**
+### Borders & Dividers
+* **Default:** `#E5E7EB`
+* **Focus:** `#4F46E5`
+* **Rules:** Use only `1px` borders. Avoid heavy outlines. Use borders to support visual hierarchy, not to overpower the UI.
 
 ---
 
-## Border / Divider
+## 🧩 2. Component System
 
-* Default Border color: `#E5E7EB`
-* Active / Focus Border color: `#5A31F4`
+### Border Radius
+| Component | Token | Notes |
+| :--- | :--- | :--- |
+| **Button / Input** | `rounded-full` | Creates a friendly, action-oriented feel. |
+| **Card** | `rounded-xl` | Moderate rounding for product/content cards. |
+| **Modal / Dialog** | `rounded-2xl` | |
 
-**Rule**
+### Shadow Hierarchy (Depth Layers)
+* **Card:** `shadow-sm` (Slight elevation from the background).
+* **Dropdown / Popover:** `shadow-md` (Floating menu elevation).
+* **Chat Container:** `shadow-lg` (Creates clear depth, making it stand out from the main UI).
 
-* Borders must be **1px**
-* Maintain **minimalist UI hierarchy**
-* Avoid strong or dark borders
-
----
-
-## Semantic Colors
-
-* Danger / Discount / Sale Tag: `#E11D48`
-* Success / AI Assistance  
-  * Text: `#16A34A`
-  * Background: `#F0FDF4`
-
-**Rule**
-
-* Semantic colors must be used **strictly according to meaning**
+### Spacing System (8px Grid)
+Use a consistent spacing scale: **4 / 8 / 12 / 16 / 24 / 32 / 48**
 
 ---
 
-## Usage Principles
+## 🕹️ 3. Interaction & States
 
-**Brand Identity Contrast**
+### Button States
+| State | Style Rules |
+| :--- | :--- |
+| **Default** | `bg-primary` |
+| **Hover** | `bg-primary-hover` |
+| **Disabled** | `bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed` |
 
-* Header and navigation must use **dark background (`#101010`)**
-* Product browsing area must use **bright background (`#FFFFFF`)**
-
----
-
-**Clean E-commerce First**
-
-Maintain hierarchy:
-
-1. Product Image  
-2. Product Title  
-3. Price  
-4. Add to Cart CTA
-
-Use **large whitespace between sections**.
+### Input States & Accessibility
+* **Default:** `border-[#E5E7EB]`
+* **Focus:** `border-[#4F46E5] ring-1 ring-[#4F46E5]`
+* **Focus Accessibility (Mandatory for all interactive elements):**
+  * `focus-visible:outline-none`
+  * `focus-visible:ring-2 focus-visible:ring-[#4F46E5]`
 
 ---
 
-**Flat Design Focus**
+## 🤖 4. RAG Chatbot UI System
 
-Use:
-
-* Solid colors
-* Minimal shadows
-* Clean typography
-
-Avoid:
-
-* Strong gradients
-* Heavy glow effects
-* Overly stylized cyberpunk visuals
+| Element | Background | Text Color | Shape / Border Radius | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **AI Bubble** | `#F0FDF4` | `#16A34A` | `rounded-xl rounded-tl-none` | Emphasizes the "Success/Safe" nature of the AI. |
+| **User Bubble** | `#F3F4F6` | Default | `rounded-xl rounded-tr-none` | |
+| **Chat Container**| `#FFFFFF` | Default | `rounded-2xl shadow-lg` | Completely stands out from the main layout. |
+| **Chat Input** | `#F9FAFB` | Default | `rounded-full` (Focus: `#4F46E5`)| Smooth, frictionless design. |
 
 ---
 
-**RAG Chatbot Specifics**
+## 🛍️ 5. Design Principles & Usage
 
-* AI Chat Bubble  
-  * Background: `#F0FDF4`
-  * Shape: rounded with **top-left corner square**
-
-* User Chat Bubble  
-  * Background: `#F3F4F6`
-  * Shape: rounded with **top-right corner square**
-
-* Chat Container  
-  * Uses soft shadow to separate from page content
-
-* Chat Input  
-  * Background: `#F9FAFB`
-  * Border: `#E5E7EB`
-  * Focus Border: `#5A31F4`
-  * Shape: **fully rounded**
-
----
-
-## Visual Personality
-
-* Clean & Professional
-* Premium Tech
-* Subtle Cyberpunk Gaming Aesthetic
-* High-Conversion & Product-Focused
-* Minimalist & Flat
-* Responsive-ready (Desktop, Tablet, Mobile)
+1. **Brand Contrast:** Header is always Dark, Content is always Light, and CTAs must have the highest contrast (Yellow).
+2. **Clean E-commerce First (Hierarchy):**
+  * Prioritize visual order: `Product Image` ➡️ `Product Title` ➡️ `Price` ➡️ `CTA`.
+  * *Absolutely no UI element should compete with the CTA for attention.*
+3. **Flat Design Rules:**
+  * **DO USE:** Solid colors, clean typography, minimal shadow.
+  * **AVOID:** Gradients, glow, or over-designed cyberpunk effects.
