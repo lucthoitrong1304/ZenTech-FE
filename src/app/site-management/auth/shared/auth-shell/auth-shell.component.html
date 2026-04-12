@@ -1,0 +1,45 @@
+<div class="auth-shell" [class.auth-shell--split]="layout() === 'split'">
+  <div class="auth-shell__orb auth-shell__orb--primary"></div>
+  <div class="auth-shell__orb auth-shell__orb--secondary"></div>
+
+  <main class="auth-shell__viewport">
+    @if (layout() === 'split') {
+      <section class="auth-shell__split-frame">
+        <div class="auth-shell__split-visual">
+          @if (visualImage()) {
+            <img [src]="visualImage() || ''" [alt]="visualAlt()" class="auth-shell__visual-image" />
+          }
+          <div class="auth-shell__visual-overlay"></div>
+        </div>
+
+        <div class="auth-shell__split-content">
+          <ng-content></ng-content>
+        </div>
+      </section>
+    } @else {
+      <div class="auth-shell__stack">
+        @if (showBrand()) {
+          <a routerLink="/" class="auth-shell__brand" aria-label="ZenTech home">
+            <img
+              src="/brand/zentech-zt-badge.svg"
+              alt="ZenTech ZT logo"
+              class="auth-shell__brand-logo"
+            />
+            <span class="auth-shell__wordmark">
+              <span class="auth-shell__wordmark-zen">Zen</span>
+              <span class="auth-shell__wordmark-tech">Tech</span>
+            </span>
+          </a>
+        }
+
+        <ng-content></ng-content>
+      </div>
+    }
+  </main>
+
+  @if (showFooter()) {
+    <footer class="auth-shell__footer">
+      <p>© 2026 ZenTech Systems Inc.</p>
+    </footer>
+  }
+</div>

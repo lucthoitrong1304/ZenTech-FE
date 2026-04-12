@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <!-- Gradient cho viền ngoài (Từ Vàng sáng sang Hổ phách) -->
+    <linearGradient id="border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EAB308" /> <!-- yellow-500 -->
+      <stop offset="100%" stop-color="#B45309" /> <!-- amber-700 -->
+    </linearGradient>
+
+    <!-- Gradient cho chữ ZT bên trong -->
+    <linearGradient id="text-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FACC15" /> <!-- yellow-400 -->
+      <stop offset="100%" stop-color="#D97706" /> <!-- amber-600 -->
+    </linearGradient>
+
+    <!-- Hiệu ứng đổ bóng phát sáng nhẹ (Glow Shadow) -->
+    <filter id="glow-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#F59E0B" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Group chính: Canh giữa và áp dụng độ vát chéo (skewX -12 độ) -->
+  <g transform="translate(60, 60) skewX(-12) translate(-60, -60)">
+
+    <!-- Lớp viền ngoài Gradient có bo góc và đổ bóng -->
+    <rect x="12" y="12" width="96" height="96" rx="14" fill="url(#border-grad)" filter="url(#glow-shadow)" />
+
+    <!-- Lớp nền đen nhám bên trong -->
+    <rect x="17" y="17" width="86" height="86" rx="10" fill="#0a0a0a" />
+
+    <!-- Chữ ZT -->
+    <text
+      x="60"
+      y="79"
+      font-family="Arial, Helvetica, sans-serif"
+      font-weight="900"
+      font-size="54"
+      text-anchor="middle"
+      fill="url(#text-grad)"
+      letter-spacing="-2"
+    >
+      ZT
+    </text>
+  </g>
+</svg>

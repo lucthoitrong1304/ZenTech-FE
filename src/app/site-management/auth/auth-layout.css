@@ -1,160 +1,364 @@
 @reference "../../../styles.css";
 
-/* =========================================================
-   1. BỐ CỤC & NỀN (LAYOUT & BACKGROUND)
-   ========================================================= */
-.auth-wrapper {
-  /* Nền trang chính màu trắng theo chuẩn E-commerce */
-  @apply min-h-screen bg-[#FFFFFF] flex flex-col justify-center py-12 sm:px-6 lg:px-8;
-  font-family: 'Inter', sans-serif;
+.auth-page {
+  width: min(100%, 32rem);
 }
 
-.auth-header {
-  @apply sm:mx-auto sm:w-full sm:max-w-md;
+.auth-page--compact {
+  width: min(100%, 28rem);
 }
 
-.auth-body {
-  @apply mt-8 sm:mx-auto sm:w-full sm:max-w-md;
+.auth-page__hero {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.auth-page__eyebrow {
+  margin-bottom: 0.9rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #765b00;
+}
+
+.auth-page__title {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 3rem);
+  font-weight: 900;
+  line-height: 0.98;
+  letter-spacing: -0.08em;
+  text-transform: uppercase;
+  color: #1c1b1b;
+}
+
+.auth-page__subtitle {
+  margin: 0.9rem auto 0;
+  max-width: 31rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: rgb(79 70 50 / 0.88);
 }
 
 .auth-card {
-  @apply bg-[#F9FAFB] py-8 px-4 sm:rounded-2xl sm:px-10 border border-[#E5E7EB] shadow-sm;
+  border: 1px solid rgb(210 197 171 / 0.16);
+  border-radius: 1.5rem;
+  background: rgb(255 255 255 / 0.96);
+  box-shadow: 0 52px 72px -50px rgb(28 27 27 / 0.4);
+  padding: 1.75rem;
 }
 
-.auth-card-centered {
-  @apply bg-[#F9FAFB] py-8 px-4 sm:rounded-2xl sm:px-10 border border-[#E5E7EB] shadow-sm text-center mt-0;
+.auth-card--airy {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
 }
 
-.auth-icon-container {
-  @apply mb-4;
-}
-
-.auth-form-actions {
-  @apply pt-2;
-}
-
-.auth-footer {
-  @apply mt-6 text-center;
-}
-
-.auth-text-muted-wrapper {
-  @apply mt-8 text-center text-[14px];
-}
-
-.auth-text-muted {
-  @apply text-[#6B7280];
-}
-
-.auth-input-container {
-  @apply flex justify-center flex-col text-left;
-}
-
-/* =========================================================
-   2. TYPOGRAPHY (FONT SYSTEM)
-   ========================================================= */
-.auth-title {
-  /* H2 chuẩn: 20px / 600 */
-  @apply text-center text-[20px] font-semibold text-[#111827] mt-6;
-}
-
-.auth-subtitle {
-  /* Body Medium: 14px / 400 */
-  @apply mt-2 text-center text-[14px] font-normal text-[#6B7280] mb-8;
-}
-
-/* =========================================================
-   3. FORMS & INPUTS
-   ========================================================= */
 .auth-form {
-  @apply space-y-6;
+  display: grid;
+  gap: 1.15rem;
 }
 
-.auth-input, .auth-input-dense {
-  @apply w-full;
+.auth-form__row {
+  display: grid;
+  gap: 0.95rem;
 }
 
-.auth-input-dense {
-  @apply -mt-2;
+.auth-field-group {
+  display: grid;
+  gap: 0.55rem;
 }
 
-.auth-input-otp {
-  @apply tracking-[0.5em] text-center font-bold text-[20px] text-[#111827];
+.auth-field-label {
+  padding-left: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4f4632;
 }
 
-.auth-utils {
-  @apply flex items-center justify-between -mt-2 mb-4;
+.auth-field-shell {
+  position: relative;
 }
 
-.auth-util-text {
-  @apply text-[14px];
+.auth-field {
+  width: 100%;
 }
 
-/* Override viền của Angular Material sang màu Tím Secondary khi Focus */
-::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__leading,
-::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__notch,
-::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-notched-outline__trailing {
-  border-color: #5A31F4 !important;
+.auth-field-icon {
+  position: absolute;
+  right: 1.2rem;
+  top: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+  color: rgb(129 118 95 / 0.58);
+  pointer-events: none;
 }
 
-::ng-deep .mdc-text-field--outlined:not(.mdc-text-field--disabled).mdc-text-field--focused .mdc-floating-label {
-  color: #5A31F4 !important;
+.auth-field-icon svg {
+  width: 1rem;
+  height: 1rem;
 }
 
-/* =========================================================
-   4. BUTTONS & LINKS (BRAND ACCENT)
-   ========================================================= */
-.auth-btn-primary {
-  /* Primary CTA: Vàng, bo tròn hoàn toàn, không shadow glow */
-  @apply w-full bg-[#FFC700]! text-[#111827]! py-3! rounded-full! text-[14px] font-medium hover:bg-[#FFD633]! transition-colors border-none shadow-none!;
-}
-
-.auth-btn-secondary {
-  /* Nút phụ */
-  @apply w-full flex justify-center py-3 px-4 border border-[#E5E7EB] rounded-full shadow-sm bg-[#FFFFFF] text-[14px] font-medium text-[#374151] hover:bg-gray-50 transition-colors cursor-pointer;
+.auth-actions-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .auth-link {
-  /* Secondary CTA Color: Tím */
-  @apply font-medium text-[14px] text-[#5A31F4] hover:text-[#4C1FD8] transition-colors;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #4b41e1;
+  transition: opacity 180ms ease;
 }
 
-.auth-link-secondary {
-  @apply text-[14px] font-medium text-[#6B7280] hover:text-[#374151] cursor-pointer flex items-center justify-center gap-1;
+.auth-link:hover {
+  opacity: 0.72;
 }
 
-.auth-resend-btn {
-  @apply font-medium text-[#5A31F4] hover:text-[#4C1FD8] bg-transparent border-0 cursor-pointer p-0 underline transition-colors text-[14px];
+.auth-link--inline {
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-/* =========================================================
-   5. SEPARATORS & ICONS
-   ========================================================= */
+.auth-btn-primary,
+.auth-btn-secondary,
+.auth-btn-google {
+  width: 100%;
+  min-height: 3.5rem;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.02em;
+}
+
+.auth-btn-primary {
+  background: #ffc700 !important;
+  color: #251a00 !important;
+  box-shadow: 0 18px 32px -18px rgb(255 199 0 / 0.72);
+}
+
+.auth-btn-primary:hover {
+  background: #f5bf00 !important;
+}
+
+.auth-btn-secondary {
+  background: #4b41e1 !important;
+  color: #fff !important;
+}
+
+.auth-btn-secondary:hover {
+  background: #4339cc !important;
+}
+
+.auth-btn-google {
+  border: 1px solid rgb(210 197 171 / 0.42) !important;
+  background: #fff !important;
+  color: #1c1b1b !important;
+}
+
+.auth-btn-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.auth-button-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
 .auth-separator {
-  @apply mt-6 relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.auth-separator-line-wrapper {
-  @apply absolute inset-0 flex items-center;
+.auth-separator::before,
+.auth-separator::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgb(210 197 171 / 0.28);
 }
 
-.auth-separator-line {
-  @apply w-full border-t border-[#E5E7EB];
+.auth-separator span {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgb(129 118 95 / 0.52);
 }
 
-.auth-separator-text-wrapper {
-  @apply relative flex justify-center text-[13px];
+.auth-footer-note {
+  margin-top: 1.6rem;
+  text-align: center;
+  font-size: 0.92rem;
+  color: #4f4632;
 }
 
-.auth-separator-text {
-  /* Match với background của card */
-  @apply px-2 bg-[#F9FAFB] text-[#6B7280];
+.auth-footer-note strong,
+.auth-footer-note a {
+  font-weight: 800;
+  color: #4b41e1;
+  text-decoration: none;
 }
 
-.auth-icon-wrapper {
-  /* Nền xám nhạt, icon màu Tím Secondary */
-  @apply bg-[#F3F4F6] text-[#5A31F4] p-4 rounded-full inline-block;
+.auth-support-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
-.auth-icon {
-  @apply h-8 w-8;
+.auth-support-link svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.auth-otp {
+  display: grid;
+  gap: 2rem;
+  text-align: center;
+}
+
+.auth-otp__grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.auth-otp__digit {
+  height: 4.25rem;
+  border: 0;
+  border-radius: 1rem;
+  background: #f6f3f2;
+  text-align: center;
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #1c1b1b;
+  outline: none;
+  transition:
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.auth-otp__digit:focus {
+  box-shadow: 0 0 0 2px rgb(255 199 0 / 0.7);
+  transform: translateY(-1px);
+}
+
+.auth-otp__meta {
+  display: grid;
+  justify-items: center;
+  gap: 0.9rem;
+}
+
+.auth-otp__timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(79 70 50 / 0.6);
+}
+
+.auth-otp__timer svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.auth-status-icon {
+  margin-inline: auto;
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.92);
+  border: 1px solid rgb(210 197 171 / 0.16);
+  box-shadow: 0 26px 40px -28px rgb(28 27 27 / 0.28);
+}
+
+.auth-status-icon svg {
+  width: 2.6rem;
+  height: 2.6rem;
+  color: #1f9d55;
+}
+
+::ng-deep .auth-field .mat-mdc-text-field-wrapper {
+  border-radius: 999px !important;
+  background: #f6f3f2 !important;
+}
+
+::ng-deep .auth-field .mdc-notched-outline__leading,
+::ng-deep .auth-field .mdc-notched-outline__notch,
+::ng-deep .auth-field .mdc-notched-outline__trailing {
+  border-color: transparent !important;
+}
+
+::ng-deep .auth-field .mat-mdc-form-field-infix {
+  min-height: 3.5rem;
+  padding-top: 0.95rem !important;
+  padding-bottom: 0.95rem !important;
+}
+
+::ng-deep .auth-field .mdc-floating-label,
+::ng-deep .auth-field .mat-mdc-form-field-hint-wrapper,
+::ng-deep .auth-field .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
+}
+
+::ng-deep .auth-field .mat-mdc-input-element {
+  padding-right: 2rem !important;
+  color: #1c1b1b !important;
+  font-size: 0.95rem !important;
+}
+
+::ng-deep .auth-field .mat-mdc-input-element::placeholder {
+  color: rgb(129 118 95 / 0.7) !important;
+}
+
+::ng-deep .auth-btn-primary .mdc-button__label,
+::ng-deep .auth-btn-secondary .mdc-button__label,
+::ng-deep .auth-btn-google .mdc-button__label {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .auth-card {
+    padding: 2.2rem;
+  }
+
+  .auth-form__row--double {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .auth-page__title {
+    font-size: 2rem;
+  }
+
+  .auth-otp__grid {
+    gap: 0.45rem;
+  }
+
+  .auth-otp__digit {
+    height: 3.45rem;
+    font-size: 1.35rem;
+  }
 }
