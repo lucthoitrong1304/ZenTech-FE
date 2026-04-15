@@ -5,6 +5,7 @@ import { IconRegistryService } from './shared/services/icon-registry.service';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { GlobalErrorHandler } from './core/errors/global-error-handler';
+import { tokenInterceptor } from './core/interceptors/token.interceptor';
 
 import { routes } from './app.routes';
 
@@ -13,11 +14,11 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptors([errorInterceptor])),
+    provideHttpClient(withInterceptors([tokenInterceptor, errorInterceptor])),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideAppInitializer(() => {
       const iconRegistry = inject(IconRegistryService);
       return iconRegistry.registerIcons();
-    })
-  ]
+    }),
+  ],
 };

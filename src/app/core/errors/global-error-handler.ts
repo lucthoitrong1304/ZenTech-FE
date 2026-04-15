@@ -1,50 +1,51 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorHandler, Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
-import { ErrorStateService } from '../services/error-state.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import { ErrorStateService } from './error-state.service';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {
   constructor(
-    private errorStateService: ErrorStateService,
-    private router: Router,
-    private ngZone: NgZone
+    private readonly errorStateService: ErrorStateService,
+    private readonly router: Router,
+    private readonly ngZone: NgZone
   ) {}
 
   handleError(error: any): void {
-    // Prevent infinite loop if the error page itself throws an error.
-    if (this.router.url === '/error') {
-      console.error('An error occurred on the error page:', error);
+    // 1. Unwrap error (Angular đôi khi bọc lỗi trong Promise rejection hoặc thuộc tính error)
+    const unwrappedError = error?.rejection || error?.error || error;
+
+    // 2. Bỏ qua hoàn toàn các lỗi HTTP vì error.interceptor đã lo nhiệm vụ này rồi
+    if (unwrappedError instanceof HttpErrorResponse || error instanceof HttpErrorResponse) {
       return;
     }
 
-    let title = 'Lỗi hệ thống';
-    let message = 'Đã có lỗi không xác định xảy ra trong quá trình xử lý.';
-    let code: string | number | undefined;
-
-    if (error instanceof HttpErrorResponse) {
-      // Http errors are mostly handled by the Interceptor, 
-      // but if they slip through, we handle them here as a fallback.
-      title = 'Lỗi kết nối';
-      message = error.message;
-      code = error.status;
-    } else if (error instanceof Error) {
-      message = error.message;
-    } else if (typeof error === 'string') {
-      message = error;
+    // 3. Chặn vòng lặp vô tận (Infinite loop) nếu lỗi xảy ra ngay trên chính trang /error
+    if (this.router.url === '/error') {
+      console.error('Lỗi nghiêm trọng (Runtime) xảy ra ngay trên trang Error:', error);
+      return;
     }
 
-    // Set state
+    console.error('GlobalErrorHandler bắt được lỗi Client-side:', unwrappedError);
+
+    // 4. Xử lý các lỗi Runtime/Logic của Javascript (TypeError, ReferenceError, v.v.)
+    let title = 'Lỗi ứng dụng';
+    let message = 'Đã có lỗi xảy ra trên trình duyệt của bạn trong quá trình xử lý.';
+
+    if (unwrappedError instanceof Error) {
+      // Ví dụ: Cannot read properties of undefined...
+      message = unwrappedError.message;
+    } else if (typeof unwrappedError === 'string') {
+      message = unwrappedError;
+    }
+
     this.errorStateService.setError({
       title,
       message,
-      code
+      code: 'CLIENT_ERROR' // Có thể gán 1 mã cố định để dễ phân biệt với mã HTTP (404, 500)
     });
 
-    // Output to console for debugging purposes
-    console.error('GlobalErrorHandler caught an error:', error);
-
-    // Navigate to the error page inside NgZone to ensure Angular picks up the change
+    // 5. Bắt buộc dùng NgZone vì global error có thể văng ra bên ngoài vùng theo dõi của Angular
     this.ngZone.run(() => {
       this.router.navigate(['/error']);
     });
