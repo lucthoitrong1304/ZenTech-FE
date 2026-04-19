@@ -8,6 +8,7 @@ import { GlobalErrorHandler } from './core/errors/global-error-handler';
 import { tokenInterceptor } from './core/interceptors/token.interceptor';
 
 import { routes } from './app.routes';
+import { provideStore } from '@ngrx/store';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -17,8 +18,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([tokenInterceptor, errorInterceptor])),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideAppInitializer(() => {
-      const iconRegistry = inject(IconRegistryService);
-      return iconRegistry.registerIcons();
+        const iconRegistry = inject(IconRegistryService);
+        return iconRegistry.registerIcons();
     }),
-  ],
+    provideStore()
+],
 };

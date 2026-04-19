@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthStorageService } from '../../core/services/auth-storage.service';
 import {
   HeaderNavItem,
   HeaderUser,
@@ -51,6 +52,8 @@ interface CommunityMember {
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
+  private readonly authStorageService = inject(AuthStorageService);
+
   readonly cartCount = 2;
   activeNavLabel: string | null = null;
 
@@ -173,21 +176,7 @@ export class HomeComponent {
     { name: 'Kai', avatar: '/home/asset-1.webp' }
   ];
 
-  readonly userScenarios = {
-    guest: null,
-    signedInNoAvatar: {
-      isAuthenticated: true,
-      fullName: 'Zen Tran',
-      avatarUrl: null
-    },
-    signedInWithAvatar: {
-      isAuthenticated: true,
-      fullName: 'Zen Tran',
-      avatarUrl: '/home/asset-4.webp'
-    }
-  } satisfies Record<string, HeaderUser | null>;
-
-  readonly currentUser: HeaderUser | null = this.userScenarios.guest;
+  readonly currentUser: HeaderUser | null = this.authStorageService.getCurrentUser();
 
   readonly footerColumns = [
     {

@@ -6,7 +6,7 @@
     </header>
 
     <section class="auth-card auth-card--airy">
-      <form class="auth-form" (ngSubmit)="onRegister()">
+      <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="onRegister()">
         <div class="auth-field-group">
           <label class="auth-field-label" for="register-name">Họ và tên</label>
           <div class="auth-field-shell">
@@ -15,15 +15,12 @@
                 id="register-name"
                 matInput
                 type="text"
+                formControlName="fullName"
                 placeholder="Nguyễn Văn A"
-                required
               />
             </mat-form-field>
             <span class="auth-field-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"></path>
-                <path d="M5 20a7 7 0 0 1 14 0"></path>
-              </svg>
+              <svg lucideUser [attr.stroke-width]="1.8"></svg>
             </span>
           </div>
         </div>
@@ -36,17 +33,19 @@
                 id="register-email"
                 matInput
                 type="email"
+                formControlName="email"
                 placeholder="hello@zentech.vn"
-                required
               />
             </mat-form-field>
             <span class="auth-field-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <path d="M4 6h16v12H4z"></path>
-                <path d="m4 8 8 6 8-6"></path>
-              </svg>
+              <svg lucideMail [attr.stroke-width]="1.8"></svg>
             </span>
           </div>
+          @if (hasControlError('email', 'required')) {
+            <p class="auth-field-error">Email không được để trống.</p>
+          } @else if (hasControlError('email', 'email')) {
+            <p class="auth-field-error">Email không đúng định dạng.</p>
+          }
         </div>
 
         <div class="auth-form__row auth-form__row--double">
@@ -58,17 +57,17 @@
                   id="register-password"
                   matInput
                   type="password"
+                  formControlName="password"
                   placeholder="••••••••"
-                  required
                 />
               </mat-form-field>
               <span class="auth-field-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <rect x="5" y="10" width="14" height="10" rx="2"></rect>
-                  <path d="M8 10V7a4 4 0 1 1 8 0v3"></path>
-                </svg>
+                <svg lucideLockKeyhole [attr.stroke-width]="1.8"></svg>
               </span>
             </div>
+            @if (hasControlError('password', 'required')) {
+              <p class="auth-field-error">Mật khẩu không được để trống.</p>
+            }
           </div>
 
           <div class="auth-field-group">
@@ -81,29 +80,50 @@
                   id="register-confirm-password"
                   matInput
                   type="password"
+                  formControlName="confirmPassword"
                   placeholder="••••••••"
-                  required
                 />
               </mat-form-field>
               <span class="auth-field-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="m9 12 2 2 4-4"></path>
-                  <path d="M12 22c5-2 8-6 8-11V5l-8-3-8 3v6c0 5 3 9 8 11Z"></path>
-                </svg>
+                <svg lucideShieldCheck [attr.stroke-width]="1.8"></svg>
               </span>
             </div>
+            @if (hasControlError('confirmPassword', 'required')) {
+              <p class="auth-field-error">Vui lòng xác nhận mật khẩu.</p>
+            } @else if (hasPasswordMismatchError()) {
+              <p class="auth-field-error">Mật khẩu xác nhận không khớp.</p>
+            }
           </div>
         </div>
 
-        <button type="submit" mat-flat-button class="auth-btn-primary">
-          <span class="auth-btn-content">
-            <span>Tạo tài khoản</span>
-            <svg class="auth-button-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M5 12h14"></path>
-              <path d="m13 5 7 7-7 7"></path>
-            </svg>
-          </span>
-        </button>
+        @if (vm$ | async; as vm) {
+          <button
+            type="submit"
+            mat-flat-button
+            class="auth-btn-primary"
+            [disabled]="registerForm.invalid || vm.loading"
+          >
+            <span class="auth-btn-content">
+              <span>{{ vm.loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản' }}</span>
+              @if (vm.loading) {
+                <svg
+                  lucideLoaderCircle
+                  class="auth-button-icon auth-button-icon--spin"
+                  [attr.stroke-width]="2"
+                ></svg>
+              } @else {
+                <svg lucideArrowRight class="auth-button-icon" [attr.stroke-width]="2"></svg>
+              }
+            </span>
+          </button>
+        } @else {
+          <button type="submit" mat-flat-button class="auth-btn-primary" [disabled]="registerForm.invalid">
+            <span class="auth-btn-content">
+              <span>Tạo tài khoản</span>
+              <svg lucideArrowRight class="auth-button-icon" [attr.stroke-width]="2"></svg>
+            </span>
+          </button>
+        }
       </form>
 
       <p class="auth-footer-note">
