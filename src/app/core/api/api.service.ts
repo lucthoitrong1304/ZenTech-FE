@@ -33,6 +33,14 @@ export class ApiService {
     return this.http.post<TResponse>(url, body, options);
   }
 
+  postText<TRequest>(
+    url: string,
+    body: TRequest,
+    options?: ApiRequestOptions
+  ): Observable<string> {
+    return this.http.post(url, body, { ...options, responseType: 'text' });
+  }
+
   put<TRequest, TResponse>(
     url: string,
     body: TRequest,
