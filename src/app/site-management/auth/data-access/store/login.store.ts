@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { EMPTY, catchError, switchMap, tap } from 'rxjs';
-import { AuthStorageService } from '../../../../core/services/auth-storage.service';
-import { LoginRequest } from '../models/login-request.model';
+import { LoginRequest } from '../models/auth.models';
 import { AuthService } from '../services/auth.service';
+import { AuthSessionStore } from './auth-session.store';
 import {
   AuthRequestState,
   createInitialAuthRequestState,
@@ -19,7 +19,7 @@ const LOGIN_ERROR_MESSAGE = 'Không thể đăng nhập. Vui lòng kiểm tra em
 @Injectable()
 export class LoginStore extends ComponentStore<AuthRequestState> {
   private readonly authService = inject(AuthService);
-  private readonly authStorageService = inject(AuthStorageService);
+  private readonly authSessionStore = inject(AuthSessionStore);
 
   readonly loading$ = this.select(state => state.loading);
   readonly errorMessage$ = this.select(state => state.errorMessage);
@@ -35,7 +35,7 @@ export class LoginStore extends ComponentStore<AuthRequestState> {
         this.authService.login(payload).pipe(
           tap({
             next: response => {
-              this.authStorageService.setSession(response);
+              this.authSessionStore.setSession(response);
               this.patchState(toRequestSuccessState(LOGIN_SUCCESS_MESSAGE));
             },
             error: error =>

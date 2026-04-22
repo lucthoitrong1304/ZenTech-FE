@@ -4,10 +4,16 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../../core/api/api.service';
 import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../../../../core/tokens/api-context.token';
 import { environment } from '../../../../../environments/environment';
-import { AuthResponse } from '../models/auth-response.model';
-import { Role } from '../models/auth-role.enum';
-import { LoginRequest } from '../models/login-request.model';
-import { RegisterCustomerPayload, RegisterRequest } from '../models/register-request.model';
+import { Role } from '../models/auth.enums';
+import {
+  AuthResponse,
+  ForgotPasswordRequest,
+  LoginRequest,
+  RegisterCustomerPayload,
+  RegisterRequest,
+  ResetPasswordRequest,
+  TokenRefreshRequest,
+} from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root',
@@ -31,5 +37,33 @@ export class AuthService {
     return this.apiService.postText<RegisterRequest>(`${this.authBaseUrl}/register`, request, {
       context: new HttpContext().set(SKIP_AUTH_TOKEN, true),
     });
+  }
+
+  logout(refreshToken: string): Observable<string> {
+    const request: TokenRefreshRequest = { refreshToken };
+
+    return this.apiService.postText<TokenRefreshRequest>(`${this.authBaseUrl}/logout`, request, {
+      context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
+    });
+  }
+
+  forgotPassword(payload: ForgotPasswordRequest): Observable<string> {
+    return this.apiService.postText<ForgotPasswordRequest>(
+      `${this.authBaseUrl}/forgot-password`,
+      payload,
+      {
+        context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
+      }
+    );
+  }
+
+  resetPassword(payload: ResetPasswordRequest): Observable<string> {
+    return this.apiService.postText<ResetPasswordRequest>(
+      `${this.authBaseUrl}/reset-password`,
+      payload,
+      {
+        context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
+      }
+    );
   }
 }
