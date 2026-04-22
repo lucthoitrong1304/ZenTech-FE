@@ -51,6 +51,7 @@ export class SiteHeaderComponent {
   readonly cartCount = input(0);
   readonly currentUser = input<HeaderUser | null>(null);
   readonly navSelect = output<HeaderNavItem>();
+  readonly logout = output<void>();
 
   get isAuthenticated(): boolean {
     return this.currentUser()?.isAuthenticated === true;
@@ -92,6 +93,10 @@ export class SiteHeaderComponent {
 
   onNavSelect(item: HeaderNavItem): void {
     this.navSelect.emit(item);
+  }
+
+  onLogout(): void {
+    this.logout.emit();
   }
 
   trackByLabel(_: number, item: HeaderNavItem): string {

@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { AuthStorageService } from '../../core/services/auth-storage.service';
+import { Component, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterLink } from '@angular/router';
+import { filter } from 'rxjs';
+import { ToastService } from '../../shared/components/toast/toast.service';
+import { AuthSessionStore } from '../auth/data-access/store/auth-session.store';
 import {
   HeaderNavItem,
-  HeaderUser,
   SiteHeaderComponent
 } from '../shared/site-header/site-header.component';
 
@@ -52,9 +54,13 @@ interface CommunityMember {
   styleUrl: './home.component.css'
 })
 export class HomeComponent {
-  private readonly authStorageService = inject(AuthStorageService);
+  private readonly authSessionStore = inject(AuthSessionStore);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
   readonly cartCount = 2;
+  readonly currentUser$ = this.authSessionStore.currentUser$;
   activeNavLabel: string | null = null;
 
   readonly navItems: HeaderNavItem[] = [
@@ -176,8 +182,6 @@ export class HomeComponent {
     { name: 'Kai', avatar: '/home/asset-1.webp' }
   ];
 
-  readonly currentUser: HeaderUser | null = this.authStorageService.getCurrentUser();
-
   readonly footerColumns = [
     {
       title: 'Product',
@@ -191,5 +195,33 @@ export class HomeComponent {
 
   onNavSelect(item: HeaderNavItem): void {
     this.activeNavLabel = item.label;
+  }
+
+  constructor() {
+    this.authSessionStore.logoutSuccessMessage$
+      .pipe(
+        filter((message): message is string => !!message),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(message => {
+        this.toastService.success(message);
+        this.authSessionStore.clearLogoutMessages();
+        this.router.navigate(['/']);
+      });
+
+    this.authSessionStore.logoutWarningMessage$
+      .pipe(
+        filter((message): message is string => !!message),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(message => {
+        this.toastService.warning(message);
+        this.authSessionStore.clearLogoutMessages();
+        this.router.navigate(['/']);
+      });
+  }
+
+  onLogout(): void {
+    this.authSessionStore.logout();
   }
 }

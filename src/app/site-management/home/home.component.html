@@ -3,8 +3,9 @@
     [navItems]="navItems"
     [activeNavLabel]="activeNavLabel"
     [cartCount]="cartCount"
-    [currentUser]="currentUser"
+    [currentUser]="currentUser$ | async"
     (navSelect)="onNavSelect($event)"
+    (logout)="onLogout()"
   />
 
   <main>

@@ -87,7 +87,7 @@ function handle401Error(
         catchError((err) => {
           isRefreshing = false;
           authStorageService.clear();
-          router.navigate(['/login']);
+          router.navigate(['/auth/login']);
           return throwError(() => err);
         })
       );
@@ -100,7 +100,7 @@ function handle401Error(
     } else {
       // Không có refresh token -> Bắt đăng nhập lại
       authStorageService.clear();
-      router.navigate(['/login']);
+      router.navigate(['/auth/login']);
       return throwError(() => new Error('Vui lòng đăng nhập lại'));
     }
   } else {
