@@ -1,8 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { EMPTY, catchError, switchMap, tap } from 'rxjs';
-import { ForgotPasswordRequest } from '../models/forgot-password-request.model';
-import { ResetPasswordRequest } from '../models/reset-password-request.model';
+import { ForgotPasswordRequest, ResetPasswordRequest } from '../models/auth.models';
 import { AuthService } from '../services/auth.service';
 import {
   AuthRequestState,

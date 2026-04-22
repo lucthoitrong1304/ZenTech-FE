@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { EMPTY, catchError, switchMap, tap } from 'rxjs';
-import { RegisterCustomerPayload } from '../models/register-request.model';
+import { RegisterCustomerPayload } from '../models/auth.models';
 import { AuthService } from '../services/auth.service';
 import {
   AuthRequestState,

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ComponentStore } from '@ngrx/component-store';
 import { EMPTY, catchError, switchMap, tap } from 'rxjs';
-import { LoginRequest } from '../models/login-request.model';
+import { LoginRequest } from '../models/auth.models';
 import { AuthService } from '../services/auth.service';
 import { AuthSessionStore } from './auth-session.store';
 import {

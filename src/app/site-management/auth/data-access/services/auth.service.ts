@@ -4,13 +4,16 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../../core/api/api.service';
 import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../../../../core/tokens/api-context.token';
 import { environment } from '../../../../../environments/environment';
-import { AuthResponse } from '../models/auth-response.model';
-import { Role } from '../models/auth-role.enum';
-import { ForgotPasswordRequest } from '../models/forgot-password-request.model';
-import { LoginRequest } from '../models/login-request.model';
-import { RegisterCustomerPayload, RegisterRequest } from '../models/register-request.model';
-import { ResetPasswordRequest } from '../models/reset-password-request.model';
-import { TokenRefreshRequest } from '../models/token-refresh-request.model';
+import { Role } from '../models/auth.enums';
+import {
+  AuthResponse,
+  ForgotPasswordRequest,
+  LoginRequest,
+  RegisterCustomerPayload,
+  RegisterRequest,
+  ResetPasswordRequest,
+  TokenRefreshRequest,
+} from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root',
