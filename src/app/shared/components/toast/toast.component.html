@@ -1,16 +1,1 @@
-<div class="toast-container">
-  @for (toast of toasts(); track toast.id) {
-    <div class="toast toast-{{ getToastClass(toast.type) }}">
-      <mat-icon [svgIcon]="getIconPath(toast.type)" class="toast-icon"></mat-icon>
-      <div class="toast-message">{{ toast.message }}</div>
-      <button
-        type="button"
-        class="toast-close"
-        (click)="close(toast.id)"
-        aria-label="Close"
-      >
-        <mat-icon [svgIcon]="'ic_close'"></mat-icon>
-      </button>
-    </div>
-  }
-</div>
+<p-toast position="top-right" />

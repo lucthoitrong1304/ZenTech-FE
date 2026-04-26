@@ -1,8 +1,8 @@
-import { AsyncPipe, CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CommonModule } from '@angular/common';
+import { Component, effect, inject, untracked } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { distinctUntilChanged, filter, map } from 'rxjs';
+import { distinctUntilChanged, map } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { SITE_CATEGORY_NAV_ITEMS } from '../../../shared/site-navigation.constants';
@@ -21,7 +21,6 @@ import { ProductListingToolbarComponent } from '../../components/product-listing
   selector: 'app-product-listing-page',
   standalone: true,
   imports: [
-    AsyncPipe,
     CommonModule,
     SiteHeaderComponent,
     ProductEmptyStateComponent,
@@ -35,49 +34,55 @@ import { ProductListingToolbarComponent } from '../../components/product-listing
 })
 export class ProductListingPageComponent {
   private readonly authSessionStore = inject(AuthSessionStore);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
-  private readonly productListingStore = inject(ProductListingStore);
+  protected readonly productListingStore = inject(ProductListingStore);
 
   readonly navItems = SITE_CATEGORY_NAV_ITEMS;
   readonly sortOptions = PRODUCT_SORT_OPTIONS;
-  readonly currentUser$ = this.authSessionStore.currentUser$;
-  readonly vm$ = this.productListingStore.vm$;
+  readonly currentUser = this.authSessionStore.currentUser;
   readonly skeletonCards = Array.from({ length: 6 }, (_, index) => index);
+  private readonly categorySlug = toSignal(
+    this.route.paramMap.pipe(
+      map(params => params.get('slug')?.trim() ?? ''),
+      distinctUntilChanged()
+    ),
+    { initialValue: '' }
+  );
 
   constructor() {
-    this.route.paramMap
-      .pipe(
-        map(params => params.get('slug')?.trim() ?? ''),
-        filter(Boolean),
-        distinctUntilChanged(),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(slug => this.productListingStore.loadCategory(slug));
+    effect(() => {
+      const slug = this.categorySlug();
 
-    this.authSessionStore.logoutSuccessMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
+      if (slug) {
+        this.productListingStore.loadCategory(slug);
+      }
+    });
+
+    effect(() => {
+      const message = this.authSessionStore.logoutSuccessMessage();
+
+      if (message) {
+        untracked(() => {
         this.toastService.success(message);
         this.authSessionStore.clearLogoutMessages();
         this.router.navigate(['/']);
-      });
+        });
+      }
+    });
 
-    this.authSessionStore.logoutWarningMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
+    effect(() => {
+      const message = this.authSessionStore.logoutWarningMessage();
+
+      if (message) {
+        untracked(() => {
         this.toastService.warning(message);
         this.authSessionStore.clearLogoutMessages();
         this.router.navigate(['/']);
-      });
+        });
+      }
+    });
   }
 
   onSortChange(sortBy: ProductSortOptionValue): void {

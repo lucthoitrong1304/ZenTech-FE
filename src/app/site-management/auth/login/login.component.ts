@@ -1,18 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, effect, inject, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { Router, RouterLink } from '@angular/router';
 import {
   LucideArrowRight,
-  LucideLoaderCircle,
   LucideLockKeyhole,
   LucideMail,
+  LucideLoader2
 } from '@lucide/angular';
-import { filter } from 'rxjs';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { LoginStore } from '../data-access/store/login.store';
 import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
@@ -24,11 +21,10 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
     CommonModule,
     RouterLink,
     ReactiveFormsModule,
-    MatButtonModule,
-    MatInputModule,
-    MatFormFieldModule,
+    ButtonModule,
+    InputTextModule,
+    LucideLoader2,
     LucideArrowRight,
-    LucideLoaderCircle,
     LucideLockKeyhole,
     LucideMail,
     AuthShellComponent,
@@ -41,9 +37,7 @@ export class LoginComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
-  private readonly destroyRef = inject(DestroyRef);
   protected readonly loginStore = inject(LoginStore);
-  protected readonly vm$ = this.loginStore.vm$;
 
   protected readonly loginForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -51,24 +45,25 @@ export class LoginComponent {
   });
 
   constructor() {
-    this.loginStore.successMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
+    effect(() => {
+      const message = this.loginStore.successMessage();
+
+      if (message) {
+        untracked(() => {
+          this.loginStore.clearMessages();
         this.toastService.success(message);
         this.router.navigate(['/']);
-      });
+        });
+      }
+    });
 
-    this.loginStore.errorMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
-        this.toastService.error(message);
-      });
+    effect(() => {
+      const message = this.loginStore.errorMessage();
+
+      if (message) {
+        untracked(() => this.toastService.error(message));
+      }
+    });
   }
 
   onLogin(): void {

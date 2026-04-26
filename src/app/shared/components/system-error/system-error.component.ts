@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
+import { LucideTriangleAlert } from '@lucide/angular';
+import { ButtonModule } from 'primeng/button';
 import { ErrorState, ErrorStateService } from '../../../core/errors/error-state.service';
 
 @Component({
   selector: 'app-system-error',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, ButtonModule, LucideTriangleAlert],
   templateUrl: './system-error.component.html',
   styleUrls: ['./system-error.component.css'],
 })

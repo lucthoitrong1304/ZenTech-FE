@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { filter } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../auth/data-access/store/auth-session.store';
 import { SITE_CATEGORY_NAV_ITEMS } from '../shared/site-navigation.constants';
@@ -55,13 +53,12 @@ interface CommunityMember {
 })
 export class HomeComponent {
   private readonly authSessionStore = inject(AuthSessionStore);
-  private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
 
   readonly cartCount = 2;
-  readonly currentUser$ = this.authSessionStore.currentUser$;
-  activeNavLabel: string | null = null;
+  readonly currentUser = this.authSessionStore.currentUser;
+  readonly activeNavLabel = signal<string | null>(null);
 
   readonly navItems: HeaderNavItem[] = SITE_CATEGORY_NAV_ITEMS;
 
@@ -192,31 +189,33 @@ export class HomeComponent {
   ];
 
   onNavSelect(item: HeaderNavItem): void {
-    this.activeNavLabel = item.label;
+    this.activeNavLabel.set(item.label);
   }
 
   constructor() {
-    this.authSessionStore.logoutSuccessMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
+    effect(() => {
+      const message = this.authSessionStore.logoutSuccessMessage();
+
+      if (message) {
+        untracked(() => {
         this.toastService.success(message);
         this.authSessionStore.clearLogoutMessages();
         this.router.navigate(['/']);
-      });
+        });
+      }
+    });
 
-    this.authSessionStore.logoutWarningMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
+    effect(() => {
+      const message = this.authSessionStore.logoutWarningMessage();
+
+      if (message) {
+        untracked(() => {
         this.toastService.warning(message);
         this.authSessionStore.clearLogoutMessages();
         this.router.navigate(['/']);
-      });
+        });
+      }
+    });
   }
 
   onLogout(): void {

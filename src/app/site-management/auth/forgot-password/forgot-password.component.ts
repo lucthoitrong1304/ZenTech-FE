@@ -1,13 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, effect, inject, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
-import { LucideArrowRight, LucideLoaderCircle, LucideMail } from '@lucide/angular';
-import { filter } from 'rxjs';
+import { LucideArrowRight, LucideMail } from '@lucide/angular';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { PasswordRecoveryStore } from '../data-access/store/password-recovery.store';
 import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
@@ -19,11 +16,9 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
     CommonModule,
     RouterLink,
     ReactiveFormsModule,
-    MatButtonModule,
-    MatInputModule,
-    MatFormFieldModule,
+    ButtonModule,
+    InputTextModule,
     LucideArrowRight,
-    LucideLoaderCircle,
     LucideMail,
     AuthShellComponent,
   ],
@@ -34,32 +29,28 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
 export class ForgotPasswordComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly toastService = inject(ToastService);
-  private readonly destroyRef = inject(DestroyRef);
   protected readonly passwordRecoveryStore = inject(PasswordRecoveryStore);
-  protected readonly vm$ = this.passwordRecoveryStore.vm$;
 
   protected readonly forgotPasswordForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
   });
 
   constructor() {
-    this.passwordRecoveryStore.successMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
-        this.toastService.success(message);
-      });
+    effect(() => {
+      const message = this.passwordRecoveryStore.successMessage();
 
-    this.passwordRecoveryStore.errorMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
-        this.toastService.error(message);
-      });
+      if (message) {
+        untracked(() => this.toastService.success(message));
+      }
+    });
+
+    effect(() => {
+      const message = this.passwordRecoveryStore.errorMessage();
+
+      if (message) {
+        untracked(() => this.toastService.error(message));
+      }
+    });
   }
 
   onSendRecoveryEmail(): void {

@@ -1,6 +1,7 @@
-import { Injectable, inject } from '@angular/core';
-import { ComponentStore } from '@ngrx/component-store';
-import { EMPTY, catchError, switchMap, tap } from 'rxjs';
+import { computed, inject } from '@angular/core';
+import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
 import { ForgotPasswordRequest, ResetPasswordRequest } from '../models/auth.models';
 import { AuthService } from '../services/auth.service';
 import {
@@ -21,71 +22,65 @@ const RESET_PASSWORD_SUCCESS_MESSAGE =
 const RESET_PASSWORD_ERROR_MESSAGE =
   'Không thể đổi mật khẩu. Link khôi phục có thể không hợp lệ hoặc đã hết hạn.';
 
-@Injectable()
-export class PasswordRecoveryStore extends ComponentStore<AuthRequestState> {
-  private readonly authService = inject(AuthService);
-
-  readonly loading$ = this.select(state => state.loading);
-  readonly errorMessage$ = this.select(state => state.errorMessage);
-  readonly successMessage$ = this.select(state => state.successMessage);
-  readonly vm$ = this.select({
-    loading: this.loading$,
-    errorMessage: this.errorMessage$,
-    successMessage: this.successMessage$,
-  });
-
-  readonly forgotPassword = this.effect<ForgotPasswordRequest>(payload$ =>
-    payload$.pipe(
-      tap(() => this.patchState(toRequestStartState())),
-      switchMap(payload =>
-        this.authService.forgotPassword(payload).pipe(
-          tap({
-            next: message =>
-              this.patchState(
-                toRequestSuccessState(message || FORGOT_PASSWORD_SUCCESS_MESSAGE)
-              ),
-            error: error =>
-              this.patchState(
-                toRequestErrorState(
-                  parseAuthErrorMessage(error, FORGOT_PASSWORD_ERROR_MESSAGE)
-                )
-              ),
-          }),
-          catchError(() => EMPTY)
+export const PasswordRecoveryStore = signalStore(
+  withState<AuthRequestState>(createInitialAuthRequestState()),
+  withComputed(({ loading, errorMessage, successMessage }) => ({
+    vm: computed(() => ({
+      loading: loading(),
+      errorMessage: errorMessage(),
+      successMessage: successMessage(),
+    })),
+  })),
+  withMethods((store, authService = inject(AuthService)) => ({
+    forgotPassword: rxMethod<ForgotPasswordRequest>(
+      pipe(
+        tap(() => patchState(store, toRequestStartState())),
+        switchMap(payload =>
+          authService.forgotPassword(payload).pipe(
+            tap({
+              next: message =>
+                patchState(
+                  store,
+                  toRequestSuccessState(message || FORGOT_PASSWORD_SUCCESS_MESSAGE)
+                ),
+              error: error =>
+                patchState(
+                  store,
+                  toRequestErrorState(parseAuthErrorMessage(error, FORGOT_PASSWORD_ERROR_MESSAGE))
+                ),
+            }),
+            catchError(() => EMPTY)
+          )
         )
       )
-    )
-  );
-
-  readonly resetPassword = this.effect<ResetPasswordRequest>(payload$ =>
-    payload$.pipe(
-      tap(() => this.patchState(toRequestStartState())),
-      switchMap(payload =>
-        this.authService.resetPassword(payload).pipe(
-          tap({
-            next: message =>
-              this.patchState(
-                toRequestSuccessState(message || RESET_PASSWORD_SUCCESS_MESSAGE)
-              ),
-            error: error =>
-              this.patchState(
-                toRequestErrorState(parseAuthErrorMessage(error, RESET_PASSWORD_ERROR_MESSAGE))
-              ),
-          }),
-          catchError(() => EMPTY)
+    ),
+    resetPassword: rxMethod<ResetPasswordRequest>(
+      pipe(
+        tap(() => patchState(store, toRequestStartState())),
+        switchMap(payload =>
+          authService.resetPassword(payload).pipe(
+            tap({
+              next: message =>
+                patchState(
+                  store,
+                  toRequestSuccessState(message || RESET_PASSWORD_SUCCESS_MESSAGE)
+                ),
+              error: error =>
+                patchState(
+                  store,
+                  toRequestErrorState(parseAuthErrorMessage(error, RESET_PASSWORD_ERROR_MESSAGE))
+                ),
+            }),
+            catchError(() => EMPTY)
+          )
         )
       )
-    )
-  );
-
-  constructor() {
-    super(createInitialAuthRequestState());
-  }
-
-  clearMessages(): void {
-    this.patchState({
-      errorMessage: null,
-      successMessage: null,
-    });
-  }
-}
+    ),
+    clearMessages(): void {
+      patchState(store, {
+        errorMessage: null,
+        successMessage: null,
+      });
+    },
+  }))
+);

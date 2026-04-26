@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   LucideChevronDown,
@@ -12,7 +12,7 @@ import {
   LucideShoppingCart,
   LucideUserPlus
 } from '@lucide/angular';
-import { MatMenuModule } from '@angular/material/menu';
+import { PopoverModule } from 'primeng/popover';
 import { HeaderNavItem } from '../site-navigation.models';
 
 export interface HeaderUser {
@@ -27,7 +27,7 @@ export interface HeaderUser {
   imports: [
     CommonModule,
     RouterLink,
-    MatMenuModule,
+    PopoverModule,
     LucideMenu,
     LucideSearch,
     LucideShoppingCart,
@@ -49,19 +49,10 @@ export class SiteHeaderComponent {
   readonly navSelect = output<HeaderNavItem>();
   readonly logout = output<void>();
 
-  get isAuthenticated(): boolean {
-    return this.currentUser()?.isAuthenticated === true;
-  }
-
-  get hasAvatar(): boolean {
-    return !!this.currentUser()?.avatarUrl;
-  }
-
-  get shouldShowInitials(): boolean {
-    return this.isAuthenticated && !this.hasAvatar;
-  }
-
-  get accountInitials(): string {
+  readonly isAuthenticated = computed(() => this.currentUser()?.isAuthenticated === true);
+  readonly hasAvatar = computed(() => !!this.currentUser()?.avatarUrl);
+  readonly shouldShowInitials = computed(() => this.isAuthenticated() && !this.hasAvatar());
+  readonly accountInitials = computed(() => {
     const fullName = this.currentUser()?.fullName?.trim();
 
     if (!fullName) {
@@ -73,15 +64,15 @@ export class SiteHeaderComponent {
       .slice(0, 2)
       .map(part => part.charAt(0).toUpperCase())
       .join('');
-  }
+  });
 
-  get accountTriggerLabel(): string {
-    if (!this.isAuthenticated) {
+  readonly accountTriggerLabel = computed(() => {
+    if (!this.isAuthenticated()) {
       return 'Tai khoan';
     }
 
     return this.currentUser()?.fullName || 'Quan ly tai khoan';
-  }
+  });
 
   isActive(item: HeaderNavItem): boolean {
     return this.activeNavLabel() === item.label;
