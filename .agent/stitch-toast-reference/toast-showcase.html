@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Toast Notifications Showcase - MONOLITH</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#be0037",
+                    "surface-container-high": "#ebe7e7",
+                    "surface-container-low": "#f6f3f2",
+                    "secondary": "#4b41e1",
+                    "on-tertiary-fixed-variant": "#920028",
+                    "on-secondary-fixed-variant": "#3323cc",
+                    "on-primary-fixed-variant": "#594400",
+                    "on-primary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-background": "#1c1b1b",
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#f3f0ef",
+                    "surface-container": "#f0edec",
+                    "secondary-fixed": "#e2dfff",
+                    "background": "#fcf9f8",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#645efb",
+                    "on-error-container": "#93000a",
+                    "tertiary-fixed-dim": "#ffb3b6",
+                    "secondary-fixed-dim": "#c3c0ff",
+                    "outline": "#81765f",
+                    "on-secondary-fixed": "#0f0069",
+                    "primary-fixed-dim": "#f5bf00",
+                    "surface-tint": "#765b00",
+                    "surface-variant": "#e5e2e1",
+                    "on-secondary-container": "#fffbff",
+                    "inverse-primary": "#f5bf00",
+                    "surface-container-highest": "#e5e2e1",
+                    "on-surface-variant": "#4f4632",
+                    "on-secondary": "#ffffff",
+                    "on-primary-container": "#6e5400",
+                    "on-tertiary-container": "#b20033",
+                    "primary-container": "#ffc700",
+                    "inverse-surface": "#313030",
+                    "on-primary-fixed": "#251a00",
+                    "outline-variant": "#d2c5ab",
+                    "on-tertiary-fixed": "#40000c",
+                    "on-surface": "#1c1b1b",
+                    "tertiary-container": "#ffbec0",
+                    "surface-dim": "#dcd9d9",
+                    "surface": "#fcf9f8",
+                    "tertiary-fixed": "#ffdada",
+                    "primary-fixed": "#ffdf94",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#fcf9f8",
+                    "primary": "#765b00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Inter"
+                    ],
+                    "display": [
+                            "Inter"
+                    ],
+                    "body": [
+                            "Inter"
+                    ],
+                    "label": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {}
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-stone-950/80 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.05)] bg-stone-100/50 dark:bg-stone-900/50">
+<div class="flex justify-between items-center px-12 py-6 w-full max-w-[1920px] mx-auto">
+<!-- Brand -->
+<a class="text-2xl font-black tracking-tighter text-stone-900 dark:text-stone-50" href="#">MONOLITH</a>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex gap-8">
+<a class="font-['Inter'] tracking-tight text-sm font-semibold uppercase text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-50 transition-colors duration-300" href="#">Shop</a>
+<a class="font-['Inter'] tracking-tight text-sm font-semibold uppercase text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-50 transition-colors duration-300" href="#">Gallery</a>
+<a class="font-['Inter'] tracking-tight text-sm font-semibold uppercase text-stone-900 dark:text-stone-50 border-b-2 border-yellow-400 pb-1 scale-95 active:scale-90 transition-transform" href="#">Labs</a>
+<a class="font-['Inter'] tracking-tight text-sm font-semibold uppercase text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-50 transition-colors duration-300" href="#">Support</a>
+</nav>
+<!-- Trailing Actions -->
+<div class="flex gap-4 items-center">
+<button class="text-yellow-400 dark:text-yellow-400 hover:text-stone-900 dark:hover:text-stone-50 transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+</button>
+<button class="text-yellow-400 dark:text-yellow-400 hover:text-stone-900 dark:hover:text-stone-50 transition-colors duration-300">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-32 pb-24 px-6 md:px-12 max-w-[1920px] mx-auto min-h-screen flex flex-col items-center justify-center">
+<div class="w-full max-w-2xl flex flex-col items-center gap-12">
+<!-- Showcase Header -->
+<div class="text-center w-full mb-8">
+<h1 class="text-4xl md:text-5xl font-black tracking-tighter text-on-surface mb-4">System Notifications</h1>
+<p class="text-on-surface-variant text-sm tracking-wide uppercase font-semibold">Toast Component Gallery</p>
+</div>
+<!-- Toasts Container -->
+<div class="w-full flex flex-col gap-6 items-center">
+<!-- Success Toast -->
+<div class="w-full max-w-md bg-surface-container-lowest rounded-xl shadow-[0_8px_32px_0_rgba(28,27,27,0.06)] border border-outline-variant/15 p-4 flex items-start gap-4 transform transition-all hover:-translate-y-1 hover:shadow-[0_12px_48px_0_rgba(28,27,27,0.08)] relative overflow-hidden group">
+<!-- Accent Line -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container"></div>
+<div class="flex-shrink-0 text-primary-container mt-1">
+<span class="material-symbols-outlined" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-grow">
+<h3 class="text-on-surface font-semibold text-sm mb-1 tracking-tight">Thành công</h3>
+<p class="text-on-surface-variant text-sm">Hành động của bạn đã được thực hiện.</p>
+</div>
+<button class="flex-shrink-0 text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none">
+<span class="material-symbols-outlined text-lg" data-icon="close">close</span>
+</button>
+</div>
+<!-- Error Toast -->
+<div class="w-full max-w-md bg-surface-container-lowest rounded-xl shadow-[0_8px_32px_0_rgba(28,27,27,0.06)] border border-outline-variant/15 p-4 flex items-start gap-4 transform transition-all hover:-translate-y-1 hover:shadow-[0_12px_48px_0_rgba(28,27,27,0.08)] relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-error"></div>
+<div class="flex-shrink-0 text-error mt-1">
+<span class="material-symbols-outlined" data-icon="error" data-weight="fill" style="font-variation-settings: 'FILL' 1;">error</span>
+</div>
+<div class="flex-grow">
+<h3 class="text-on-surface font-semibold text-sm mb-1 tracking-tight">Lỗi hệ thống</h3>
+<p class="text-on-surface-variant text-sm">Đã có lỗi xảy ra, vui lòng thử lại.</p>
+</div>
+<button class="flex-shrink-0 text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none">
+<span class="material-symbols-outlined text-lg" data-icon="close">close</span>
+</button>
+</div>
+<!-- Warning Toast -->
+<div class="w-full max-w-md bg-surface-container-lowest rounded-xl shadow-[0_8px_32px_0_rgba(28,27,27,0.06)] border border-outline-variant/15 p-4 flex items-start gap-4 transform transition-all hover:-translate-y-1 hover:shadow-[0_12px_48px_0_rgba(28,27,27,0.08)] relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-surface-tint"></div>
+<div class="flex-shrink-0 text-surface-tint mt-1">
+<span class="material-symbols-outlined" data-icon="warning" data-weight="fill" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex-grow">
+<h3 class="text-on-surface font-semibold text-sm mb-1 tracking-tight">Cảnh báo</h3>
+<p class="text-on-surface-variant text-sm">Dung lượng kho hàng đang ở mức thấp.</p>
+</div>
+<button class="flex-shrink-0 text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none">
+<span class="material-symbols-outlined text-lg" data-icon="close">close</span>
+</button>
+</div>
+<!-- Info Toast -->
+<div class="w-full max-w-md bg-surface-container-lowest rounded-xl shadow-[0_8px_32px_0_rgba(28,27,27,0.06)] border border-outline-variant/15 p-4 flex items-start gap-4 transform transition-all hover:-translate-y-1 hover:shadow-[0_12px_48px_0_rgba(28,27,27,0.08)] relative overflow-hidden group">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary"></div>
+<div class="flex-shrink-0 text-secondary mt-1">
+<span class="material-symbols-outlined" data-icon="info" data-weight="fill" style="font-variation-settings: 'FILL' 1;">info</span>
+</div>
+<div class="flex-grow">
+<h3 class="text-on-surface font-semibold text-sm mb-1 tracking-tight">Thông tin</h3>
+<p class="text-on-surface-variant text-sm">Phiên bản phần mềm mới đã sẵn sàng.</p>
+</div>
+<button class="flex-shrink-0 text-on-surface-variant hover:text-on-surface transition-colors focus:outline-none">
+<span class="material-symbols-outlined text-lg" data-icon="close">close</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 py-4 pb-safe bg-white/90 dark:bg-stone-950/90 backdrop-blur-3xl fixed bottom-0 w-full z-50 rounded-t-[3rem] md:hidden border-t border-stone-200/20 dark:border-stone-800/20 shadow-[0_-20px_40px_rgba(0,0,0,0.04)] hidden">
+<a class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-6 py-2 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all font-['Inter'] text-[10px] font-bold uppercase tracking-widest text-stone-900 dark:text-stone-50" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="grid_view">grid_view</span>
+<span>Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-yellow-400 text-stone-900 rounded-sm px-6 py-2 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all Active: scale-95 transition-all duration-200 font-['Inter'] text-[10px] font-bold uppercase tracking-widest text-stone-900 dark:text-stone-50" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="search">search</span>
+<span>Search</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-6 py-2 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all font-['Inter'] text-[10px] font-bold uppercase tracking-widest text-stone-900 dark:text-stone-50" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="shopping_bag">shopping_bag</span>
+<span>Cart</span>
+</a>
+<a class="flex flex-col items-center justify-center text-stone-400 dark:text-stone-500 px-6 py-2 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all font-['Inter'] text-[10px] font-bold uppercase tracking-widest text-stone-900 dark:text-stone-50" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span>Profile</span>
+</a>
+</nav>
+</body></html>

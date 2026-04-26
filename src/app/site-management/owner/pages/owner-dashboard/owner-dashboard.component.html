@@ -1,0 +1,122 @@
+<section class="owner-dashboard">
+  <div class="metric-grid">
+    @for (metric of metrics; track metric.label) {
+      <article class="metric-card" [ngClass]="'metric-card--' + metric.tone">
+        <div>
+          <p>{{ metric.label }}</p>
+          <h2>{{ metric.value }}</h2>
+          <span>{{ metric.note }}</span>
+        </div>
+
+        @if (metric.tone === 'alert') {
+          <svg lucideCircleAlert [attr.stroke-width]="2"></svg>
+        } @else {
+          <svg lucideTrendingUp [attr.stroke-width]="2"></svg>
+        }
+      </article>
+    }
+  </div>
+
+  <div class="dashboard-grid">
+    <article class="panel panel--chart">
+      <div class="panel__heading">
+        <div>
+          <h3>Hiệu suất hệ thống</h3>
+          <p>Khối lượng giao dịch 24h qua</p>
+        </div>
+
+        <div class="segmented">
+          <button type="button">Theo giờ</button>
+          <button type="button">Theo ngày</button>
+        </div>
+      </div>
+
+      <div class="chart">
+        @for (height of chartBars; track $index) {
+          <div class="chart__bar" [class.chart__bar--active]="$index === 5" [style.height.%]="height">
+          </div>
+        }
+      </div>
+    </article>
+
+    <aside class="dashboard-side">
+      <article class="ai-card">
+        <svg lucideSparkles [attr.stroke-width]="2"></svg>
+        <p>Thông tin AI</p>
+        <h3>Hàng tồn kho cho “Neo-Ram Streetbox” đang giảm nhanh hơn 23% so với dữ liệu kỳ vọng.</h3>
+        <button type="button">Thực thi kế hoạch tự động</button>
+      </article>
+
+      <article class="panel activity-panel">
+        <div class="panel__heading">
+          <div>
+            <h3>Hoạt động gần đây</h3>
+            <p>Luồng vận hành mới nhất</p>
+          </div>
+        </div>
+
+        <div class="activity-list">
+          @for (activity of activities; track activity) {
+            <div>
+              <span></span>
+              <p>{{ activity }}</p>
+            </div>
+          }
+        </div>
+      </article>
+    </aside>
+  </div>
+
+  <article class="panel orders-panel">
+    <div class="panel__heading">
+      <div>
+        <h3>Đơn hàng thị trường hiện tại</h3>
+        <p>Các giao dịch mới cần theo dõi</p>
+      </div>
+
+      <label class="table-search">
+        <svg lucideSearch [attr.stroke-width]="2"></svg>
+        <input type="text" value="" placeholder="Tìm kiếm đơn hàng..." />
+      </label>
+    </div>
+
+    <div class="orders-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã đơn</th>
+            <th>Sản phẩm</th>
+            <th>Khách hàng</th>
+            <th>Trạng thái</th>
+            <th>Số tiền</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of orders; track order.code) {
+            <tr>
+              <td>
+                <a href="#">{{ order.code }}</a>
+              </td>
+              <td>{{ order.product }}</td>
+              <td>{{ order.customer }}</td>
+              <td>
+                <span class="status-pill" [ngClass]="'status-pill--' + order.statusTone">
+                  {{ order.status }}
+                </span>
+              </td>
+              <td>
+                <strong>{{ order.total }}</strong>
+              </td>
+              <td>
+                <button type="button" class="table-action" aria-label="Mở tác vụ đơn hàng">
+                  <svg lucideEllipsisVertical [attr.stroke-width]="2"></svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </article>
+</section>

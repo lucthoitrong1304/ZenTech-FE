@@ -32,6 +32,10 @@ export const routes: Routes = [
       { path: 'reset-password', loadComponent: () => import('./site-management/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) }
     ]
   },
+  {
+    path: 'owner',
+    loadChildren: () => import('./site-management/owner/owner.routes').then(m => m.ownerRoutes)
+  },
   { // Keep global error route untouched
     path: 'error',
     loadComponent: () => import('./shared/components/system-error/system-error.component').then(m => m.SystemErrorComponent)

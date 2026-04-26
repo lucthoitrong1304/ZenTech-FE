@@ -1,10 +1,24 @@
 import { Component } from '@angular/core';
+import {
+  LucideCircleAlert,
+  LucideCircleCheck,
+  LucideInfo,
+  LucideTriangleAlert,
+  LucideX,
+} from '@lucide/angular';
 import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [ToastModule],
+  imports: [
+    ToastModule,
+    LucideCircleCheck,
+    LucideCircleAlert,
+    LucideTriangleAlert,
+    LucideInfo,
+    LucideX,
+  ],
   templateUrl: './toast.component.html',
   styleUrl: './toast.component.css',
 })

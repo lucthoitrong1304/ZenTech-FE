@@ -32,6 +32,7 @@ export interface CurrentAuthUser {
   isAuthenticated: boolean;
   fullName?: string;
   avatarUrl?: string | null;
+  roles: string[];
 }
 
 @Injectable({
@@ -102,6 +103,7 @@ export class AuthStorageService {
       isAuthenticated: true,
       fullName: session?.fullName || session?.email,
       avatarUrl: null,
+      roles: session?.roles || [],
     };
   }
 

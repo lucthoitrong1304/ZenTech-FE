@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#be0037",
+                        "surface-variant": "#e5e2e1",
+                        "inverse-primary": "#f5bf00",
+                        "surface-bright": "#fcf9f8",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "surface-tint": "#765b00",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#e2dfff",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#ffc700",
+                        "on-primary-fixed": "#251a00",
+                        "on-primary-container": "#6e5400",
+                        "background": "#fcf9f8",
+                        "secondary": "#4b41e1",
+                        "primary": "#765b00",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-surface": "#1c1b1b",
+                        "primary-fixed": "#ffdf94",
+                        "tertiary-container": "#ffbec0",
+                        "on-secondary-fixed": "#0f0069",
+                        "surface-dim": "#dcd9d9",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#920028",
+                        "on-background": "#1c1b1b",
+                        "on-tertiary-container": "#b20033",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#f5bf00",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#645efb",
+                        "surface-container-high": "#ebe7e7",
+                        "on-secondary-container": "#fffbff",
+                        "on-primary-fixed-variant": "#594400",
+                        "inverse-surface": "#313030",
+                        "outline-variant": "#d2c5ab",
+                        "tertiary-fixed-dim": "#ffb3b6",
+                        "surface": "#fcf9f8",
+                        "error": "#ba1a1a",
+                        "outline": "#81765f",
+                        "tertiary-fixed": "#ffdada",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed": "#40000c",
+                        "surface-container": "#f0edec",
+                        "on-surface-variant": "#4f4632",
+                        "on-secondary-fixed-variant": "#3323cc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+<!-- TopNavBar Execution -->
+<header class="bg-[#fcf9f8]/80 dark:bg-[#1c1b1b]/80 backdrop-blur-xl docked full-width top-0 z-50 shadow-[0_64px_64px_-12px_rgba(28,27,27,0.06)] flex justify-between items-center px-8 h-16 w-full fixed top-0">
+<div class="flex items-center gap-4 font-['Inter']">
+<span class="text-3xl font-black tracking-tight text-[#1c1b1b] dark:text-white">ZenTech</span>
+<span class="text-on-surface/20 font-light text-xl mx-1 select-none">&gt;</span>
+<a class="bg-[#EEF2FF] dark:bg-[#4F46E5]/10 px-4 py-2 rounded-lg text-sm font-bold tracking-tight text-[#4F46E5] dark:text-[#818CF8] hover:bg-[#E0E7FF] transition-all uppercase" href="#">Bảng điều khiển</a>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-3 ml-4 pl-4 border-l border-outline-variant/20">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-bold leading-none">Admin User</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest mt-1">Quản trị viên cao cấp</p>
+</div>
+<img alt="Admin profile" class="w-10 h-10 rounded-full object-cover border-2 border-primary-container shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtXnOoLMDVq0ekmBXAzE1skhli5pzZEmbtWTy6Jds9Kw2KAkC6zMZzhykR4LF-7mcZZiQRMBHENMZyYPJ1eetzdO7e7zZyHs_k672TWhT_dXr2M5RwOfdyiEaXhH5K_-hGI8QjvI-5OD_WFrzosmYFbtGEgHPn27tsOiOqtBE7hDI96JJNOkae-iWaRFeNMOj-f-P8sbZ37W7_3WDDqv30siRBd52GNvp5EMLm2IIDyod99tnBNYXFI7nL_fQRFvwGzdRbjLk-3NU"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar Execution -->
+<aside class="bg-[#f6f3f2] dark:bg-[#1c1b1b] h-screen w-64 fixed left-0 top-0 pt-20 flex flex-col gap-2 p-4 border-r border-[#d2c5ab]/15 overflow-y-auto z-40 hidden md:flex">
+<div class="mb-6 px-4">
+<h2 class="text-xl font-bold text-[#1c1b1b] dark:text-[#fcf9f8]">ZenTech Admin</h2>
+<p class="text-[10px] uppercase tracking-[0.15em] text-[#4f4632] opacity-70 font-semibold mt-1">QUẢN LÝ CỬA HÀNG</p>
+</div>
+<nav class="space-y-1">
+<div class="mb-4">
+<p class="px-4 mb-2 text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-widest">TỔNG QUAN HỆ THỐNG</p>
+<a class="flex items-center justify-between gap-3 py-3 text-[#1c1b1b] dark:text-[#fcf9f8] font-bold text-xs font-['Inter'] tracking-wide uppercase transition-all duration-300 ease-in-out bg-primary-container/10 border-l-4 border-primary pl-3 pr-4" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Bảng điều khiển</span>
+</div>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-[#d2c5ab] opacity-70 hover:bg-[#ffffff]/50 dark:hover:bg-[#ffffff]/5 text-xs font-['Inter'] tracking-wide uppercase transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">insights</span>
+<span>Phân tích kinh doanh</span>
+</a>
+</div>
+<div class="mb-4">
+<p class="px-4 mb-2 text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-widest">ĐIỀU HÀNH KINH DOANH</p>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-[#d2c5ab] opacity-70 hover:bg-[#ffffff]/50 dark:hover:bg-[#ffffff]/5 text-xs font-['Inter'] tracking-wide uppercase transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>NHÂN VIÊN</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-[#d2c5ab] opacity-70 hover:bg-[#ffffff]/50 dark:hover:bg-[#ffffff]/5 text-xs font-['Inter'] tracking-wide uppercase transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">shopping_bag</span>
+<span>Đơn hàng</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-[#d2c5ab] opacity-70 hover:bg-[#ffffff]/50 dark:hover:bg-[#ffffff]/5 text-xs font-['Inter'] tracking-wide uppercase transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span>Sản phẩm</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-[#d2c5ab] opacity-70 hover:bg-[#ffffff]/50 dark:hover:bg-[#ffffff]/5 text-xs font-['Inter'] tracking-wide uppercase transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">warehouse</span>
+<span>Kho hàng</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-[#d2c5ab] opacity-70 hover:bg-[#ffffff]/50 dark:hover:bg-[#ffffff]/5 text-xs font-['Inter'] tracking-wide uppercase transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Khách hàng</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-[#d2c5ab] opacity-70 hover:bg-[#ffffff]/50 dark:hover:bg-[#ffffff]/5 text-xs font-['Inter'] tracking-wide uppercase transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">campaign</span>
+<span>Marketing</span>
+</a>
+</div>
+<div class="pt-4 mt-4 border-t border-outline-variant/10">
+<p class="px-4 mb-2 text-[10px] font-bold text-on-surface-variant/50 uppercase tracking-widest">QUẢN TRỊ HỆ THỐNG</p>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-[#d2c5ab] opacity-70 hover:bg-[#ffffff]/50 dark:hover:bg-[#ffffff]/5 text-xs font-['Inter'] tracking-wide uppercase transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+<span>Quản lý AI</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-[#d2c5ab] opacity-70 hover:bg-[#ffffff]/50 dark:hover:bg-[#ffffff]/5 text-xs font-['Inter'] tracking-wide uppercase transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span>Báo cáo &amp; Thống kê</span>
+</a>
+</div>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-24 px-8 pb-12 transition-all duration-300">
+<!-- Hero Section / Header -->
+<div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div></div>
+<div class="flex flex-wrap items-center gap-3">
+<!-- Filter Group -->
+<div class="flex items-center gap-3 mr-2">
+<!-- Date Filter -->
+<div class="relative group/dropdown">
+<button class="bg-surface-container-lowest text-on-surface px-5 py-3 rounded-[10px] font-bold text-sm flex items-center gap-2 hover:bg-surface-container transition-colors shadow-sm border border-outline-variant/20 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span>Thời gian</span>
+<span class="material-symbols-outlined text-[18px] opacity-50 group-hover/dropdown:rotate-180 transition-transform">expand_more</span>
+</button>
+<!-- Dropdown Menu -->
+<div class="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-[10px] shadow-2xl border border-outline-variant/20 z-[60] opacity-0 invisible group-hover/dropdown:opacity-100 group-hover/dropdown:visible transition-all overflow-hidden">
+<div class="p-6">
+<div class="flex items-center justify-between mb-6">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">chevron_left</button>
+<div class="flex gap-4">
+<div class="relative group/month">
+<button class="text-sm font-bold flex items-center gap-1 hover:text-primary transition-colors">Tháng 10 <span class="material-symbols-outlined text-xs">expand_more</span></button>
+</div>
+<div class="relative group/year">
+<button class="text-sm font-bold flex items-center gap-1 hover:text-primary transition-colors">2023 <span class="material-symbols-outlined text-xs">expand_more</span></button>
+</div>
+</div>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">chevron_right</button>
+</div>
+<div class="grid grid-cols-7 gap-1 text-center mb-6">
+<div class="text-[10px] font-bold text-on-surface-variant/50 uppercase pb-2">T2</div>
+<div class="text-[10px] font-bold text-on-surface-variant/50 uppercase pb-2">T3</div>
+<div class="text-[10px] font-bold text-on-surface-variant/50 uppercase pb-2">T4</div>
+<div class="text-[10px] font-bold text-on-surface-variant/50 uppercase pb-2">T5</div>
+<div class="text-[10px] font-bold text-on-surface-variant/50 uppercase pb-2">T6</div>
+<div class="text-[10px] font-bold text-on-surface-variant/50 uppercase pb-2">T7</div>
+<div class="text-[10px] font-bold text-on-surface-variant/50 uppercase pb-2">CN</div>
+<div class="text-xs py-2 text-on-surface-variant/30">25</div>
+<div class="text-xs py-2 text-on-surface-variant/30">26</div>
+<div class="text-xs py-2 text-on-surface-variant/30">27</div>
+<div class="text-xs py-2 text-on-surface-variant/30">28</div>
+<div class="text-xs py-2 text-on-surface-variant/30">29</div>
+<div class="text-xs py-2 text-on-surface-variant/30">30</div>
+<div class="text-xs py-2">1</div>
+<div class="text-xs py-2">2</div>
+<div class="text-xs py-2">3</div>
+<div class="text-xs py-2">4</div>
+<div class="text-xs py-2">5</div>
+<div class="text-xs py-2">6</div>
+<div class="text-xs py-2">7</div>
+<div class="text-xs py-2">8</div>
+<div class="text-xs py-2">9</div>
+<div class="text-xs py-2">10</div>
+<div class="text-xs py-2">11</div>
+<div class="text-xs py-2 bg-primary-container text-on-primary-fixed font-bold rounded-l-md">12</div>
+<div class="text-xs py-2 bg-primary-container/30">13</div>
+<div class="text-xs py-2 bg-primary-container/30">14</div>
+<div class="text-xs py-2 bg-primary-container/30">15</div>
+<div class="text-xs py-2 bg-primary-container/30">16</div>
+<div class="text-xs py-2 bg-primary-container/30">17</div>
+<div class="text-xs py-2 bg-primary-container text-on-primary-fixed font-bold rounded-r-md">18</div>
+<div class="text-xs py-2">19</div>
+<div class="text-xs py-2">20</div>
+<div class="text-xs py-2">21</div>
+<div class="text-xs py-2">22</div>
+<div class="text-xs py-2">23</div>
+<div class="text-xs py-2">24</div>
+<div class="text-xs py-2">25</div>
+<div class="text-xs py-2">26</div>
+<div class="text-xs py-2">27</div>
+<div class="text-xs py-2">28</div>
+<div class="text-xs py-2">29</div>
+<div class="text-xs py-2">30</div>
+<div class="text-xs py-2">31</div>
+</div>
+<div class="border-t border-outline-variant/10 pt-4 flex items-center justify-between">
+<div>
+<p class="text-[10px] text-on-surface-variant uppercase font-bold tracking-widest">Khoảng thời gian</p>
+<p class="text-xs font-bold">12/10/2023 - 18/10/2023</p>
+</div>
+<button class="bg-on-surface text-surface text-[10px] font-bold px-4 py-2 rounded uppercase tracking-widest hover:bg-primary transition-colors">Áp dụng</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Branch Filter -->
+<div class="relative group/branch">
+<button class="bg-surface-container-lowest text-on-surface px-5 py-3 rounded-[10px] font-bold text-sm flex items-center gap-2 hover:bg-surface-container transition-colors shadow-sm border border-outline-variant/20 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">storefront</span>
+<span>Chi nhánh</span>
+<span class="material-symbols-outlined text-[18px] opacity-50">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Action Buttons -->
+<button class="bg-surface-container-low text-on-surface px-6 py-3 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-surface-container transition-colors whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">download</span> Xuất báo cáo
+            </button>
+<button class="bg-primary-container text-on-primary-fixed px-6 py-3 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary-fixed-dim transition-colors shadow-lg shadow-primary-container/20 whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">add</span> Hành động mới
+            </button>
+</div>
+</div>
+<!-- Metrics Bento Grid (Updated) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<!-- Metric 1: TỔNG DOANH THU -->
+<div class="bg-[#121620] p-6 rounded-[10px] shadow-lg relative overflow-hidden group">
+<div class="absolute bottom-0 left-0 w-full h-1/2 opacity-20 pointer-events-none">
+<svg class="w-full h-full preserve-3d" viewbox="0 0 400 100">
+<path class="drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]" d="M0 80 Q 100 20 200 60 T 400 40" fill="none" stroke="#22c55e" stroke-width="3"></path>
+</svg>
+</div>
+<div class="flex justify-between items-start mb-4">
+<p class="text-[11px] font-bold uppercase tracking-widest text-surface-variant/60">TỔNG DOANH THU</p>
+<div class="w-8 h-8 bg-primary-container/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">attach_money</span>
+</div>
+</div>
+<div class="mt-2">
+<h3 class="text-3xl font-black tracking-tight text-white">245,600K</h3>
+<p class="text-[11px] text-primary font-bold mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+                    +24.5% <span class="text-surface-variant/40 font-medium ml-1">so với 7 ngày trước</span>
+</p>
+</div>
+</div>
+<!-- Metric 2: KHÁCH HÀNG MỚI -->
+<div class="bg-surface-container-lowest p-6 rounded-[10px] shadow-sm border border-outline-variant/10 group">
+<div class="flex justify-between items-start mb-4">
+<p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70">KHÁCH HÀNG MỚI</p>
+<div class="w-8 h-8 bg-secondary/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[18px]">groups</span>
+</div>
+</div>
+<div class="mt-2">
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-black tracking-tight text-on-surface">342</h3>
+<span class="text-[11px] font-semibold text-on-surface-variant">người</span>
+</div>
+<div class="mt-4 flex items-center justify-between">
+<p class="text-[11px] text-secondary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">refresh</span> Tỷ lệ quay lại
+                    </p>
+<span class="text-[11px] font-bold text-on-surface">28.5%</span>
+</div>
+<div class="mt-2 h-1.5 w-full bg-surface-container-low rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[28.5%] rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Metric 3: TỔNG ĐƠN HÀNG -->
+<div class="bg-surface-container-lowest p-6 rounded-[10px] shadow-sm border border-outline-variant/10 group">
+<div class="flex justify-between items-start mb-4">
+<p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70">TỔNG ĐƠN HÀNG</p>
+<div class="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">local_mall</span>
+</div>
+</div>
+<div class="mt-2 flex items-end justify-between">
+<div>
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-black tracking-tight text-on-surface">522</h3>
+<span class="text-[11px] font-semibold text-on-surface-variant">đơn</span>
+</div>
+<p class="text-[11px] text-on-surface-variant mt-2">
+                        Chờ duyệt: <span class="font-bold text-primary">18</span> | Hủy: <span class="font-bold">1.2%</span>
+</p>
+</div>
+<div class="flex items-end gap-[2px] h-10">
+<div class="w-[3px] bg-secondary/20 h-[30%] rounded-full"></div>
+<div class="w-[3px] bg-secondary/30 h-[50%] rounded-full"></div>
+<div class="w-[3px] bg-secondary/40 h-[40%] rounded-full"></div>
+<div class="w-[3px] bg-secondary/60 h-[70%] rounded-full"></div>
+<div class="w-[3px] bg-secondary/80 h-[60%] rounded-full"></div>
+<div class="w-[3px] bg-secondary h-full rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Metric 4: AIOPS ALERTS TỔNG -->
+<div class="bg-surface-container-lowest p-6 rounded-[10px] shadow-sm border border-outline-variant/10 border-t-2 border-t-error group">
+<div class="flex justify-between items-start mb-4">
+<p class="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant/70">AIOPS ALERTS TỔNG</p>
+<div class="w-8 h-8 bg-error/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-error text-[18px]">report_problem</span>
+</div>
+</div>
+<div class="mt-2">
+<div class="flex items-baseline gap-2">
+<h3 class="text-3xl font-black tracking-tight text-error">2</h3>
+<span class="text-[11px] font-semibold text-on-surface-variant">sự cố h/tại</span>
+</div>
+<div class="mt-4 flex gap-2">
+<span class="bg-error/10 text-error text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-tighter">1 HIGH</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Insights Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Activity Chart (Visual Placeholder) -->
+<div class="lg:col-span-2 bg-surface-container-lowest p-8 rounded-[10px] shadow-[0_64px_64px_-12px_rgba(28,27,27,0.06)] min-h-[400px] flex flex-col">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h4 class="text-xl font-bold tracking-tight">Hiệu suất hệ thống</h4>
+<p class="text-sm text-on-surface-variant">Khối lượng giao dịch 24h qua</p>
+</div>
+<div class="flex bg-surface-container-low p-1 rounded-lg">
+<button class="px-4 py-1 text-xs font-bold bg-surface rounded-md shadow-sm">Theo giờ</button>
+<button class="px-4 py-1 text-xs font-bold text-on-surface-variant">Theo ngày</button>
+</div>
+</div>
+<div class="flex-grow flex items-end gap-2 px-2 pb-4">
+<div class="w-full h-[30%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">1.2k</div>
+</div>
+<div class="w-full h-[45%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20"></div>
+<div class="w-full h-[40%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20"></div>
+<div class="w-full h-[65%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20"></div>
+<div class="w-full h-[55%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20"></div>
+<div class="w-full h-[85%] bg-primary-container rounded-t-lg relative group">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-surface text-[10px] px-2 py-1 rounded">Đỉnh</div>
+</div>
+<div class="w-full h-[70%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20"></div>
+<div class="w-full h-[60%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20"></div>
+<div class="w-full h-[75%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20"></div>
+<div class="w-full h-[50%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20"></div>
+<div class="w-full h-[45%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20"></div>
+<div class="w-full h-[35%] bg-surface-container-low rounded-t-lg relative group transition-all hover:bg-primary/20"></div>
+</div>
+</div>
+<!-- Task Sidebar -->
+<div class="flex flex-col gap-6">
+<div class="bg-[#1c1b1b] text-white p-8 rounded-[10px] shadow-2xl relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-[#FFC700] rounded-full blur-[80px] opacity-20"></div>
+<h4 class="text-xl font-bold tracking-tight mb-4">Thông tin AI</h4>
+<p class="text-sm text-surface-variant font-light leading-relaxed mb-6">Hàng tồn kho cho "Neo-Flux Sneakers" đang giảm nhanh hơn 24% so với dự kiến. Đề xuất nhập hàng ngay lập tức.</p>
+<button class="w-full py-3 bg-[#FFC700] text-[#1c1b1b] font-black text-xs uppercase tracking-widest rounded transition-transform active:scale-95">THỰC THI NHẬP HÀNG TỰ ĐỘNG</button>
+</div>
+<div class="bg-surface-container-lowest p-8 rounded-[10px] shadow-[0_64px_64px_-12px_rgba(28,27,27,0.06)] flex-grow">
+<h4 class="text-lg font-bold tracking-tight mb-6 flex justify-between items-center">
+                    Hoạt động gần đây
+                    <span class="text-[10px] font-bold text-secondary uppercase cursor-pointer hover:underline">Xem tất cả</span>
+</h4>
+<ul class="space-y-6">
+<li class="flex gap-4 items-start">
+<div class="w-2 h-2 rounded-full bg-primary-container mt-1.5 shadow-[0_0_8px_#FFC700]"></div>
+<div>
+<p class="text-xs font-bold">Cập nhật hệ thống mới đã triển khai</p>
+<p class="text-[10px] text-on-surface-variant uppercase mt-0.5">v2.4.81 • 12 phút trước</p>
+</div>
+</li>
+<li class="flex gap-4 items-start">
+<div class="w-2 h-2 rounded-full bg-tertiary mt-1.5 shadow-[0_0_8px_#be0037]"></div>
+<div>
+<p class="text-xs font-bold">Cảnh báo tồn kho: Quantum CPU</p>
+<p class="text-[10px] text-on-surface-variant uppercase mt-0.5">Kho hàng thấp • 1 giờ trước</p>
+</div>
+</li>
+<li class="flex gap-4 items-start">
+<div class="w-2 h-2 rounded-full bg-secondary mt-1.5 shadow-[0_0_8px_#4b41e1]"></div>
+<div>
+<p class="text-xs font-bold">Đồng bộ hóa API đối tác thành công</p>
+<p class="text-[10px] text-on-surface-variant uppercase mt-0.5">Global Link • 4 giờ trước</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Latest Orders Table -->
+<div class="mt-8 bg-surface-container-lowest rounded-[10px] shadow-[0_64px_64px_-12px_rgba(28,27,27,0.06)] overflow-hidden">
+<div class="p-8 flex justify-between items-center border-b border-surface-container-low">
+<h4 class="text-xl font-bold tracking-tight">Đơn hàng thị trường hiện tại</h4>
+<div class="relative">
+<input class="bg-surface-container-low border-none rounded-lg text-sm px-10 py-2 w-64 focus:ring-1 focus:ring-primary-container" placeholder="Tìm kiếm đơn hàng..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-2 text-on-surface-variant text-xl">search</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">MÃ ĐƠN</th>
+<th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">SẢN PHẨM</th>
+<th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">KHÁCH HÀNG</th>
+<th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">TRẠNG THÁI</th>
+<th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">SỐ TIỀN</th>
+<th class="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-8 py-6 text-sm font-mono font-bold text-secondary">#ZT-40912</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-high rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">devices</span>
+</div>
+<p class="text-sm font-semibold">Neural-Link Hub v2</p>
+</div>
+</td>
+<td class="px-8 py-6 text-sm">Elena Rodriguez</td>
+<td class="px-8 py-6">
+<span class="bg-primary-container/20 text-on-primary-container text-[10px] font-bold px-3 py-1 rounded-full uppercase">Đang xử lý</span>
+</td>
+<td class="px-8 py-6 text-sm font-black">$2,499.00</td>
+<td class="px-8 py-6 text-right">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface">more_vert</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-8 py-6 text-sm font-mono font-bold text-secondary">#ZT-40911</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-high rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">laptop_chromebook</span>
+</div>
+<p class="text-sm font-semibold">ZenBook Ultra Pro</p>
+</div>
+</td>
+<td class="px-8 py-6 text-sm">Marcus Chen</td>
+<td class="px-8 py-6">
+<span class="bg-secondary/10 text-secondary text-[10px] font-bold px-3 py-1 rounded-full uppercase">Đã giao</span>
+</td>
+<td class="px-8 py-6 text-sm font-black">$1,850.00</td>
+<td class="px-8 py-6 text-right">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface">more_vert</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-8 py-6 text-sm font-mono font-bold text-secondary">#ZT-40910</td>
+<td class="px-8 py-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-surface-container-high rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">watch</span>
+</div>
+<p class="text-sm font-semibold">Eon-Watch S4</p>
+</div>
+</td>
+<td class="px-8 py-6 text-sm">Sarah Jenkins</td>
+<td class="px-8 py-6">
+<span class="bg-tertiary/10 text-tertiary text-[10px] font-bold px-3 py-1 rounded-full uppercase">Đã hoàn tiền</span>
+</td>
+<td class="px-8 py-6 text-sm font-black">$499.00</td>
+<td class="px-8 py-6 text-right">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-on-surface">more_vert</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-surface-container-low/30 text-center">
+<button class="text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-on-surface transition-colors">TẢI THÊM GIAO DỊCH</button>
+</div>
+</div>
+</main>
+</body></html>
