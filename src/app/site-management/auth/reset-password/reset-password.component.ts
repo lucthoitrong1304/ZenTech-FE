@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, effect, inject, untracked } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -8,17 +7,14 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   LucideArrowRight,
-  LucideLoaderCircle,
   LucideLockKeyhole,
   LucideShieldCheck,
 } from '@lucide/angular';
-import { filter } from 'rxjs';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { PasswordRecoveryStore } from '../data-access/store/password-recovery.store';
 import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
@@ -30,11 +26,9 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
     CommonModule,
     RouterLink,
     ReactiveFormsModule,
-    MatButtonModule,
-    MatInputModule,
-    MatFormFieldModule,
+    ButtonModule,
+    InputTextModule,
     LucideArrowRight,
-    LucideLoaderCircle,
     LucideLockKeyhole,
     LucideShieldCheck,
     AuthShellComponent,
@@ -48,9 +42,7 @@ export class ResetPasswordComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
-  private readonly destroyRef = inject(DestroyRef);
   protected readonly passwordRecoveryStore = inject(PasswordRecoveryStore);
-  protected readonly vm$ = this.passwordRecoveryStore.vm$;
 
   protected readonly token = this.route.snapshot.queryParamMap.get('token')?.trim() || '';
   protected readonly resetPasswordForm = this.formBuilder.nonNullable.group(
@@ -68,24 +60,25 @@ export class ResetPasswordComponent {
       this.toastService.error('Link khôi phục không hợp lệ hoặc thiếu token.');
     }
 
-    this.passwordRecoveryStore.successMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
+    effect(() => {
+      const message = this.passwordRecoveryStore.successMessage();
+
+      if (message) {
+        untracked(() => {
+          this.passwordRecoveryStore.clearMessages();
         this.toastService.success(message);
         this.router.navigate(['/auth/login']);
-      });
+        });
+      }
+    });
 
-    this.passwordRecoveryStore.errorMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
-        this.toastService.error(message);
-      });
+    effect(() => {
+      const message = this.passwordRecoveryStore.errorMessage();
+
+      if (message) {
+        untracked(() => this.toastService.error(message));
+      }
+    });
   }
 
   onResetPassword(): void {

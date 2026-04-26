@@ -10,15 +10,14 @@
         <div class="auth-field-group">
           <label class="auth-field-label" for="login-email">Email</label>
           <div class="auth-field-shell">
-            <mat-form-field appearance="outline" class="auth-field">
-              <input
-                id="login-email"
-                matInput
-                type="email"
-                formControlName="email"
-                placeholder="email@zentech.vn"
-              />
-            </mat-form-field>
+            <input
+              id="login-email"
+              pInputText
+              class="auth-field"
+              type="email"
+              formControlName="email"
+              placeholder="email@zentech.vn"
+            />
             <span class="auth-field-icon" aria-hidden="true">
               <svg lucideMail [attr.stroke-width]="1.8"></svg>
             </span>
@@ -36,15 +35,14 @@
             <a routerLink="/auth/forgot-password" class="auth-link">Quên mật khẩu?</a>
           </div>
           <div class="auth-field-shell">
-            <mat-form-field appearance="outline" class="auth-field">
-              <input
-                id="login-password"
-                matInput
-                type="password"
-                formControlName="password"
-                placeholder="••••••••"
-              />
-            </mat-form-field>
+            <input
+              id="login-password"
+              pInputText
+              class="auth-field"
+              type="password"
+              formControlName="password"
+              placeholder="********"
+            />
             <span class="auth-field-icon" aria-hidden="true">
               <svg lucideLockKeyhole [attr.stroke-width]="1.8"></svg>
             </span>
@@ -54,40 +52,30 @@
           }
         </div>
 
-        @if (vm$ | async; as vm) {
-          <button
-            type="submit"
-            mat-flat-button
-            class="auth-btn-primary"
-            [disabled]="loginForm.invalid || vm.loading"
-          >
-            <span class="auth-btn-content">
-              <span>{{ vm.loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}</span>
-              @if (vm.loading) {
-                <svg
-                  lucideLoaderCircle
-                  class="auth-button-icon auth-button-icon--spin"
-                  [attr.stroke-width]="2"
-                ></svg>
-              } @else {
-                <svg lucideArrowRight class="auth-button-icon" [attr.stroke-width]="2"></svg>
-              }
-            </span>
-          </button>
-        } @else {
-          <button type="submit" mat-flat-button class="auth-btn-primary" [disabled]="loginForm.invalid">
-            <span class="auth-btn-content">
-              <span>Đăng nhập</span>
+        <button
+          pButton
+          type="submit"
+          class="auth-btn-primary"
+          [disabled]="loginForm.invalid || loginStore.loading()"
+        >
+          <span class="auth-btn-content">
+            @if (loginStore.loading()) {
+              <svg lucideLoader2 class="auth-button-icon animate-spin" [attr.stroke-width]="2"></svg>
+            }
+
+            <span>{{ loginStore.loading() ? 'Đang đăng nhập...' : 'Đăng nhập' }}</span>
+
+            @if (!loginStore.loading()) {
               <svg lucideArrowRight class="auth-button-icon" [attr.stroke-width]="2"></svg>
-            </span>
-          </button>
-        }
+            }
+          </span>
+        </button>
 
         <div class="auth-separator"><span>Hoặc</span></div>
 
         <button
+          pButton
           type="button"
-          mat-stroked-button
           class="auth-btn-google"
           disabled
           aria-disabled="true"

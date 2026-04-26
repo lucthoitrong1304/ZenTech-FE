@@ -1,26 +1,23 @@
 <div class="error-container">
   <div class="error-card shadow-xl">
-    <!-- Icon or Illustration -->
     <div class="icon-container mb-6">
-      <mat-icon class="error-icon">report_problem</mat-icon>
+      <svg lucideTriangleAlert class="error-icon" [attr.stroke-width]="1.8"></svg>
     </div>
 
-    <!-- Error Title -->
     <h1 class="error-title">{{ errorData.title }}</h1>
-    
-    <!-- Optional Error Code -->
-    <div *ngIf="errorData.code" class="error-code-badge mb-4">
-      <span class="font-semibold">Mã lỗi:</span> {{ errorData.code }}
-    </div>
 
-    <!-- Error Description -->
+    @if (errorData.code) {
+      <div class="error-code-badge mb-4">
+        <span class="font-semibold">Mã lỗi:</span> {{ errorData.code }}
+      </div>
+    }
+
     <p class="error-message">
       {{ errorData.message }}
     </p>
 
-    <!-- Call to action -->
     <div class="action-container mt-8">
-      <button mat-flat-button class="btn-go-home" (click)="goHome()">
+      <button pButton type="button" class="btn-go-home" (click)="goHome()">
         Trở về Trang Chủ
       </button>
     </div>

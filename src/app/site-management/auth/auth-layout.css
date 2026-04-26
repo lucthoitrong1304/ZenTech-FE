@@ -83,6 +83,23 @@
 
 .auth-field {
   width: 100%;
+  min-height: 3.5rem;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #f6f3f2 !important;
+  padding: 0.95rem 3rem 0.95rem 1rem !important;
+  color: #1c1b1b !important;
+  font-size: 0.95rem !important;
+  box-shadow: none !important;
+}
+
+.auth-field::placeholder {
+  color: rgb(129 118 95 / 0.7) !important;
+}
+
+.auth-field:enabled:focus {
+  outline: 2px solid rgb(75 65 225 / 0.32);
+  outline-offset: 2px;
 }
 
 .auth-field-icon {
@@ -247,42 +264,9 @@
   height: 0.95rem;
 }
 
-::ng-deep .auth-field .mat-mdc-text-field-wrapper {
-  border-radius: 999px !important;
-  background: #f6f3f2 !important;
-}
-
-::ng-deep .auth-field .mdc-notched-outline__leading,
-::ng-deep .auth-field .mdc-notched-outline__notch,
-::ng-deep .auth-field .mdc-notched-outline__trailing {
-  border-color: transparent !important;
-}
-
-::ng-deep .auth-field .mat-mdc-form-field-infix {
-  min-height: 3.5rem;
-  padding-top: 0.95rem !important;
-  padding-bottom: 0.95rem !important;
-}
-
-::ng-deep .auth-field .mdc-floating-label,
-::ng-deep .auth-field .mat-mdc-form-field-hint-wrapper,
-::ng-deep .auth-field .mat-mdc-form-field-subscript-wrapper {
-  display: none !important;
-}
-
-::ng-deep .auth-field .mat-mdc-input-element {
-  padding-right: 2rem !important;
-  color: #1c1b1b !important;
-  font-size: 0.95rem !important;
-}
-
-::ng-deep .auth-field .mat-mdc-input-element::placeholder {
-  color: rgb(129 118 95 / 0.7) !important;
-}
-
-::ng-deep .auth-btn-primary .mdc-button__label,
-::ng-deep .auth-btn-secondary .mdc-button__label,
-::ng-deep .auth-btn-google .mdc-button__label {
+::ng-deep .auth-btn-primary .p-button-label,
+::ng-deep .auth-btn-secondary .p-button-label,
+::ng-deep .auth-btn-google .p-button-label {
   width: 100%;
 }
 

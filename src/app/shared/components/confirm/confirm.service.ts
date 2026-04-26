@@ -1,49 +1,42 @@
 import { Injectable, inject } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { ConfirmationService } from 'primeng/api';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { ConfirmComponent } from './confirm.component';
 import { ConfirmDialogData, ConfirmSize } from './confirm.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConfirmService {
-  private dialog = inject(MatDialog);
+  private readonly confirmationService = inject(ConfirmationService);
 
-  /**
-   * Opens a confirmation dialog.
-   * @param data Configuration options for the dialog (title, content, size).
-   * @returns An observable that emits true if the user clicks "Yes", false if "No" or backdrop click.
-   */
   open(data: ConfirmDialogData): Observable<boolean> {
-    const size = data.size || ConfirmSize.SMALL;
-    let width = '400px';
+    return new Observable<boolean>(observer => {
+      this.confirmationService.confirm({
+        header: data.title,
+        message: data.content,
+        acceptLabel: 'Yes',
+        rejectLabel: 'No',
+        accept: () => {
+          observer.next(true);
+          observer.complete();
+        },
+        reject: () => {
+          observer.next(false);
+          observer.complete();
+        },
+      });
 
-    switch (size) {
-      case ConfirmSize.MEDIUM:
-        width = '600px';
-        break;
-      case ConfirmSize.LARGE:
-        width = '800px';
-        break;
-      case ConfirmSize.SMALL:
-      default:
-        width = '400px';
-        break;
-    }
-
-    const dialogRef = this.dialog.open(ConfirmComponent, {
-      data,
-      width,
-      maxWidth: '90vw', // Responsive width capping
-      panelClass: 'confirm-dialog-container',
-      disableClose: false,
-      autoFocus: 'dialog'
+      return () => this.confirmationService.close();
     });
-
-    return dialogRef.afterClosed().pipe(
-      map(result => !!result)
-    );
   }
+}
+
+export function getConfirmDialogWidth(size: ConfirmSize = ConfirmSize.SMALL): string {
+  const widthMap: Record<ConfirmSize, string> = {
+    [ConfirmSize.SMALL]: '400px',
+    [ConfirmSize.MEDIUM]: '600px',
+    [ConfirmSize.LARGE]: '800px',
+  };
+
+  return widthMap[size];
 }

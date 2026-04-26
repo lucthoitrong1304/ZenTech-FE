@@ -6,7 +6,7 @@
       <button
         type="button"
         class="site-header__icon-button site-header__mobile-trigger"
-        [matMenuTriggerFor]="categoryMenu"
+        (click)="categoryMenu.toggle($event)"
         aria-label="Open categories"
       >
         <svg lucideMenu class="site-header__action-icon" [attr.stroke-width]="2"></svg>
@@ -55,18 +55,18 @@
       <button
         type="button"
         class="site-header__account-trigger"
-        [matMenuTriggerFor]="accountMenu"
-        [attr.aria-label]="accountTriggerLabel"
+        (click)="accountMenu.toggle($event)"
+        [attr.aria-label]="accountTriggerLabel()"
       >
         <span class="site-header__account-badge">
-          @if (hasAvatar) {
+          @if (hasAvatar()) {
             <img
               [src]="currentUser()?.avatarUrl || ''"
-              [alt]="accountTriggerLabel"
+              [alt]="accountTriggerLabel()"
               class="h-full w-full rounded-full object-cover"
             />
-          } @else if (shouldShowInitials) {
-            <span class="site-header__account-initials">{{ accountInitials }}</span>
+          } @else if (shouldShowInitials()) {
+            <span class="site-header__account-initials">{{ accountInitials() }}</span>
           } @else {
             <svg
               lucideCircleUserRound
@@ -79,7 +79,7 @@
         <span
           class="hidden text-[11px] font-bold uppercase tracking-[0.16em] text-white/65 2xl:block"
         >
-          {{ isAuthenticated ? accountInitials : 'Guest' }}
+          {{ isAuthenticated() ? accountInitials() : 'Guest' }}
         </span>
         <svg
           lucideChevronDown
@@ -91,32 +91,36 @@
   </div>
 </header>
 
-<mat-menu #categoryMenu="matMenu" class="site-header__menu">
-  @for (item of navItems(); track trackByLabel($index, item)) {
-    <button mat-menu-item [routerLink]="item.link" (click)="onNavSelect(item)">
-      <span>{{ item.label }}</span>
-    </button>
-  }
-</mat-menu>
+<p-popover #categoryMenu styleClass="site-header__menu">
+  <div class="site-header__menu-list">
+    @for (item of navItems(); track trackByLabel($index, item)) {
+      <button type="button" class="site-header__menu-item" [routerLink]="item.link" (click)="onNavSelect(item)">
+        <span>{{ item.label }}</span>
+      </button>
+    }
+  </div>
+</p-popover>
 
-<mat-menu #accountMenu="matMenu" class="site-header__menu">
-  @if (!isAuthenticated) {
-    <button mat-menu-item routerLink="/auth/login">
-      <svg lucideLogIn class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
-      <span>Đăng nhập</span>
-    </button>
-    <button mat-menu-item routerLink="/auth/register">
-      <svg lucideUserPlus class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
-      <span>Đăng ký</span>
-    </button>
-  } @else {
-    <button mat-menu-item type="button">
-      <svg lucideSettings class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
-      <span>Quản lý tài khoản</span>
-    </button>
-    <button mat-menu-item type="button" (click)="onLogout()">
-      <svg lucideLogOut class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
-      <span>Đăng xuất</span>
-    </button>
-  }
-</mat-menu>
+<p-popover #accountMenu styleClass="site-header__menu">
+  <div class="site-header__menu-list">
+    @if (!isAuthenticated()) {
+      <button type="button" class="site-header__menu-item" routerLink="/auth/login">
+        <svg lucideLogIn class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
+        <span>Đăng nhập</span>
+      </button>
+      <button type="button" class="site-header__menu-item" routerLink="/auth/register">
+        <svg lucideUserPlus class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
+        <span>Đăng ký</span>
+      </button>
+    } @else {
+      <button class="site-header__menu-item" type="button">
+        <svg lucideSettings class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
+        <span>Quản lý tài khoản</span>
+      </button>
+      <button class="site-header__menu-item" type="button" (click)="onLogout()">
+        <svg lucideLogOut class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
+        <span>Đăng xuất</span>
+      </button>
+    }
+  </div>
+</p-popover>

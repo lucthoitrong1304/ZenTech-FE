@@ -1,8 +1,8 @@
-import { AsyncPipe, CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CommonModule } from '@angular/common';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { distinctUntilChanged, filter, map } from 'rxjs';
+import { distinctUntilChanged, map } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { ProductListItem } from '../../../product-catalog/data-access/models/product-catalog.models';
@@ -19,7 +19,6 @@ import { ProductReviewListComponent } from '../../components/product-review-list
   selector: 'app-product-detail-page',
   standalone: true,
   imports: [
-    AsyncPipe,
     CommonModule,
     RouterLink,
     SiteHeaderComponent,
@@ -34,74 +33,78 @@ import { ProductReviewListComponent } from '../../components/product-review-list
 })
 export class ProductDetailPageComponent {
   private readonly authSessionStore = inject(AuthSessionStore);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly productDetailStore = inject(ProductDetailStore);
+  protected readonly productDetailStore = inject(ProductDetailStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
 
   readonly navItems = SITE_CATEGORY_NAV_ITEMS;
-  readonly currentUser$ = this.authSessionStore.currentUser$;
-  readonly vm$ = this.productDetailStore.vm$;
+  readonly currentUser = this.authSessionStore.currentUser;
   readonly selectedImage = signal('');
+  readonly displayImage = computed(() => this.selectedImage() || this.productDetailStore.product()?.image || '');
   readonly skeletonBlocks = Array.from({ length: 4 }, (_, index) => index);
+  private readonly productSlug = toSignal(
+    this.route.paramMap.pipe(
+      map(params => params.get('slug')?.trim() ?? ''),
+      distinctUntilChanged()
+    ),
+    { initialValue: '' }
+  );
 
   constructor() {
-    this.route.paramMap
-      .pipe(
-        map(params => params.get('slug')?.trim() ?? ''),
-        filter(Boolean),
-        distinctUntilChanged(),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(slug => {
+    effect(() => {
+      const slug = this.productSlug();
+
+      if (slug) {
         this.selectedImage.set('');
         this.productDetailStore.loadProduct(slug);
-      });
+      }
+    });
 
-    this.vm$
-      .pipe(
-        map(vm => vm.product?.image ?? ''),
-        filter(Boolean),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(image => {
+    effect(() => {
+      const image = this.productDetailStore.product()?.image ?? '';
+
+      if (image) {
         if (!this.selectedImage()) {
           this.selectedImage.set(image);
         }
-      });
+      }
+    });
 
-    this.productDetailStore.reviewSuccessMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
+    effect(() => {
+      const message = this.productDetailStore.reviewSuccessMessage();
+
+      if (message) {
+        untracked(() => {
         this.toastService.success(message);
         this.productDetailStore.clearReviewSuccessMessage();
-      });
+        });
+      }
+    });
 
-    this.authSessionStore.logoutSuccessMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
+    effect(() => {
+      const message = this.authSessionStore.logoutSuccessMessage();
+
+      if (message) {
+        untracked(() => {
         this.toastService.success(message);
         this.authSessionStore.clearLogoutMessages();
         this.router.navigate(['/']);
-      });
+        });
+      }
+    });
 
-    this.authSessionStore.logoutWarningMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
+    effect(() => {
+      const message = this.authSessionStore.logoutWarningMessage();
+
+      if (message) {
+        untracked(() => {
         this.toastService.warning(message);
         this.authSessionStore.clearLogoutMessages();
         this.router.navigate(['/']);
-      });
+        });
+      }
+    });
   }
 
   onImageSelect(image: string): void {

@@ -10,15 +10,14 @@
         <div class="auth-field-group">
           <label class="auth-field-label" for="register-name">Họ và tên</label>
           <div class="auth-field-shell">
-            <mat-form-field appearance="outline" class="auth-field">
-              <input
-                id="register-name"
-                matInput
-                type="text"
-                formControlName="fullName"
-                placeholder="Nguyễn Văn A"
-              />
-            </mat-form-field>
+            <input
+              id="register-name"
+              pInputText
+              class="auth-field"
+              type="text"
+              formControlName="fullName"
+              placeholder="Nguyen Van A"
+            />
             <span class="auth-field-icon" aria-hidden="true">
               <svg lucideUser [attr.stroke-width]="1.8"></svg>
             </span>
@@ -28,15 +27,14 @@
         <div class="auth-field-group">
           <label class="auth-field-label" for="register-email">Email</label>
           <div class="auth-field-shell">
-            <mat-form-field appearance="outline" class="auth-field">
-              <input
-                id="register-email"
-                matInput
-                type="email"
-                formControlName="email"
-                placeholder="hello@zentech.vn"
-              />
-            </mat-form-field>
+            <input
+              id="register-email"
+              pInputText
+              class="auth-field"
+              type="email"
+              formControlName="email"
+              placeholder="hello@zentech.vn"
+            />
             <span class="auth-field-icon" aria-hidden="true">
               <svg lucideMail [attr.stroke-width]="1.8"></svg>
             </span>
@@ -52,15 +50,14 @@
           <div class="auth-field-group">
             <label class="auth-field-label" for="register-password">Mật khẩu</label>
             <div class="auth-field-shell">
-              <mat-form-field appearance="outline" class="auth-field">
-                <input
-                  id="register-password"
-                  matInput
-                  type="password"
-                  formControlName="password"
-                  placeholder="••••••••"
-                />
-              </mat-form-field>
+              <input
+                id="register-password"
+                pInputText
+                class="auth-field"
+                type="password"
+                formControlName="password"
+                placeholder="********"
+              />
               <span class="auth-field-icon" aria-hidden="true">
                 <svg lucideLockKeyhole [attr.stroke-width]="1.8"></svg>
               </span>
@@ -75,15 +72,14 @@
               Xác nhận mật khẩu
             </label>
             <div class="auth-field-shell">
-              <mat-form-field appearance="outline" class="auth-field">
-                <input
-                  id="register-confirm-password"
-                  matInput
-                  type="password"
-                  formControlName="confirmPassword"
-                  placeholder="••••••••"
-                />
-              </mat-form-field>
+              <input
+                id="register-confirm-password"
+                pInputText
+                class="auth-field"
+                type="password"
+                formControlName="confirmPassword"
+                placeholder="********"
+              />
               <span class="auth-field-icon" aria-hidden="true">
                 <svg lucideShieldCheck [attr.stroke-width]="1.8"></svg>
               </span>
@@ -96,34 +92,20 @@
           </div>
         </div>
 
-        @if (vm$ | async; as vm) {
-          <button
-            type="submit"
-            mat-flat-button
-            class="auth-btn-primary"
-            [disabled]="registerForm.invalid || vm.loading"
-          >
-            <span class="auth-btn-content">
-              <span>{{ vm.loading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản' }}</span>
-              @if (vm.loading) {
-                <svg
-                  lucideLoaderCircle
-                  class="auth-button-icon auth-button-icon--spin"
-                  [attr.stroke-width]="2"
-                ></svg>
-              } @else {
-                <svg lucideArrowRight class="auth-button-icon" [attr.stroke-width]="2"></svg>
-              }
-            </span>
-          </button>
-        } @else {
-          <button type="submit" mat-flat-button class="auth-btn-primary" [disabled]="registerForm.invalid">
-            <span class="auth-btn-content">
-              <span>Tạo tài khoản</span>
+        <button
+          pButton
+          type="submit"
+          class="auth-btn-primary"
+          [loading]="registerStore.loading()"
+          [disabled]="registerForm.invalid || registerStore.loading()"
+        >
+          <span class="auth-btn-content">
+            <span>{{ registerStore.loading() ? 'Dang tao tai khoan...' : 'Tao tai khoan' }}</span>
+            @if (!registerStore.loading()) {
               <svg lucideArrowRight class="auth-button-icon" [attr.stroke-width]="2"></svg>
-            </span>
-          </button>
-        }
+            }
+          </span>
+        </button>
       </form>
 
       <p class="auth-footer-note">

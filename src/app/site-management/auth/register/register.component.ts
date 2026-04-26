@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, effect, inject, untracked } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -8,19 +7,16 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { Router, RouterLink } from '@angular/router';
 import {
   LucideArrowRight,
-  LucideLoaderCircle,
   LucideLockKeyhole,
   LucideMail,
   LucideShieldCheck,
   LucideUser,
 } from '@lucide/angular';
-import { filter } from 'rxjs';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { RegisterStore } from '../data-access/store/register.store';
 import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
@@ -32,11 +28,9 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
     CommonModule,
     RouterLink,
     ReactiveFormsModule,
-    MatButtonModule,
-    MatInputModule,
-    MatFormFieldModule,
+    ButtonModule,
+    InputTextModule,
     LucideArrowRight,
-    LucideLoaderCircle,
     LucideLockKeyhole,
     LucideMail,
     LucideShieldCheck,
@@ -51,9 +45,7 @@ export class RegisterComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
-  private readonly destroyRef = inject(DestroyRef);
   protected readonly registerStore = inject(RegisterStore);
-  protected readonly vm$ = this.registerStore.vm$;
 
   protected readonly registerForm = this.formBuilder.nonNullable.group(
     {
@@ -68,24 +60,25 @@ export class RegisterComponent {
   );
 
   constructor() {
-    this.registerStore.successMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
+    effect(() => {
+      const message = this.registerStore.successMessage();
+
+      if (message) {
+        untracked(() => {
+          this.registerStore.clearMessages();
         this.toastService.success(message);
         this.router.navigate(['/auth/login']);
-      });
+        });
+      }
+    });
 
-    this.registerStore.errorMessage$
-      .pipe(
-        filter((message): message is string => !!message),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe(message => {
-        this.toastService.error(message);
-      });
+    effect(() => {
+      const message = this.registerStore.errorMessage();
+
+      if (message) {
+        untracked(() => this.toastService.error(message));
+      }
+    });
   }
 
   onRegister(): void {
