@@ -1,0 +1,120 @@
+<div class="owner-shell">
+  <header class="owner-topbar">
+    <nav class="owner-breadcrumb" aria-label="Owner breadcrumb">
+      <a routerLink="/owner/dashboard" class="owner-breadcrumb__brand">ZenTech</a>
+      <span class="owner-breadcrumb__separator" aria-hidden="true">&gt;</span>
+      <span class="owner-breadcrumb__section">{{ header().eyebrow }}</span>
+      <span class="owner-breadcrumb__separator" aria-hidden="true">&gt;</span>
+      <span class="owner-breadcrumb__page">{{ header().title }}</span>
+    </nav>
+
+    <div class="owner-topbar__actions">
+      <button type="button" class="owner-icon-button" aria-label="Tìm kiếm">
+        <svg lucideSearch [attr.stroke-width]="2"></svg>
+      </button>
+      <button type="button" class="owner-icon-button" aria-label="Thông báo">
+        <svg lucideBell [attr.stroke-width]="2"></svg>
+      </button>
+      <div class="owner-account">
+        <span>
+          <strong>{{ currentUser()?.fullName || 'Owner User' }}</strong>
+          <small>Owner</small>
+        </span>
+        <div class="owner-avatar">{{ accountInitials() }}</div>
+      </div>
+    </div>
+  </header>
+
+  <aside class="owner-sidebar">
+    <div class="owner-sidebar__heading">
+      <h2>ZenTech Admin</h2>
+      <p>Quản lý cửa hàng</p>
+    </div>
+
+    <nav class="owner-nav" aria-label="Owner workspace">
+      @for (section of navSections; track section.title) {
+        <section class="owner-nav__section">
+          <p>{{ section.title }}</p>
+
+          @for (item of section.items; track item.path) {
+            <a
+              [routerLink]="item.path"
+              routerLinkActive="owner-nav__link--active"
+              class="owner-nav__link"
+            >
+              @switch (item.icon) {
+                @case ('dashboard') {
+                  <svg lucideLayoutDashboard [attr.stroke-width]="2"></svg>
+                }
+                @case ('analytics') {
+                  <svg lucideChartNoAxesCombined [attr.stroke-width]="2"></svg>
+                }
+                @case ('employees') {
+                  <svg lucideUsers [attr.stroke-width]="2"></svg>
+                }
+                @case ('orders') {
+                  <svg lucideShoppingBag [attr.stroke-width]="2"></svg>
+                }
+                @case ('products') {
+                  <svg lucidePackage [attr.stroke-width]="2"></svg>
+                }
+                @case ('inventory') {
+                  <svg lucideWarehouse [attr.stroke-width]="2"></svg>
+                }
+                @case ('customers') {
+                  <svg lucideUsers [attr.stroke-width]="2"></svg>
+                }
+                @case ('marketing') {
+                  <svg lucideMegaphone [attr.stroke-width]="2"></svg>
+                }
+                @case ('ai') {
+                  <svg lucideBot [attr.stroke-width]="2"></svg>
+                }
+                @default {
+                  <svg lucideChartBar [attr.stroke-width]="2"></svg>
+                }
+              }
+              <span>{{ item.label }}</span>
+            </a>
+          }
+        </section>
+      }
+    </nav>
+
+    <button type="button" class="owner-logout" (click)="logout()">
+      <svg lucideLogOut [attr.stroke-width]="2"></svg>
+      <span>Đăng xuất</span>
+    </button>
+  </aside>
+
+  <main class="owner-main">
+    <section class="owner-page-header">
+      <div>
+        <p>{{ header().eyebrow }}</p>
+        <h1>{{ header().title }}</h1>
+        <span>{{ header().description }}</span>
+      </div>
+
+      <div class="owner-page-header__actions">
+        <button type="button" class="owner-action owner-action--soft">
+          <svg lucideCalendar [attr.stroke-width]="2"></svg>
+          <span>Thời gian</span>
+        </button>
+        <button type="button" class="owner-action owner-action--soft">
+          <svg lucideStore [attr.stroke-width]="2"></svg>
+          <span>Chi nhánh</span>
+        </button>
+        <button type="button" class="owner-action owner-action--soft">
+          <svg lucideDownload [attr.stroke-width]="2"></svg>
+          <span>Xuất báo cáo</span>
+        </button>
+        <button type="button" class="owner-action owner-action--primary">
+          <svg lucidePlus [attr.stroke-width]="2.2"></svg>
+          <span>{{ header().primaryAction }}</span>
+        </button>
+      </div>
+    </section>
+
+    <router-outlet />
+  </main>
+</div>

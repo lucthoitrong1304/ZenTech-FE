@@ -11,7 +11,10 @@ import {
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastService } from '../../../shared/components/toast/toast.service';
+import { Role } from '../data-access/models/auth.enums';
+import { AuthSessionStore } from '../data-access/store/auth-session.store';
 import { LoginStore } from '../data-access/store/login.store';
+import { hasRole } from '../data-access/utils/auth-role.utils';
 import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
 
 @Component({
@@ -37,6 +40,7 @@ export class LoginComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  private readonly authSessionStore = inject(AuthSessionStore);
   protected readonly loginStore = inject(LoginStore);
 
   protected readonly loginForm = this.formBuilder.nonNullable.group({
@@ -51,8 +55,8 @@ export class LoginComponent {
       if (message) {
         untracked(() => {
           this.loginStore.clearMessages();
-        this.toastService.success(message);
-        this.router.navigate(['/']);
+          this.toastService.success(message);
+          this.router.navigate([this.getPostLoginRoute()]);
         });
       }
     });
@@ -86,5 +90,11 @@ export class LoginComponent {
     const control = this.loginForm.controls[controlName];
 
     return control.hasError(errorCode) && (control.dirty || control.touched);
+  }
+
+  private getPostLoginRoute(): string {
+    const roles = this.authSessionStore.currentUser()?.roles || [];
+
+    return hasRole(roles, Role.OWNER) ? '/owner/dashboard' : '/';
   }
 }

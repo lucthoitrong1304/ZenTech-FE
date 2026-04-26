@@ -18,3 +18,29 @@
 }
 
 @layer utilities {}
+
+body:has(.owner-shell) {
+  scrollbar-color: rgba(79, 70, 50, 0.28) transparent;
+  scrollbar-width: thin;
+}
+
+body:has(.owner-shell)::-webkit-scrollbar,
+.owner-sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+body:has(.owner-shell)::-webkit-scrollbar-track,
+.owner-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body:has(.owner-shell)::-webkit-scrollbar-thumb,
+.owner-sidebar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(79, 70, 50, 0.28);
+}
+
+body:has(.owner-shell)::-webkit-scrollbar-thumb:hover,
+.owner-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 70, 50, 0.46);
+}
