@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed": "#e2dfff",
+              "on-primary-fixed-variant": "#594400",
+              "surface-tint": "#765b00",
+              "tertiary-fixed": "#ffdada",
+              "background": "#fcf9f8",
+              "secondary-container": "#645efb",
+              "inverse-primary": "#f5bf00",
+              "tertiary-container": "#ffbec0",
+              "tertiary": "#be0037",
+              "primary-fixed-dim": "#f5bf00",
+              "surface-container-lowest": "#ffffff",
+              "outline": "#81765f",
+              "primary-fixed": "#ffdf94",
+              "on-tertiary-container": "#b20033",
+              "surface-container": "#f0edec",
+              "primary-container": "#ffc700",
+              "surface-container-high": "#ebe7e7",
+              "secondary-fixed-dim": "#c3c0ff",
+              "surface-dim": "#dcd9d9",
+              "surface-container-highest": "#e5e2e1",
+              "on-primary-container": "#6e5400",
+              "outline-variant": "#d2c5ab",
+              "on-secondary": "#ffffff",
+              "secondary": "#4b41e1",
+              "on-secondary-fixed": "#0f0069",
+              "on-tertiary": "#ffffff",
+              "surface-variant": "#e5e2e1",
+              "on-surface-variant": "#4f4632",
+              "on-secondary-fixed-variant": "#3323cc",
+              "on-background": "#1c1b1b",
+              "inverse-surface": "#313030",
+              "on-primary-fixed": "#251a00",
+              "on-tertiary-fixed-variant": "#920028",
+              "surface": "#fcf9f8",
+              "on-surface": "#1c1b1b",
+              "on-tertiary-fixed": "#40000c",
+              "error": "#ba1a1a",
+              "primary": "#765b00",
+              "error-container": "#ffdad6",
+              "surface-bright": "#fcf9f8",
+              "on-primary": "#ffffff",
+              "inverse-on-surface": "#f3f0ef",
+              "tertiary-fixed-dim": "#ffb3b6",
+              "on-error-container": "#93000a",
+              "on-error": "#ffffff",
+              "surface-container-low": "#f6f3f2",
+              "on-secondary-container": "#fffbff",
+              "sale-red": "#E11D48"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {
+              "DEFAULT": "1rem", 
+              "lg": "2rem", 
+              "xl": "3rem", 
+              "full": "9999px",
+              "card": "10px",
+              "img": "5px",
+              "zentech": "10px",
+              "zentech-img": "5px"
+            },
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .nav-link {
+            position: relative;
+            text-decoration: none;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -6px;
+            left: 0;
+            background-color: #FFC700;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- Updated ZenTech Header -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/10 h-16">
+<div class="flex justify-between items-center h-full px-8 max-w-full mx-auto relative">
+<!-- Left: Navigation links -->
+<nav class="hidden lg:flex items-center gap-8 flex-1">
+<div class="relative group">
+<button class="flex items-center gap-1 font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white hover:text-white transition-colors duration-300 nav-link active">
+                    Keyboards
+                    <span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+<div class="absolute top-full left-0 mt-4 w-56 bg-[#101010] rounded-zentech p-2 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border border-white/5">
+<a class="block px-4 py-3 text-xs uppercase tracking-widest text-white/70 hover:text-[#FFC700] hover:bg-white/5 rounded" href="#">HE Keyboard</a>
+<a class="block px-4 py-3 text-xs uppercase tracking-widest text-white/70 hover:text-[#FFC700] hover:bg-white/5 rounded" href="#">Mechanical Keyboard</a>
+</div>
+</div>
+<a class="font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white/70 hover:text-white transition-colors duration-300 nav-link" href="#">Mice</a>
+<a class="font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white/70 hover:text-white transition-colors duration-300 nav-link" href="#">Speakers</a>
+<a class="font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white/70 hover:text-white transition-colors duration-300 nav-link" href="#">Earbuds</a>
+<a class="font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white/70 hover:text-white transition-colors duration-300 nav-link" href="#">Chargers</a>
+<a class="font-['Inter'] tracking-[0.1em] text-[11px] font-bold uppercase text-white/70 hover:text-white transition-colors duration-300 nav-link" href="#">Accessories</a>
+</nav>
+<!-- Center: Logo Section -->
+<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-3">
+<div class="relative skew-x-[-15deg] w-10 h-9 p-[1.5px] rounded-[4px] bg-gradient-to-br from-[#FFC700] to-[#FF8A00]">
+<div class="w-full h-full bg-[#0a0a0a] rounded-[3px] flex items-center justify-center">
+<span class="text-transparent bg-clip-text bg-gradient-to-br from-[#FFC700] to-[#FF8A00] font-black text-[13px] italic tracking-tighter -skew-x-[-15deg] pr-[1px]">ZT</span>
+</div>
+</div>
+<div class="flex items-baseline font-black italic uppercase tracking-tighter text-xl">
+<span class="text-white">Zen</span>
+<span class="text-white/40">Tech</span>
+</div>
+</div>
+<!-- Right: Actions -->
+<div class="flex items-center justify-end gap-6 flex-1">
+<button class="text-white/80 hover:text-white transition-all duration-200 hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-xl">search</span>
+</button>
+<button class="relative text-white/80 hover:text-white transition-all duration-200 hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-xl">shopping_cart</span>
+<span class="absolute -top-1 -right-1.5 bg-[#FFC700] text-[#0a0a0a] text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-[#0a0a0a]">2</span>
+</button>
+<button class="w-9 h-9 rounded-full overflow-hidden transition-transform hover:scale-105 active:scale-95">
+<img alt="User avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQCUxfqLI6bNbJKFxCs8bgYB1YZT6wUsEnVcmKUKdMWbYVBCw16FOgH4SPz4KcYJuPywfLbEVGU0I6ZKlfhLeDIOiDIlzxq4-XyRO89_FOOcooq-CMgo4aQtap9au19-N351rEsxzR090XsuxtSMrO9dyH_MCUIhnC9_nq4JHOlreZNQFXoiduPjca4NZ6rEH429Ec_quqj6nWmQ06xA9dl341q_jUqPBIS0tf7LROG2LghyQbS-499Y25tYc1kXyVN9xzBJ8W05E"/>
+</button>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-12 min-h-screen flex flex-col md:flex-row px-8 gap-12">
+<!-- Side Panel / Filters -->
+<aside class="w-full md:w-72 flex flex-col gap-8 shrink-0">
+<div class="flex flex-col gap-2">
+<h2 class="text-lg font-bold text-neutral-900 uppercase tracking-tighter">Filters</h2>
+<p class="text-xs text-on-surface-variant font-medium uppercase tracking-widest">Refine Collection</p>
+</div>
+<!-- Search Bar -->
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary-container transition-all" placeholder="Search Keyboards..." type="text"/>
+</div>
+<!-- Categories -->
+<div class="flex flex-col gap-4">
+<p class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">Categories</p>
+<div class="flex flex-col gap-1">
+<button class="text-sm tracking-wide text-neutral-900 font-bold border-l-4 border-yellow-400 pl-4 py-2 text-left">All Products</button>
+<button class="text-sm tracking-wide text-neutral-500 pl-4 py-2 text-left hover:text-neutral-900 transition-colors">Mechanical</button>
+<button class="text-sm tracking-wide text-neutral-500 pl-4 py-2 text-left hover:text-neutral-900 transition-colors">Wireless</button>
+<button class="text-sm tracking-wide text-neutral-500 pl-4 py-2 text-left hover:text-neutral-900 transition-colors">Custom Kits</button>
+</div>
+</div>
+<!-- Price Range -->
+<div class="flex flex-col gap-4">
+<p class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">Price Range</p>
+<div class="px-2">
+<input class="w-full h-1.5 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-secondary" max="500" min="50" type="range" value="250"/>
+<div class="flex justify-between mt-2 text-[10px] font-bold text-on-surface-variant">
+<span>$50</span>
+<span>$500</span>
+</div>
+</div>
+</div>
+<!-- Star Rating -->
+<div class="flex flex-col gap-4">
+<p class="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant">Rating</p>
+<div class="flex flex-col gap-3">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary w-4 h-4" type="checkbox"/>
+<div class="flex gap-0.5 text-primary-container group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">5 Stars</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary w-4 h-4" type="checkbox"/>
+<div class="flex gap-0.5 text-primary-container group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]">star</span>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">4+ Stars</span>
+</label>
+</div>
+</div>
+<button class="mt-4 bg-primary-container text-on-primary-fixed font-bold text-xs uppercase tracking-widest py-4 rounded-full hover:bg-primary-fixed-dim transition-all active:scale-95 shadow-lg shadow-primary-container/20">
+            Apply Filters
+        </button>
+</aside>
+<!-- Product Grid Section -->
+<section class="flex-1 flex flex-col gap-8">
+<!-- Header & Sort -->
+<div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-surface-container-high pb-6">
+<div>
+<h1 class="text-4xl font-black tracking-tighter uppercase leading-none">Keyboards</h1>
+<p class="text-xs text-on-surface-variant font-medium mt-2 uppercase tracking-widest">Showing 12 of 48 Products</p>
+</div>
+<div class="flex items-center gap-4 relative">
+<span class="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Sort By</span>
+<div class="relative">
+<button class="bg-surface-container-lowest border border-outline-variant rounded-[10px] text-[10px] font-black uppercase tracking-widest py-2 px-6 flex items-center justify-between gap-3 min-w-[180px] hover:border-primary transition-all duration-300">
+<span>Most Recent</span>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<!-- Open Dropdown State -->
+<div class="absolute top-full left-0 right-0 mt-2 bg-white shadow-xl border border-surface-container-high overflow-hidden z-[60] py-2 animate-in fade-in slide-in-from-top-2 duration-200 rounded-[10px] border-neutral-200">
+<div class="flex flex-col py-1">
+<button class="w-full px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-secondary bg-surface-container-low transition-colors border-l-2 border-secondary">Most Recent</button>
+<button class="w-full px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-on-surface hover:bg-surface-container-low hover:text-secondary transition-colors">Price: Low to High</button>
+<button class="w-full px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-on-surface hover:bg-surface-container-low hover:text-secondary transition-colors">Price: High to Low</button>
+<button class="w-full px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-on-surface hover:bg-surface-container-low hover:text-secondary transition-colors">Best Rating</button>
+<button class="w-full px-6 py-3 text-left text-[10px] font-black uppercase tracking-widest text-on-surface hover:bg-surface-container-low hover:text-secondary transition-colors">Best Selling</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Product Card 1 -->
+<div class="bg-surface-container-lowest rounded-[10px] p-4 group transition-all duration-500 hover:shadow-[0_40px_60px_-15px_rgba(0,0,0,0.08)] flex flex-col gap-4 relative">
+<div class="aspect-square bg-surface-container-low rounded-[5px] overflow-hidden relative">
+<img alt="high-end mechanical keyboard" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBExMzZ87P5mtgR5p4ZSce63haA_gDiHBPjlcY75vrM0dMbmDgix3Siv6TR22J6VOLPGfC23-lEOt2yF50vrdvImxi8z0qrZhp99fosVIWhhyrGFW4UD9JMGVazGfWTa7LAdskXKSxe8UbhKhYuPCzn1rgjg8ISRW2qLhJTTOikIDX7WDMRdCxfNM3_iP7lzz31dWIT31punmv5vJyBMARsEuRZyULEGSAjhC2qSDBQ3P6NJjIED6GUHK0OoI86V_WHd3-G9hMW0M0"/>
+<div class="absolute top-3 left-3 flex flex-col gap-1">
+<div class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">New Arrival</div>
+<div class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">Save $60</div>
+</div>
+<button class="absolute bottom-4 right-4 bg-black text-white text-[11px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 shadow-lg whitespace-nowrap">
+<span class="text-sm font-light">+</span> Quick add
+                    </button>
+</div>
+<div class="flex flex-col gap-2 text-center">
+<h3 class="text-[15px] font-bold tracking-tight text-neutral-900 group-hover:text-secondary transition-colors leading-tight">Monolith-X60 Wireless</h3>
+<div class="flex items-center justify-center gap-2">
+<span class="text-sale-red font-bold text-base">$189.00</span>
+<span class="text-neutral-400 line-through text-sm font-medium">$249.00</span>
+</div>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="bg-surface-container-lowest rounded-[10px] p-4 group transition-all duration-500 hover:shadow-[0_40px_60px_-15px_rgba(0,0,0,0.08)] flex flex-col gap-4 relative">
+<div class="aspect-square bg-surface-container-low rounded-[5px] overflow-hidden relative">
+<img alt="white minimalist keyboard" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs6ivbBzYCyWntwbzpsXSmhd5cKjOPsofiyY-0clGwfaLHssaro4HGV3fwfbcyVvatnVVnuDqOlIydPExfgFkviOe1x0Z-ElyCKNKrn0v1_Qkg3qEXHpKL0YZC-QgpFPDHBPSh8NPW7pw7Fhx4GJGGYDqTXHM1vbhgxVG6Kb83x40LIaS0ZauJYa1QgF8lIeRrNI8lwacXwlebvj00oWtY3WP3N4IVpoOXPCAe3trHK4Ki5Rs2xgQXQq4meaUYkYeurompHRadlzg"/>
+<div class="absolute top-3 left-3">
+<div class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">Save $40</div>
+</div>
+<button class="absolute bottom-4 right-4 bg-black text-white text-[11px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 shadow-lg whitespace-nowrap">
+<span class="text-sm font-light">+</span> Quick add
+                    </button>
+</div>
+<div class="flex flex-col gap-2 text-center">
+<h3 class="text-[15px] font-bold tracking-tight text-neutral-900 group-hover:text-secondary transition-colors leading-tight">Ghost Edition TKL</h3>
+<div class="flex items-center justify-center gap-2">
+<span class="text-sale-red font-bold text-base">$159.00</span>
+<span class="text-neutral-400 line-through text-sm font-medium">$199.00</span>
+</div>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="bg-surface-container-lowest rounded-[10px] p-4 group transition-all duration-500 hover:shadow-[0_40px_60px_-15px_rgba(0,0,0,0.08)] flex flex-col gap-4 relative">
+<div class="aspect-square bg-surface-container-low rounded-[5px] overflow-hidden relative">
+<img alt="black custom keyboard" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWFm3mjdkmnBAYJG-39pBplzPSrcvEx7fdd8r0VKc2VZJdGj9PpQjI9r6qpd0DNR96UohRxGxbYb7RYitJYaWIqTRXheEcLtA9_WNnVjbJtEmQWzLA8YNV0CseUrTenhpMD0DMVA4Fte4_0SFCUObK1P_kPJVZBNSXN2IFOs3hWE4wM8HxeXn45_WRqiyoWsT4J_Jh0NP10lQBE0guVkpo2KZPFbrLtWMNZnPWn-Wp1ZKcL762QijXJHi6HAswWqNRYxKzA_v-BNk"/>
+<div class="absolute top-3 left-3">
+<div class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">Save $50</div>
+</div>
+<button class="absolute bottom-4 right-4 bg-black text-white text-[11px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 shadow-lg whitespace-nowrap">
+<span class="text-sm font-light">+</span> Quick add
+                    </button>
+</div>
+<div class="flex flex-col gap-2 text-center">
+<h3 class="text-[15px] font-bold tracking-tight text-neutral-900 group-hover:text-secondary transition-colors leading-tight">Obsidian Core 65</h3>
+<div class="flex items-center justify-center gap-2">
+<span class="text-sale-red font-bold text-base">$299.00</span>
+<span class="text-neutral-400 line-through text-sm font-medium">$349.00</span>
+</div>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="bg-surface-container-lowest rounded-[10px] p-4 group transition-all duration-500 hover:shadow-[0_40px_60px_-15px_rgba(0,0,0,0.08)] flex flex-col gap-4 relative">
+<div class="aspect-square bg-surface-container-low rounded-[5px] overflow-hidden relative">
+<img alt="ergonomic keyboard" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkyHt9MrZUYht_N7EP6jxCDZ5lptWDnJoyHl21JKSt5U4vjiwh4Zh6735mYHsy9e8LCUyW8A4rUdXwrPbvMR4-A2_Lb0gylYR3Pib-sKr_3gVtyPbuCaq9B-J3utnO43fdyNKFekxEeu8aOirl5irGlw4TVqWrWNt0hamn0qlFA18Gm7w_FERhMAB0-v9e3DV-rQuH2OxQarux88TqfYnlvAXvwcGogwFrgCspsfGoM0o9ksfQNg6khtkxTO_vCRVfJnBAcNE6Ce8"/>
+<div class="absolute top-3 left-3">
+<div class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">Save $79</div>
+</div>
+<button class="absolute bottom-4 right-4 bg-black text-white text-[11px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 shadow-lg whitespace-nowrap">
+<span class="text-sm font-light">+</span> Quick add
+                    </button>
+</div>
+<div class="flex flex-col gap-2 text-center">
+<h3 class="text-[15px] font-bold tracking-tight text-neutral-900 group-hover:text-secondary transition-colors leading-tight">Split Mono Ergo</h3>
+<div class="flex items-center justify-center gap-2">
+<span class="text-sale-red font-bold text-base">$420.00</span>
+<span class="text-neutral-400 line-through text-sm font-medium">$499.00</span>
+</div>
+</div>
+</div>
+<!-- Product Card 5 -->
+<div class="bg-surface-container-lowest rounded-[10px] p-4 group transition-all duration-500 hover:shadow-[0_40px_60px_-15px_rgba(0,0,0,0.08)] flex flex-col gap-4 relative">
+<div class="aspect-square bg-surface-container-low rounded-[5px] overflow-hidden relative">
+<img alt="aluminum keyboard frame" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_70CGL8ejnitaWH5NQ0wx47wvbtfLiJNmtQfPUbeRy3LFqFwl-p7wY1-D4xTjHz6-LLgVfGVSWL7Cc5MQD6oD2qznILqaJqEVSg5PskCvX62Ekr5Zt9Srj4ZMBgb7svN5DxLc0PdwP9yix9bxqt0ofg3DqqS6FlmENY3LP9uXAV1Yyyt3Rt6QTt6MZNk3VptGv27rMayxoNjYvlDw4bdNEFRNW0F3ZkRWaPdUDOrt0DwtyarXZpIdxdleFITjpalcbrMe6sF3TGg"/>
+<div class="absolute top-3 left-3">
+<div class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">Save $70</div>
+</div>
+<button class="absolute bottom-4 right-4 bg-black text-white text-[11px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 shadow-lg whitespace-nowrap">
+<span class="text-sm font-light">+</span> Quick add
+                    </button>
+</div>
+<div class="flex flex-col gap-2 text-center">
+<h3 class="text-[15px] font-bold tracking-tight text-neutral-900 group-hover:text-secondary transition-colors leading-tight">Titanium Linear</h3>
+<div class="flex items-center justify-center gap-2">
+<span class="text-sale-red font-bold text-base">$210.00</span>
+<span class="text-neutral-400 line-through text-sm font-medium">$280.00</span>
+</div>
+</div>
+</div>
+<!-- Product Card 6 -->
+<div class="bg-surface-container-lowest rounded-[10px] p-4 group transition-all duration-500 hover:shadow-[0_40px_60px_-15px_rgba(0,0,0,0.08)] flex flex-col gap-4 relative">
+<div class="aspect-square bg-surface-container-low rounded-[5px] overflow-hidden relative">
+<img alt="wood case keyboard" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrUFzNCyUUGSYyVwbWA76zCivjgm6s7hHLSdRNZv5NYi2iGqm096F9JlZNBXpXPc6wteSFar5Z-xKSkMe2gTrgZsIYdZ7VCijhshwXkJkmpup9RWo3TcmL-MMUTCZ-4lP_uGfFJQYwGT57fHKfD3fceKn8fDlbcGLgIrWyMBKPaGNibgioxbwUtiK2SsKP50CAqjhvN0qlUop7bK0-UQSafV0auL7M7yANVx_5DoTtIP91zApozYXMBorPvKJ78hjEM_p4KmVLzCw"/>
+<div class="absolute top-3 left-3 flex flex-col gap-1">
+<div class="bg-neutral-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">Limited</div>
+<div class="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-widest">Save $100</div>
+</div>
+<button class="absolute bottom-4 right-4 bg-black text-white text-[11px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 shadow-lg whitespace-nowrap">
+<span class="text-sm font-light">+</span> Quick add
+                    </button>
+</div>
+<div class="flex flex-col gap-2 text-center">
+<h3 class="text-[15px] font-bold tracking-tight text-neutral-900 group-hover:text-secondary transition-colors leading-tight">Nordic Oak Edition</h3>
+<div class="flex items-center justify-center gap-2">
+<span class="text-sale-red font-bold text-base">$350.00</span>
+<span class="text-neutral-400 line-through text-sm font-medium">$450.00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="flex justify-center items-center gap-2 mt-12 py-8 border-t border-surface-container-high">
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low text-on-surface hover:bg-primary-container transition-colors font-bold text-xs">1</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-primary-container text-on-primary-fixed shadow-md shadow-primary-container/30 font-bold text-xs">2</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-low text-on-surface hover:bg-primary-container transition-colors font-bold text-xs">3</button>
+<div class="px-2 text-on-surface-variant font-black">...</div>
+<button class="px-6 h-10 rounded-full flex items-center justify-center bg-surface-container-low text-on-surface hover:bg-primary-container transition-colors font-bold text-xs uppercase tracking-widest">Next</button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 border-t border-neutral-200 bg-neutral-50 flex flex-col md:flex-row justify-between items-center px-12 gap-8">
+<div class="flex flex-col items-center md:items-start gap-4">
+<span class="text-xs font-black tracking-tighter text-neutral-900 uppercase">KINETIC MONOLITH</span>
+<p class="font-['Inter'] text-[10px] uppercase tracking-[0.2em] font-medium text-neutral-400">© 2024 KINETIC MONOLITH. ALL RIGHTS RESERVED.</p>
+</div>
+<div class="flex gap-8">
+<a class="font-['Inter'] text-[10px] uppercase tracking-[0.2em] font-medium text-neutral-400 hover:text-yellow-400 transition-colors" href="#">Privacy Policy</a>
+<a class="font-['Inter'] text-[10px] uppercase tracking-[0.2em] font-medium text-neutral-400 hover:text-yellow-400 transition-colors" href="#">Terms of Service</a>
+<a class="font-['Inter'] text-[10px] uppercase tracking-[0.2em] font-medium text-neutral-400 hover:text-yellow-400 transition-colors" href="#">Shipping</a>
+<a class="font-['Inter'] text-[10px] uppercase tracking-[0.2em] font-medium text-neutral-400 hover:text-yellow-400 transition-colors" href="#">Returns</a>
+</div>
+</footer>
+</body></html>

@@ -15,9 +15,10 @@
       <nav class="site-header__nav" aria-label="Product categories">
         @for (item of navItems(); track item.label) {
           <a
-            [routerLink]="item.link || '/'"
+            [routerLink]="item.link"
             class="site-header__nav-link text-[11px] font-bold uppercase tracking-[0.18em] transition-colors"
             [ngClass]="isActive(item) ? 'text-white' : 'text-white/70'"
+            (click)="onNavSelect(item)"
           >
             {{ item.label }}
           </a>
@@ -26,11 +27,11 @@
     </div>
 
     <a routerLink="/" class="site-header__brand" aria-label="ZenTech home">
-      <img
-        src="/brand/zentech-zt-badge.svg"
-        alt="ZenTech ZT logo"
-        class="site-header__logo"
-      />
+      <span class="site-header__brand-mark" aria-hidden="true">
+        <span class="site-header__brand-mark-inner">
+          <span class="site-header__brand-mark-text">ZT</span>
+        </span>
+      </span>
       <span class="site-header__wordmark text-xl font-black uppercase italic tracking-tight">
         <span class="text-white">Zen</span>
         <span class="text-white/40">Tech</span>
@@ -92,7 +93,7 @@
 
 <mat-menu #categoryMenu="matMenu" class="site-header__menu">
   @for (item of navItems(); track trackByLabel($index, item)) {
-    <button mat-menu-item [routerLink]="item.link || '/'">
+    <button mat-menu-item [routerLink]="item.link" (click)="onNavSelect(item)">
       <span>{{ item.label }}</span>
     </button>
   }

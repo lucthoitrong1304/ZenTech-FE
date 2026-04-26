@@ -1,0 +1,23 @@
+<div class="space-y-4">
+  <div class="overflow-hidden rounded-[10px] bg-[#ebe7e7]">
+    <img
+      [src]="selectedImage()"
+      [alt]="productName()"
+      class="aspect-square w-full object-cover"
+    />
+  </div>
+
+  <div class="grid grid-cols-3 gap-3">
+    @for (image of images(); track image) {
+      <button
+        type="button"
+        class="overflow-hidden rounded-[8px] border bg-[#ebe7e7] transition"
+        [class.border-[#ffc700]]="image === selectedImage()"
+        [class.border-transparent]="image !== selectedImage()"
+        (click)="imageSelect.emit(image)"
+      >
+        <img [src]="image" [alt]="productName()" class="aspect-square w-full object-cover" />
+      </button>
+    }
+  </div>
+</div>

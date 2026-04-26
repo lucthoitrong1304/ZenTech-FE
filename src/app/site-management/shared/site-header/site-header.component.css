@@ -75,17 +75,42 @@
   grid-column: 2;
   justify-self: center;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.7rem;
   min-width: 0;
   text-decoration: none;
 }
 
-.site-header__logo {
-  display: block;
-  height: 2.3rem;
-  width: auto;
+.site-header__brand-mark {
+  display: inline-flex;
+  height: 2.35rem;
+  width: 2.6rem;
   flex: 0 0 auto;
-  filter: drop-shadow(0 0 8px rgb(255 183 0 / 0.18));
+  transform: skewX(-15deg);
+  border-radius: 0.35rem;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #ffc700, #ff8a00);
+  box-shadow: 0 0 18px rgb(255 183 0 / 0.14);
+}
+
+.site-header__brand-mark-inner {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.28rem;
+  background: #0a0a0a;
+}
+
+.site-header__brand-mark-text {
+  transform: skewX(15deg);
+  font-size: 0.84rem;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #ffc700, #ff8a00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .site-header__wordmark {
@@ -100,7 +125,7 @@
   grid-column: 3;
   justify-self: end;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.55rem;
 }
 
 .site-header__icon-button,
@@ -261,7 +286,8 @@
     width: 2.15rem;
   }
 
-  .site-header__logo {
-    height: 2.05rem;
+  .site-header__brand-mark {
+    height: 2.15rem;
+    width: 2.35rem;
   }
 }
