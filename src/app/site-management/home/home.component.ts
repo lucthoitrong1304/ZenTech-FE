@@ -5,10 +5,9 @@ import { Router, RouterLink } from '@angular/router';
 import { filter } from 'rxjs';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../auth/data-access/store/auth-session.store';
-import {
-  HeaderNavItem,
-  SiteHeaderComponent
-} from '../shared/site-header/site-header.component';
+import { SITE_CATEGORY_NAV_ITEMS } from '../shared/site-navigation.constants';
+import { HeaderNavItem } from '../shared/site-navigation.models';
+import { SiteHeaderComponent } from '../shared/site-header/site-header.component';
 
 interface StatItem {
   label: string;
@@ -16,6 +15,7 @@ interface StatItem {
 }
 
 interface CategoryCard {
+  slug: string;
   title: string;
   subtitle: string;
   image: string;
@@ -63,14 +63,7 @@ export class HomeComponent {
   readonly currentUser$ = this.authSessionStore.currentUser$;
   activeNavLabel: string | null = null;
 
-  readonly navItems: HeaderNavItem[] = [
-    { label: 'Keyboards', link: '/' },
-    { label: 'Mice', link: '/' },
-    { label: 'Speakers', link: '/' },
-    { label: 'Earbuds', link: '/' },
-    { label: 'Chargers', link: '/' },
-    { label: 'Accessories', link: '/' }
-  ];
+  readonly navItems: HeaderNavItem[] = SITE_CATEGORY_NAV_ITEMS;
 
   readonly heroStats: StatItem[] = [
     { label: 'Status', value: 'Operating' },
@@ -79,6 +72,7 @@ export class HomeComponent {
 
   readonly categories: CategoryCard[] = [
     {
+      slug: 'keyboards',
       title: 'Keyboards',
       subtitle: 'Precision instruments',
       image: '/home/asset-5.webp',
@@ -86,6 +80,7 @@ export class HomeComponent {
       minHeightClass: 'min-h-[19rem]'
     },
     {
+      slug: 'mice',
       title: 'Mice',
       subtitle: 'Rapid response',
       image: '/home/asset-7.webp',
@@ -93,6 +88,7 @@ export class HomeComponent {
       minHeightClass: 'min-h-[16rem]'
     },
     {
+      slug: 'speakers',
       title: 'Speakers',
       subtitle: 'Acoustic purity',
       image: '/home/asset-6.webp',
@@ -100,6 +96,7 @@ export class HomeComponent {
       minHeightClass: 'min-h-[16rem]'
     },
     {
+      slug: 'earbuds',
       title: 'Earbuds',
       subtitle: 'Sonic freedom',
       image: '/home/asset-2.webp',
@@ -107,6 +104,7 @@ export class HomeComponent {
       minHeightClass: 'min-h-[16rem]'
     },
     {
+      slug: 'chargers',
       title: 'Chargers',
       subtitle: 'Eternal flow',
       image: '/home/asset-3.webp',

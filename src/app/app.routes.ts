@@ -6,6 +6,20 @@ export const routes: Routes = [
     loadComponent: () => import('./site-management/home/home.component').then(m => m.HomeComponent)
   },
   {
+    path: 'categories/:slug',
+    loadComponent: () =>
+      import('./site-management/product-listing/pages/product-listing-page/product-listing-page.component').then(
+        m => m.ProductListingPageComponent
+      )
+  },
+  {
+    path: 'products/:slug',
+    loadComponent: () =>
+      import('./site-management/product-detail/pages/product-detail-page/product-detail-page.component').then(
+        m => m.ProductDetailPageComponent
+      )
+  },
+  {
     path: 'reset-password',
     loadComponent: () => import('./site-management/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },

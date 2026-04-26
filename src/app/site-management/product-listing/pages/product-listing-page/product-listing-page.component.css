@@ -1,0 +1,11 @@
+@reference "../../../../../styles.css";
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.product-listing-page {
+  font-family:
+    Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}

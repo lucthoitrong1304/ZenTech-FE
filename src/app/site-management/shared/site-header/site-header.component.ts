@@ -13,11 +13,7 @@ import {
   LucideUserPlus
 } from '@lucide/angular';
 import { MatMenuModule } from '@angular/material/menu';
-
-export interface HeaderNavItem {
-  label: string;
-  link?: string;
-}
+import { HeaderNavItem } from '../site-navigation.models';
 
 export interface HeaderUser {
   isAuthenticated: boolean;
@@ -100,6 +96,6 @@ export class SiteHeaderComponent {
   }
 
   trackByLabel(_: number, item: HeaderNavItem): string {
-    return item.label;
+    return item.slug;
   }
 }

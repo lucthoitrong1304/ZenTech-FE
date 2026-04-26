@@ -1,0 +1,38 @@
+<section class="border-b border-[#d2c5ab]/20 bg-white">
+  <div
+    class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8"
+  >
+    <div class="space-y-3">
+      <nav class="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em]">
+        <a routerLink="/" class="text-[#81765f] transition hover:text-[#1c1b1b]">Home</a>
+        <span class="text-[#b3ab98]">/</span>
+        <span class="text-[#4b41e1]">{{ category().label }}</span>
+      </nav>
+
+      <div class="space-y-1">
+        <h2 class="text-2xl font-black uppercase italic tracking-[-0.04em] text-[#1c1b1b]">
+          Browse {{ category().label }}
+        </h2>
+        <p class="text-sm text-[#4f4632]">
+          {{ productCount() }} sản phẩm đang hiển thị với dữ liệu mock.
+        </p>
+      </div>
+    </div>
+
+    <label
+      class="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#4f4632]"
+    >
+      <span>Sort by</span>
+      <select
+        #sortSelect
+        [value]="selectedSort()"
+        (change)="onSortChange(sortSelect.value)"
+        class="min-w-[12rem] rounded-[10px] border border-[#d2c5ab]/60 bg-[#fcf9f8] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#1c1b1b] outline-none transition focus:border-[#4b41e1]"
+      >
+        @for (option of sortOptions(); track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </label>
+  </div>
+</section>

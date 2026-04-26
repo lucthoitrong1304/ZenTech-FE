@@ -1,0 +1,51 @@
+@reference "../../../../../styles.css";
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+.product-detail-page {
+  font-family:
+    Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+.product-detail-section {
+  width: 100%;
+}
+
+.product-detail-container {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  box-sizing: border-box;
+}
+
+.product-detail-container--grid {
+  display: grid;
+  gap: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .product-detail-container {
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-detail-container {
+    padding-inline: 2rem;
+  }
+
+  .product-detail-container--grid {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  }
+}
+
+@media (max-width: 380px) {
+  .product-detail-container {
+    padding-inline: 0.875rem;
+  }
+}

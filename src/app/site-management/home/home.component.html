@@ -84,8 +84,9 @@
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-12 md:auto-rows-[minmax(180px,1fr)]">
           @for (category of categories; track category.title) {
-            <article
-              class="group relative overflow-hidden rounded-[10px] bg-[#101010]"
+            <a
+              [routerLink]="['/categories', category.slug]"
+              class="group relative block overflow-hidden rounded-[10px] bg-[#101010]"
               [ngClass]="[category.layoutClass, category.minHeightClass]"
             >
               <img
@@ -104,7 +105,7 @@
                   </p>
                 </div>
               </div>
-            </article>
+            </a>
           }
         </div>
       </div>
