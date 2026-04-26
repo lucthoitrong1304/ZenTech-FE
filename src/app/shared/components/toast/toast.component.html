@@ -1,1 +1,44 @@
-<p-toast position="top-right" />
+<p-toast position="top-right">
+  <ng-template pTemplate="headless" let-message let-closeFn="closeFn">
+    <article
+      class="toast-card"
+      [class.toast-card--success]="message.severity === 'success'"
+      [class.toast-card--error]="message.severity === 'error'"
+      [class.toast-card--warning]="message.severity === 'warn'"
+      [class.toast-card--info]="message.severity === 'info'"
+    >
+      <div class="toast-card__rail" aria-hidden="true"></div>
+
+      <div class="toast-card__icon" aria-hidden="true">
+        @switch (message.severity) {
+          @case ('success') {
+            <svg lucideCircleCheck [attr.stroke-width]="2.4"></svg>
+          }
+          @case ('error') {
+            <svg lucideCircleAlert [attr.stroke-width]="2.4"></svg>
+          }
+          @case ('warn') {
+            <svg lucideTriangleAlert [attr.stroke-width]="2.4"></svg>
+          }
+          @default {
+            <svg lucideInfo [attr.stroke-width]="2.4"></svg>
+          }
+        }
+      </div>
+
+      <div class="toast-card__content">
+        <h3 class="toast-card__title">{{ message.summary }}</h3>
+        <p class="toast-card__message">{{ message.detail }}</p>
+      </div>
+
+      <button
+        class="toast-card__close"
+        type="button"
+        aria-label="Đóng thông báo"
+        (click)="closeFn($event)"
+      >
+        <svg lucideX [attr.stroke-width]="2.1"></svg>
+      </button>
+    </article>
+  </ng-template>
+</p-toast>
