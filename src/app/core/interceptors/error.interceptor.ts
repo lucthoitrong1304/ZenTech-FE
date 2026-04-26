@@ -1,19 +1,28 @@
-import { HttpErrorResponse, HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { ErrorStateService } from '../errors/error-state.service';
-import { SKIP_GLOBAL_ERROR } from '../tokens/api-context.token';
+import { AuthRefreshService } from '../services/auth-refresh.service';
 import { AuthStorageService } from '../services/auth-storage.service';
+import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../tokens/api-context.token';
+
+type RefreshState =
+  | { status: 'idle' }
+  | { status: 'refreshing' }
+  | { status: 'success'; accessToken: string }
+  | { status: 'failure'; error: unknown };
 
 // State để quản lý việc gọi API refresh token
 let isRefreshing = false;
-const refreshTokenSubject = new BehaviorSubject<string | null>(null);
+const refreshTokenSubject = new BehaviorSubject<RefreshState>({ status: 'idle' });
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const errorStateService = inject(ErrorStateService);
+  const authRefreshService = inject(AuthRefreshService);
   const authStorageService = inject(AuthStorageService);
+  const skipAuth = req.context.get(SKIP_AUTH_TOKEN);
   const skipGlobalError = req.context.get(SKIP_GLOBAL_ERROR);
 
   return next(req).pipe(
@@ -25,7 +34,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       // Xử lý riêng cho 401 Unauthorized (Hết hạn Token)
       if (error.status === 401) {
-        return handle401Error(req, next, authStorageService, router);
+        if (skipAuth) {
+          return throwError(() => error);
+        }
+
+        return handle401Error(req, next, authRefreshService, authStorageService, router);
       }
 
       // Xử lý các lỗi hệ thống/mạng khác
@@ -57,62 +70,67 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
 // Hàm phụ trợ xử lý luồng 401
 function handle401Error(
-  req: HttpRequest<any>,
+  req: HttpRequest<unknown>,
   next: HttpHandlerFn,
+  authRefreshService: AuthRefreshService,
   authStorageService: AuthStorageService,
   router: Router
 ) {
   if (!isRefreshing) {
     isRefreshing = true;
-    refreshTokenSubject.next(null);
+    refreshTokenSubject.next({ status: 'refreshing' });
 
     const refreshToken = authStorageService.getRefreshToken();
 
     if (refreshToken) {
-      // TODO: Thay đoạn này bằng API call thực tế của bạn (VD: authService.refreshToken())
-      // Giả lập gọi API lấy token mới bằng fetch hoặc HttpClient mới để không dính interceptor vòng lặp
-
-      /* MẪU LOGIC GỌI API REFRESH:
-      return authService.callRefreshToken(refreshToken).pipe(
-        switchMap((res: any) => {
+      return authRefreshService.refresh(refreshToken).pipe(
+        switchMap(response => {
           isRefreshing = false;
-          authStorageService.setAccessToken(res.accessToken);
-          authStorageService.setRefreshToken(res.refreshToken);
-          refreshTokenSubject.next(res.accessToken);
+          authStorageService.setSession(response);
+          refreshTokenSubject.next({ status: 'success', accessToken: response.accessToken });
 
-          return next(req.clone({
-            setHeaders: { Authorization: `Bearer ${res.accessToken}` }
-          }));
+          return next(addAuthorizationHeader(req, response.accessToken));
         }),
-        catchError((err) => {
+        catchError(error => {
           isRefreshing = false;
           authStorageService.clear();
+          refreshTokenSubject.next({ status: 'failure', error });
           router.navigate(['/auth/login']);
-          return throwError(() => err);
+          return throwError(() => error);
         })
       );
-      */
-
-      // Tạm thời throw lỗi để bạn lắp API vào sau
-      console.warn('Cần implement API gọi Refresh Token ở đây');
-      return throwError(() => new Error('Chưa implement Refresh Token API'));
-
     } else {
       // Không có refresh token -> Bắt đăng nhập lại
+      isRefreshing = false;
+      const error = new Error('Vui lòng đăng nhập lại');
       authStorageService.clear();
+      refreshTokenSubject.next({ status: 'failure', error });
       router.navigate(['/auth/login']);
-      return throwError(() => new Error('Vui lòng đăng nhập lại'));
+      return throwError(() => error);
     }
   } else {
     // Nếu ĐANG trong quá trình refresh token, các request khác sẽ rơi vào trạng thái chờ (queue)
     return refreshTokenSubject.pipe(
-      filter(token => token !== null),
+      filter(state => state.status === 'success' || state.status === 'failure'),
       take(1),
-      switchMap(token => {
-        return next(req.clone({
-          setHeaders: { Authorization: `Bearer ${token}` }
-        }));
+      switchMap(state => {
+        if (state.status === 'failure') {
+          return throwError(() => state.error);
+        }
+
+        return next(addAuthorizationHeader(req, state.accessToken));
       })
     );
   }
+}
+
+function addAuthorizationHeader(
+  req: HttpRequest<unknown>,
+  accessToken: string
+): HttpRequest<unknown> {
+  return req.clone({
+    setHeaders: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
 }
