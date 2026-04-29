@@ -70,15 +70,18 @@
 }
 
 .site-header__category-dropdown {
+  --category-dropdown-gap: 0.2rem;
+
   pointer-events: none;
   position: absolute;
   left: 0;
-  top: calc(100% + 0.2rem);
+  top: 100%;
   z-index: 60;
   display: grid;
   min-width: 15rem;
   gap: 0.1rem;
-  padding: 0.45rem;
+  padding: calc(0.45rem + var(--category-dropdown-gap)) 0.45rem 0.45rem;
+  background-clip: padding-box;
   border: 1px solid rgb(210 197 171 / 0.14);
   border-radius: 12px;
   background: #121212;
