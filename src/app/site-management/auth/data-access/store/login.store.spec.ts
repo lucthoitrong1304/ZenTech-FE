@@ -11,6 +11,7 @@ describe('LoginStore', () => {
     isAuthenticated: true,
     fullName: 'Alex Nguyen',
     avatarUrl: null,
+    roles: ['CUSTOMER'],
   };
 
   function configureStore(): {

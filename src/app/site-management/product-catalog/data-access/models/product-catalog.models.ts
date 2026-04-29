@@ -1,10 +1,12 @@
 export interface ProductCategory {
+  id?: string;
   slug: string;
   label: string;
-  subtitle: string;
-  description: string;
-  heroImage: string;
+  subtitle?: string;
+  description?: string;
+  heroImage?: string;
   heroEyebrow?: string;
+  children?: ProductCategory[];
 }
 
 export interface ProductListItem {
@@ -25,7 +27,21 @@ export interface ProductListItem {
 export interface ProductCategoryListing {
   category: ProductCategory;
   products: ProductListItem[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
 }
+
+export interface ProductCategoryListingQuery {
+  page: number;
+  size: number;
+  sort: ProductCategoryListingSort;
+}
+
+export type ProductCategoryListingSort = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC';
 
 export interface ProductSpec {
   label: string;
