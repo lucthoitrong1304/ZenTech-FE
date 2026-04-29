@@ -16,6 +16,7 @@ export interface ProductReviewFormError {
 export interface ProductDetailViewModel {
   product: ProductDetail | null;
   relatedProducts: ProductListItem[];
+  selectedVariantId: string | null;
   loading: boolean;
   error: string | null;
   isNotFound: boolean;

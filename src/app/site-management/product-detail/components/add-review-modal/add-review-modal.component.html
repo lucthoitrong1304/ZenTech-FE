@@ -1,123 +1,113 @@
 <p-dialog
   [visible]="true"
   [modal]="true"
-  [closable]="!submitting()"
-  [style]="{ width: 'min(36rem, calc(100vw - 2rem))' }"
-  styleClass="overflow-hidden rounded-[10px]"
+  [closable]="false"
+  [closeOnEscape]="!submitting()"
+  [dismissableMask]="!submitting()"
+  [showHeader]="false"
+  [style]="{ width: 'min(32rem, calc(100vw - 2rem))' }"
+  styleClass="add-review-dialog"
   (visibleChange)="!$event && cancelReview.emit()"
 >
-  <ng-template pTemplate="header">
-    <div>
-      <p class="text-[11px] font-black uppercase tracking-[0.2em] text-[#4b41e1]">
-        Thêm đánh giá
-      </p>
-      <h2 id="add-review-title" class="mt-2 text-2xl font-black uppercase italic text-[#1c1b1b]">
-        {{ productName() }}
-      </h2>
-    </div>
-  </ng-template>
+  <form class="add-review-card" (ngSubmit)="submitReview.emit()">
+    <header class="flex min-w-0 items-start justify-between gap-4">
+      <div class="min-w-0">
+        <h2 id="add-review-title" class="text-2xl font-black text-[#101010]">
+          Write a Review
+        </h2>
+        <p class="mt-1 truncate text-sm font-semibold text-[#81765f]">
+          {{ productName() }}
+        </p>
+      </div>
 
-  <form class="space-y-5" (ngSubmit)="submitReview.emit()">
-    <div>
-      <label class="text-[11px] font-black uppercase tracking-[0.18em] text-[#4f4632]">
-        Rating
-      </label>
-      <div class="mt-3 flex gap-2">
+      <button
+        type="button"
+        class="grid h-8 w-8 flex-none place-items-center rounded-full text-[#101010] transition hover:bg-[#f0edec] disabled:cursor-not-allowed disabled:opacity-50"
+        (click)="cancelReview.emit()"
+        [disabled]="submitting()"
+        aria-label="Close review form"
+      >
+        <svg lucideX class="h-4 w-4" [attr.stroke-width]="2.2"></svg>
+      </button>
+    </header>
+
+    <section class="mt-6" aria-label="Rating">
+      <div class="flex items-center gap-2">
         @for (rating of ratingValues; track rating) {
           <button
             type="button"
-            class="grid h-11 w-11 place-items-center rounded-[8px] border text-xl transition"
-            [ngClass]="
-              draft().rating >= rating
-                ? 'border-[#ffc700] bg-[#ffc700] text-[#251a00]'
-                : 'border-[#d2c5ab] bg-white text-[#81765f] hover:border-[#ffc700]'
-            "
+            class="grid h-9 w-9 place-items-center rounded-full transition hover:bg-[#fff4bd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4b41e1]"
             (click)="updateRating(rating)"
+            [disabled]="submitting()"
             [attr.aria-label]="'Rate ' + rating + ' stars'"
           >
-            *
+            <svg
+              lucideStar
+              class="h-6 w-6"
+              [class.text-[#ffc700]]="draft().rating >= rating"
+              [class.text-[#c9bda6]]="draft().rating < rating"
+              [attr.fill]="draft().rating >= rating ? '#ffc700' : 'none'"
+              [attr.stroke-width]="2.1"
+            ></svg>
           </button>
         }
       </div>
       @if (error()?.rating) {
-        <p class="mt-2 text-sm text-[#be0037]">{{ error()?.rating }}</p>
+        <p class="mt-2 text-xs font-semibold text-[#be0037]">{{ error()?.rating }}</p>
       }
-    </div>
+    </section>
 
-    <label class="block">
-      <span class="text-[11px] font-black uppercase tracking-[0.18em] text-[#4f4632]">
-        Tên hiển thị
-      </span>
-      <input
-        pInputText
-        type="text"
-        [ngModel]="draft().reviewerName"
-        name="reviewerName"
-        (ngModelChange)="updateField('reviewerName', $event)"
-        class="mt-2 w-full"
-        placeholder="ZenTech Customer"
-      />
-    </label>
-
-    <label class="block">
-      <span class="text-[11px] font-black uppercase tracking-[0.18em] text-[#4f4632]">
-        Tiêu đề
-      </span>
-      <input
-        pInputText
-        type="text"
-        [ngModel]="draft().title"
-        name="title"
-        (ngModelChange)="updateField('title', $event)"
-        class="mt-2 w-full"
-        placeholder="Sản phẩm dùng rất ổn"
-      />
-      @if (error()?.title) {
-        <p class="mt-2 text-sm text-[#be0037]">{{ error()?.title }}</p>
-      }
-    </label>
-
-    <label class="block">
-      <span class="text-[11px] font-black uppercase tracking-[0.18em] text-[#4f4632]">
-        Nội dung
-      </span>
+    <label class="mt-5 block">
+      <span class="sr-only">Review comment</span>
       <textarea
         pTextarea
         [ngModel]="draft().comment"
         name="comment"
         (ngModelChange)="updateField('comment', $event)"
         rows="5"
-        class="mt-2 w-full resize-none"
-        placeholder="Chia sẻ trải nghiệm thực tế của bạn..."
+        class="add-review-textarea"
+        placeholder="Share your experience with this product..."
+        [disabled]="submitting()"
       ></textarea>
       @if (error()?.comment) {
-        <p class="mt-2 text-sm text-[#be0037]">{{ error()?.comment }}</p>
+        <p class="mt-2 text-xs font-semibold text-[#be0037]">{{ error()?.comment }}</p>
       }
     </label>
 
+    <section class="mt-5">
+      <p class="text-xs font-bold text-[#101010]">Upload Photos (Optional)</p>
+      <button
+        type="button"
+        class="mt-2 grid h-10 w-10 place-items-center rounded-[10px] border border-[#d2c5ab] bg-[#fcf9f8] text-[#81765f] disabled:cursor-not-allowed disabled:opacity-70"
+        disabled
+        aria-label="Photo upload is not available yet"
+      >
+        <svg lucideImagePlus class="h-4 w-4" [attr.stroke-width]="2"></svg>
+      </button>
+    </section>
+
     @if (error()?.submit) {
-      <p class="rounded-[8px] bg-[#ffdada] px-4 py-3 text-sm text-[#920028]">
+      <p class="mt-4 rounded-[10px] bg-[#ffdada] px-4 py-3 text-xs font-semibold text-[#920028]">
         {{ error()?.submit }}
       </p>
     }
 
-    <div class="flex flex-col-reverse gap-3 border-t border-[#d2c5ab]/25 pt-5 sm:flex-row sm:justify-end">
+    <div class="mt-6 space-y-3">
       <button
-        pButton
+        type="submit"
+        class="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#ffc700] px-5 text-sm font-black text-[#251a00] transition hover:bg-[#f5bf00] disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="submitting()"
+      >
+        {{ submitting() ? 'Submitting...' : 'Submit Review' }}
+      </button>
+      <button
         type="button"
-        severity="secondary"
-        outlined
-        label="Huỷ"
+        class="inline-flex h-12 w-full items-center justify-center rounded-full border border-[#101010] bg-white px-5 text-sm font-bold text-[#101010] transition hover:bg-[#101010] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
         (click)="cancelReview.emit()"
         [disabled]="submitting()"
-      ></button>
-      <button
-        pButton
-        type="submit"
-        label="Gửi đánh giá"
-        [loading]="submitting()"
-        [disabled]="submitting()"
-      ></button>
+      >
+        Cancel
+      </button>
     </div>
   </form>
 </p-dialog>

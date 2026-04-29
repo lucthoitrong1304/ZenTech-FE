@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { LucideChevronDown, LucideChevronUp } from '@lucide/angular';
+import { MarkdownComponent } from 'ngx-markdown';
 import { distinctUntilChanged, map } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
@@ -26,6 +28,9 @@ import { ProductReviewListComponent } from '../../components/product-review-list
     AddReviewModalComponent,
     ProductDetailGalleryComponent,
     ProductReviewListComponent,
+    MarkdownComponent,
+    LucideChevronDown,
+    LucideChevronUp,
   ],
   templateUrl: './product-detail-page.component.html',
   styleUrl: './product-detail-page.component.css',
@@ -42,7 +47,34 @@ export class ProductDetailPageComponent {
   readonly navItems = this.categoryNavigationStore.navItems;
   readonly currentUser = this.authSessionStore.currentUser;
   readonly selectedImage = signal('');
-  readonly displayImage = computed(() => this.selectedImage() || this.productDetailStore.product()?.image || '');
+  readonly descriptionExpanded = signal(false);
+  readonly displayImage = computed(
+    () =>
+      this.selectedImage() ||
+      this.productDetailStore.gallery()[0] ||
+      this.productDetailStore.product()?.image ||
+      ''
+  );
+  readonly detailContentTitle = computed(() =>
+    this.productDetailStore.product()?.description?.trim() ? 'Description' : 'Spec'
+  );
+  readonly detailMarkdownContent = computed(() => {
+    const product = this.productDetailStore.product();
+
+    if (!product) {
+      return '';
+    }
+
+    const description = product.description.trim();
+
+    if (description) {
+      return description;
+    }
+
+    return product.specs
+      .map(spec => `### ${spec.label}\n\n${spec.value}`)
+      .join('\n\n');
+  });
   readonly skeletonBlocks = Array.from({ length: 4 }, (_, index) => index);
   private readonly productSlug = toSignal(
     this.route.paramMap.pipe(
@@ -58,6 +90,7 @@ export class ProductDetailPageComponent {
 
       if (slug) {
         this.selectedImage.set('');
+        this.descriptionExpanded.set(false);
         this.productDetailStore.loadProduct(slug);
       }
     });
@@ -118,6 +151,14 @@ export class ProductDetailPageComponent {
 
   onRelatedProductClick(product: ProductListItem): void {
     this.selectedImage.set(product.image);
+  }
+
+  onVariantSelect(variantId: string): void {
+    this.productDetailStore.selectVariant(variantId);
+  }
+
+  toggleDescription(): void {
+    this.descriptionExpanded.update(value => !value);
   }
 
   openReviewModal(): void {

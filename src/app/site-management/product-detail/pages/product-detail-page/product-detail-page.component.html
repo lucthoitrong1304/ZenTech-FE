@@ -1,67 +1,128 @@
-<div class="product-detail-page min-h-screen bg-[#fcf9f8] text-[#1c1b1b]">
+<div class="product-detail-page min-h-screen bg-white text-[#1c1b1b]">
   <app-site-header
     [navItems]="navItems()"
-    [activeNavLabel]="productDetailStore.product()?.category?.label || null"
+    [activeNavLabel]="null"
     [cartCount]="2"
     [currentUser]="currentUser()"
     (logout)="onLogout()"
   />
 
-  <main>
+  <main class="pt-4">
     @if (productDetailStore.loading()) {
       <section class="product-detail-section">
         <div class="product-detail-container product-detail-container--grid py-12">
-          <div class="aspect-square animate-pulse rounded-[10px] bg-[#ebe7e7]"></div>
-          <div class="min-w-0 space-y-5">
-            <div class="h-4 w-44 max-w-full animate-pulse rounded-full bg-[#ebe7e7]"></div>
-            <div class="h-12 w-3/4 max-w-full animate-pulse rounded-full bg-[#ebe7e7]"></div>
-            <div class="h-5 w-56 max-w-full animate-pulse rounded-full bg-[#ebe7e7]"></div>
+          <div class="flex gap-4">
+            <div class="hidden w-24 space-y-4 lg:block">
+              @for (block of skeletonBlocks; track block) {
+                <div class="h-24 animate-pulse rounded-[10px] bg-[#ebe7e7]"></div>
+              }
+            </div>
+            <div class="min-h-[24rem] flex-1 animate-pulse rounded-[16px] bg-[#ebe7e7] lg:min-h-[37.5rem]"></div>
+          </div>
+
+          <div class="min-w-0 space-y-5 py-4">
+            <div class="h-10 w-4/5 max-w-full animate-pulse rounded-full bg-[#ebe7e7]"></div>
+            <div class="h-8 w-44 max-w-full animate-pulse rounded-full bg-[#ebe7e7]"></div>
+            <div class="h-5 w-64 max-w-full animate-pulse rounded-full bg-[#ebe7e7]"></div>
             @for (block of skeletonBlocks; track block) {
               <div class="h-4 w-full animate-pulse rounded-full bg-[#ebe7e7]"></div>
             }
-            <div class="h-12 w-64 max-w-full animate-pulse rounded-[10px] bg-[#ebe7e7]"></div>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="h-14 animate-pulse rounded-full bg-[#ebe7e7]"></div>
+              <div class="h-14 animate-pulse rounded-full bg-[#ebe7e7]"></div>
+            </div>
           </div>
         </div>
       </section>
     } @else if (productDetailStore.product(); as product) {
       <section class="product-detail-section">
-        <div class="product-detail-container product-detail-container--grid py-10 lg:py-14">
+        <div class="product-detail-container product-detail-container--grid gap-10 py-10 lg:py-14">
           <app-product-detail-gallery
-            [images]="product.gallery"
+            [images]="productDetailStore.gallery()"
             [productName]="product.name"
             [selectedImage]="displayImage()"
             (imageSelect)="onImageSelect($event)"
           />
 
-          <div class="min-w-0 space-y-7">
-            <div class="min-w-0 space-y-3">
+          <div class="flex min-w-0 flex-col space-y-7 py-2 lg:max-w-md">
+            <div class="min-w-0 space-y-4">
               <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-                {{ product.category.label }}
+                ZenTech product
               </p>
-              <h1 class="break-words text-4xl font-black uppercase italic leading-tight text-[#1c1b1b] sm:text-5xl">
+              <h1 class="break-words text-4xl font-black leading-tight text-[#101010] sm:text-5xl">
                 {{ product.name }}
               </h1>
-              <div class="flex flex-wrap items-center gap-4 text-sm text-[#4f4632]">
-                <span class="font-black text-[#9b6500]">{{ productDetailStore.rating() }}/5 *</span>
+              <div class="flex flex-wrap items-center gap-3 text-sm text-[#4f4632]">
+                <span class="font-black text-[#9b6500]">
+                  {{ productDetailStore.rating() | number: '1.1-1' }}/5
+                </span>
                 <span>{{ productDetailStore.reviewCount() }} reviews</span>
-                <span>{{ product.inStock ? 'In stock' : 'Back soon' }}</span>
+                <span>{{ productDetailStore.selectedInStock() ? 'In stock' : 'Back soon' }}</span>
               </div>
             </div>
 
-            <p class="text-base leading-8 text-[#4f4632]">{{ product.description }}</p>
-
             <div class="flex flex-wrap items-end gap-4">
               <span class="text-4xl font-black text-[#be0037]">
-                {{ product.price | currency: 'USD' : 'symbol' : '1.0-0' }}
+                {{ productDetailStore.selectedPrice() | currency: 'USD' : 'symbol' : '1.0-0' }}
               </span>
-              @if (product.originalPrice) {
+              @if (productDetailStore.selectedOriginalPrice(); as originalPrice) {
                 <span class="pb-1 text-lg text-[#81765f] line-through">
-                  {{ product.originalPrice | currency: 'USD' : 'symbol' : '1.0-0' }}
+                  {{ originalPrice | currency: 'USD' : 'symbol' : '1.0-0' }}
                 </span>
               }
             </div>
 
-            <div class="flex flex-col gap-4 border-y border-[#d2c5ab]/25 py-6 sm:flex-row sm:items-center">
+            @if (product.variants.length > 0) {
+              <div class="space-y-3">
+                <h2 class="text-sm font-black text-[#101010]">Variant</h2>
+                <div class="flex flex-wrap gap-5">
+                  @for (variant of product.variants; track variant.id) {
+                    <button
+                      type="button"
+                      class="flex min-w-0 flex-col items-center gap-2 text-xs font-bold text-[#4f4632] transition hover:text-[#101010]"
+                      [class.opacity-50]="variant.stockQuantity <= 0"
+                      (click)="onVariantSelect(variant.id)"
+                    >
+                      <span
+                        class="grid h-11 w-11 place-items-center rounded-full border-2 p-[2px]"
+                        [class.border-[#4b41e1]]="variant.id === productDetailStore.selectedVariantId()"
+                        [class.border-transparent]="variant.id !== productDetailStore.selectedVariantId()"
+                      >
+                        <span
+                          class="h-full w-full rounded-full border border-white shadow-inner"
+                          [style.background]="variant.colorCode || '#101010'"
+                        ></span>
+                      </span>
+                      <span class="max-w-24 truncate">{{ variant.name }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (productDetailStore.groupProducts().length > 0) {
+              <div class="space-y-3">
+                <h2 class="text-sm font-black text-[#101010]">Synchronized editions</h2>
+                <div class="grid gap-3 sm:grid-cols-2">
+                  @for (groupProduct of productDetailStore.groupProducts(); track groupProduct.id) {
+                    <a
+                      [routerLink]="['/products', groupProduct.id]"
+                      class="flex min-w-0 items-center gap-3 rounded-[10px] border border-[#d2c5ab]/30 p-3 transition hover:border-[#4b41e1]"
+                    >
+                      <img
+                        [src]="groupProduct.image"
+                        [alt]="groupProduct.name"
+                        class="h-12 w-12 rounded-[8px] object-cover"
+                      />
+                      <span class="min-w-0 truncate text-sm font-black">{{ groupProduct.name }}</span>
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="space-y-3">
+              <h2 class="text-sm font-black text-[#101010]">Quantity</h2>
               <div class="inline-flex w-fit items-center overflow-hidden rounded-[10px] border border-[#d2c5ab] bg-white">
                 <button
                   type="button"
@@ -83,90 +144,111 @@
                   +
                 </button>
               </div>
-
-              <a
-                routerLink="/auth/login"
-                class="inline-flex min-w-0 flex-1 items-center justify-center rounded-[10px] px-6 py-4 text-center text-[11px] font-black uppercase tracking-[0.16em] transition"
-                [ngClass]="
-                  product.inStock
-                    ? 'bg-[#101010] text-white hover:bg-[#4b41e1]'
-                    : 'cursor-not-allowed bg-[#ebe7e7] text-[#81765f]'
-                "
-              >
-                {{ product.inStock ? 'Add to Cart' : 'Notify Me' }}
-              </a>
+              <p class="text-sm text-[#81765f]">
+                {{ productDetailStore.selectedStockQuantity() }} units available
+              </p>
             </div>
 
-            <div class="grid gap-3 sm:grid-cols-2">
-              @for (highlight of product.highlights; track highlight) {
-                <div class="min-w-0 rounded-[8px] border border-[#d2c5ab]/25 bg-white px-4 py-3 text-sm font-bold text-[#1c1b1b]">
-                  {{ highlight }}
-                </div>
-              }
+            <div class="mt-auto grid gap-3 sm:grid-cols-2">
+              <a
+                routerLink="/auth/login"
+                class="inline-flex min-w-0 items-center justify-center rounded-full bg-[#ffc700] px-6 py-4 text-center text-sm font-black text-[#251a00] transition hover:bg-[#f5bf00]"
+                [class.pointer-events-none]="!productDetailStore.selectedInStock()"
+                [class.opacity-50]="!productDetailStore.selectedInStock()"
+              >
+                Buy Now
+              </a>
+              <a
+                routerLink="/auth/login"
+                class="inline-flex min-w-0 items-center justify-center rounded-full bg-[#4b41e1] px-6 py-4 text-center text-sm font-black text-white transition hover:bg-[#332bc9]"
+                [class.pointer-events-none]="!productDetailStore.selectedInStock()"
+                [class.opacity-50]="!productDetailStore.selectedInStock()"
+              >
+                Add to Cart
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="product-detail-section bg-[#f6f3f2]">
-        <div class="product-detail-container grid gap-8 py-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-          <div class="min-w-0">
-            <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-              Technical details
-            </p>
-            <h2 class="mt-3 break-words text-3xl font-black uppercase italic text-[#1c1b1b]">
-              Specs
-            </h2>
-          </div>
-          <div class="grid min-w-0 gap-3 sm:grid-cols-2">
-            @for (spec of product.specs; track spec.label) {
-              <div class="min-w-0 rounded-[8px] bg-white p-4">
-                <p class="break-words text-[11px] font-black uppercase tracking-[0.18em] text-[#81765f]">
-                  {{ spec.label }}
+      @if (detailMarkdownContent()) {
+        <section class="product-detail-section border-y border-[#e5e1dc] bg-[#fcf9f8]">
+          <div class="product-detail-container py-10 lg:py-12">
+            <div class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div class="min-w-0">
+                <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
+                  Product system
                 </p>
-                <p class="mt-2 break-words font-black text-[#1c1b1b]">{{ spec.value }}</p>
+                <h2 class="mt-3 break-words text-3xl font-black text-[#101010]">
+                  {{ detailContentTitle() }}
+                </h2>
+              </div>
+              <button
+                type="button"
+                class="inline-flex h-12 w-12 flex-none items-center justify-center rounded-full border-2 border-[#101010] text-[#101010] transition hover:bg-[#101010] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4b41e1]"
+                (click)="toggleDescription()"
+                [attr.aria-label]="descriptionExpanded() ? 'Collapse description' : 'Expand description'"
+                [attr.aria-expanded]="descriptionExpanded()"
+              >
+                @if (descriptionExpanded()) {
+                  <svg lucideChevronUp class="h-5 w-5" [attr.stroke-width]="2.25"></svg>
+                } @else {
+                  <svg lucideChevronDown class="h-5 w-5" [attr.stroke-width]="2.25"></svg>
+                }
+              </button>
+            </div>
+
+            @if (descriptionExpanded()) {
+              <div class="product-detail-markdown mt-8 max-w-4xl text-[#4f4632]">
+                <markdown [data]="detailMarkdownContent()" />
               </div>
             }
           </div>
-        </div>
-      </section>
+        </section>
+      }
 
-      <section class="product-detail-section">
-        <div class="product-detail-container py-12">
-          <div class="mb-7 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div class="min-w-0">
+      @if (product.specs.length > 0 && detailContentTitle() === 'Description') {
+        <section class="product-detail-section bg-white">
+          <div class="product-detail-container py-10">
+            <div class="mb-6 min-w-0">
               <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-                Customer voice
+                Technical matrix
               </p>
-              <h2 class="mt-3 break-words text-3xl font-black uppercase italic text-[#1c1b1b]">
-                Reviews
+              <h2 class="mt-3 break-words text-3xl font-black text-[#101010]">
+                Spec
               </h2>
             </div>
-            <button
-              type="button"
-              class="rounded-[10px] bg-[#ffc700] px-5 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#251a00] transition hover:bg-[#f5bf00]"
-              (click)="openReviewModal()"
-            >
-              Them danh gia
-            </button>
+            <div class="grid gap-3 sm:grid-cols-2">
+              @for (spec of product.specs; track spec.label) {
+                <article class="min-w-0 rounded-[10px] border border-[#d2c5ab]/30 p-4">
+                  <h3 class="text-[11px] font-black uppercase tracking-[0.18em] text-[#81765f]">
+                    {{ spec.label }}
+                  </h3>
+                  <p class="mt-2 whitespace-pre-line text-sm leading-7 text-[#1c1b1b]">
+                    {{ spec.value }}
+                  </p>
+                </article>
+              }
+            </div>
           </div>
-
-          <app-product-review-list [reviews]="product.reviews" />
-        </div>
-      </section>
+        </section>
+      }
 
       @if (productDetailStore.relatedProducts().length > 0) {
-        <section class="product-detail-section bg-white">
-          <div class="product-detail-container py-12">
-            <div class="mb-7 min-w-0">
-              <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-                More from ZenTech
-              </p>
-              <h2 class="mt-3 break-words text-3xl font-black uppercase italic text-[#1c1b1b]">
-                Related products
-              </h2>
+        <section class="product-detail-section">
+          <div class="product-detail-container py-14">
+            <div class="mb-8 flex min-w-0 items-end justify-between gap-4">
+              <div class="min-w-0">
+                <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
+                  More from ZenTech
+                </p>
+                <h2 class="mt-3 break-words text-3xl font-black text-[#101010]">
+                  You may also like
+                </h2>
+              </div>
             </div>
-            <div class="grid min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+
+            <div class="grid min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
               @for (relatedProduct of productDetailStore.relatedProducts(); track relatedProduct.id) {
                 <app-product-card
                   [product]="relatedProduct"
@@ -177,6 +259,32 @@
           </div>
         </section>
       }
+
+      <section class="product-detail-section border-t border-[#e5e1dc]">
+        <div class="product-detail-container py-14">
+          <div class="mb-8 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div class="min-w-0">
+              <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
+                Customer voice
+              </p>
+              <h2 class="mt-3 break-words text-3xl font-black text-[#101010]">Reviews</h2>
+              <p class="mt-2 text-sm text-[#4f4632]">
+                {{ productDetailStore.rating() | number: '1.1-1' }}/5 stars ·
+                {{ productDetailStore.reviewCount() }} reviews
+              </p>
+            </div>
+            <button
+              type="button"
+              class="rounded-full border-2 border-[#101010] px-6 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#101010] transition hover:bg-[#101010] hover:text-white"
+              (click)="openReviewModal()"
+            >
+              Write a Review
+            </button>
+          </div>
+
+          <app-product-review-list [reviews]="product.reviews" />
+        </div>
+      </section>
 
       @if (productDetailStore.reviewModalOpen()) {
         <app-add-review-modal
@@ -196,17 +304,17 @@
             <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
               Product not found
             </p>
-            <h1 class="mt-4 break-words text-3xl font-black uppercase italic text-[#1c1b1b]">
-              Không tìm thấy sản phẩm phù hợp.
+            <h1 class="mt-4 break-words text-3xl font-black text-[#1c1b1b]">
+              Khong tim thay san pham phu hop.
             </h1>
             <p class="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#4f4632]">
-              {{ productDetailStore.error() || 'Slug hiện tại không khớp với mock catalog.' }}
+              {{ productDetailStore.error() || 'San pham hien khong kha dung.' }}
             </p>
             <a
               routerLink="/categories/keyboards"
               class="mt-8 inline-flex rounded-[10px] bg-[#101010] px-6 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#4b41e1]"
             >
-              Browse Keyboards
+              Browse Products
             </a>
           </div>
         </div>

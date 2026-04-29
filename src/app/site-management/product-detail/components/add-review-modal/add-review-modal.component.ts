@@ -1,17 +1,25 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
+import { LucideImagePlus, LucideStar, LucideX } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
-import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { ProductReviewDraft, ProductReviewFormError } from '../../data-access/models/product-detail-view.model';
 
 @Component({
   selector: 'app-add-review-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, DialogModule, InputTextModule, TextareaModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DialogModule,
+    TextareaModule,
+    LucideImagePlus,
+    LucideStar,
+    LucideX,
+  ],
   templateUrl: './add-review-modal.component.html',
+  styleUrl: './add-review-modal.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddReviewModalComponent {
@@ -30,7 +38,7 @@ export class AddReviewModalComponent {
     this.draftChange.emit({ ...this.draft(), rating });
   }
 
-  updateField(field: keyof ProductReviewDraft, value: string): void {
+  updateField(field: 'reviewerName' | 'title' | 'comment', value: string): void {
     this.draftChange.emit({ ...this.draft(), [field]: value });
   }
 }

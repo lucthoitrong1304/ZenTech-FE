@@ -28,6 +28,54 @@
   gap: 2.5rem;
 }
 
+.product-detail-markdown {
+  font-size: 0.98rem;
+  line-height: 1.85;
+}
+
+:host ::ng-deep .product-detail-markdown :is(h1, h2, h3) {
+  margin: 1.35rem 0 0.55rem;
+  color: #101010;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+:host ::ng-deep .product-detail-markdown h1 {
+  font-size: 1.65rem;
+}
+
+:host ::ng-deep .product-detail-markdown h2 {
+  font-size: 1.35rem;
+}
+
+:host ::ng-deep .product-detail-markdown h3 {
+  font-size: 1.08rem;
+}
+
+:host ::ng-deep .product-detail-markdown p,
+:host ::ng-deep .product-detail-markdown ul,
+:host ::ng-deep .product-detail-markdown ol {
+  margin-block: 0.85rem;
+}
+
+:host ::ng-deep .product-detail-markdown ul,
+:host ::ng-deep .product-detail-markdown ol {
+  padding-left: 1.25rem;
+}
+
+:host ::ng-deep .product-detail-markdown ul {
+  list-style: disc;
+}
+
+:host ::ng-deep .product-detail-markdown ol {
+  list-style: decimal;
+}
+
+:host ::ng-deep .product-detail-markdown strong {
+  color: #101010;
+  font-weight: 900;
+}
+
 @media (min-width: 640px) {
   .product-detail-container {
     padding-inline: 1.5rem;

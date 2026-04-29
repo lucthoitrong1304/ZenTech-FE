@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, of, pipe, switchMap, tap } from 'rxjs';
 import {
   PRODUCT_NOT_FOUND,
   ProductCatalogService,
@@ -26,6 +26,7 @@ const EMPTY_REVIEW_DRAFT: ProductReviewDraft = {
 const INITIAL_STATE: ProductDetailViewModel = {
   product: null,
   relatedProducts: [],
+  selectedVariantId: null,
   loading: false,
   error: null,
   isNotFound: false,
@@ -39,13 +40,68 @@ const INITIAL_STATE: ProductDetailViewModel = {
 
 export const ProductDetailStore = signalStore(
   withState<ProductDetailViewModel>(INITIAL_STATE),
-  withComputed(({ product, quantity }) => ({
-    canIncrement: computed(() => {
+  withComputed(({ product, quantity, selectedVariantId }) => ({
+    selectedVariant: computed(() => {
       const currentProduct = product();
+      const currentVariantId = selectedVariantId();
 
-      return !!currentProduct?.inStock && quantity() < currentProduct.maxQuantity;
+      if (!currentProduct?.variants.length) {
+        return null;
+      }
+
+      return (
+        currentProduct.variants.find(variant => variant.id === currentVariantId) ??
+        currentProduct.variants[0]
+      );
     }),
-    canDecrement: computed(() => !!product()?.inStock && quantity() > 1),
+    gallery: computed(() => product()?.gallery ?? []),
+    groupProducts: computed(() => product()?.groupProducts ?? []),
+    selectedPrice: computed(() => {
+      const currentProduct = product();
+      const variant =
+        currentProduct?.variants.find(item => item.id === selectedVariantId()) ??
+        currentProduct?.variants[0];
+
+      return variant?.salePrice ?? variant?.originalPrice ?? currentProduct?.price ?? 0;
+    }),
+    selectedOriginalPrice: computed(() => {
+      const currentProduct = product();
+      const variant =
+        currentProduct?.variants.find(item => item.id === selectedVariantId()) ??
+        currentProduct?.variants[0];
+
+      if (variant) {
+        return variant.salePrice ? variant.originalPrice : undefined;
+      }
+
+      return currentProduct?.originalPrice;
+    }),
+    selectedStockQuantity: computed(() => {
+      const currentProduct = product();
+      const variant =
+        currentProduct?.variants.find(item => item.id === selectedVariantId()) ??
+        currentProduct?.variants[0];
+
+      return variant?.stockQuantity ?? currentProduct?.maxQuantity ?? 0;
+    }),
+    selectedInStock: computed(() => {
+      const currentProduct = product();
+      const variant =
+        currentProduct?.variants.find(item => item.id === selectedVariantId()) ??
+        currentProduct?.variants[0];
+
+      return (variant?.stockQuantity ?? currentProduct?.maxQuantity ?? 0) > 0;
+    }),
+    canIncrement: computed(() => {
+      const variant = product()?.variants.find(item => item.id === selectedVariantId());
+      const stockQuantity = variant?.stockQuantity ?? product()?.maxQuantity ?? 0;
+
+      return stockQuantity > 0 && quantity() < stockQuantity;
+    }),
+    canDecrement: computed(() => {
+      const variant = product()?.variants.find(item => item.id === selectedVariantId());
+      return (variant?.stockQuantity ?? product()?.maxQuantity ?? 0) > 0 && quantity() > 1;
+    }),
     reviewCount: computed(() => product()?.reviewCount ?? 0),
     rating: computed(() => product()?.rating ?? 0),
   })),
@@ -54,6 +110,7 @@ export const ProductDetailStore = signalStore(
       patchState(store, {
         product: null,
         relatedProducts: [],
+        selectedVariantId: null,
         loading: true,
         error: null,
         isNotFound: false,
@@ -89,7 +146,7 @@ export const ProductDetailStore = signalStore(
         reviewSubmitting: false,
         reviewFormError: null,
         reviewDraft: { ...EMPTY_REVIEW_DRAFT },
-        reviewSuccessMessage: 'Danh gia cua ban da duoc them vao san pham.',
+        reviewSuccessMessage: 'Đánh giá của bạn đã được thêm vào sản phẩm thành công',
       });
     };
 
@@ -98,18 +155,27 @@ export const ProductDetailStore = signalStore(
         pipe(
           tap(() => resetForLoad()),
           switchMap(slug =>
-            productCatalogService.getProductDetail(slug).pipe(
+            forkJoin({
+              product: productCatalogService.getProductDetail(slug),
+              reviews: productCatalogService
+                .getProductReviews(slug)
+                .pipe(catchError(() => of<ProductReview[]>([]))),
+            }).pipe(
               tap({
-                next: product => {
+                next: ({ product, reviews }) => {
+                  const selectedVariant = product.variants[0] ?? null;
+
                   patchState(store, {
-                    product,
-                    relatedProducts: productCatalogService.getRelatedProducts(
-                      product.relatedProductSlugs
-                    ),
+                    product: {
+                      ...product,
+                      reviews,
+                    },
+                    relatedProducts: product.relatedProducts ?? [],
+                    selectedVariantId: selectedVariant?.id ?? null,
                     loading: false,
                     error: null,
                     isNotFound: false,
-                    quantity: product.inStock ? 1 : 0,
+                    quantity: (selectedVariant?.stockQuantity ?? product.maxQuantity) > 0 ? 1 : 0,
                   });
                 },
                 error: error => {
@@ -118,10 +184,11 @@ export const ProductDetailStore = signalStore(
                   patchState(store, {
                     product: null,
                     relatedProducts: [],
+                    selectedVariantId: null,
                     loading: false,
                     error: isNotFound
-                      ? 'San pham nay hien chua ton tai trong catalog mock.'
-                      : 'Khong the tai thong tin san pham luc nay.',
+                      ? 'Sản phẩm này hiện chưa tồn tại.'
+                      : 'Không thể tải thông tin sản phẩm lúc này.',
                     isNotFound,
                   });
                 },
@@ -139,7 +206,7 @@ export const ProductDetailStore = signalStore(
 
             if (!product) {
               patchState(store, {
-                reviewFormError: { submit: 'Khong tim thay san pham de danh gia.' },
+                reviewFormError: { submit: 'Không tìm thấy sản phẩm để đánh giá.' },
               });
               return EMPTY;
             }
@@ -153,7 +220,7 @@ export const ProductDetailStore = signalStore(
 
             patchState(store, { reviewSubmitting: true, reviewFormError: null });
 
-            return productCatalogService.addProductReview(product.slug, draft).pipe(
+            return productCatalogService.addProductReview(product.id, draft).pipe(
               tap({
                 next: review => addReview(review),
                 error: () =>
@@ -189,22 +256,40 @@ export const ProductDetailStore = signalStore(
           reviewFormError: null,
         });
       },
+      selectVariant(variantId: string): void {
+        const product = store.product();
+        const variant = product?.variants.find(item => item.id === variantId);
+
+        if (!variant) {
+          return;
+        }
+
+        patchState(store, {
+          selectedVariantId: variant.id,
+          quantity: variant.stockQuantity > 0 ? 1 : 0,
+        });
+      },
       clearReviewSuccessMessage(): void {
         patchState(store, { reviewSuccessMessage: null });
       },
       incrementQuantity(): void {
         const product = store.product();
+        const variant = product?.variants.find(item => item.id === store.selectedVariantId());
+        const maxQuantity = variant?.stockQuantity ?? product?.maxQuantity ?? 0;
 
-        if (!product?.inStock) {
+        if (maxQuantity <= 0) {
           return;
         }
 
         patchState(store, {
-          quantity: Math.min(store.quantity() + 1, product.maxQuantity),
+          quantity: Math.min(store.quantity() + 1, maxQuantity),
         });
       },
       decrementQuantity(): void {
-        if (!store.product()?.inStock) {
+        const product = store.product();
+        const variant = product?.variants.find(item => item.id === store.selectedVariantId());
+
+        if ((variant?.stockQuantity ?? product?.maxQuantity ?? 0) <= 0) {
           return;
         }
 
@@ -219,10 +304,6 @@ function validateReviewDraft(draft: ProductReviewDraft): ProductReviewFormError 
 
   if (!draft.rating || draft.rating < 1) {
     error.rating = 'Vui long chon so sao.';
-  }
-
-  if (!draft.title.trim()) {
-    error.title = 'Vui long nhap tieu de danh gia.';
   }
 
   if (!draft.comment.trim()) {
