@@ -1,6 +1,6 @@
 <div class="product-detail-page min-h-screen bg-[#fcf9f8] text-[#1c1b1b]">
   <app-site-header
-    [navItems]="navItems"
+    [navItems]="navItems()"
     [activeNavLabel]="productDetailStore.product()?.category?.label || null"
     [cartCount]="2"
     [currentUser]="currentUser()"

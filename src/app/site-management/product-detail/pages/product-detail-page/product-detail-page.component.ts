@@ -6,7 +6,7 @@ import { distinctUntilChanged, map } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { ProductListItem } from '../../../product-catalog/data-access/models/product-catalog.models';
-import { SITE_CATEGORY_NAV_ITEMS } from '../../../shared/site-navigation.constants';
+import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
 import { SiteHeaderComponent } from '../../../shared/site-header/site-header.component';
 import { ProductCardComponent } from '../../../product-listing/components/product-card/product-card.component';
 import { ProductDetailStore } from '../../data-access/store/product-detail.store';
@@ -33,12 +33,13 @@ import { ProductReviewListComponent } from '../../components/product-review-list
 })
 export class ProductDetailPageComponent {
   private readonly authSessionStore = inject(AuthSessionStore);
+  private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   protected readonly productDetailStore = inject(ProductDetailStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
 
-  readonly navItems = SITE_CATEGORY_NAV_ITEMS;
+  readonly navItems = this.categoryNavigationStore.navItems;
   readonly currentUser = this.authSessionStore.currentUser;
   readonly selectedImage = signal('');
   readonly displayImage = computed(() => this.selectedImage() || this.productDetailStore.product()?.image || '');

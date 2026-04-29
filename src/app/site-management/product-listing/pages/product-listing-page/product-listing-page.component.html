@@ -1,6 +1,6 @@
 <div class="product-listing-page min-h-screen bg-[#fcf9f8] text-[#1c1b1b]">
   <app-site-header
-    [navItems]="navItems"
+    [navItems]="navItems()"
     [activeNavLabel]="productListingStore.category()?.label || null"
     [cartCount]="2"
     [currentUser]="currentUser()"
@@ -47,17 +47,32 @@
 
       @if (productListingStore.isEmpty()) {
         <app-product-empty-state
-          [title]="'Danh mục ' + category.label + ' chưa có sản phẩm mock.'"
-          description='Phần UI đã sẵn sàng để nối API thật. Tạm thời danh mục này đang để trống để chúng ta dễ thay thế dữ liệu sau.'
+          [title]="'Danh mục ' + category.label + ' chưa có sản phẩm.'"
+          description="Catalog hiện chưa có sản phẩm trong danh mục này"
         />
       } @else {
         <app-product-grid [products]="productListingStore.sortedProducts()" />
+
+        @if (productListingStore.hasNext()) {
+          <section class="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
+            <div class="flex justify-center">
+              <button
+                type="button"
+                (click)="onLoadMore()"
+                [disabled]="productListingStore.loadingMore()"
+                class="inline-flex min-w-44 items-center justify-center rounded-[10px] bg-[#101010] px-6 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#4b41e1] disabled:cursor-wait disabled:bg-[#81765f]"
+              >
+                {{ productListingStore.loadingMore() ? 'Đang tải...' : 'Load more' }}
+              </button>
+            </div>
+          </section>
+        }
       }
     } @else {
       <app-product-empty-state
         [isInvalidCategory]="productListingStore.isInvalidCategory()"
-        title="Không tìm thấy danh mục phù hợp."
-        [description]="productListingStore.error() || 'Slug hiện tại không khớp với mock catalog.'"
+        title="Không tìm thấy danh mục phù hợp"
+        [description]="productListingStore.error() || 'Slug hiện tại không khớp với catalog.'"
       />
     }
   </main>

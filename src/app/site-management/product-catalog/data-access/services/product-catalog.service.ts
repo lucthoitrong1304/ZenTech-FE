@@ -1,8 +1,11 @@
-import { Injectable } from '@angular/core';
-import { delay, Observable, of, throwError } from 'rxjs';
+import { inject, Injectable } from '@angular/core';
+import { delay, map, Observable, of, throwError } from 'rxjs';
+import { ApiService } from '../../../../core/api/api.service';
+import { environment } from '../../../../../environments/environment';
 import {
   ProductCategory,
   ProductCategoryListing,
+  ProductCategoryListingQuery,
   ProductDetail,
   ProductListItem,
   ProductReview,
@@ -17,6 +20,9 @@ export const PRODUCT_NOT_FOUND = 'PRODUCT_NOT_FOUND';
   providedIn: 'root',
 })
 export class ProductCatalogService {
+  private readonly apiService = inject(ApiService);
+  private readonly categoriesBaseUrl = `${environment.apiBaseUrl}/categories`;
+
   private readonly reviewsByProductSlug = new Map<string, ProductReview[]>(
     Object.entries(MOCK_PRODUCT_DETAILS).map(([slug, product]) => [
       slug,
@@ -24,17 +30,43 @@ export class ProductCatalogService {
     ])
   );
 
-  getCategoryListing(slug: string): Observable<ProductCategoryListing> {
-    const listing = MOCK_PRODUCT_LISTINGS[slug];
+  getCategoryTree(): Observable<ProductCategory[]> {
+    return this.apiService
+      .get<ProductCategoryTreeItemResponseDto[]>(this.categoriesBaseUrl)
+      .pipe(map(categories => categories.map(toProductCategory)));
+  }
 
-    if (!listing) {
+  getCategoryListing(
+    category: ProductCategory,
+    query: ProductCategoryListingQuery = { page: 0, size: 10, sort: 'NEWEST' }
+  ): Observable<ProductCategoryListing> {
+    if (!category.id) {
       return throwError(() => new Error(PRODUCT_CATEGORY_NOT_FOUND));
     }
 
-    return of({
-      category: { ...listing.category },
-      products: listing.products.map(product => ({ ...product })),
-    }).pipe(delay(220));
+    return this.apiService
+      .get<PagedResponse<CategoryProductListItemResponseDto>>(
+        `${this.categoriesBaseUrl}/${category.id}/products`,
+        {
+          params: {
+            page: query.page,
+            size: query.size,
+            sort: query.sort,
+          },
+        }
+      )
+      .pipe(
+        map(response =>
+          toCategoryListing(
+            {
+              id: category.id,
+              slug: category.slug,
+              label: category.label,
+            },
+            response
+          )
+        )
+    );
   }
 
   getProductDetail(productSlug: string): Observable<ProductDetail> {
@@ -100,6 +132,89 @@ export class ProductCatalogService {
       relatedProductSlugs: [...product.relatedProductSlugs],
     };
   }
+}
+
+interface ProductCategoryTreeItemResponseDto {
+  id: string;
+  categoryName: string;
+  shortName: string | null;
+  hasChildren: boolean;
+  children: ProductCategoryTreeItemResponseDto[] | null;
+}
+
+interface CategoryProductListItemResponseDto {
+  id: string;
+  productName: string;
+  imageUrl: string | null;
+  originalPrice: number | null;
+  salePrice: number | null;
+  averageRating: number | null;
+}
+
+interface PagedResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+const PRODUCT_IMAGE_PLACEHOLDER = '/home/asset-1.webp';
+
+function toProductCategory(category: ProductCategoryTreeItemResponseDto): ProductCategory {
+  const label = category.shortName || category.categoryName;
+  return {
+    id: category.id,
+    slug: normalizeCategorySlug(label),
+    label,
+    children: category.children?.map(toProductCategory) ?? [],
+  };
+}
+
+function toCategoryListing(
+  category: ProductCategory,
+  response: PagedResponse<CategoryProductListItemResponseDto>
+): ProductCategoryListing {
+  return {
+    category,
+    products: response.items.map(product => toProductListItem(category.slug, product)),
+    page: response.page,
+    size: response.size,
+    totalItems: response.totalItems,
+    totalPages: response.totalPages,
+    hasNext: response.hasNext,
+    hasPrevious: response.hasPrevious,
+  };
+}
+
+function toProductListItem(
+  categorySlug: string,
+  product: CategoryProductListItemResponseDto
+): ProductListItem {
+  const salePrice = product.salePrice ?? undefined;
+  const originalPrice = product.originalPrice ?? undefined;
+  const price = salePrice ?? originalPrice ?? 0;
+
+  return {
+    id: product.id,
+    categorySlug,
+    slug: product.id,
+    name: product.productName,
+    image: product.imageUrl?.trim() || PRODUCT_IMAGE_PLACEHOLDER,
+    price,
+    originalPrice:
+      originalPrice !== undefined && salePrice !== undefined && originalPrice !== salePrice
+        ? originalPrice
+        : undefined,
+    rating: product.averageRating ?? undefined,
+    inStock: true,
+  };
+}
+
+function normalizeCategorySlug(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, '-');
 }
 
 const CATEGORIES: Record<string, ProductCategory> = {
@@ -379,19 +494,6 @@ const MOCK_PRODUCT_DETAILS: Record<string, ProductDetail> = {
     relatedProductSlugs: ['ion-core-120', 'fold-plug-65', 'zen-woofer'],
   }),
 };
-
-const MOCK_PRODUCT_LISTINGS: Record<string, ProductCategoryListing> = Object.values(CATEGORIES).reduce(
-  (listings, category) => ({
-    ...listings,
-    [category.slug]: {
-      category,
-      products: Object.values(MOCK_PRODUCT_DETAILS)
-        .filter(product => product.categorySlug === category.slug)
-        .map(product => toListItem(product)),
-    },
-  }),
-  {} as Record<string, ProductCategoryListing>
-);
 
 function createProductDetail(
   slug: string,

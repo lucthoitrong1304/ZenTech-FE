@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { distinctUntilChanged, map } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
-import { SITE_CATEGORY_NAV_ITEMS } from '../../../shared/site-navigation.constants';
+import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
 import { SiteHeaderComponent } from '../../../shared/site-header/site-header.component';
 import {
   PRODUCT_SORT_OPTIONS,
@@ -34,12 +34,13 @@ import { ProductListingToolbarComponent } from '../../components/product-listing
 })
 export class ProductListingPageComponent {
   private readonly authSessionStore = inject(AuthSessionStore);
+  private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   protected readonly productListingStore = inject(ProductListingStore);
 
-  readonly navItems = SITE_CATEGORY_NAV_ITEMS;
+  readonly navItems = this.categoryNavigationStore.navItems;
   readonly sortOptions = PRODUCT_SORT_OPTIONS;
   readonly currentUser = this.authSessionStore.currentUser;
   readonly skeletonCards = Array.from({ length: 6 }, (_, index) => index);
@@ -87,6 +88,10 @@ export class ProductListingPageComponent {
 
   onSortChange(sortBy: ProductSortOptionValue): void {
     this.productListingStore.setSort(sortBy);
+  }
+
+  onLoadMore(): void {
+    this.productListingStore.loadMore();
   }
 
   onLogout(): void {

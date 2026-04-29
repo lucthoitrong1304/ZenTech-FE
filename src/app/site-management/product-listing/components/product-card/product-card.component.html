@@ -36,10 +36,12 @@
       >
         {{ product().name }}
       </a>
-      @if (product().rating && product().reviewCount) {
+      @if (product().rating) {
         <p class="text-sm text-[#4f4632]">
           {{ product().rating | number: '1.1-1' }}/5
-          <span class="text-[#81765f]">({{ product().reviewCount }} reviews)</span>
+          @if (product().reviewCount) {
+            <span class="text-[#81765f]">({{ product().reviewCount }} reviews)</span>
+          }
         </p>
       }
     </div>

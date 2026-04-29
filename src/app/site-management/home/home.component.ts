@@ -3,7 +3,7 @@ import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../auth/data-access/store/auth-session.store';
-import { SITE_CATEGORY_NAV_ITEMS } from '../shared/site-navigation.constants';
+import { CategoryNavigationStore } from '../shared/data-access/store/category-navigation.store';
 import { HeaderNavItem } from '../shared/site-navigation.models';
 import { SiteHeaderComponent } from '../shared/site-header/site-header.component';
 
@@ -53,14 +53,14 @@ interface CommunityMember {
 })
 export class HomeComponent {
   private readonly authSessionStore = inject(AuthSessionStore);
+  protected readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
 
   readonly cartCount = 2;
   readonly currentUser = this.authSessionStore.currentUser;
+  readonly navItems = this.categoryNavigationStore.navItems;
   readonly activeNavLabel = signal<string | null>(null);
-
-  readonly navItems: HeaderNavItem[] = SITE_CATEGORY_NAV_ITEMS;
 
   readonly heroStats: StatItem[] = [
     { label: 'Status', value: 'Operating' },

@@ -12,6 +12,6 @@ export class ProductEmptyStateComponent {
   readonly isInvalidCategory = input(false);
   readonly title = input('Danh mục này chưa có sản phẩm.');
   readonly description = input(
-    'Mock data cho danh mục này đang trống. Bạn có thể quay về trang chủ hoặc khám phá danh mục khác.'
+    'Catalog hiện chưa có sản phẩm phù hợp. Bạn có thể quay về trang chủ hoặc khám phá danh mục khác.'
   );
 }
