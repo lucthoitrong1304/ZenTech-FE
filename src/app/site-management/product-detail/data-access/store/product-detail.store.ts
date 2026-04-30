@@ -1,7 +1,7 @@
 import { computed, inject, untracked } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, catchError, forkJoin, of, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, map, of, pipe, switchMap, tap } from 'rxjs';
 import {
   PRODUCT_NOT_FOUND,
   ProductCatalogService,
@@ -21,6 +21,10 @@ import { ReviewImageUploadService } from '../services/review-image-upload.servic
 const MAX_REVIEW_IMAGES = 5;
 const MAX_REVIEW_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_REVIEW_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+type ReviewImageUploadResult =
+  | { id: string; status: 'uploaded'; fileKey: string }
+  | { id: string; status: 'failed'; error: string };
 
 const EMPTY_REVIEW_DRAFT: ProductReviewDraft = {
   reviewerName: '',
@@ -148,6 +152,26 @@ export const ProductDetailStore = signalStore(
       syncDraftImageKeys(reviewImages);
     };
 
+    const updateReviewImages = (patches: ReviewImageUploadResult[]): ReviewImageUploadItem[] => {
+      const reviewImages = store.reviewImages().map(image => {
+        const patch = patches.find(item => item.id === image.id);
+        return patch ? { ...image, ...patch } : image;
+      });
+
+      patchState(store, { reviewImages });
+      syncDraftImageKeys(reviewImages);
+      return reviewImages;
+    };
+
+    const markReviewImagesUploading = (images: ReviewImageUploadItem[]): void => {
+      const uploadIds = new Set(images.map(image => image.id));
+      const reviewImages = store.reviewImages().map(image =>
+        uploadIds.has(image.id) ? { ...image, status: 'uploading' as const, error: undefined } : image
+      );
+
+      patchState(store, { reviewImages });
+    };
+
     const resetForLoad = (): void => {
       clearPreviewUrls(readReviewImages());
       patchState(store, {
@@ -194,6 +218,26 @@ export const ProductDetailStore = signalStore(
         reviewSuccessMessage: 'Đánh giá của bạn đã được thêm vào sản phẩm thành công',
       });
     };
+
+    const submitReviewWithImageKeys = (
+      productId: string,
+      draft: ProductReviewDraft,
+      imageKeys: string[]
+    ) =>
+      productCatalogService.addProductReview(productId, { ...draft, imageKeys }).pipe(
+        tap({
+          next: review => {
+            clearPreviewUrls(readReviewImages());
+            addReview(review);
+          },
+          error: () =>
+            patchState(store, {
+              reviewSubmitting: false,
+              reviewFormError: { submit: 'Chua the gui danh gia. Vui long thu lai.' },
+            }),
+        }),
+        catchError(() => EMPTY)
+      );
 
     return {
       loadProduct: rxMethod<string>(
@@ -263,40 +307,53 @@ export const ProductDetailStore = signalStore(
               return EMPTY;
             }
 
-            if (store.reviewImages().some(image => image.status === 'uploading')) {
-              patchState(store, {
-                reviewFormError: { submit: 'Vui long doi anh tai len hoan tat truoc khi gui.' },
-              });
-              return EMPTY;
-            }
-
-            if (store.reviewImages().some(image => image.status === 'failed')) {
-              patchState(store, {
-                reviewFormError: { submit: 'Vui long xoa anh loi truoc khi gui danh gia.' },
-              });
-              return EMPTY;
-            }
-
-            const payload: ProductReviewDraft = {
-              ...draft,
-              imageKeys: getUploadedImageKeys(),
-            };
-
             patchState(store, { reviewSubmitting: true, reviewFormError: null });
 
-            return productCatalogService.addProductReview(product.id, payload).pipe(
-              tap({
-                next: review => {
-                  clearPreviewUrls(readReviewImages());
-                  addReview(review);
-                },
-                error: () =>
+            const uploadImages = readReviewImages().filter(
+              image => image.status !== 'uploaded' && !!image.file
+            );
+
+            if (uploadImages.length === 0) {
+              return submitReviewWithImageKeys(product.id, draft, getUploadedImageKeys());
+            }
+
+            markReviewImagesUploading(uploadImages);
+
+            return forkJoin(
+              uploadImages.map(image =>
+                reviewImageUploadService.uploadReviewImage(image.file).pipe(
+                  map(
+                    fileKey =>
+                      ({
+                        id: image.id,
+                        status: 'uploaded',
+                        fileKey,
+                      }) satisfies ReviewImageUploadResult
+                  ),
+                  catchError(() =>
+                    of({
+                      id: image.id,
+                      status: 'failed',
+                      error: 'Khong the tai anh len. Vui long thu lai.',
+                    } satisfies ReviewImageUploadResult)
+                  )
+                )
+              )
+            ).pipe(
+              switchMap(results => {
+                const reviewImages = updateReviewImages(results);
+                const failedUpload = results.some(result => result.status === 'failed');
+
+                if (failedUpload) {
                   patchState(store, {
                     reviewSubmitting: false,
-                    reviewFormError: { submit: 'Chua the gui danh gia. Vui long thu lai.' },
-                  }),
-              }),
-              catchError(() => EMPTY)
+                    reviewFormError: { submit: 'Khong the tai anh len. Vui long thu lai.' },
+                  });
+                  return EMPTY;
+                }
+
+                return submitReviewWithImageKeys(product.id, draft, getUploadedImageKeys(reviewImages));
+              })
             );
           })
         )
@@ -374,31 +431,15 @@ export const ProductDetailStore = signalStore(
 
         const uploadItems = validFiles.map(file => ({
           id: createReviewImageId(),
+          file,
           fileName: file.name,
           previewUrl: URL.createObjectURL(file),
-          status: 'uploading' as const,
+          status: 'pending' as const,
         }));
 
         patchState(store, {
           reviewImages: [...store.reviewImages(), ...uploadItems],
           reviewFormError: null,
-        });
-
-        uploadItems.forEach((item, index) => {
-          reviewImageUploadService
-            .uploadReviewImage(validFiles[index])
-            .pipe(
-              tap({
-                next: fileKey => updateReviewImage(item.id, { status: 'uploaded', fileKey }),
-                error: () =>
-                  updateReviewImage(item.id, {
-                    status: 'failed',
-                    error: 'Khong the tai anh len. Vui long thu lai.',
-                  }),
-              }),
-              catchError(() => EMPTY)
-            )
-            .subscribe();
         });
       },
       removeReviewImage(imageId: string): void {

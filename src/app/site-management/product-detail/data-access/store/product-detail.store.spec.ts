@@ -173,12 +173,17 @@ describe('ProductDetailStore', () => {
     expect(store.rating()).toBe(4.5);
   });
 
-  it('uploads selected review images and adds uploaded keys to the review draft', () => {
-    const store = configureStore({
-      getProductDetail: () => of(product),
-      getProductReviews: () => of([]),
-      addProductReview: () => of(createReview('r2', 5)),
-    });
+  it('keeps selected review images local until submit, then uploads and sends image keys', () => {
+    const uploadReviewImage = vi.fn(() => of('uploads/reviews/user-1/image.webp'));
+    const addProductReview = vi.fn(() => of(createReview('r2', 5)));
+    const store = configureStore(
+      {
+        getProductDetail: () => of(product),
+        getProductReviews: () => of([]),
+        addProductReview,
+      },
+      { uploadReviewImage }
+    );
     const file = new File(['image'], 'review.webp', { type: 'image/webp' });
 
     store.loadProduct('product-1');
@@ -186,10 +191,25 @@ describe('ProductDetailStore', () => {
 
     expect(store.reviewImages()[0]).toMatchObject({
       fileName: 'review.webp',
-      status: 'uploaded',
-      fileKey: 'uploads/reviews/user-1/image.webp',
+      status: 'pending',
     });
-    expect(store.reviewDraft().imageKeys).toEqual(['uploads/reviews/user-1/image.webp']);
+    expect(uploadReviewImage).not.toHaveBeenCalled();
+    expect(store.reviewDraft().imageKeys).toBeUndefined();
+
+    store.updateReviewDraft({
+      rating: 5,
+      comment: 'Works well',
+    });
+    store.submitReview();
+
+    expect(uploadReviewImage).toHaveBeenCalledWith(file);
+    expect(addProductReview).toHaveBeenCalledWith(
+      'product-1',
+      expect.objectContaining({
+        imageKeys: ['uploads/reviews/user-1/image.webp'],
+      })
+    );
+    expect(store.reviewImages()).toEqual([]);
   });
 
   it('rejects invalid review image files before upload', () => {

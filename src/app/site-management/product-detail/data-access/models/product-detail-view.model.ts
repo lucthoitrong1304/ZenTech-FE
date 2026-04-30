@@ -13,10 +13,11 @@ export interface ProductReviewFormError {
   submit?: string;
 }
 
-export type ReviewImageUploadStatus = 'uploading' | 'uploaded' | 'failed';
+export type ReviewImageUploadStatus = 'pending' | 'uploading' | 'uploaded' | 'failed';
 
 export interface ReviewImageUploadItem {
   id: string;
+  file: File;
   fileName: string;
   previewUrl: string;
   status: ReviewImageUploadStatus;

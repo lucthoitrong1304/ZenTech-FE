@@ -144,7 +144,7 @@
         class="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#ffc700] px-5 text-sm font-black text-[#251a00] transition hover:bg-[#f5bf00] disabled:cursor-not-allowed disabled:opacity-60"
         [disabled]="submitting() || imageUploading()"
       >
-        {{ submitting() ? 'Submitting...' : imageUploading() ? 'Uploading photos...' : 'Submit Review' }}
+        {{ imageUploading() ? 'Uploading photos...' : submitting() ? 'Submitting...' : 'Submit Review' }}
       </button>
       <button
         type="button"
