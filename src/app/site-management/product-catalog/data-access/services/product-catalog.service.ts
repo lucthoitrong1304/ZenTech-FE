@@ -311,6 +311,7 @@ function toProductReview(review: ProductReviewItemResponseDto): ProductReview {
     title: 'Customer review',
     comment: review.comment?.trim() || '',
     createdAt: review.createdAt,
+    imageUrls: uniqueStrings(review.imageUrls ?? []),
   };
 }
 

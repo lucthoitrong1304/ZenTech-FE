@@ -85,4 +85,8 @@ export class ApiService {
   postFormData<TResponse>(url: string, formData: FormData, options?: ApiRequestOptions): Observable<TResponse> {
     return this.http.post<TResponse>(url, formData, options);
   }
+
+  putFile(url: string, file: File, options?: ApiRequestOptions): Observable<string> {
+    return this.http.put(url, file, { ...options, responseType: 'text' });
+  }
 }

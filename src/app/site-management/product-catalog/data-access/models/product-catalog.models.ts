@@ -71,6 +71,7 @@ export interface ProductReview {
   title: string;
   comment: string;
   createdAt: string;
+  imageUrls: string[];
 }
 
 export interface ProductReviewPayload {

@@ -178,7 +178,7 @@ describe('ProductCatalogService', () => {
             customerId: 'customer-1',
             customerName: 'Alex',
             isOwner: true,
-            imageUrls: [],
+            imageUrls: ['https://cdn.example.com/review-1.webp'],
           },
         ],
         page: 0,
@@ -203,6 +203,7 @@ describe('ProductCatalogService', () => {
       title: 'Customer review',
       comment: 'Great keyboard.',
       createdAt: '2026-04-20T00:00:00Z',
+      imageUrls: ['https://cdn.example.com/review-1.webp'],
     });
   });
 
@@ -228,13 +229,14 @@ describe('ProductCatalogService', () => {
         rating: 4,
         title: 'Ignored title',
         comment: 'Solid.',
+        imageKeys: ['uploads/reviews/customer-2/solid.webp'],
       })
     );
 
     expect(post).toHaveBeenCalledWith(`${productsUrl}/product-1/reviews`, {
       rating: 4,
       comment: 'Solid.',
-      imageKeys: [],
+      imageKeys: ['uploads/reviews/customer-2/solid.webp'],
     });
     expect(review.reviewerName).toBe('Minh');
   });

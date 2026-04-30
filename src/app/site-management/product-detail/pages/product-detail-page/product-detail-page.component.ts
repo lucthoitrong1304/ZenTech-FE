@@ -89,9 +89,11 @@ export class ProductDetailPageComponent {
       const slug = this.productSlug();
 
       if (slug) {
-        this.selectedImage.set('');
-        this.descriptionExpanded.set(false);
-        this.productDetailStore.loadProduct(slug);
+        untracked(() => {
+          this.selectedImage.set('');
+          this.descriptionExpanded.set(false);
+          this.productDetailStore.loadProduct(slug);
+        });
       }
     });
 
@@ -147,6 +149,14 @@ export class ProductDetailPageComponent {
 
   onReviewDraftChange(draft: ProductReviewDraft): void {
     this.productDetailStore.updateReviewDraft(draft);
+  }
+
+  onReviewImageSelect(files: File[]): void {
+    this.productDetailStore.selectReviewImages(files);
+  }
+
+  onReviewImageRemove(imageId: string): void {
+    this.productDetailStore.removeReviewImage(imageId);
   }
 
   onRelatedProductClick(product: ProductListItem): void {

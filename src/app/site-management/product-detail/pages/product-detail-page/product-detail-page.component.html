@@ -290,9 +290,13 @@
         <app-add-review-modal
           [productName]="product.name"
           [draft]="productDetailStore.reviewDraft()"
+          [reviewImages]="productDetailStore.reviewImages()"
           [error]="productDetailStore.reviewFormError()"
           [submitting]="productDetailStore.reviewSubmitting()"
+          [imageUploading]="productDetailStore.reviewImageUploading()"
           (draftChange)="onReviewDraftChange($event)"
+          (imageSelect)="onReviewImageSelect($event)"
+          (imageRemove)="onReviewImageRemove($event)"
           (submitReview)="submitReview()"
           (cancelReview)="closeReviewModal()"
         />

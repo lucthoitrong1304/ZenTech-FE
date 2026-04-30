@@ -1,10 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { vi } from 'vitest';
 import {
   ProductDetail,
   ProductReview,
 } from '../../../product-catalog/data-access/models/product-catalog.models';
 import { ProductCatalogService } from '../../../product-catalog/data-access/services/product-catalog.service';
+import { ReviewImageUploadService } from '../services/review-image-upload.service';
 import { ProductDetailStore } from './product-detail.store';
 
 describe('ProductDetailStore', () => {
@@ -56,13 +58,37 @@ describe('ProductDetailStore', () => {
     ],
   };
 
-  function configureStore(service: Partial<ProductCatalogService>): InstanceType<typeof ProductDetailStore> {
+  beforeEach(() => {
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: vi.fn(() => 'blob:review-image'),
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: vi.fn(() => undefined),
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  function configureStore(
+    service: Partial<ProductCatalogService>,
+    uploadService: Partial<ReviewImageUploadService> = {
+      uploadReviewImage: () => of('uploads/reviews/user-1/image.webp'),
+    }
+  ): InstanceType<typeof ProductDetailStore> {
     TestBed.configureTestingModule({
       providers: [
         ProductDetailStore,
         {
           provide: ProductCatalogService,
           useValue: service,
+        },
+        {
+          provide: ReviewImageUploadService,
+          useValue: uploadService,
         },
       ],
     });
@@ -138,12 +164,78 @@ describe('ProductDetailStore', () => {
       rating: 5,
       title: 'Great',
       comment: 'Works well',
+      imageKeys: ['uploads/reviews/user-1/review.webp'],
     });
     store.submitReview();
 
     expect(store.reviewModalOpen()).toBe(false);
     expect(store.product()?.reviewCount).toBe(2);
     expect(store.rating()).toBe(4.5);
+  });
+
+  it('uploads selected review images and adds uploaded keys to the review draft', () => {
+    const store = configureStore({
+      getProductDetail: () => of(product),
+      getProductReviews: () => of([]),
+      addProductReview: () => of(createReview('r2', 5)),
+    });
+    const file = new File(['image'], 'review.webp', { type: 'image/webp' });
+
+    store.loadProduct('product-1');
+    store.selectReviewImages([file]);
+
+    expect(store.reviewImages()[0]).toMatchObject({
+      fileName: 'review.webp',
+      status: 'uploaded',
+      fileKey: 'uploads/reviews/user-1/image.webp',
+    });
+    expect(store.reviewDraft().imageKeys).toEqual(['uploads/reviews/user-1/image.webp']);
+  });
+
+  it('rejects invalid review image files before upload', () => {
+    const uploadReviewImage = vi.fn(() => of('uploads/reviews/user-1/image.webp'));
+    const store = configureStore(
+      {
+        getProductDetail: () => of(product),
+        getProductReviews: () => of([]),
+      },
+      { uploadReviewImage }
+    );
+    const file = new File(['document'], 'review.pdf', { type: 'application/pdf' });
+
+    store.loadProduct('product-1');
+    store.selectReviewImages([file]);
+
+    expect(store.reviewImages()).toEqual([]);
+    expect(store.reviewFormError()?.submit).toBeTruthy();
+    expect(uploadReviewImage).not.toHaveBeenCalled();
+  });
+
+  it('blocks submit while an image upload has failed', () => {
+    const addProductReview = vi.fn(() => of(createReview('r2', 5)));
+    const store = configureStore(
+      {
+        getProductDetail: () => of(product),
+        getProductReviews: () => of([]),
+        addProductReview,
+      },
+      {
+        uploadReviewImage: () => throwError(() => new Error('Upload failed')),
+      }
+    );
+    const file = new File(['image'], 'review.webp', { type: 'image/webp' });
+
+    store.loadProduct('product-1');
+    store.updateReviewDraft({
+      rating: 5,
+      comment: 'Works well',
+    });
+    store.selectReviewImages([file]);
+    store.submitReview();
+
+    expect(store.reviewImages()[0].status).toBe('failed');
+    expect(store.reviewFormError()?.submit).toBeTruthy();
+    expect(addProductReview).not.toHaveBeenCalled();
   });
 });
 
@@ -155,5 +247,6 @@ function createReview(id: string, rating: number): ProductReview {
     title: 'Customer review',
     comment: 'Works well',
     createdAt: '2026-04-26T00:00:00.000Z',
+    imageUrls: [],
   };
 }
