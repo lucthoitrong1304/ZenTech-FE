@@ -1,0 +1,43 @@
+:host ::ng-deep .add-review-dialog {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgb(16 16 16 / 0.28);
+}
+
+:host ::ng-deep .add-review-dialog .p-dialog-content {
+  padding: 0;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.add-review-card {
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+.add-review-textarea {
+  min-height: 8rem;
+  width: 100%;
+  resize: none;
+  border-radius: 10px;
+  border: 1px solid #d2c5ab;
+  background: #fcf9f8;
+  padding: 1rem;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #101010;
+}
+
+.add-review-textarea::placeholder {
+  color: #81765f;
+}
+
+.add-review-textarea:focus {
+  border-color: #4b41e1;
+  box-shadow: 0 0 0 2px rgb(75 65 225 / 0.14);
+}
+
+.add-review-textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}

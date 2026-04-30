@@ -8,6 +8,7 @@ import { tokenInterceptor } from './core/interceptors/token.interceptor';
 import Aura from '@primeuix/themes/aura';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
+import { provideMarkdown } from 'ngx-markdown';
 
 import { routes } from './app.routes';
 
@@ -21,6 +22,7 @@ export const appConfig: ApplicationConfig = {
         preset: Aura,
       },
     }),
+    provideMarkdown(),
     provideHttpClient(withInterceptors([tokenInterceptor, errorInterceptor])),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     ConfirmationService,

@@ -1,26 +1,42 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
+import { LucideImagePlus, LucideStar, LucideX } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
-import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { ProductReviewDraft, ProductReviewFormError } from '../../data-access/models/product-detail-view.model';
+import {
+  ProductReviewDraft,
+  ProductReviewFormError,
+  ReviewImageUploadItem,
+} from '../../data-access/models/product-detail-view.model';
 
 @Component({
   selector: 'app-add-review-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, DialogModule, InputTextModule, TextareaModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DialogModule,
+    TextareaModule,
+    LucideImagePlus,
+    LucideStar,
+    LucideX,
+  ],
   templateUrl: './add-review-modal.component.html',
+  styleUrl: './add-review-modal.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AddReviewModalComponent {
   readonly productName = input.required<string>();
   readonly draft = input.required<ProductReviewDraft>();
+  readonly reviewImages = input<ReviewImageUploadItem[]>([]);
   readonly error = input<ProductReviewFormError | null>(null);
   readonly submitting = input(false);
+  readonly imageUploading = input(false);
 
   readonly draftChange = output<ProductReviewDraft>();
+  readonly imageSelect = output<File[]>();
+  readonly imageRemove = output<string>();
   readonly submitReview = output<void>();
   readonly cancelReview = output<void>();
 
@@ -30,7 +46,18 @@ export class AddReviewModalComponent {
     this.draftChange.emit({ ...this.draft(), rating });
   }
 
-  updateField(field: keyof ProductReviewDraft, value: string): void {
+  updateField(field: 'reviewerName' | 'title' | 'comment', value: string): void {
     this.draftChange.emit({ ...this.draft(), [field]: value });
+  }
+
+  onImageSelect(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const files = Array.from(inputElement.files ?? []);
+
+    if (files.length > 0) {
+      this.imageSelect.emit(files);
+    }
+
+    inputElement.value = '';
   }
 }

@@ -1,7 +1,7 @@
-import { computed, inject } from '@angular/core';
+import { computed, inject, untracked } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, map, of, pipe, switchMap, tap } from 'rxjs';
 import {
   PRODUCT_NOT_FOUND,
   ProductCatalogService,
@@ -14,7 +14,17 @@ import {
   ProductDetailViewModel,
   ProductReviewDraft,
   ProductReviewFormError,
+  ReviewImageUploadItem,
 } from '../models/product-detail-view.model';
+import { ReviewImageUploadService } from '../services/review-image-upload.service';
+
+const MAX_REVIEW_IMAGES = 5;
+const MAX_REVIEW_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_REVIEW_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+type ReviewImageUploadResult =
+  | { id: string; status: 'uploaded'; fileKey: string }
+  | { id: string; status: 'failed'; error: string };
 
 const EMPTY_REVIEW_DRAFT: ProductReviewDraft = {
   reviewerName: '',
@@ -26,6 +36,7 @@ const EMPTY_REVIEW_DRAFT: ProductReviewDraft = {
 const INITIAL_STATE: ProductDetailViewModel = {
   product: null,
   relatedProducts: [],
+  selectedVariantId: null,
   loading: false,
   error: null,
   isNotFound: false,
@@ -33,27 +44,140 @@ const INITIAL_STATE: ProductDetailViewModel = {
   reviewSubmitting: false,
   reviewFormError: null,
   reviewDraft: EMPTY_REVIEW_DRAFT,
+  reviewImages: [],
   reviewSuccessMessage: null,
   quantity: 1,
 };
 
 export const ProductDetailStore = signalStore(
   withState<ProductDetailViewModel>(INITIAL_STATE),
-  withComputed(({ product, quantity }) => ({
-    canIncrement: computed(() => {
+  withComputed(({ product, quantity, selectedVariantId, reviewImages }) => ({
+    selectedVariant: computed(() => {
       const currentProduct = product();
+      const currentVariantId = selectedVariantId();
 
-      return !!currentProduct?.inStock && quantity() < currentProduct.maxQuantity;
+      if (!currentProduct?.variants.length) {
+        return null;
+      }
+
+      return (
+        currentProduct.variants.find(variant => variant.id === currentVariantId) ??
+        currentProduct.variants[0]
+      );
     }),
-    canDecrement: computed(() => !!product()?.inStock && quantity() > 1),
+    gallery: computed(() => product()?.gallery ?? []),
+    groupProducts: computed(() => product()?.groupProducts ?? []),
+    selectedPrice: computed(() => {
+      const currentProduct = product();
+      const variant =
+        currentProduct?.variants.find(item => item.id === selectedVariantId()) ??
+        currentProduct?.variants[0];
+
+      return variant?.salePrice ?? variant?.originalPrice ?? currentProduct?.price ?? 0;
+    }),
+    selectedOriginalPrice: computed(() => {
+      const currentProduct = product();
+      const variant =
+        currentProduct?.variants.find(item => item.id === selectedVariantId()) ??
+        currentProduct?.variants[0];
+
+      if (variant) {
+        return variant.salePrice ? variant.originalPrice : undefined;
+      }
+
+      return currentProduct?.originalPrice;
+    }),
+    selectedStockQuantity: computed(() => {
+      const currentProduct = product();
+      const variant =
+        currentProduct?.variants.find(item => item.id === selectedVariantId()) ??
+        currentProduct?.variants[0];
+
+      return variant?.stockQuantity ?? currentProduct?.maxQuantity ?? 0;
+    }),
+    selectedInStock: computed(() => {
+      const currentProduct = product();
+      const variant =
+        currentProduct?.variants.find(item => item.id === selectedVariantId()) ??
+        currentProduct?.variants[0];
+
+      return (variant?.stockQuantity ?? currentProduct?.maxQuantity ?? 0) > 0;
+    }),
+    canIncrement: computed(() => {
+      const variant = product()?.variants.find(item => item.id === selectedVariantId());
+      const stockQuantity = variant?.stockQuantity ?? product()?.maxQuantity ?? 0;
+
+      return stockQuantity > 0 && quantity() < stockQuantity;
+    }),
+    canDecrement: computed(() => {
+      const variant = product()?.variants.find(item => item.id === selectedVariantId());
+      return (variant?.stockQuantity ?? product()?.maxQuantity ?? 0) > 0 && quantity() > 1;
+    }),
     reviewCount: computed(() => product()?.reviewCount ?? 0),
     rating: computed(() => product()?.rating ?? 0),
+    reviewImageUploading: computed(() => reviewImages().some(image => image.status === 'uploading')),
+    reviewImageFailed: computed(() => reviewImages().some(image => image.status === 'failed')),
   })),
-  withMethods((store, productCatalogService = inject(ProductCatalogService)) => {
+  withMethods((
+    store,
+    productCatalogService = inject(ProductCatalogService),
+    reviewImageUploadService = inject(ReviewImageUploadService)
+  ) => {
+    const readReviewImages = (): ReviewImageUploadItem[] => untracked(() => store.reviewImages());
+
+    const clearPreviewUrls = (images: ReviewImageUploadItem[]): void => {
+      images.forEach(image => URL.revokeObjectURL(image.previewUrl));
+    };
+
+    const getUploadedImageKeys = (images = readReviewImages()): string[] =>
+      images
+        .filter(image => image.status === 'uploaded' && !!image.fileKey)
+        .map(image => image.fileKey as string);
+
+    const syncDraftImageKeys = (images = readReviewImages()): void => {
+      patchState(store, {
+        reviewDraft: {
+          ...store.reviewDraft(),
+          imageKeys: getUploadedImageKeys(images),
+        },
+      });
+    };
+
+    const updateReviewImage = (id: string, patch: Partial<ReviewImageUploadItem>): void => {
+      const reviewImages = store.reviewImages().map(image =>
+        image.id === id ? { ...image, ...patch } : image
+      );
+
+      patchState(store, { reviewImages });
+      syncDraftImageKeys(reviewImages);
+    };
+
+    const updateReviewImages = (patches: ReviewImageUploadResult[]): ReviewImageUploadItem[] => {
+      const reviewImages = store.reviewImages().map(image => {
+        const patch = patches.find(item => item.id === image.id);
+        return patch ? { ...image, ...patch } : image;
+      });
+
+      patchState(store, { reviewImages });
+      syncDraftImageKeys(reviewImages);
+      return reviewImages;
+    };
+
+    const markReviewImagesUploading = (images: ReviewImageUploadItem[]): void => {
+      const uploadIds = new Set(images.map(image => image.id));
+      const reviewImages = store.reviewImages().map(image =>
+        uploadIds.has(image.id) ? { ...image, status: 'uploading' as const, error: undefined } : image
+      );
+
+      patchState(store, { reviewImages });
+    };
+
     const resetForLoad = (): void => {
+      clearPreviewUrls(readReviewImages());
       patchState(store, {
         product: null,
         relatedProducts: [],
+        selectedVariantId: null,
         loading: true,
         error: null,
         isNotFound: false,
@@ -61,6 +185,7 @@ export const ProductDetailStore = signalStore(
         reviewSubmitting: false,
         reviewFormError: null,
         reviewDraft: { ...EMPTY_REVIEW_DRAFT },
+        reviewImages: [],
         reviewSuccessMessage: null,
         quantity: 1,
       });
@@ -89,27 +214,57 @@ export const ProductDetailStore = signalStore(
         reviewSubmitting: false,
         reviewFormError: null,
         reviewDraft: { ...EMPTY_REVIEW_DRAFT },
-        reviewSuccessMessage: 'Danh gia cua ban da duoc them vao san pham.',
+        reviewImages: [],
+        reviewSuccessMessage: 'Đánh giá của bạn đã được thêm vào sản phẩm thành công',
       });
     };
+
+    const submitReviewWithImageKeys = (
+      productId: string,
+      draft: ProductReviewDraft,
+      imageKeys: string[]
+    ) =>
+      productCatalogService.addProductReview(productId, { ...draft, imageKeys }).pipe(
+        tap({
+          next: review => {
+            clearPreviewUrls(readReviewImages());
+            addReview(review);
+          },
+          error: () =>
+            patchState(store, {
+              reviewSubmitting: false,
+              reviewFormError: { submit: 'Chua the gui danh gia. Vui long thu lai.' },
+            }),
+        }),
+        catchError(() => EMPTY)
+      );
 
     return {
       loadProduct: rxMethod<string>(
         pipe(
           tap(() => resetForLoad()),
           switchMap(slug =>
-            productCatalogService.getProductDetail(slug).pipe(
+            forkJoin({
+              product: productCatalogService.getProductDetail(slug),
+              reviews: productCatalogService
+                .getProductReviews(slug)
+                .pipe(catchError(() => of<ProductReview[]>([]))),
+            }).pipe(
               tap({
-                next: product => {
+                next: ({ product, reviews }) => {
+                  const selectedVariant = product.variants[0] ?? null;
+
                   patchState(store, {
-                    product,
-                    relatedProducts: productCatalogService.getRelatedProducts(
-                      product.relatedProductSlugs
-                    ),
+                    product: {
+                      ...product,
+                      reviews,
+                    },
+                    relatedProducts: product.relatedProducts ?? [],
+                    selectedVariantId: selectedVariant?.id ?? null,
                     loading: false,
                     error: null,
                     isNotFound: false,
-                    quantity: product.inStock ? 1 : 0,
+                    quantity: (selectedVariant?.stockQuantity ?? product.maxQuantity) > 0 ? 1 : 0,
                   });
                 },
                 error: error => {
@@ -118,10 +273,11 @@ export const ProductDetailStore = signalStore(
                   patchState(store, {
                     product: null,
                     relatedProducts: [],
+                    selectedVariantId: null,
                     loading: false,
                     error: isNotFound
-                      ? 'San pham nay hien chua ton tai trong catalog mock.'
-                      : 'Khong the tai thong tin san pham luc nay.',
+                      ? 'Sản phẩm này hiện chưa tồn tại.'
+                      : 'Không thể tải thông tin sản phẩm lúc này.',
                     isNotFound,
                   });
                 },
@@ -139,7 +295,7 @@ export const ProductDetailStore = signalStore(
 
             if (!product) {
               patchState(store, {
-                reviewFormError: { submit: 'Khong tim thay san pham de danh gia.' },
+                reviewFormError: { submit: 'Không tìm thấy sản phẩm để đánh giá.' },
               });
               return EMPTY;
             }
@@ -153,16 +309,51 @@ export const ProductDetailStore = signalStore(
 
             patchState(store, { reviewSubmitting: true, reviewFormError: null });
 
-            return productCatalogService.addProductReview(product.slug, draft).pipe(
-              tap({
-                next: review => addReview(review),
-                error: () =>
+            const uploadImages = readReviewImages().filter(
+              image => image.status !== 'uploaded' && !!image.file
+            );
+
+            if (uploadImages.length === 0) {
+              return submitReviewWithImageKeys(product.id, draft, getUploadedImageKeys());
+            }
+
+            markReviewImagesUploading(uploadImages);
+
+            return forkJoin(
+              uploadImages.map(image =>
+                reviewImageUploadService.uploadReviewImage(image.file).pipe(
+                  map(
+                    fileKey =>
+                      ({
+                        id: image.id,
+                        status: 'uploaded',
+                        fileKey,
+                      }) satisfies ReviewImageUploadResult
+                  ),
+                  catchError(() =>
+                    of({
+                      id: image.id,
+                      status: 'failed',
+                      error: 'Khong the tai anh len. Vui long thu lai.',
+                    } satisfies ReviewImageUploadResult)
+                  )
+                )
+              )
+            ).pipe(
+              switchMap(results => {
+                const reviewImages = updateReviewImages(results);
+                const failedUpload = results.some(result => result.status === 'failed');
+
+                if (failedUpload) {
                   patchState(store, {
                     reviewSubmitting: false,
-                    reviewFormError: { submit: 'Chua the gui danh gia. Vui long thu lai.' },
-                  }),
-              }),
-              catchError(() => EMPTY)
+                    reviewFormError: { submit: 'Khong the tai anh len. Vui long thu lai.' },
+                  });
+                  return EMPTY;
+                }
+
+                return submitReviewWithImageKeys(product.id, draft, getUploadedImageKeys(reviewImages));
+              })
             );
           })
         )
@@ -172,21 +363,110 @@ export const ProductDetailStore = signalStore(
           reviewModalOpen: true,
           reviewFormError: null,
           reviewDraft: { ...EMPTY_REVIEW_DRAFT },
+          reviewImages: [],
           reviewSuccessMessage: null,
         });
       },
       closeReviewModal(): void {
+        clearPreviewUrls(readReviewImages());
         patchState(store, {
           reviewModalOpen: false,
           reviewSubmitting: false,
           reviewFormError: null,
           reviewDraft: { ...EMPTY_REVIEW_DRAFT },
+          reviewImages: [],
         });
       },
       updateReviewDraft(draft: ProductReviewDraft): void {
         patchState(store, {
-          reviewDraft: { ...draft },
+          reviewDraft: { ...draft, imageKeys: getUploadedImageKeys() },
           reviewFormError: null,
+        });
+      },
+      selectReviewImages(files: File[]): void {
+        if (store.reviewSubmitting()) {
+          return;
+        }
+
+        const availableSlots = MAX_REVIEW_IMAGES - store.reviewImages().length;
+
+        if (availableSlots <= 0) {
+          patchState(store, {
+            reviewFormError: { submit: 'Moi danh gia chi duoc tai toi da 5 anh.' },
+          });
+          return;
+        }
+
+        const nextFiles = files.slice(0, availableSlots);
+        const rejectedByLimit = files.length > availableSlots;
+        const validFiles: File[] = [];
+
+        for (const file of nextFiles) {
+          if (!ALLOWED_REVIEW_IMAGE_TYPES.has(file.type)) {
+            patchState(store, {
+              reviewFormError: { submit: 'Chi ho tro anh JPEG, PNG hoac WEBP.' },
+            });
+            continue;
+          }
+
+          if (file.size > MAX_REVIEW_IMAGE_SIZE_BYTES) {
+            patchState(store, {
+              reviewFormError: { submit: 'Moi anh khong duoc vuot qua 5MB.' },
+            });
+            continue;
+          }
+
+          validFiles.push(file);
+        }
+
+        if (rejectedByLimit) {
+          patchState(store, {
+            reviewFormError: { submit: 'Moi danh gia chi duoc tai toi da 5 anh.' },
+          });
+        }
+
+        if (validFiles.length === 0) {
+          return;
+        }
+
+        const uploadItems = validFiles.map(file => ({
+          id: createReviewImageId(),
+          file,
+          fileName: file.name,
+          previewUrl: URL.createObjectURL(file),
+          status: 'pending' as const,
+        }));
+
+        patchState(store, {
+          reviewImages: [...store.reviewImages(), ...uploadItems],
+          reviewFormError: null,
+        });
+      },
+      removeReviewImage(imageId: string): void {
+        const image = store.reviewImages().find(item => item.id === imageId);
+        const reviewImages = store.reviewImages().filter(item => item.id !== imageId);
+
+        if (image) {
+          URL.revokeObjectURL(image.previewUrl);
+        }
+
+        patchState(store, {
+          reviewImages,
+          reviewFormError: null,
+        });
+        syncDraftImageKeys(reviewImages);
+      },
+      selectVariant(variantId: string): void {
+        const product = store.product();
+        const variant = product?.variants.find(item => item.id === variantId);
+
+        if (!variant) {
+          return;
+        }
+
+        patchState(store, {
+          selectedVariantId: variant.id,
+          quantity: variant.stockQuantity > 0 ? 1 : 0,
         });
       },
       clearReviewSuccessMessage(): void {
@@ -194,17 +474,22 @@ export const ProductDetailStore = signalStore(
       },
       incrementQuantity(): void {
         const product = store.product();
+        const variant = product?.variants.find(item => item.id === store.selectedVariantId());
+        const maxQuantity = variant?.stockQuantity ?? product?.maxQuantity ?? 0;
 
-        if (!product?.inStock) {
+        if (maxQuantity <= 0) {
           return;
         }
 
         patchState(store, {
-          quantity: Math.min(store.quantity() + 1, product.maxQuantity),
+          quantity: Math.min(store.quantity() + 1, maxQuantity),
         });
       },
       decrementQuantity(): void {
-        if (!store.product()?.inStock) {
+        const product = store.product();
+        const variant = product?.variants.find(item => item.id === store.selectedVariantId());
+
+        if ((variant?.stockQuantity ?? product?.maxQuantity ?? 0) <= 0) {
           return;
         }
 
@@ -214,15 +499,15 @@ export const ProductDetailStore = signalStore(
   })
 );
 
+function createReviewImageId(): string {
+  return `review-image-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 function validateReviewDraft(draft: ProductReviewDraft): ProductReviewFormError | null {
   const error: ProductReviewFormError = {};
 
   if (!draft.rating || draft.rating < 1) {
     error.rating = 'Vui long chon so sao.';
-  }
-
-  if (!draft.title.trim()) {
-    error.title = 'Vui long nhap tieu de danh gia.';
   }
 
   if (!draft.comment.trim()) {

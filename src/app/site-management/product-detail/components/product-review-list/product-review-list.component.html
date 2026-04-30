@@ -13,6 +13,25 @@
         </div>
       </div>
       <p class="mt-4 text-sm leading-7 text-[#4f4632]">{{ review.comment }}</p>
+      @if (review.imageUrls.length > 0) {
+        <div class="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">
+          @for (imageUrl of review.imageUrls; track imageUrl) {
+            <a
+              [href]="imageUrl"
+              target="_blank"
+              rel="noreferrer"
+              class="aspect-square overflow-hidden rounded-[10px] bg-[#f0edec] transition hover:opacity-85"
+            >
+              <img
+                [src]="imageUrl"
+                alt="Review photo"
+                class="h-full w-full object-cover"
+                loading="lazy"
+              />
+            </a>
+          }
+        </div>
+      }
     </article>
   } @empty {
     <div class="rounded-[10px] border border-dashed border-[#d2c5ab] bg-white p-6 text-sm text-[#4f4632]">

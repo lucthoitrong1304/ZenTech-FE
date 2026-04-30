@@ -24,6 +24,22 @@ export interface ProductListItem {
   inStock: boolean;
 }
 
+export interface ProductVariant {
+  id: string;
+  name: string;
+  nameColor?: string;
+  colorCode?: string;
+  originalPrice: number;
+  salePrice?: number;
+  stockQuantity: number;
+}
+
+export interface ProductGroupItem {
+  id: string;
+  name: string;
+  image: string;
+}
+
 export interface ProductCategoryListing {
   category: ProductCategory;
   products: ProductListItem[];
@@ -55,17 +71,19 @@ export interface ProductReview {
   title: string;
   comment: string;
   createdAt: string;
+  imageUrls: string[];
 }
 
 export interface ProductReviewPayload {
   reviewerName?: string;
   rating: number;
-  title: string;
+  title?: string;
   comment: string;
+  imageKeys?: string[];
 }
 
 export interface ProductDetail extends ProductListItem {
-  category: ProductCategory;
+  category?: ProductCategory;
   gallery: string[];
   description: string;
   highlights: string[];
@@ -73,4 +91,10 @@ export interface ProductDetail extends ProductListItem {
   maxQuantity: number;
   reviews: ProductReview[];
   relatedProductSlugs: string[];
+  relatedProducts?: ProductListItem[];
+  groupProducts?: ProductGroupItem[];
+  variants: ProductVariant[];
+  compatibility?: string;
+  boxContents?: string;
+  supportInfo?: string;
 }
