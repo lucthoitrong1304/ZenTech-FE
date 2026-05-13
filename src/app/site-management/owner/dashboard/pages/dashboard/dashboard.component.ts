@@ -8,14 +8,14 @@ import {
   LucideTrendingUp,
 } from '@lucide/angular';
 
-interface OwnerMetric {
+interface DashboardMetric {
   label: string;
   value: string;
   note: string;
   tone: 'dark' | 'light' | 'alert';
 }
 
-interface OwnerOrder {
+interface DashboardOrder {
   code: string;
   product: string;
   customer: string;
@@ -25,7 +25,7 @@ interface OwnerOrder {
 }
 
 @Component({
-  selector: 'app-owner-dashboard',
+  selector: 'app-dashboard',
   standalone: true,
   imports: [
     CommonModule,
@@ -35,11 +35,11 @@ interface OwnerOrder {
     LucideSparkles,
     LucideTrendingUp,
   ],
-  templateUrl: './owner-dashboard.component.html',
-  styleUrl: './owner-dashboard.component.css',
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.css',
 })
-export class OwnerDashboardComponent {
-  protected readonly metrics: OwnerMetric[] = [
+export class DashboardComponent {
+  protected readonly metrics: DashboardMetric[] = [
     {
       label: 'Tổng doanh thu',
       value: '245.600K',
@@ -71,10 +71,10 @@ export class OwnerDashboardComponent {
   protected readonly activities = [
     'Cập nhật hệ thống giá đã triển khai',
     'Cảnh báo tồn kho: Quantum CPU dưới ngưỡng',
-    'Đồng bộ hoá dữ liệu thành công',
+    'Đồng bộ hóa dữ liệu thành công',
   ];
 
-  protected readonly orders: OwnerOrder[] = [
+  protected readonly orders: DashboardOrder[] = [
     {
       code: '#ZT-40612',
       product: 'Neural-Link Hub v2',

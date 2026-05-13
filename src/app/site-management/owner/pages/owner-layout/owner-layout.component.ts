@@ -5,18 +5,14 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, Ro
 import {
   LucideBell,
   LucideBot,
-  LucideCalendar,
   LucideChartBar,
   LucideChartNoAxesCombined,
-  LucideDownload,
   LucideLayoutDashboard,
   LucideLogOut,
   LucideMegaphone,
   LucidePackage,
-  LucidePlus,
   LucideSearch,
   LucideShoppingBag,
-  LucideStore,
   LucideUsers,
   LucideWarehouse,
 } from '@lucide/angular';
@@ -37,15 +33,11 @@ interface OwnerNavSection {
 interface OwnerHeaderState {
   eyebrow: string;
   title: string;
-  description: string;
-  primaryAction: string;
 }
 
 const DEFAULT_HEADER: OwnerHeaderState = {
   eyebrow: 'Tổng quan hệ thống',
   title: 'Bảng điều khiển',
-  description: 'Theo dõi hiệu suất kinh doanh, đơn hàng và tín hiệu vận hành theo thời gian thực.',
-  primaryAction: 'Hành động mới',
 };
 
 @Component({
@@ -58,18 +50,14 @@ const DEFAULT_HEADER: OwnerHeaderState = {
     RouterOutlet,
     LucideBell,
     LucideBot,
-    LucideCalendar,
     LucideChartBar,
     LucideChartNoAxesCombined,
-    LucideDownload,
     LucideLayoutDashboard,
     LucideLogOut,
     LucideMegaphone,
     LucidePackage,
-    LucidePlus,
     LucideSearch,
     LucideShoppingBag,
-    LucideStore,
     LucideUsers,
     LucideWarehouse,
   ],
@@ -148,10 +136,6 @@ export class OwnerLayoutComponent {
     this.header.set({
       eyebrow: typeof data['eyebrow'] === 'string' ? data['eyebrow'] : DEFAULT_HEADER.eyebrow,
       title: typeof data['title'] === 'string' ? data['title'] : DEFAULT_HEADER.title,
-      description:
-        typeof data['description'] === 'string' ? data['description'] : DEFAULT_HEADER.description,
-      primaryAction:
-        typeof data['primaryAction'] === 'string' ? data['primaryAction'] : DEFAULT_HEADER.primaryAction,
     });
   }
 
