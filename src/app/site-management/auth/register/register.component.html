@@ -100,7 +100,7 @@
           [disabled]="registerForm.invalid || registerStore.loading()"
         >
           <span class="auth-btn-content">
-            <span>{{ registerStore.loading() ? 'Dang tao tai khoan...' : 'Tao tai khoan' }}</span>
+            <span>{{ registerStore.loading() ? 'Đang tạo tài khoản...' : 'Tạo tài khoản' }}</span>
             @if (!registerStore.loading()) {
               <svg lucideArrowRight class="auth-button-icon" [attr.stroke-width]="2"></svg>
             }

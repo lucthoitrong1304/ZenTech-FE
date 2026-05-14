@@ -153,8 +153,13 @@
 .auth-btn-primary,
 .auth-btn-secondary,
 .auth-btn-google {
-  width: 100%;
-  min-height: 3.5rem;
+  width: 400px;
+  max-width: 100%;
+
+  /* Sửa dòng này từ 3.5rem thành 40px để bằng với chiều cao nút Google */
+  min-height: 40px;
+
+  margin-inline: auto;
   border-radius: 999px !important;
   font-weight: 800 !important;
   letter-spacing: 0.02em;
