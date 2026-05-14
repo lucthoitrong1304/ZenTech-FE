@@ -1,0 +1,73 @@
+<section class="customer-page">
+  <header class="customer-page__header">
+    <div>
+      <p>Điều hành kinh doanh</p>
+      <h1>Khách hàng</h1>
+      <span>Quản lý hồ sơ khách hàng, trạng thái tài khoản và lịch sử mua hàng.</span>
+    </div>
+  </header>
+
+  <app-customer-toolbar
+    [keyword]="store.query().keyword"
+    [activeFilter]="store.query().activeFilter"
+    [sort]="store.query().sort"
+    [loading]="store.loading()"
+    [countLabel]="store.customerCountLabel()"
+    (keywordChange)="setKeyword($event)"
+    (activeFilterChange)="setActiveFilter($event)"
+    (sortChange)="setSort($event)"
+    (refresh)="store.refresh()"
+  />
+
+  <div class="customer-page__stats">
+    <article>
+      <span>Tổng khách hàng</span>
+      <strong>{{ store.totalElements() }}</strong>
+    </article>
+    <article>
+      <span>Trang hiện tại</span>
+      <strong>{{ store.totalPages() === 0 ? 0 : store.query().page + 1 }}</strong>
+    </article>
+    <article>
+      <span>Đang hiển thị</span>
+      <strong>{{ store.customers().length }}</strong>
+    </article>
+  </div>
+
+  @if (store.error()) {
+    <div class="customer-page__error">
+      <strong>Không thể tải dữ liệu</strong>
+      <span>{{ store.error() }}</span>
+      <button type="button" (click)="store.loadCustomers()">Thử lại</button>
+    </div>
+  } @else {
+    <app-customer-table
+      [customers]="store.customers()"
+      [loading]="store.loading()"
+      [empty]="store.isEmpty()"
+      [page]="store.query().page"
+      [size]="store.query().size"
+      [totalElements]="store.totalElements()"
+      [totalPages]="store.totalPages()"
+      (viewCustomer)="store.loadSelectedCustomer($event)"
+      (pageChange)="store.setPage($event.page, $event.size)"
+      (statusChange)="confirmStatusChange($event)"
+    />
+  }
+
+  <app-customer-detail-dialog
+    [visible]="store.selectedCustomerLoading() || store.selectedCustomerVisible() || !!store.selectedCustomerError()"
+    [customer]="store.selectedCustomer()"
+    [loading]="store.selectedCustomerLoading()"
+    [error]="store.selectedCustomerError()"
+    [orders]="store.orders()"
+    [ordersLoading]="store.ordersLoading()"
+    [ordersPage]="store.ordersQuery().page"
+    [ordersSize]="store.ordersQuery().size"
+    [ordersTotalElements]="store.ordersTotalElements()"
+    [ordersTotalPages]="store.ordersTotalPages()"
+    (close)="store.closeSelectedCustomer()"
+    (ordersPageChange)="store.setOrdersPage($event.page, $event.size)"
+    (statusChange)="confirmStatusChange($event)"
+  />
+</section>

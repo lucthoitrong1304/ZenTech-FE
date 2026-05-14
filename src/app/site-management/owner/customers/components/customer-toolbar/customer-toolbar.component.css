@@ -1,0 +1,129 @@
+.customer-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(220px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(28, 27, 27, 0.08);
+  background: #ffffff;
+  padding: 14px;
+}
+
+.customer-toolbar__summary {
+  display: grid;
+  gap: 2px;
+  min-width: 132px;
+}
+
+.customer-toolbar__summary span {
+  color: rgba(79, 70, 50, 0.58);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.customer-toolbar__summary strong {
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.customer-toolbar__search,
+.customer-toolbar__filters,
+.customer-toolbar__filters label,
+.customer-toolbar__icon-button,
+.customer-toolbar__primary {
+  display: flex;
+  align-items: center;
+}
+
+.customer-toolbar__search,
+.customer-toolbar__filters label {
+  min-height: 42px;
+  border: 1px solid rgba(28, 27, 27, 0.1);
+  background: #fcf9f8;
+  color: rgba(79, 70, 50, 0.76);
+}
+
+.customer-toolbar__search {
+  gap: 10px;
+  padding: 0 13px;
+}
+
+.customer-toolbar__search svg,
+.customer-toolbar__filters svg,
+.customer-toolbar__icon-button svg,
+.customer-toolbar__primary svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.customer-toolbar__search input,
+.customer-toolbar__filters select {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #1c1b1b;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.customer-toolbar__filters {
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.customer-toolbar__filters label {
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.customer-toolbar__filters select {
+  min-width: 142px;
+  cursor: pointer;
+}
+
+.customer-toolbar__icon-button,
+.customer-toolbar__primary {
+  min-height: 42px;
+  border: 0;
+  cursor: pointer;
+}
+
+.customer-toolbar__icon-button {
+  justify-content: center;
+  width: 42px;
+  background: #1c1b1b;
+  color: #ffffff;
+}
+
+.customer-toolbar__icon-button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.customer-toolbar__primary {
+  gap: 8px;
+  background: #fbbc04;
+  color: #1c1b1b;
+  font-size: 12px;
+  font-weight: 950;
+  padding: 0 16px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 980px) {
+  .customer-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-toolbar__filters {
+    flex-wrap: wrap;
+    justify-content: stretch;
+  }
+
+  .customer-toolbar__filters label,
+  .customer-toolbar__primary {
+    flex: 1 1 180px;
+  }
+}

@@ -1,4 +1,18 @@
-<section class="owner-dashboard">
+<section class="dashboard">
+  <header class="flex min-h-24 items-end justify-between">
+    <div>
+      <p class="m-0 text-[10px] font-black uppercase text-[rgba(79,70,50,0.58)]">
+        Tổng quan hệ thống
+      </p>
+      <h1 class="my-2 text-[clamp(30px,4vw,48px)] font-black leading-none">
+        Bảng điều khiển
+      </h1>
+      <span class="text-sm text-[rgba(79,70,50,0.72)]">
+        Theo dõi hiệu suất kinh doanh, đơn hàng và tín hiệu vận hành theo thời gian thực.
+      </span>
+    </div>
+  </header>
+
   <div class="metric-grid">
     @for (metric of metrics; track metric.label) {
       <article class="metric-card" [ngClass]="'metric-card--' + metric.tone">
@@ -43,7 +57,7 @@
       <article class="ai-card">
         <svg lucideSparkles [attr.stroke-width]="2"></svg>
         <p>Thông tin AI</p>
-        <h3>Hàng tồn kho cho “Neo-Ram Streetbox” đang giảm nhanh hơn 23% so với dữ liệu kỳ vọng.</h3>
+        <h3>Hàng tồn kho cho "Neo-Ram Streetbox" đang giảm nhanh hơn 23% so với dữ liệu kỳ vọng.</h3>
         <button type="button">Thực thi kế hoạch tự động</button>
       </article>
 

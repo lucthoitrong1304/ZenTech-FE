@@ -1,0 +1,46 @@
+<div class="customer-toolbar">
+  <div class="customer-toolbar__summary">
+    <span>{{ countLabel() }}</span>
+    <strong>Customer grid</strong>
+  </div>
+
+  <label class="customer-toolbar__search">
+    <svg lucideSearch [attr.stroke-width]="2"></svg>
+    <input
+      type="search"
+      [value]="keyword()"
+      placeholder="Tìm theo tên hoặc email..."
+      (input)="onKeywordInput($event)"
+    />
+  </label>
+
+  <div class="customer-toolbar__filters">
+    <label>
+      <svg lucideSlidersHorizontal [attr.stroke-width]="2"></svg>
+      <select [value]="activeFilter()" (change)="onActiveFilterChange($event)">
+        <option value="all">Tất cả trạng thái</option>
+        <option value="active">Đang hoạt động</option>
+        <option value="inactive">Đã khóa</option>
+      </select>
+    </label>
+
+    <label>
+      <select [value]="sort()" (change)="onSortChange($event)">
+        <option value="registeredAt,desc">Mới đăng ký</option>
+        <option value="registeredAt,asc">Cũ nhất</option>
+        <option value="fullName,asc">Tên A-Z</option>
+        <option value="email,asc">Email A-Z</option>
+      </select>
+    </label>
+
+    <button
+      type="button"
+      class="customer-toolbar__icon-button"
+      [disabled]="loading()"
+      aria-label="Tải lại danh sách khách hàng"
+      (click)="refresh.emit()"
+    >
+      <svg lucideRefreshCcw [attr.stroke-width]="2"></svg>
+    </button>
+  </div>
+</div>

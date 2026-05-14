@@ -18,9 +18,7 @@ export const ownerRoutes: Routes = [
           primaryAction: 'Hành động mới',
         },
         loadComponent: () =>
-          import('./pages/owner-dashboard/owner-dashboard.component').then(
-            m => m.OwnerDashboardComponent
-          ),
+          import('./dashboard/pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'analytics',
@@ -96,8 +94,8 @@ export const ownerRoutes: Routes = [
           primaryAction: 'Thêm khách hàng',
         },
         loadComponent: () =>
-          import('./pages/owner-placeholder/owner-placeholder.component').then(
-            m => m.OwnerPlaceholderComponent
+          import('./customers/pages/customer-list/customer-list.component').then(
+            m => m.CustomerListComponent
           ),
       },
       {
