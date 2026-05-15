@@ -1,0 +1,15 @@
+<button
+  type="button"
+  class="group fixed bottom-5 right-5 z-40 flex items-center gap-3 rounded-[8px] bg-[#101010] px-4 py-3 text-left text-white shadow-[0_24px_70px_-28px_rgba(16,16,16,0.75)] ring-1 ring-white/10 transition hover:-translate-y-0.5 hover:bg-[#1c1b1b]"
+  (click)="opened.emit()"
+>
+  <span class="grid h-11 w-11 place-items-center rounded-[8px] bg-[#ffc700] text-[#101010]">
+    <svg lucideMessageCircle class="h-5 w-5" [attr.stroke-width]="2.2"></svg>
+  </span>
+  <span class="hidden sm:block">
+    <strong class="block text-sm font-black uppercase tracking-[0.12em]">Chat ZenTech</strong>
+    <small class="block text-xs font-semibold text-white/58">
+      {{ lastActivityLabel() || 'AI & tư vấn viên' }}
+    </small>
+  </span>
+</button>

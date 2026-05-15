@@ -1,0 +1,60 @@
+@if (uploads().length > 0) {
+  <section class="grid gap-2 border-t border-[#d2c5ab]/25 bg-white px-4 py-3">
+    @for (upload of uploads(); track upload.id) {
+      <article class="grid gap-2 rounded-[8px] bg-[#f6f3f2] p-3">
+        <div class="flex min-w-0 items-center gap-3">
+          <span
+            class="grid h-9 w-9 shrink-0 place-items-center rounded-[7px]"
+            [class.bg-[#101010]]="upload.status === 'UPLOADING'"
+            [class.text-[#ffc700]]="upload.status === 'UPLOADING'"
+            [class.bg-emerald-100]="upload.status === 'COMPLETE'"
+            [class.text-emerald-700]="upload.status === 'COMPLETE'"
+            [class.bg-red-100]="upload.status === 'FAILED'"
+            [class.text-red-700]="upload.status === 'FAILED'"
+          >
+            @if (upload.status === 'COMPLETE') {
+              <svg lucideCheck class="h-4 w-4" [attr.stroke-width]="2.5"></svg>
+            } @else {
+              <svg lucideFileUp class="h-4 w-4" [attr.stroke-width]="2"></svg>
+            }
+          </span>
+
+          <span class="min-w-0 flex-1">
+            <strong class="block truncate text-xs font-black text-[#101010]">
+              {{ upload.fileName }}
+            </strong>
+            <small class="block truncate text-[11px] font-semibold text-[#4f4632]">
+              {{ upload.sizeLabel }} ·
+              @if (upload.status === 'UPLOADING') {
+                Đang tải lên
+              } @else if (upload.status === 'COMPLETE') {
+                Đã tải lên
+              } @else {
+                Lỗi tải lên
+              }
+            </small>
+          </span>
+
+          <button
+            type="button"
+            class="grid h-8 w-8 place-items-center rounded-[6px] text-[#4f4632] transition hover:bg-white hover:text-[#101010]"
+            (click)="uploadRemoved.emit(upload.id)"
+            title="Xóa khỏi hàng tải"
+          >
+            <svg lucideX class="h-4 w-4" [attr.stroke-width]="2"></svg>
+          </button>
+        </div>
+
+        <div class="h-1.5 overflow-hidden rounded-full bg-[#d2c5ab]/35">
+          <span
+            class="block h-full rounded-full transition-all duration-300"
+            [class.bg-[#ffc700]]="upload.status === 'UPLOADING'"
+            [class.bg-emerald-500]="upload.status === 'COMPLETE'"
+            [class.bg-red-500]="upload.status === 'FAILED'"
+            [style.width.%]="upload.progress"
+          ></span>
+        </div>
+      </article>
+    }
+  </section>
+}

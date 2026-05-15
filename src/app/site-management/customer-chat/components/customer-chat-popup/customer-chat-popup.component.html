@@ -1,0 +1,62 @@
+@if (store.popupOpen()) {
+  <section
+    class="customer-chat-popup fixed bottom-5 right-5 z-40 flex overflow-hidden rounded-[8px] bg-white text-[#101010] shadow-[0_30px_90px_-35px_rgba(16,16,16,0.78)] ring-1 ring-black/10"
+    [class.customer-chat-popup--shared]="store.sharedSidebarOpen()"
+  >
+    <div class="flex h-full min-w-0 flex-1 flex-col">
+      <app-customer-chat-header
+        [staff]="store.staff()"
+        [product]="store.product()"
+        [compact]="true"
+        [sharedSidebarOpen]="store.sharedSidebarOpen()"
+        (closeClicked)="store.closePopup()"
+        (sharedClicked)="store.toggleSharedSidebar()"
+      />
+
+      @if (store.loading()) {
+        <div class="grid flex-1 place-items-center bg-[#fcf9f8] p-6 text-sm font-black text-[#4f4632]">
+          Đang tải cuộc trò chuyện...
+        </div>
+      } @else {
+        <app-customer-message-timeline
+          [messages]="store.messages()"
+          [customer]="store.customer()"
+          [staff]="store.staff()"
+          [compact]="true"
+        />
+
+        <app-customer-upload-queue
+          [uploads]="store.uploads()"
+          (uploadRemoved)="store.removeUpload($event)"
+        />
+
+        <app-customer-chat-composer
+          (messageSubmitted)="store.sendMessage($event)"
+          (filesSelected)="store.selectFiles($event)"
+        />
+      }
+    </div>
+
+    <div
+      class="customer-chat-popup__sidebar border-l border-[#d2c5ab]/25"
+      [class.customer-chat-popup__sidebar--open]="store.sharedSidebarOpen()"
+      [attr.aria-hidden]="!store.sharedSidebarOpen()"
+    >
+      <app-customer-shared-content-sidebar
+        [open]="true"
+        [activeTab]="store.activeSharedTab()"
+        [items]="store.selectedSharedItems()"
+        [mediaCount]="store.sharedCounts().media"
+        [fileCount]="store.sharedCounts().files"
+        [linkCount]="store.sharedCounts().links"
+        (tabSelected)="store.setSharedContentTab($event)"
+        (closed)="store.closeSharedSidebar()"
+      />
+    </div>
+  </section>
+} @else {
+  <app-customer-chat-launcher
+    [lastActivityLabel]="store.lastActivityLabel()"
+    (opened)="store.openPopup()"
+  />
+}

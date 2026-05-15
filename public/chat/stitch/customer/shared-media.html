@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZenTech Chat Interface</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#e2dfff",
+                        "tertiary-fixed": "#ffdada",
+                        "surface-bright": "#fcf9f8",
+                        "inverse-on-surface": "#f3f0ef",
+                        "on-primary-fixed-variant": "#594400",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#645efb",
+                        "primary-fixed": "#ffdf94",
+                        "error": "#ba1a1a",
+                        "outline-variant": "#d2c5ab",
+                        "on-secondary": "#ffffff",
+                        "background": "#fcf9f8",
+                        "outline": "#81765f",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f6f3f2",
+                        "on-primary-fixed": "#251a00",
+                        "surface-container": "#f0edec",
+                        "primary": "#765b00",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#f5bf00",
+                        "on-secondary-fixed": "#0f0069",
+                        "on-primary-container": "#6e5400",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-secondary-container": "#fffbff",
+                        "inverse-surface": "#313030",
+                        "surface-tint": "#765b00",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#ebe7e7",
+                        "on-surface-variant": "#4f4632",
+                        "inverse-primary": "#f5bf00",
+                        "tertiary-fixed-dim": "#ffb3b6",
+                        "on-surface": "#1c1b1b",
+                        "on-background": "#1c1b1b",
+                        "surface": "#fcf9f8",
+                        "on-tertiary-container": "#b20033",
+                        "surface-variant": "#e5e2e1",
+                        "primary-container": "#ffc700",
+                        "on-tertiary-fixed-variant": "#920028",
+                        "on-error": "#ffffff",
+                        "tertiary": "#be0037",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "on-tertiary-fixed": "#40000c",
+                        "tertiary-container": "#ffbec0",
+                        "surface-dim": "#dcd9d9",
+                        "secondary": "#4b41e1",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "display": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background-color: rgba(252, 249, 248, 0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+    </style>
+<style>
+        .message-bubble { position: relative; }
+        .message-actions { opacity: 0; transition: opacity 0.2s ease-in-out; }
+        .message-bubble:hover .message-actions { opacity: 1; }
+        
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+    </style></head>
+<body class="bg-background text-on-background min-h-screen flex flex-col pt-20">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#fcf9f8]/80 dark:bg-zinc-950/80 backdrop-blur-2xl bg-transparent shadow-[0_64px_64px_-12px_rgba(28,27,27,0.06)] flex justify-between items-center px-12 h-20 font-['Inter'] tracking-tight antialiased">
+<div class="flex items-center gap-4">
+<span class="text-2xl font-black tracking-tighter text-[#1c1b1b] dark:text-zinc-100">ZenTech</span>
+</div>
+<div class="flex items-center gap-6">
+<button class="hover:bg-[#f6f3f2] dark:hover:bg-zinc-800 transition-colors active:scale-95 duration-200 p-2 rounded-full text-[#4f4632] dark:text-zinc-400">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:bg-[#f6f3f2] dark:hover:bg-zinc-800 transition-colors active:scale-95 duration-200 p-2 rounded-full text-[#4f4632] dark:text-zinc-400">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<button class="hover:bg-[#f6f3f2] dark:hover:bg-zinc-800 transition-colors active:scale-95 duration-200 p-2 rounded-full text-[#4f4632] dark:text-zinc-400">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</nav>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full p-8 gap-y-6 bg-[#f6f3f2] dark:bg-zinc-900 w-80 rounded-none bg-[#f6f3f2] dark:bg-zinc-900 flat-no-shadows font-['Inter'] font-medium text-sm border-r border-surface-variant/30 shrink-0">
+<button class="w-full py-3 px-4 bg-[#FFC700] text-[#251a00] rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-primary-fixed-dim transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Conversation
+            </button>
+<div class="flex flex-col gap-2 mt-4 flex-1 overflow-y-auto">
+<div class="text-xs uppercase tracking-[0.05em] text-on-surface-variant mb-2 mt-4">Recent Conversations</div>
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-zinc-800 text-[#1c1b1b] dark:text-zinc-100 rounded-[10px] shadow-sm font-semibold hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Order #ZT-9942 Inquiry
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300 rounded-[10px]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Product Specs - V60 Pro
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300 rounded-[10px]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Shipping Delay Support
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-zinc-800 text-[#1c1b1b] dark:text-zinc-100 rounded-[10px] shadow-sm font-semibold hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Order #ZT-9942 Inquiry
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300 rounded-[10px]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Product Specs - V60 Pro
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300 rounded-[10px]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Shipping Delay Support
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-zinc-800 text-[#1c1b1b] dark:text-zinc-100 rounded-[10px] shadow-sm font-semibold hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Order #ZT-9942 Inquiry
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300 rounded-[10px]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Product Specs - V60 Pro
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300 rounded-[10px]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Shipping Delay Support
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-zinc-800 text-[#1c1b1b] dark:text-zinc-100 rounded-[10px] shadow-sm font-semibold hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Order #ZT-9942 Inquiry
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300 rounded-[10px]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Product Specs - V60 Pro
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#4f4632] dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-all hover:translate-x-1 duration-300 rounded-[10px]" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat">chat</span>
+                    Shipping Delay Support
+                </a>
+</div>
+</aside>
+<!-- Main Chat Area -->
+<main class="flex-1 flex flex-col h-[calc(100vh-5rem)] bg-surface-bright relative min-w-0">
+<!-- Chat Header -->
+<div class="h-16 flex items-center px-8 border-b border-surface-variant/20 bg-surface/90 backdrop-blur-md z-10 shrink-0">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary flex items-center justify-center font-bold">
+                        A
+                    </div>
+<div>
+<h1 class="font-bold text-on-surface">Alex - Support Agent</h1>
+<p class="text-xs text-on-surface-variant flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary-container inline-block"></span>
+                            Online
+                        </p>
+</div>
+</div>
+<div class="ml-auto flex gap-3">
+<button class="p-2 rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<button class="p-2 rounded-full bg-surface-container text-on-surface transition-colors" title="Toggle Sidebar">
+<span class="material-symbols-outlined text-[20px]">info</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Chat Messages -->
+<div class="flex-1 overflow-y-auto p-8 flex flex-col gap-6">
+<!-- Date Separator -->
+<div class="flex justify-center my-4">
+<span class="text-xs font-semibold uppercase tracking-wider text-on-surface-variant bg-surface-container-low px-4 py-1 rounded-full">Today</span>
+</div>
+<!-- AI Message -->
+<div class="flex gap-4 max-w-3xl message-bubble">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-fixed flex items-center justify-center shrink-0 mt-1">
+<span class="material-symbols-outlined text-[16px]">smart_toy</span>
+</div>
+<div class="bg-surface-container-low text-on-surface p-4 rounded-2xl rounded-tl-sm text-sm leading-relaxed shadow-sm">
+                        Hello! I'm ZenTech's AI assistant. How can I help you today?
+                    <div class="message-actions absolute -right-10 top-0 flex flex-col gap-1">
+<button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">push_pin</span>
+</button>
+</div></div>
+</div>
+<!-- User Message -->
+<div class="flex gap-4 max-w-3xl ml-auto flex-row-reverse message-bubble">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface flex items-center justify-center shrink-0 mt-1">
+<span class="material-symbols-outlined text-[16px]">person</span>
+</div>
+<div class="bg-surface-container text-on-surface p-4 rounded-2xl rounded-tr-sm text-sm leading-relaxed shadow-sm">
+                        I need help with my recent order #ZT-9942. The installation manual seems to be missing some steps. Can I talk to a human agent?
+                    <div class="message-actions absolute -left-10 top-0 flex flex-col gap-1">
+<button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">push_pin</span>
+</button>
+<button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="p-1.5 hover:bg-error-container hover:text-error rounded text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div></div>
+</div>
+<!-- System Notification -->
+<div class="flex justify-center my-6">
+<div class="bg-secondary-fixed/20 border border-secondary-fixed text-on-secondary-fixed-variant text-xs font-bold uppercase tracking-[0.05em] px-6 py-2 rounded-full shadow-sm">
+                        Support Agent Alex has joined the chat
+                    </div>
+</div>
+<!-- Agent Message -->
+<div class="flex gap-4 max-w-3xl message-bubble">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary flex items-center justify-center shrink-0 mt-1 font-bold text-xs">
+                        A
+                    </div>
+<div class="bg-surface-container-low text-on-surface p-4 rounded-2xl rounded-tl-sm text-sm leading-relaxed shadow-sm">
+                        Hi there! I'm Alex. I see you're having trouble with the installation manual for order #ZT-9942. Could you upload the PDF you're currently looking at so I can see which version you have?
+                    <div class="message-actions absolute -right-10 top-0 flex flex-col gap-1">
+<button class="p-1.5 hover:bg-surface-container-high rounded text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">push_pin</span>
+</button>
+<button class="p-1.5 hover:bg-error-container hover:text-error rounded text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div></div>
+</div>
+<!-- File Upload Progress -->
+<div class="flex gap-4 max-w-3xl ml-auto flex-row-reverse message-bubble">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface flex items-center justify-center shrink-0 mt-1">
+<span class="material-symbols-outlined text-[16px]">person</span>
+</div>
+<div class="bg-surface-container text-on-surface p-4 rounded-2xl rounded-tr-sm w-80 shadow-sm">
+<div class="flex items-center gap-3 mb-3">
+<div class="p-2 bg-white rounded-lg text-tertiary">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-semibold truncate">product_manual.pdf</p>
+<p class="text-xs text-on-surface-variant">Uploading... 75%</p>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 75%"></div>
+</div>
+<div class="message-actions absolute -left-10 top-0 flex flex-col gap-1">
+<button class="p-1.5 hover:bg-error-container hover:text-error rounded text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div></div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="p-6 bg-surface-container-lowest border-t border-surface-variant/20 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)] z-20 relative shrink-0">
+<div class="max-w-4xl mx-auto flex items-end gap-3 bg-surface-container-low p-2 rounded-[10px] focus-within:ring-2 focus-within:ring-primary-container transition-all">
+<button class="p-3 text-on-surface-variant hover:bg-surface-variant rounded-lg transition-colors shrink-0 group relative">
+<span class="material-symbols-outlined">add</span>
+</button>
+<textarea class="w-full bg-transparent border-none focus:ring-0 resize-none max-h-32 text-sm text-on-surface py-3 px-2 placeholder:text-on-surface-variant/60" placeholder="Type your message here..." rows="1"></textarea>
+<button class="p-3 bg-primary-container text-on-primary-fixed rounded-lg hover:bg-primary-fixed-dim transition-colors shrink-0 shadow-sm flex items-center justify-center group">
+<span class="material-symbols-outlined text-[20px] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">send</span>
+</button>
+</div>
+<div class="max-w-4xl mx-auto mt-2 text-center">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-medium">ZenTech Secure Chat End-to-End Encrypted</p>
+</div>
+</div>
+</main>
+<!-- Expanded Shared Content Sidebar -->
+<aside class="hidden lg:flex flex-col w-[28rem] bg-surface-container-lowest border-l border-surface-variant/20 overflow-y-auto smooth-scroll shrink-0">
+<div class="h-16 flex items-center px-6 border-b border-surface-variant/20 sticky top-0 bg-surface-container-lowest/90 backdrop-blur-md z-20 shrink-0">
+<button class="p-2 -ml-2 rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors mr-3">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<h2 class="font-bold text-lg text-on-surface">Shared Content</h2>
+<div class="ml-auto flex gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+</div>
+</div>
+<div class="sticky top-16 bg-surface-container-lowest z-10 px-6 py-3 border-b border-surface-variant/20 flex gap-2 overflow-x-auto shrink-0 hide-scrollbar">
+<button class="px-4 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant text-sm font-medium hover:bg-surface-container whitespace-nowrap transition-colors">All</button>
+<button class="px-4 py-1.5 rounded-full bg-secondary-container text-on-secondary text-sm font-medium whitespace-nowrap">Media</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant text-sm font-medium hover:bg-surface-container whitespace-nowrap transition-colors">Files</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-low text-on-surface-variant text-sm font-medium hover:bg-surface-container whitespace-nowrap transition-colors">Links</button>
+</div>
+<div class="p-6 flex flex-col gap-10 pb-12 flex-1">
+<!-- Shared Media -->
+<div class="flex flex-col gap-4 flex-1">
+<h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-[0.1em]">Media</h3>
+<div class="pr-2 custom-scrollbar">
+<div class="grid grid-cols-3 gap-3">
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+<div class="aspect-square bg-surface-container hover:bg-surface-container-high transition-colors cursor-pointer rounded-xl flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[28px]">image</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-center mt-4">
+<div class="w-6 h-6 border-2 border-primary-container border-t-transparent rounded-full animate-spin"></div>
+</div>
+</div>
+</aside>
+</div>
+</body></html>
