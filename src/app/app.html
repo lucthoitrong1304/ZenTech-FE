@@ -1,3 +1,6 @@
 <app-toast />
 <p-confirmDialog />
 <router-outlet />
+@if (showCustomerChat()) {
+  <app-customer-chat-popup />
+}

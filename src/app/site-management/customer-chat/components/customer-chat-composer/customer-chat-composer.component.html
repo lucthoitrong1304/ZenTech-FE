@@ -1,0 +1,42 @@
+<footer class="shrink-0 border-t border-[#d2c5ab]/25 bg-white p-3">
+  <form
+    class="flex items-end gap-2 rounded-[8px] bg-[#f6f3f2] p-2 ring-1 ring-[#d2c5ab]/25 transition focus-within:ring-[#ffc700]"
+    (ngSubmit)="submit()"
+  >
+    <input
+      #fileInput
+      type="file"
+      multiple
+      class="hidden"
+      (change)="onFileChange($event)"
+    />
+
+    <button
+      type="button"
+      class="grid h-10 w-10 shrink-0 place-items-center rounded-[7px] text-[#4f4632] transition hover:bg-white hover:text-[#101010]"
+      (click)="openFilePicker()"
+      title="Đính kèm"
+    >
+      <svg lucidePaperclip class="h-5 w-5" [attr.stroke-width]="2"></svg>
+    </button>
+
+    <textarea
+      class="max-h-28 min-h-10 flex-1 resize-none border-0 bg-transparent py-2 text-sm text-[#101010] outline-none placeholder:text-[#4f4632]/70"
+      rows="1"
+      name="customerChatDraft"
+      placeholder="Nhập tin nhắn..."
+      [ngModel]="draft()"
+      (ngModelChange)="draft.set($event)"
+      (keydown.enter)="onEnter($event)"
+    ></textarea>
+
+    <button
+      type="submit"
+      class="grid h-10 w-10 shrink-0 place-items-center rounded-[7px] bg-[#ffc700] text-[#101010] transition hover:bg-[#f5bf00] disabled:cursor-not-allowed disabled:opacity-45"
+      [disabled]="!draft().trim()"
+      title="Gửi"
+    >
+      <svg lucideSendHorizontal class="h-5 w-5" [attr.stroke-width]="2.2"></svg>
+    </button>
+  </form>
+</footer>

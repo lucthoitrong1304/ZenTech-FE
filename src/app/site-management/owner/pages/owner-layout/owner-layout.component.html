@@ -1,4 +1,4 @@
-<div class="owner-shell">
+<div class="owner-shell" [class.owner-shell--chat-sidebar]="chatSidebarActive()">
   <header class="owner-topbar">
     <nav class="owner-breadcrumb" aria-label="Owner breadcrumb">
       <a routerLink="/owner/dashboard" class="owner-breadcrumb__brand">ZenTech</a>
@@ -25,6 +25,7 @@
     </div>
   </header>
 
+  @if (showAdminSidebar()) {
   <aside class="owner-sidebar">
     <div class="owner-sidebar__heading">
       <h2>ZenTech Admin</h2>
@@ -41,6 +42,7 @@
               [routerLink]="item.path"
               routerLinkActive="owner-nav__link--active"
               class="owner-nav__link"
+              (click)="handleNavItemClicked(item)"
             >
               @switch (item.icon) {
                 @case ('dashboard') {
@@ -51,6 +53,9 @@
                 }
                 @case ('employees') {
                   <svg lucideUsers [attr.stroke-width]="2"></svg>
+                }
+                @case ('chat') {
+                  <svg lucideMessageCircle [attr.stroke-width]="2"></svg>
                 }
                 @case ('orders') {
                   <svg lucideShoppingBag [attr.stroke-width]="2"></svg>
@@ -86,8 +91,38 @@
       <span>Đăng xuất</span>
     </button>
   </aside>
+  }
 
   <main class="owner-main">
+    @if (!header().hidePageHeader) {
+    <section class="owner-page-header">
+      <div>
+        <p>{{ header().eyebrow }}</p>
+        <h1>{{ header().title }}</h1>
+        <span>{{ header().description }}</span>
+      </div>
+
+      <div class="owner-page-header__actions">
+        <button type="button" class="owner-action owner-action--soft">
+          <svg lucideCalendar [attr.stroke-width]="2"></svg>
+          <span>Thời gian</span>
+        </button>
+        <button type="button" class="owner-action owner-action--soft">
+          <svg lucideStore [attr.stroke-width]="2"></svg>
+          <span>Chi nhánh</span>
+        </button>
+        <button type="button" class="owner-action owner-action--soft">
+          <svg lucideDownload [attr.stroke-width]="2"></svg>
+          <span>Xuất báo cáo</span>
+        </button>
+        <button type="button" class="owner-action owner-action--primary">
+          <svg lucidePlus [attr.stroke-width]="2.2"></svg>
+          <span>{{ header().primaryAction }}</span>
+        </button>
+      </div>
+    </section>
+    }
+
     <router-outlet />
   </main>
 </div>

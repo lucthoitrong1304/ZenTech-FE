@@ -1,0 +1,143 @@
+<p-drawer
+  styleClass="chat-media-drawer"
+  position="right"
+  [visible]="open()"
+  [modal]="true"
+  [blockScroll]="true"
+  [dismissible]="true"
+  [style]="{ width: 'min(34rem, calc(100vw - 1rem))' }"
+  (visibleChange)="onVisibleChange($event)"
+>
+  <ng-template #header>
+    <div class="min-w-0">
+      <h2 class="truncate text-lg font-black text-[#1c1b1b]">Thông tin tư vấn</h2>
+      <p class="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-[#4f4632]">
+        Media và tài liệu
+      </p>
+    </div>
+  </ng-template>
+
+  <section class="flex h-full min-h-0 flex-col bg-white">
+    <nav class="chat-scrollbar flex shrink-0 gap-4 overflow-x-auto border-b border-[#d2c5ab]/30 px-4 py-2">
+      @for (tab of tabs; track tab.value) {
+        <button
+          type="button"
+          class="shrink-0 border-b-2 border-transparent pb-2 text-sm font-bold text-[#4f4632] transition hover:text-[#1c1b1b]"
+          [class.border-[#765b00]]="activeTab() === tab.value"
+          [class.text-[#765b00]]="activeTab() === tab.value"
+          (click)="tabSelected.emit(tab.value)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </nav>
+
+    <div class="chat-scrollbar flex-1 overflow-y-auto p-4">
+      @if (mediaItems().length > 0) {
+        @if (activeTab() === 'ALL' || activeTab() === 'MEDIA') {
+          <section class="mb-6">
+            <h3 class="mb-3 text-xs font-black uppercase tracking-[0.16em] text-[#4f4632]">
+              Hình ảnh/Video
+            </h3>
+            <div class="grid grid-cols-3 gap-2">
+              @for (item of mediaItems(); track item.id) {
+                @if (isMediaItem(item)) {
+                  <a
+                    class="group relative aspect-square overflow-hidden rounded-[5px] bg-[#f0edec]"
+                    [href]="item.url"
+                    target="_blank"
+                    rel="noreferrer"
+                    [title]="item.title"
+                  >
+                    @if (item.thumbnailUrl) {
+                      <img
+                        class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        [src]="item.thumbnailUrl"
+                        [alt]="item.title"
+                      />
+                    } @else {
+                      <span class="grid h-full w-full place-items-center text-[#4f4632]">
+                        <svg lucideImage class="h-6 w-6" [attr.stroke-width]="2"></svg>
+                      </span>
+                    }
+
+                    @if (item.type === 'VIDEO') {
+                      <span class="absolute inset-0 grid place-items-center bg-black/25 text-white">
+                        <svg lucidePlayCircle class="h-8 w-8" [attr.stroke-width]="1.8"></svg>
+                      </span>
+                    }
+                  </a>
+                }
+              }
+            </div>
+          </section>
+        }
+
+        @if (activeTab() === 'ALL' || activeTab() === 'FILES') {
+          <section class="mb-6">
+            <h3 class="mb-3 text-xs font-black uppercase tracking-[0.16em] text-[#4f4632]">
+              Tệp tin
+            </h3>
+            <div class="grid gap-2">
+              @for (item of mediaItems(); track item.id) {
+                @if (item.type === 'FILE') {
+                  <a
+                    class="flex min-w-0 items-center gap-3 rounded-[5px] border border-transparent p-2 text-[#1c1b1b] transition hover:border-[#d2c5ab]/30 hover:bg-[#f6f3f2]"
+                    [href]="item.url"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] bg-red-50 text-red-600">
+                      <svg lucideFileText class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                    </span>
+                    <span class="min-w-0 flex-1">
+                      <strong class="block truncate text-sm">{{ item.title }}</strong>
+                      <small class="block truncate text-xs font-medium text-[#4f4632]">
+                        {{ item.subtitle }}
+                      </small>
+                    </span>
+                    <svg lucideDownload class="h-5 w-5 shrink-0 text-[#4f4632]" [attr.stroke-width]="2"></svg>
+                  </a>
+                }
+              }
+            </div>
+          </section>
+        }
+
+        @if (activeTab() === 'ALL' || activeTab() === 'LINKS') {
+          <section>
+            <h3 class="mb-3 text-xs font-black uppercase tracking-[0.16em] text-[#4f4632]">
+              Liên kết
+            </h3>
+            <div class="grid gap-2">
+              @for (item of mediaItems(); track item.id) {
+                @if (item.type === 'LINK') {
+                  <a
+                    class="flex min-w-0 items-center gap-3 rounded-[5px] border border-[#d2c5ab]/25 bg-[#f6f3f2] p-3 text-[#1c1b1b] transition hover:bg-white"
+                    [href]="item.url"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] bg-[#e2dfff] text-[#3323cc]">
+                      <svg lucideLink class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                    </span>
+                    <span class="min-w-0">
+                      <strong class="block truncate text-sm">{{ item.title }}</strong>
+                      <small class="block truncate text-xs font-medium text-[#4f4632]">
+                        {{ item.subtitle }}
+                      </small>
+                    </span>
+                  </a>
+                }
+              }
+            </div>
+          </section>
+        }
+      } @else {
+        <div class="grid min-h-52 place-items-center text-center text-sm font-semibold text-[#4f4632]">
+          Không có nội dung trong mục này.
+        </div>
+      }
+    </div>
+  </section>
+</p-drawer>

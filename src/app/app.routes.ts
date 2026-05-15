@@ -24,6 +24,13 @@ export const routes: Routes = [
     loadComponent: () => import('./site-management/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },
   {
+    path: 'chat',
+    loadComponent: () =>
+      import('./site-management/customer-chat/pages/customer-chat-page/customer-chat-page.component').then(
+        m => m.CustomerChatPageComponent
+      )
+  },
+  {
     path: 'auth',
     children: [
       { path: 'login', loadComponent: () => import('./site-management/auth/login/login.component').then(m => m.LoginComponent) },
