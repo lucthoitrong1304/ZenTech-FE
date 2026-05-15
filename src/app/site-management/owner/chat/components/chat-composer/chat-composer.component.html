@@ -1,0 +1,33 @@
+<footer class="shrink-0 border-t border-[#d2c5ab]/30 bg-white p-4">
+  <form
+    class="flex items-end gap-2 rounded-[8px] border border-[#d2c5ab]/20 bg-[#f6f3f2] p-2 transition focus-within:border-[#ffc700] focus-within:ring-1 focus-within:ring-[#ffc700]"
+    (ngSubmit)="submit()"
+  >
+    <button
+      type="button"
+      class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] text-[#4f4632] transition hover:bg-white hover:text-[#1c1b1b]"
+      title="Đính kèm"
+    >
+      <svg lucidePlus class="h-5 w-5" [attr.stroke-width]="2"></svg>
+    </button>
+
+    <textarea
+      class="max-h-32 min-h-10 flex-1 resize-none border-0 bg-transparent py-2 text-sm text-[#1c1b1b] outline-none placeholder:text-[#4f4632]/70 focus:ring-0"
+      rows="1"
+      name="chatDraft"
+      placeholder="Nhập tin nhắn..."
+      [ngModel]="draft()"
+      (ngModelChange)="draft.set($event)"
+      (keydown.enter)="onEnter($event)"
+    ></textarea>
+
+    <button
+      type="submit"
+      class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] text-[#765b00] transition hover:bg-[#ffc700]/15 disabled:cursor-not-allowed disabled:opacity-50"
+      [disabled]="!draft().trim()"
+      title="Gửi"
+    >
+      <svg lucideSend class="h-5 w-5" [attr.stroke-width]="2"></svg>
+    </button>
+  </form>
+</footer>

@@ -205,6 +205,11 @@
   padding: 104px 32px 48px;
 }
 
+.owner-shell--chat-sidebar .owner-main {
+  margin-left: 0;
+  padding: 72px 0 0;
+}
+
 .owner-page-header {
   display: flex;
   align-items: flex-end;
@@ -286,6 +291,11 @@
     padding-inline: 20px;
   }
 
+  .owner-shell--chat-sidebar .owner-main {
+    margin-left: 0;
+    padding: 72px 0 0;
+  }
+
   .owner-page-header {
     align-items: flex-start;
     flex-direction: column;
@@ -312,6 +322,10 @@
   .owner-main {
     margin-left: 0;
     padding: 96px 16px 32px;
+  }
+
+  .owner-shell--chat-sidebar .owner-main {
+    padding: 72px 0 0;
   }
 
   .owner-action {

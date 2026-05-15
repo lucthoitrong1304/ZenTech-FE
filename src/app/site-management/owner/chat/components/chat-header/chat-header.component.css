@@ -1,0 +1,114 @@
+.chat-header {
+  container-type: inline-size;
+}
+
+.chat-header-actions {
+  white-space: nowrap;
+}
+
+.chat-header-action {
+  flex: 0 0 auto;
+}
+
+.chat-header-action__short {
+  display: none;
+}
+
+.chat-header-action__icon {
+  display: none;
+}
+
+@media (max-width: 1080px) {
+  .chat-header-actions {
+    gap: 8px;
+  }
+
+  .chat-header-action {
+    min-height: 38px;
+    padding-inline: 12px;
+    font-size: 12px;
+  }
+
+  .chat-header-action--media {
+    padding-inline: 10px;
+  }
+
+  .chat-header-action--media .chat-header-action__label,
+  .chat-header-action--transfer .chat-header-action__label,
+  .chat-header-action--accept .chat-header-action__label,
+  .chat-header-action__short {
+    display: none;
+  }
+
+  .chat-header-action__icon {
+    display: block;
+  }
+
+  .chat-header-action--media,
+  .chat-header-action--transfer,
+  .chat-header-action--accept {
+    display: grid;
+    width: 40px;
+    place-items: center;
+    padding-inline: 0;
+  }
+}
+
+@container (max-width: 700px) {
+  .chat-header {
+    gap: 10px;
+    padding-inline: 16px;
+  }
+
+  .chat-header-actions {
+    gap: 8px;
+  }
+
+  .chat-header-action {
+    min-height: 38px;
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+
+  .chat-header-action--media .chat-header-action__label,
+  .chat-header-action--transfer .chat-header-action__label,
+  .chat-header-action--accept .chat-header-action__label,
+  .chat-header-action__short {
+    display: none;
+  }
+
+  .chat-header-action__icon {
+    display: block;
+  }
+
+  .chat-header-action--media,
+  .chat-header-action--transfer,
+  .chat-header-action--accept {
+    display: grid;
+    width: 40px;
+    place-items: center;
+    padding-inline: 0;
+  }
+}
+
+@container (max-width: 620px) {
+  .chat-header {
+    padding-inline: 12px;
+  }
+
+  .chat-header-actions {
+    gap: 6px;
+  }
+
+  .chat-header-action--media,
+  .chat-header-action--transfer,
+  .chat-header-action--accept,
+  .chat-header-actions > button:last-child {
+    width: 36px;
+    min-height: 36px;
+  }
+
+  .chat-header-actions > span {
+    display: none;
+  }
+}
