@@ -1,0 +1,123 @@
+<section class="customer-table-panel">
+  <div class="customer-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Khách hàng</th>
+          <th>Trạng thái</th>
+          <th>Đơn hàng</th>
+          <th>Đã chi</th>
+          <th>Lần mua cuối</th>
+          <th>Ngày đăng ký</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (row of skeletonRows; track $index) {
+            <tr class="customer-table__skeleton">
+              <td colspan="7"><span></span></td>
+            </tr>
+          }
+        } @else if (empty()) {
+          <tr>
+            <td colspan="7">
+              <div class="customer-table__empty">
+                <strong>Chưa có khách hàng phù hợp</strong>
+                <span>Thử đổi từ khóa tìm kiếm hoặc bộ lọc trạng thái.</span>
+              </div>
+            </td>
+          </tr>
+        } @else {
+          @for (customer of customers(); track customer.customerId) {
+            <tr>
+              <td>
+                <button
+                  type="button"
+                  class="customer-identity"
+                  (click)="viewCustomer.emit(customer.customerId)"
+                >
+                  <span>{{ customer.fullName.charAt(0).toUpperCase() }}</span>
+                  <strong>
+                    {{ customer.fullName }}
+                    <small>{{ customer.email }}</small>
+                  </strong>
+                </button>
+              </td>
+              <td>
+                <span
+                  class="customer-status"
+                  [class.customer-status--inactive]="!customer.active"
+                >
+                  {{ customer.active ? 'Đang hoạt động' : 'Đã khóa' }}
+                </span>
+              </td>
+              <td>{{ customer.totalOrders }}</td>
+              <td>{{ customer.totalSpent | currency: 'VND' : 'symbol' : '1.0-0' }}</td>
+              <td>
+                @if (customer.lastOrderAt) {
+                  {{ customer.lastOrderAt | date: 'dd/MM/yyyy HH:mm' }}
+                } @else {
+                  <span class="customer-muted">Chưa mua hàng</span>
+                }
+              </td>
+              <td>{{ customer.registeredAt | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                <div class="customer-actions">
+                  <button
+                    type="button"
+                    aria-label="Xem chi tiết khách hàng"
+                    (click)="viewCustomer.emit(customer.customerId)"
+                  >
+                    <svg lucideEye [attr.stroke-width]="2"></svg>
+                  </button>
+                  <button
+                    type="button"
+                    [attr.aria-label]="
+                      customer.active ? 'Khóa tài khoản khách hàng' : 'Mở khóa tài khoản khách hàng'
+                    "
+                    [title]="customer.active ? 'Khóa tài khoản' : 'Mở khóa tài khoản'"
+                    (click)="
+                      statusChange.emit({ customerId: customer.customerId, active: !customer.active })
+                    "
+                  >
+                    @if (customer.active) {
+                      <svg lucideLock [attr.stroke-width]="2"></svg>
+                    } @else {
+                      <svg lucideUnlock [attr.stroke-width]="2"></svg>
+                    }
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="customer-table__footer">
+    <span>
+      Hiển thị {{ firstItemIndex }}-{{ lastItemIndex }} trên {{ totalElements() }}
+    </span>
+    <div>
+      <button
+        type="button"
+        [disabled]="page() <= 0 || loading()"
+        aria-label="Trang trước"
+        (click)="previousPage()"
+      >
+        <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
+      </button>
+      <strong>Trang {{ totalPages() === 0 ? 0 : page() + 1 }} / {{ totalPages() }}</strong>
+      <button
+        type="button"
+        [disabled]="page() + 1 >= totalPages() || loading()"
+        aria-label="Trang tiếp theo"
+        (click)="nextPage()"
+      >
+        <svg lucideChevronRight [attr.stroke-width]="2"></svg>
+      </button>
+    </div>
+  </footer>
+</section>

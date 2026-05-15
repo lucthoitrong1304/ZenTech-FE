@@ -63,7 +63,6 @@
 }
 
 .owner-icon-button,
-.owner-action,
 .owner-logout {
   border: 0;
   cursor: pointer;
@@ -79,7 +78,7 @@
   color: #4f4632;
 }
 
-:is(.owner-icon-button, .owner-action, .owner-nav__link, .owner-logout) svg {
+:is(.owner-icon-button, .owner-nav__link, .owner-logout) svg {
   width: 18px;
   height: 18px;
 }
@@ -144,8 +143,7 @@
 }
 
 .owner-sidebar__heading p,
-.owner-nav__section > p,
-.owner-page-header p {
+.owner-nav__section > p {
   margin: 7px 0 0;
   color: rgba(79, 70, 50, 0.58);
   font-size: 10px;
