@@ -1,7 +1,15 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import {
+  addEntity,
+  removeAllEntities,
+  setAllEntities,
+  updateEntity,
+  withEntities,
+} from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
+import { OwnerChatEvent, OwnerChatEventType } from '../models/owner-chat.event';
 import {
   OwnerChatConversation,
   OwnerChatConversationStatus,
@@ -14,11 +22,8 @@ import {
 } from '../models/owner-chat.models';
 import { OwnerChatService } from '../services/owner-chat.service';
 
-interface OwnerChatState {
-  conversations: OwnerChatConversation[];
+interface OwnerChatUiState {
   selectedConversationId: string | null;
-  messages: OwnerChatMessage[];
-  mediaItems: OwnerChatMediaItem[];
   statusFilter: OwnerChatStatusFilter;
   expertRequestFilter: OwnerChatExpertRequestFilter;
   searchKeyword: string;
@@ -28,11 +33,23 @@ interface OwnerChatState {
   errorMessage: string | null;
 }
 
-const INITIAL_STATE: OwnerChatState = {
-  conversations: [],
+const CONVERSATION_ENTITY_CONFIG = {
+  collection: 'conversation',
+  selectId: (conversation: OwnerChatConversation) => conversation.id,
+} as const;
+
+const MESSAGE_ENTITY_CONFIG = {
+  collection: 'message',
+  selectId: (message: OwnerChatMessage) => message.id,
+} as const;
+
+const MEDIA_ENTITY_CONFIG = {
+  collection: 'media',
+  selectId: (mediaItem: OwnerChatMediaItem) => mediaItem.id,
+} as const;
+
+const INITIAL_STATE: OwnerChatUiState = {
   selectedConversationId: null,
-  messages: [],
-  mediaItems: [],
   statusFilter: 'ALL',
   expertRequestFilter: 'ALL',
   searchKeyword: '',
@@ -43,36 +60,51 @@ const INITIAL_STATE: OwnerChatState = {
 };
 
 const STATUS_LABELS: Record<OwnerChatConversationStatus, string> = {
-  AI_ASSISTING: 'AI đang tư vấn',
-  WAITING_STAFF: 'Đang chờ nhân viên',
-  STAFF_HANDLING: 'Nhân viên đang xử lý',
-  CLOSED: 'Đã đóng',
+  AI_ASSISTING: 'AI dang tu van',
+  WAITING_STAFF: 'Dang cho nhan vien',
+  STAFF_HANDLING: 'Nhan vien dang xu ly',
+  CLOSED: 'Da dong',
 };
 
 const EXPERT_REQUEST_LABELS: Record<OwnerChatExpertRequestStatus, string> = {
-  WAITING: 'Đang chờ phản hồi',
-  ACCEPTED: 'Đã chấp nhận',
-  DECLINED: 'Đã từ chối',
-  CANCELLED: 'Đã bị hủy',
+  WAITING: 'Dang cho phan hoi',
+  ACCEPTED: 'Da chap nhan',
+  DECLINED: 'Da tu choi',
+  CANCELLED: 'Da bi huy',
 };
 
 export const OwnerChatStore = signalStore(
-  withState<OwnerChatState>(INITIAL_STATE),
+  withState<OwnerChatUiState>(INITIAL_STATE),
+  withEntities<OwnerChatConversation, 'conversation'>({
+    entity: {} as OwnerChatConversation,
+    collection: 'conversation',
+  }),
+  withEntities<OwnerChatMessage, 'message'>({
+    entity: {} as OwnerChatMessage,
+    collection: 'message',
+  }),
+  withEntities<OwnerChatMediaItem, 'media'>({
+    entity: {} as OwnerChatMediaItem,
+    collection: 'media',
+  }),
   withComputed(
     ({
-      conversations,
+      conversationEntities,
+      messageEntities,
+      mediaEntities,
       selectedConversationId,
-      messages,
-      mediaItems,
       statusFilter,
       expertRequestFilter,
       searchKeyword,
       activeMediaTab,
     }) => ({
+      conversations: computed(() => conversationEntities()),
+      messages: computed(() => messageEntities()),
+      mediaItems: computed(() => mediaEntities()),
       filteredConversations: computed(() => {
         const normalizedKeyword = normalize(searchKeyword());
 
-        return conversations().filter(conversation => {
+        return conversationEntities().filter(conversation => {
           const matchesStatus =
             statusFilter() === 'ALL' || conversation.status === statusFilter();
           const matchesExpertRequest =
@@ -89,15 +121,16 @@ export const OwnerChatStore = signalStore(
       }),
       selectedConversation: computed(
         () =>
-          conversations().find(conversation => conversation.id === selectedConversationId()) ?? null
+          conversationEntities().find(conversation => conversation.id === selectedConversationId()) ??
+          null
       ),
       selectedMessages: computed(() =>
-        messages().filter(message => message.conversationId === selectedConversationId())
+        messageEntities().filter(message => message.conversationId === selectedConversationId())
       ),
       selectedMedia: computed(() => {
         const currentConversationId = selectedConversationId();
 
-        return mediaItems().filter(mediaItem => {
+        return mediaEntities().filter(mediaItem => {
           const matchesConversation = mediaItem.conversationId === currentConversationId;
 
           if (!matchesConversation) {
@@ -120,14 +153,15 @@ export const OwnerChatStore = signalStore(
         (Object.keys(STATUS_LABELS) as OwnerChatConversationStatus[]).map(status => ({
           status,
           label: STATUS_LABELS[status],
-          count: conversations().filter(conversation => conversation.status === status).length,
+          count: conversationEntities().filter(conversation => conversation.status === status)
+            .length,
         }))
       ),
       expertRequestCounts: computed(() =>
         (Object.keys(EXPERT_REQUEST_LABELS) as OwnerChatExpertRequestStatus[]).map(status => ({
           status,
           label: EXPERT_REQUEST_LABELS[status],
-          count: conversations().filter(
+          count: conversationEntities().filter(
             conversation => conversation.expertRequestStatus === status
           ).length,
         }))
@@ -136,26 +170,139 @@ export const OwnerChatStore = signalStore(
     })
   ),
   withMethods((store, ownerChatService = inject(OwnerChatService)) => {
+    const handleEvent = (event: OwnerChatEvent): void => {
+      switch (event.type) {
+        case OwnerChatEventType.WorkspaceLoadStarted:
+          patchState(store, { loading: true, errorMessage: null });
+          break;
+
+        case OwnerChatEventType.WorkspaceLoadSucceeded:
+          patchState(
+            store,
+            setAllEntities(event.workspace.conversations, CONVERSATION_ENTITY_CONFIG),
+            setAllEntities(event.workspace.messages, MESSAGE_ENTITY_CONFIG),
+            setAllEntities(event.workspace.mediaItems, MEDIA_ENTITY_CONFIG),
+            {
+              selectedConversationId: null,
+              loading: false,
+              errorMessage: null,
+            }
+          );
+          break;
+
+        case OwnerChatEventType.WorkspaceLoadFailed:
+          patchState(store, {
+            loading: false,
+            errorMessage: 'Khong the tai khong gian tu van khach hang.',
+          });
+          break;
+
+        case OwnerChatEventType.ConversationSelected:
+          patchState(
+            store,
+            updateEntity(
+              { id: event.conversationId, changes: { unreadCount: 0 } },
+              CONVERSATION_ENTITY_CONFIG
+            ),
+            {
+              selectedConversationId: event.conversationId,
+              mediaDrawerOpen: false,
+            }
+          );
+          break;
+
+        case OwnerChatEventType.SelectionCleared:
+          patchState(store, {
+            selectedConversationId: null,
+            mediaDrawerOpen: false,
+            activeMediaTab: 'ALL',
+          });
+          break;
+
+        case OwnerChatEventType.SearchKeywordChanged:
+          patchState(store, { searchKeyword: event.searchKeyword });
+          break;
+
+        case OwnerChatEventType.StatusFilterChanged:
+          patchState(store, { statusFilter: event.statusFilter });
+          break;
+
+        case OwnerChatEventType.ExpertRequestFilterChanged:
+          patchState(store, { expertRequestFilter: event.expertRequestFilter });
+          break;
+
+        case OwnerChatEventType.MediaDrawerToggled:
+          patchState(store, { mediaDrawerOpen: event.open });
+          break;
+
+        case OwnerChatEventType.MediaDrawerOpened:
+          patchState(store, { mediaDrawerOpen: true });
+          break;
+
+        case OwnerChatEventType.MediaDrawerClosed:
+          patchState(store, { mediaDrawerOpen: false });
+          break;
+
+        case OwnerChatEventType.MediaTabChanged:
+          patchState(store, { activeMediaTab: event.activeMediaTab });
+          break;
+
+        case OwnerChatEventType.ConversationAccepted:
+          patchState(
+            store,
+            updateEntity(
+              {
+                id: event.conversationId,
+                changes: { status: 'STAFF_HANDLING', expertRequestStatus: 'ACCEPTED' },
+              },
+              CONVERSATION_ENTITY_CONFIG
+            )
+          );
+          break;
+
+        case OwnerChatEventType.ConversationClosed:
+          patchState(
+            store,
+            updateEntity(
+              { id: event.conversationId, changes: { status: 'CLOSED', unreadCount: 0 } },
+              CONVERSATION_ENTITY_CONFIG
+            ),
+            { mediaDrawerOpen: false }
+          );
+          break;
+
+        case OwnerChatEventType.StaffMessageSubmitted:
+          patchState(
+            store,
+            addEntity(event.message, MESSAGE_ENTITY_CONFIG),
+            updateEntity(
+              {
+                id: event.conversation.id,
+                changes: {
+                  lastMessagePreview: event.message.body,
+                  lastMessageAtLabel: event.message.sentAtLabel,
+                  status:
+                    event.conversation.status === 'CLOSED'
+                      ? event.conversation.status
+                      : 'STAFF_HANDLING',
+                },
+              },
+              CONVERSATION_ENTITY_CONFIG
+            )
+          );
+          break;
+      }
+    };
+
     const loadWorkspace = rxMethod<void>(
       pipe(
-        tap(() => patchState(store, { loading: true, errorMessage: null })),
+        tap(() => handleEvent({ type: OwnerChatEventType.WorkspaceLoadStarted })),
         switchMap(() =>
           ownerChatService.getWorkspace().pipe(
             tap({
               next: workspace =>
-                patchState(store, {
-                  conversations: workspace.conversations,
-                  messages: workspace.messages,
-                  mediaItems: workspace.mediaItems,
-                  selectedConversationId: null,
-                  loading: false,
-                  errorMessage: null,
-                }),
-              error: () =>
-                patchState(store, {
-                  loading: false,
-                  errorMessage: 'Không thể tải không gian tư vấn khách hàng.',
-                }),
+                handleEvent({ type: OwnerChatEventType.WorkspaceLoadSucceeded, workspace }),
+              error: () => handleEvent({ type: OwnerChatEventType.WorkspaceLoadFailed }),
             }),
             catchError(() => EMPTY)
           )
@@ -164,105 +311,78 @@ export const OwnerChatStore = signalStore(
     );
 
     return {
+      dispatch: handleEvent,
       loadWorkspace,
       selectConversation(conversationId: string): void {
-        patchState(store, {
-          selectedConversationId: conversationId,
-          mediaDrawerOpen: false,
-          conversations: store.conversations().map(conversation =>
-            conversation.id === conversationId ? { ...conversation, unreadCount: 0 } : conversation
-          ),
-        });
+        handleEvent({ type: OwnerChatEventType.ConversationSelected, conversationId });
       },
       clearSelection(): void {
-        patchState(store, {
-          selectedConversationId: null,
-          mediaDrawerOpen: false,
-          activeMediaTab: 'ALL',
-        });
+        handleEvent({ type: OwnerChatEventType.SelectionCleared });
       },
       setSearchKeyword(searchKeyword: string): void {
-        patchState(store, { searchKeyword });
+        handleEvent({ type: OwnerChatEventType.SearchKeywordChanged, searchKeyword });
       },
       setStatusFilter(statusFilter: OwnerChatStatusFilter): void {
-        patchState(store, { statusFilter });
+        handleEvent({ type: OwnerChatEventType.StatusFilterChanged, statusFilter });
       },
       setExpertRequestFilter(expertRequestFilter: OwnerChatExpertRequestFilter): void {
-        patchState(store, { expertRequestFilter });
+        handleEvent({
+          type: OwnerChatEventType.ExpertRequestFilterChanged,
+          expertRequestFilter,
+        });
       },
       toggleMediaDrawer(): void {
-        patchState(store, { mediaDrawerOpen: !store.mediaDrawerOpen() });
+        handleEvent({
+          type: OwnerChatEventType.MediaDrawerToggled,
+          open: !store.mediaDrawerOpen(),
+        });
       },
       openMediaDrawer(): void {
-        patchState(store, { mediaDrawerOpen: true });
+        handleEvent({ type: OwnerChatEventType.MediaDrawerOpened });
       },
       closeMediaDrawer(): void {
-        patchState(store, { mediaDrawerOpen: false });
+        handleEvent({ type: OwnerChatEventType.MediaDrawerClosed });
       },
       setMediaTab(activeMediaTab: OwnerChatMediaTab): void {
-        patchState(store, { activeMediaTab });
+        handleEvent({ type: OwnerChatEventType.MediaTabChanged, activeMediaTab });
       },
       acceptConversation(): void {
-        const selectedConversationId = store.selectedConversationId();
+        const conversationId = store.selectedConversationId();
 
-        if (!selectedConversationId) {
+        if (!conversationId) {
           return;
         }
 
-        patchState(store, {
-          conversations: store.conversations().map(conversation =>
-            conversation.id === selectedConversationId
-              ? { ...conversation, status: 'STAFF_HANDLING', expertRequestStatus: 'ACCEPTED' }
-              : conversation
-          ),
-        });
+        handleEvent({ type: OwnerChatEventType.ConversationAccepted, conversationId });
       },
       closeConversation(): void {
-        const selectedConversationId = store.selectedConversationId();
+        const conversationId = store.selectedConversationId();
 
-        if (!selectedConversationId) {
+        if (!conversationId) {
           return;
         }
 
-        patchState(store, {
-          conversations: store.conversations().map(conversation =>
-            conversation.id === selectedConversationId
-              ? { ...conversation, status: 'CLOSED', unreadCount: 0 }
-              : conversation
-          ),
-          mediaDrawerOpen: false,
-        });
+        handleEvent({ type: OwnerChatEventType.ConversationClosed, conversationId });
       },
       sendStaffMessage(body: string): void {
-        const selectedConversationId = store.selectedConversationId();
+        const conversation = store.selectedConversation();
         const trimmedBody = body.trim();
 
-        if (!selectedConversationId || !trimmedBody) {
+        if (!conversation || !trimmedBody) {
           return;
         }
 
-        const message: OwnerChatMessage = {
-          id: `msg-staff-${Date.now()}`,
-          conversationId: selectedConversationId,
-          sender: 'STAFF',
-          senderName: 'Bạn (Nhân viên)',
-          body: trimmedBody,
-          sentAtLabel: 'Vua xong',
-        };
-
-        patchState(store, {
-          messages: [...store.messages(), message],
-          conversations: store.conversations().map(conversation =>
-            conversation.id === selectedConversationId
-              ? {
-                  ...conversation,
-                  lastMessagePreview: trimmedBody,
-                  lastMessageAtLabel: 'Vua xong',
-                  status:
-                    conversation.status === 'CLOSED' ? conversation.status : 'STAFF_HANDLING',
-                }
-              : conversation
-          ),
+        handleEvent({
+          type: OwnerChatEventType.StaffMessageSubmitted,
+          conversation,
+          message: {
+            id: `msg-staff-${Date.now()}`,
+            conversationId: conversation.id,
+            sender: 'STAFF',
+            senderName: 'Ban (Nhan vien)',
+            body: trimmedBody,
+            sentAtLabel: 'Vua xong',
+          },
         });
       },
     };
