@@ -1,15 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, effect, inject, untracked } from '@angular/core';
-import { filter, switchMap, take } from 'rxjs';
+import { filter, take } from 'rxjs';
 import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { CustomerDetailDialogComponent } from '../../components/customer-detail-dialog/customer-detail-dialog.component';
 import { CustomerTableComponent } from '../../components/customer-table/customer-table.component';
 import { CustomerToolbarComponent } from '../../components/customer-toolbar/customer-toolbar.component';
-import {
-  CustomerActiveFilter,
-  CustomerSort,
-} from '../../data-access/models/customer.models';
+import { CustomerActiveFilter, CustomerSort } from '../../data-access/models/customer.models';
 import { CustomerStore } from '../../data-access/store/customer.store';
 
 @Component({
@@ -48,6 +45,28 @@ export class CustomerListComponent {
         untracked(() => this.toastService.error(error));
       }
     });
+
+    effect(() => {
+      const message = this.store.successMessage();
+
+      if (message) {
+        untracked(() => {
+          this.toastService.success(message);
+          this.store.clearMessages();
+        });
+      }
+    });
+
+    effect(() => {
+      const message = this.store.statusErrorMessage();
+
+      if (message) {
+        untracked(() => {
+          this.toastService.error(message);
+          this.store.clearMessages();
+        });
+      }
+    });
   }
 
   protected setKeyword(keyword: string): void {
@@ -63,11 +82,6 @@ export class CustomerListComponent {
   }
 
   protected confirmStatusChange(event: { customerId: string; active: boolean }): void {
-    const actionLabel = event.active ? 'mở khóa' : 'khóa';
-    const successMessage = event.active
-      ? 'Mở khóa tài khoản khách hàng thành công.'
-      : 'Khóa tài khoản khách hàng thành công.';
-
     this.confirmService
       .open({
         title: event.active ? 'Mở khóa tài khoản' : 'Khóa tài khoản',
@@ -77,13 +91,8 @@ export class CustomerListComponent {
       })
       .pipe(
         take(1),
-        filter(Boolean),
-        switchMap(() => this.store.updateCustomerStatus(event.customerId, event.active))
+        filter(Boolean)
       )
-      .subscribe({
-        next: () => this.toastService.success(successMessage),
-        error: () =>
-          this.toastService.error(`Không thể ${actionLabel} tài khoản khách hàng lúc này.`),
-      });
+      .subscribe(() => this.store.updateCustomerStatus(event));
   }
 }
