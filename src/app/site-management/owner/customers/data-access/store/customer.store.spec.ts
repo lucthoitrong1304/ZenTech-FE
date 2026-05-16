@@ -119,12 +119,13 @@ describe('CustomerStore', () => {
     });
 
     store.loadSelectedCustomer('customer-1');
-    store.updateCustomerStatus('customer-1', false).subscribe();
+    store.updateCustomerStatus({ customerId: 'customer-1', active: false });
 
     expect(updateCustomerStatus).toHaveBeenCalledWith('customer-1', false);
     expect(getCustomers).toHaveBeenCalled();
     expect(getCustomerDetail).toHaveBeenCalledTimes(2);
     expect(getCustomerOrders).toHaveBeenCalledTimes(2);
+    expect(store.successMessage()).toBe('Khóa tài khoản khách hàng thành công.');
   });
 });
 
