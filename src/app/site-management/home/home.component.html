@@ -1,4 +1,9 @@
-<div class="home-page w-full max-w-[100vw] overflow-x-hidden bg-[#fcf9f8] text-[#1c1b1b]">
+<div class="home-page w-full max-w-[100vw] overflow-x-hidden bg-[#f4f4f4] text-[#111]">
+  <div
+    class="bg-zinc-950 px-4 py-2 text-center text-[11px] font-black uppercase tracking-[0.22em] text-zinc-200 sm:text-xs">
+    ✨ {{ announcement }} ✨
+  </div>
+
   <app-site-header
     [navItems]="navItems()"
     [activeNavLabel]="activeNavLabel()"
@@ -9,316 +14,410 @@
   />
 
   <main>
-    <section class="relative overflow-hidden bg-[#101010]">
-      <img
-        src="/home/asset-5.webp"
-        alt="Mercury mechanical keyboard"
-        class="absolute inset-0 h-full w-full object-cover opacity-40"
-      />
-      <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(16,16,16,0.94),rgba(16,16,16,0.55)_40%,transparent_80%)]"></div>
+    <section class="scanlines relative h-[calc(100vh-5.25rem)] min-h-[620px] overflow-hidden bg-black">
+      @for (slide of heroSlides; track slide.title; let index = $index) {
+        <article
+          class="absolute inset-0 transition-opacity duration-700"
+          [ngClass]="activeHeroSlide() === index ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none'"
+        >
+          <img [src]="slide.image" [alt]="slide.title" class="h-full w-full object-cover"/>
+          <div
+            class="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,transparent,rgba(0,0,0,0.38)_34%,rgba(0,0,0,0.9)_86%)]"></div>
+          <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#f4f4f4] to-transparent z-10"></div>
 
-      <div
-        class="relative mx-auto grid min-h-[calc(100vh-4rem)] max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:px-8 lg:py-24"
-      >
-        <div class="max-w-2xl space-y-8">
-          <div class="space-y-4">
-            <p class="text-xs font-bold uppercase tracking-[0.28em] text-[#ffc700]">
-              Aerospace Precision
-            </p>
-            <h1
-              class="max-w-xl text-5xl font-black uppercase italic leading-[0.9] tracking-[-0.05em] text-white sm:text-6xl lg:text-8xl"
-            >
-              Mercury
-              <br />
-              Series
-            </h1>
-          </div>
-
-          <p class="max-w-xl text-base leading-7 text-white/60 sm:text-lg">
-            Engineered with CNC-machined mercury-grade aluminum and HE magnetic switches.
-            The apex of digital input for setups that demand cinematic presence and sharp
-            response.
-          </p>
-
-          <div class="flex flex-col gap-3 sm:flex-row">
-            <a
-              routerLink="/auth/login"
-              class="inline-flex items-center justify-center rounded-[10px] bg-[#ffc700] px-7 py-4 text-sm font-black uppercase tracking-[0.2em] text-[#251a00] transition hover:translate-y-[-1px] hover:bg-[#f5bf00]"
-            >
-              Sign In
-            </a>
-            <a
-              routerLink="/auth/register"
-              class="inline-flex items-center justify-center rounded-[10px] border border-white/20 px-7 py-4 text-sm font-black uppercase tracking-[0.2em] text-white transition hover:bg-white/10"
-            >
-              Create Account
-            </a>
-          </div>
-        </div>
-
-        <div class="hidden items-end justify-end lg:flex">
-          <div class="space-y-4">
-            @for (stat of heroStats; track stat.label) {
-              <div class="flex items-center gap-4 text-right text-white/30">
-                <span class="text-[10px] font-bold uppercase tracking-[0.34em]">
-                  {{ stat.label }}: {{ stat.value }}
-                </span>
-                <span class="block h-px w-12 bg-white/20"></span>
+          <div
+            class="relative z-20 mx-auto grid h-full max-w-[1440px] items-center gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:px-8">
+            <div class="max-w-3xl pt-20 text-white">
+              <p class="mb-4 text-xs font-black uppercase tracking-[0.32em] text-[#ffc700]">
+                {{ slide.eyebrow }}
+              </p>
+              <h1
+                class="text-glitch font-scifi max-w-4xl text-5xl font-black uppercase leading-[0.92] tracking-[-0.06em] sm:text-7xl lg:text-8xl"
+                [attr.data-text]="slide.title">
+                {{ slide.title }}
+              </h1>
+              <p class="mt-6 max-w-2xl text-base font-semibold leading-7 text-white/70 sm:text-lg">
+                {{ slide.description }}
+              </p>
+              <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+                <a routerLink="/auth/login"
+                   class="btn-cyber cyber-clip inline-flex items-center justify-center bg-[#ffc700] px-8 py-3 text-sm font-black uppercase tracking-[0.18em] text-black transition hover:bg-white hover:shadow-[0_0_15px_#ffc700]">
+                  {{ slide.primaryCta }}
+                </a>
+                <a routerLink="/auth/register"
+                   class="cyber-clip inline-flex items-center justify-center border border-white/30 bg-transparent px-8 py-3 text-sm font-black uppercase tracking-[0.18em] text-white transition hover:bg-white hover:text-black">
+                  {{ slide.secondaryCta }}
+                </a>
               </div>
-            }
+            </div>
+
+            <div class="hidden self-end pb-24 lg:block">
+              <div class="space-y-4">
+                @for (stat of heroStats; track stat.label) {
+                  <div class="flex items-center justify-end gap-4 text-right text-white/45">
+                    <span class="text-[10px] font-black uppercase tracking-[0.28em]">{{ stat.label }}
+                      : {{ stat.value }}</span>
+                    <span class="block h-px w-12 bg-white/25"></span>
+                  </div>
+                }
+              </div>
+            </div>
           </div>
-        </div>
+        </article>
+      }
+
+      <button type="button" (click)="previousHeroSlide()"
+              class="absolute left-4 top-1/2 z-20 -translate-y-1/2 text-white/45 transition hover:text-[#ffc700] md:left-8"
+              aria-label="Previous hero slide">
+        <span class="text-5xl leading-none">‹</span>
+      </button>
+      <button type="button" (click)="nextHeroSlide()"
+              class="absolute right-4 top-1/2 z-20 -translate-y-1/2 text-white/45 transition hover:text-[#ffc700] md:right-8"
+              aria-label="Next hero slide">
+        <span class="text-5xl leading-none">›</span>
+      </button>
+
+      <div class="absolute bottom-8 left-1/2 z-20 flex -translate-x-1/2 gap-3">
+        @for (slide of heroSlides; track slide.title; let index = $index) {
+          <button type="button" (click)="setHeroSlide(index)" class="h-1 w-12 rounded-full transition"
+                  [ngClass]="activeHeroSlide() === index ? 'bg-[#ffc700]' : 'bg-white/30 hover:bg-white/70'"
+                  [attr.aria-label]="'Go to slide ' + (index + 1)"></button>
+        }
       </div>
     </section>
 
-    <section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-      <div class="mx-auto max-w-7xl">
-        <div class="mb-12 sm:mb-16">
-          <h2
-            class="text-3xl font-black uppercase italic tracking-[-0.05em] text-[#1c1b1b] sm:text-4xl"
-          >
-            Featured Gear
-          </h2>
-          <div class="mt-3 h-1 w-12 bg-[#4b41e1]"></div>
-        </div>
+    <section class="px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+      <div class="mx-auto max-w-[1440px]">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:gap-8 md:h-[700px]">
+          <div class="flex h-full flex-col gap-4 md:gap-6 lg:gap-8">
+            <a [routerLink]="['/categories', 'keyboards']"
+               class="cyber-clip group relative h-[360px] overflow-hidden bg-zinc-950 shadow-sm md:h-[60%]">
+              <img src="/home/asset-5.webp" alt="Shop Keyboard"
+                   class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"/>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+              <div class="absolute inset-x-0 bottom-6 px-6 text-center text-white">
+                <h2 class="text-xl font-black uppercase tracking-wide md:text-2xl">Shop Keyboard</h2>
+                <p class="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-white/60">Hall Effect / Mechanical</p>
+              </div>
+            </a>
 
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-12 md:auto-rows-[minmax(180px,1fr)]">
-          @for (category of categories; track category.title) {
-            <a
-              [routerLink]="['/categories', category.slug]"
-              class="group relative block overflow-hidden rounded-[10px] bg-[#101010]"
-              [ngClass]="[category.layoutClass, category.minHeightClass]"
-            >
-              <img
-                [src]="category.image"
-                [alt]="category.title"
-                class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
-              />
-              <div class="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.82))]"></div>
-              <div class="relative flex h-full items-end p-6 sm:p-8">
-                <div>
-                  <h3 class="text-2xl font-black uppercase italic text-white sm:text-3xl">
-                    {{ category.title }}
-                  </h3>
-                  <p class="mt-2 text-[11px] font-bold uppercase tracking-[0.24em] text-white/60">
-                    {{ category.subtitle }}
-                  </p>
+            <div class="grid h-[260px] grid-cols-2 gap-4 md:h-[40%] md:gap-6 lg:gap-8">
+              <a [routerLink]="['/categories', 'chargers']"
+                 class="cyber-clip group relative overflow-hidden bg-zinc-950 shadow-sm">
+                <img src="/home/asset-3.webp" alt="Shop Charger"
+                     class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+                <div class="absolute inset-x-0 bottom-5 px-4 text-center text-white">
+                  <h2 class="text-base font-black uppercase tracking-wide md:text-lg">Shop Charger</h2>
                 </div>
+              </a>
+
+              <a [routerLink]="['/categories', 'earbuds']"
+                 class="cyber-clip group relative overflow-hidden bg-zinc-950 shadow-sm">
+                <img src="/home/asset-2.webp" alt="Shop Earbud"
+                     class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"/>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+                <div class="absolute inset-x-0 bottom-5 px-4 text-center text-white">
+                  <h2 class="text-base font-black uppercase tracking-wide md:text-lg">Shop Earbud</h2>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div class="flex h-full flex-col gap-4 md:gap-6 lg:gap-8">
+            <a [routerLink]="['/categories', 'mice']"
+               class="cyber-clip group relative h-[280px] overflow-hidden bg-zinc-950 shadow-sm md:h-[40%]">
+              <img src="/home/asset-7.webp" alt="Shop Mouse"
+                   class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"/>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+              <div class="absolute inset-x-0 bottom-6 px-6 text-center text-white">
+                <h2 class="text-xl font-black uppercase tracking-wide md:text-2xl">Shop Mouse</h2>
+                <p class="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-white/60">Ultra-fast sensor</p>
               </div>
             </a>
-          }
+
+            <a [routerLink]="['/categories', 'speakers']"
+               class="cyber-clip group relative h-[360px] overflow-hidden bg-zinc-950 shadow-sm md:h-[60%]">
+              <img src="/home/asset-6.webp" alt="Shop Speaker"
+                   class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"/>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"></div>
+              <div class="absolute inset-x-0 bottom-6 px-6 text-center text-white">
+                <h2 class="text-xl font-black uppercase tracking-wide md:text-2xl">Shop Speaker</h2>
+                <p class="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-white/60">Cinematic audio</p>
+              </div>
+            </a>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="bg-[#f6f3f2] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-      <div class="mx-auto max-w-7xl">
-        <div class="mb-12 flex flex-col gap-4 sm:mb-16 sm:flex-row sm:items-center">
-          <div class="flex items-center gap-4">
-            <span class="text-3xl text-[#be0037] sm:text-4xl">⚡</span>
-            <h2
-              class="text-3xl font-black uppercase italic tracking-[-0.05em] text-[#1c1b1b] sm:text-4xl"
-            >
-              Flash Sales
-            </h2>
+    <section class="px-4 pb-16 sm:px-6 lg:px-8 lg:pb-20">
+      <div class="mx-auto max-w-[1440px]">
+        <div class="mb-8 border-b border-zinc-200 pb-4 flex items-end justify-between">
+          <div>
+            <p class="text-xs font-black uppercase tracking-[0.24em] text-zinc-500">Your Next-Level Loadout</p>
+            <h2 class="mt-1 text-3xl font-black uppercase tracking-tight text-black md:text-4xl">Top Deals</h2>
           </div>
-          <div class="sm:ml-auto flex items-center gap-2">
-            <span class="text-[10px] font-bold uppercase tracking-[0.24em] text-[#4f4632]">
-              Ends in:
-            </span>
-            <span class="rounded bg-[#101010] px-2 py-1 text-xs font-mono text-white">
-              {{ flashSaleEndsAt }}
-            </span>
+
+          <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-black uppercase tracking-[0.22em] text-zinc-500">Ends in:</span>
+              <span
+                class="rounded bg-black px-3 py-1.5 font-mono text-xs led-text led-flicker">{{ flashSaleEndsAt }}</span>
+            </div>
+
+            <span class="h-4 w-px bg-zinc-300"></span>
+
+            <a routerLink="/categories/all"
+               class="group flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-zinc-500 transition hover:text-black">
+              View all
+              <span
+                class="flex h-5 w-5 items-center justify-center rounded-full bg-zinc-100 transition group-hover:bg-zinc-200 group-hover:shadow-[0_0_10px_rgba(0,0,0,0.2)]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </span>
+            </a>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           @for (item of flashSales; track item.title) {
             <article
-              class="rounded-[10px] border border-[#d2c5ab]/25 bg-white p-4 transition-transform duration-300 hover:-translate-y-1"
-            >
-              <div class="relative mb-5 overflow-hidden rounded-[6px]">
-                <span
-                  class="absolute left-3 top-3 z-10 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white"
-                  [ngClass]="item.badgeTone === 'red' ? 'bg-[#be0037]' : 'bg-[#645efb]'"
-                >
-                  {{ item.badge }}
-                </span>
-                <img
-                  [src]="item.image"
-                  [alt]="item.title"
-                  class="aspect-square w-full object-cover transition duration-500 hover:scale-110"
-                />
+              class="hud-bracket cyber-card cyber-clip group flex cursor-pointer flex-col overflow-hidden border border-zinc-200 bg-white shadow-sm relative">
+              <div class="relative flex h-[270px] items-center justify-center overflow-hidden bg-[#0a0a0a]">
+                <div class="absolute left-4 top-4 z-10 flex flex-col items-start gap-1">
+                  <span
+                    class="rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                    [ngClass]="item.badgeTone === 'red' ? 'bg-red-600' : 'bg-gradient-to-r from-indigo-500 to-purple-500'">
+                    {{ item.badge }}
+                  </span>
+                  <span
+                    class="rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-black text-white shadow-[0_0_10px_rgba(220,38,38,0.4)]">Save {{ item.originalPrice - item.price | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+                </div>
+                <img [src]="item.image" [alt]="item.title"
+                     class="h-full w-full object-cover transition duration-700 group-hover:scale-110 group-hover:opacity-60"/>
               </div>
-
-              <h3 class="text-base font-bold text-[#1c1b1b]">{{ item.title }}</h3>
-              <div class="mt-2 flex items-center gap-3">
-                <span class="text-lg font-black text-[#be0037]">
-                  {{ item.price | currency: 'USD' : 'symbol' : '1.0-0' }}
-                </span>
-                <span class="text-xs text-[#4f4632]/50 line-through">
-                  {{ item.originalPrice | currency: 'USD' : 'symbol' : '1.0-0' }}
-                </span>
+              <div class="flex flex-1 flex-col justify-between p-5 text-center relative z-30 bg-white">
+                <h3
+                  class="text-sm font-black leading-snug text-black transition group-hover:text-[#7c3aed] md:text-[15px]">{{ item.title }}</h3>
+                <div class="mt-3 flex items-center justify-center gap-2 text-sm md:text-[15px]">
+                  <span class="font-black text-red-600">{{ item.price | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+                  <span
+                    class="text-xs font-semibold text-zinc-400 line-through md:text-sm">{{ item.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+                </div>
               </div>
-
-              <a
-                routerLink="/auth/login"
-                class="mt-4 inline-flex w-full items-center justify-center rounded-[10px] bg-[#1c1b1b] px-4 py-3 text-[10px] font-black uppercase tracking-[0.24em] text-white transition hover:bg-[#4b41e1]"
-              >
-                Add to Cart
-              </a>
             </article>
           }
         </div>
       </div>
     </section>
 
-    <section class="px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-      <div class="mx-auto grid max-w-7xl gap-8 lg:grid-cols-12">
-        <article
-          class="group relative overflow-hidden rounded-[10px] bg-[#101010] lg:col-span-8"
-        >
-          <img
-            [src]="featurePromo.image"
-            [alt]="featurePromo.title"
-            class="absolute inset-0 h-full w-full object-cover opacity-60 transition duration-1000 group-hover:scale-105"
-          />
-          <div class="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.82))]"></div>
-          <div class="relative flex min-h-[26rem] flex-col justify-end p-8 sm:p-12">
-            <p class="text-xs font-bold uppercase tracking-[0.24em] text-[#ffc700]">
-              {{ featurePromo.eyebrow }}
-            </p>
+    <section class="px-4 pb-16 sm:px-6 lg:px-8">
+      <div class="mx-auto flex max-w-[1440px] flex-col gap-6 lg:gap-8">
+        <article class="cyber-clip grid overflow-hidden bg-black shadow-sm md:grid-cols-[0.38fr_0.62fr]">
+          <div class="flex flex-col items-center justify-center p-10 text-center md:p-12">
             <h2
-              class="mt-4 max-w-lg text-4xl font-black uppercase italic leading-tight tracking-[-0.05em] text-white sm:text-5xl"
-            >
-              {{ featurePromo.title }}
-            </h2>
-            <p class="mt-4 max-w-md text-base leading-7 text-white/60">
-              {{ featurePromo.description }}
-            </p>
-            <a
-              routerLink="/auth/register"
-              class="mt-8 inline-flex w-fit items-center justify-center rounded-[10px] bg-white px-6 py-3 text-xs font-black uppercase tracking-[0.24em] text-[#101010] transition hover:bg-[#ffc700]"
-            >
-              {{ featurePromo.cta }}
-            </a>
+              class="text-3xl font-black uppercase tracking-wide text-white md:text-4xl">{{ sidePromos[0].eyebrow }}</h2>
+            <p class="mt-4 max-w-xs text-sm font-semibold leading-6 text-zinc-300">{{ sidePromos[0].description }}</p>
+            <a routerLink="/auth/register"
+               class="mt-7 text-sm font-black uppercase tracking-[0.2em] text-white transition hover:text-[#ffc700]">{{ sidePromos[0].cta }}
+              >></a>
+          </div>
+          <div class="group h-[280px] overflow-hidden md:h-[420px]">
+            <img [src]="sidePromos[0].image" [alt]="sidePromos[0].title"
+                 class="h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"/>
           </div>
         </article>
 
-        <div class="grid gap-8 lg:col-span-4 lg:grid-rows-2">
-          <article class="relative overflow-hidden rounded-[10px] bg-[#645efb] p-8 text-white">
-            <div class="relative z-10">
-              <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-white/70">
-                {{ sidePromos[0].eyebrow }}
-              </p>
-              <h3 class="mt-3 max-w-[12rem] text-2xl font-black uppercase italic leading-tight">
-                {{ sidePromos[0].title }}
-              </h3>
-            </div>
-            <span class="home-sync-icon">↻</span>
-          </article>
-
-          <article class="rounded-[10px] border border-[#d2c5ab]/25 bg-white p-8">
-            <p class="text-[10px] font-bold uppercase tracking-[0.24em] text-[#4b41e1]">
-              {{ sidePromos[1].eyebrow }}
-            </p>
-            <h3
-              class="mt-3 text-2xl font-black uppercase italic leading-tight tracking-[-0.04em] text-[#1c1b1b]"
-            >
-              {{ sidePromos[1].title }}
-            </h3>
-            <p class="mt-4 text-sm leading-6 text-[#4f4632]">
-              {{ sidePromos[1].description }}
-            </p>
-
-            <div class="mt-6 flex items-center">
-              <div class="flex -space-x-3">
-                @for (member of communityMembers; track member.name) {
-                  <img
-                    [src]="member.avatar"
-                    [alt]="member.name"
-                    class="h-11 w-11 rounded-full border-4 border-[#fcf9f8] object-cover"
-                  />
-                }
-              </div>
-              <span
-                class="ml-3 inline-flex h-11 min-w-11 items-center justify-center rounded-full border-4 border-[#fcf9f8] bg-[#ebe7e7] px-3 text-[10px] font-bold text-[#4f4632]"
-              >
-                +42k
-              </span>
-            </div>
-          </article>
-        </div>
+        <article class="cyber-clip group relative min-h-[430px] overflow-hidden bg-black shadow-sm md:min-h-[560px]">
+          <img [src]="featurePromo.image" [alt]="featurePromo.title"
+               class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"/>
+          <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/35 to-transparent"></div>
+          <div
+            class="relative z-10 flex min-h-[430px] flex-col items-start justify-start p-8 text-white md:min-h-[560px] md:p-14 lg:p-16">
+            <span class="text-xs font-black uppercase tracking-[0.24em] text-white/80">{{ featurePromo.eyebrow }}</span>
+            <h2 class="mt-3 text-4xl font-black uppercase tracking-tight md:text-6xl">{{ featurePromo.title }}</h2>
+            <p
+              class="mt-5 max-w-md text-sm font-semibold leading-7 text-white/70 md:text-base">{{ featurePromo.description }}</p>
+            <a routerLink="/auth/register"
+               class="btn-cyber cyber-clip mt-8 bg-white px-8 py-3 text-sm font-black text-black transition hover:bg-[#ffc700]">{{ featurePromo.cta }}</a>
+          </div>
+        </article>
       </div>
     </section>
-  </main>
 
-  <footer class="border-t border-[#d2c5ab]/20 bg-white px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-    <div class="mx-auto max-w-7xl">
-      <div class="grid gap-12 md:grid-cols-[minmax(0,1.2fr)_0.8fr_0.8fr_1fr]">
-        <div class="space-y-6">
-          <div class="flex items-center gap-3">
-            <img
-              src="/brand/zentech-zt-badge.svg"
-              alt="ZenTech ZT logo"
-              class="home-logo-mark home-logo-mark-footer"
-            />
-            <span class="flex items-baseline text-2xl font-black uppercase italic tracking-tight">
-              <span class="text-[#1c1b1b]">Zen</span>
-              <span class="text-[#4f4632]/60">Tech</span>
-            </span>
-          </div>
-          <p class="max-w-xs text-sm leading-7 text-[#4f4632]">
-            Redefining the boundaries of tech peripherals with precision engineering and
-            minimal sci-fi aesthetics.
-          </p>
+    <section class="px-4 pt-0 pb-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-[1440px]">
+        <h2 class="mb-6 text-2xl font-black text-black md:text-3xl">
+          ZenTech — The Future of Gaming Design
+        </h2>
+
+        <div class="mb-16 grid grid-cols-1 gap-6 md:grid-cols-3">
+          @for (video of videoCards; track video.title) {
+            <article class="group cursor-pointer" (click)="openVideo(video.youtubeId)" tabindex="0" role="button"
+                     (keydown.enter)="openVideo(video.youtubeId)" (keydown.space)="openVideo(video.youtubeId)">
+              <div class="cyber-clip relative mb-3 aspect-video overflow-hidden bg-black">
+                <img [src]="video.image" [alt]="video.title"
+                     class="h-full w-full object-cover opacity-80 transition duration-300 group-hover:scale-105 group-hover:opacity-100"/>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <span
+                    class="flex h-10 w-14 items-center justify-center rounded-lg bg-red-600 text-xl text-white transition group-hover:scale-110">
+                    ▶
+                  </span>
+                </div>
+              </div>
+              <h3 class="text-sm font-bold leading-snug text-black transition group-hover:text-[#4b41e1]">
+                {{ video.title }}
+              </h3>
+              <p class="mt-1 text-xs font-semibold text-zinc-500">
+                {{ video.creator }}
+              </p>
+            </article>
+          }
         </div>
 
-        @for (column of footerColumns; track column.title) {
-          <div>
-            <h4 class="text-xs font-bold uppercase tracking-[0.24em] text-[#1c1b1b]">
-              {{ column.title }}
-            </h4>
-            <ul class="mt-6 space-y-4 text-sm text-[#4f4632]">
-              @for (link of column.links; track link) {
-                <li><a href="#" class="transition hover:text-[#4b41e1]">{{ link }}</a></li>
+        <section class="relative mt-20 border-y border-zinc-800 bg-[#0a0a0a] py-24 overflow-hidden">
+          <div
+            class="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+
+          <div class="relative mx-auto max-w-[1600px] px-6 z-10">
+            <div
+              class="absolute left-4 -top-10 text-[140px] font-scifi font-black leading-none text-[#ffc700] opacity-[0.08] select-none">
+              "
+            </div>
+
+            <div class="relative min-h-[280px] flex items-center">
+              @for (testimonial of testimonials; track testimonial.source; let index = $index) {
+                <article
+                  class="absolute w-full flex flex-col items-center justify-center text-center transition-all duration-700 ease-out"
+                  [ngClass]="activeTestimonial() === index ? 'opacity-100 translate-y-0 scale-100 z-10' : 'pointer-events-none opacity-0 translate-y-8 scale-95 z-0'">
+                  <p
+                    class="max-w-[1100px] text-2xl font-black uppercase leading-[1.4] tracking-wide text-white md:text-3xl xl:text-4xl"
+                    style="text-shadow: 0 0 20px rgba(255,255,255,0.2);">
+                    {{ testimonial.quote }}
+                  </p>
+
+                  <div
+                    class="mt-12 flex justify-center bg-white px-8 py-4 cyber-clip border border-zinc-200 shadow-sm transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                    <img [src]="testimonial.image" [alt]="testimonial.source" class="h-8 object-contain"/>
+                  </div>
+                </article>
               }
-            </ul>
+            </div>
+
+            <div class="mt-16 flex items-center justify-center gap-8 md:gap-12">
+              <button type="button" (click)="previousTestimonial()"
+                      class="group cyber-clip flex h-14 w-14 items-center justify-center border border-white/20 bg-transparent text-2xl text-white transition-all hover:border-[#ffc700] hover:bg-[#ffc700] hover:text-black hover:shadow-[0_0_15px_rgba(255,199,0,0.4)]">
+                <span class="transform -translate-x-0.5">‹</span>
+              </button>
+
+              <div class="flex items-center gap-3">
+                @for (testimonial of testimonials; track testimonial.source; let index = $index) {
+                  <button type="button" (click)="setTestimonial(index)"
+                          class="h-1.5 w-10 transition-all duration-300 skew-x-[-30deg]"
+                          [ngClass]="activeTestimonial() === index ? 'bg-[#ffc700] shadow-[0_0_10px_#ffc700]' : 'bg-white/20 hover:bg-white/50'"></button>
+                }
+              </div>
+
+              <button type="button" (click)="nextTestimonial()"
+                      class="group cyber-clip flex h-14 w-14 items-center justify-center border border-white/20 bg-transparent text-2xl text-white transition-all hover:border-[#ffc700] hover:bg-[#ffc700] hover:text-black hover:shadow-[0_0_15px_rgba(255,199,0,0.4)]">
+                <span class="transform translate-x-0.5">›</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="px-4 pb-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-[1440px]">
+        <article class="cyber-clip grid overflow-hidden bg-black shadow-lg md:grid-cols-2">
+          <div class="relative h-[320px] overflow-hidden bg-zinc-900 md:h-[500px]">
+            <video autoplay muted loop playsinline class="absolute inset-0 h-full w-full object-cover">
+              <source src="/home/Video%20Intro.mp4" type="video/mp4"/>
+            </video>
+            <div class="absolute inset-0 bg-black/20"></div>
+          </div>
+          <div class="flex flex-col items-center justify-center p-10 text-center md:p-16 lg:p-20">
+            <h2 class="text-3xl font-black leading-tight tracking-wide text-white md:text-5xl">Where Art Meets<br/>Technology
+            </h2>
+            <p class="mt-6 max-w-md text-sm font-semibold leading-7 text-zinc-300 md:text-[15px]">
+              We blend advanced tech with unique designs. Our products combine sleek functionality with artistic
+              elegance for modern gaming setups.
+            </p>
+            <a routerLink="/auth/register"
+               class="mt-9 text-sm font-black uppercase tracking-[0.2em] text-white transition hover:text-[#ffc700]">About
+              Us >></a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    @if (selectedVideoId()) {
+      <div class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+           (click)="closeVideo()">
+        <button type="button" (click)="closeVideo()"
+                class="absolute right-6 top-6 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-4xl leading-none text-white transition hover:bg-white hover:text-black"
+                aria-label="Close video">
+          ×
+        </button>
+        <div class="relative aspect-video w-full max-w-6xl overflow-hidden rounded-2xl bg-black shadow-2xl"
+             (click)="$event.stopPropagation()">
+          <iframe class="h-full w-full" [src]="getSafeVideoUrl(selectedVideoId()!)" title="YouTube video player"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowfullscreen></iframe>
+        </div>
+      </div>
+    }
+  </main>
+
+  <footer class="border-t border-zinc-200 bg-[#f9f9f9] px-4 pb-8 pt-16 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-[1440px]">
+      <div class="mb-16 grid grid-cols-1 gap-8 text-[15px] md:grid-cols-2 lg:grid-cols-6">
+        @for (column of footerColumns; track column.title) {
+          <div class="flex flex-col gap-4">
+            <h3 class="mb-1 font-black text-black">{{ column.title }}</h3>
+            @for (link of column.links; track link) {
+              <a href="#" class="font-medium text-zinc-600 transition hover:text-black">{{ link }}</a>
+            }
           </div>
         }
-
-        <div>
-          <h4 class="text-xs font-bold uppercase tracking-[0.24em] text-[#1c1b1b]">
-            Newsletter
-          </h4>
-          <p class="mt-6 text-sm leading-7 text-[#4f4632]">
-            Join the vanguard for exclusive drops.
+        <div class="flex flex-col gap-4">
+          <h3 class="mb-1 font-black text-black">Contact Us</h3>
+          <p class="pr-4 leading-relaxed text-zinc-600">
+            Please email<br/>
+            <a href="mailto:service@zentech.com"
+               class="border-b border-sky-500 font-black italic text-sky-500 hover:text-sky-700">
+              service&#64;zentech.com
+            </a>
+            and you’ll get a response within 1 business day.
           </p>
-          <form class="mt-4 flex gap-2">
-            <input
-              type="email"
-              placeholder="Email address"
-              class="min-w-0 flex-1 rounded-[10px] bg-[#f0edec] px-4 py-3 text-sm outline-none ring-0 placeholder:text-[#81765f]"
-            />
-            <button
-              type="button"
-              class="inline-flex h-11 w-11 items-center justify-center rounded-[10px] bg-[#101010] text-white transition hover:bg-[#4b41e1]"
-              aria-label="Subscribe to newsletter"
-            >
+        </div>
+        <div class="flex flex-col gap-4 lg:col-span-2">
+          <h2 class="mb-2 text-3xl font-black leading-tight tracking-wide text-black md:text-4xl">Get Discount and<br/>Updated
+          </h2>
+          <form class="relative w-full max-w-[420px]">
+            <input type="email" placeholder="E-mail"
+                   class="w-full rounded-lg bg-[#f1f1f1] px-4 py-3 pr-12 text-black outline-none transition focus:ring-1 focus:ring-zinc-300"/>
+            <button type="button"
+                    class="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded bg-zinc-200 transition hover:bg-zinc-300"
+                    aria-label="Subscribe">
               →
             </button>
           </form>
         </div>
       </div>
-
       <div
-        class="mt-14 flex flex-col gap-4 border-t border-[#d2c5ab]/20 pt-8 text-[10px] font-bold uppercase tracking-[0.24em] text-[#4f4632] md:flex-row md:items-center md:justify-between"
-      >
-        <p>© 2024 ZenTech Systems Inc.</p>
-        <div class="flex flex-wrap gap-6">
-          <a href="#" class="transition hover:text-[#1c1b1b]">Privacy</a>
-          <a href="#" class="transition hover:text-[#1c1b1b]">Terms</a>
-          <a href="#" class="transition hover:text-[#1c1b1b]">Accessibility</a>
+        class="flex flex-col items-center justify-between gap-6 border-t border-zinc-200 py-6 text-xs font-semibold text-zinc-500 md:flex-row">
+        <p>© 2026 ZenTech Systems Inc.</p>
+        <div class="flex flex-wrap justify-center gap-5">
+          <a href="#" class="transition hover:text-black">Privacy Policy</a>
+          <a href="#" class="transition hover:text-black">Terms of Service</a>
+          <a href="#" class="transition hover:text-black">Shipping Policy</a>
+          <a href="#" class="transition hover:text-black">Refund Policy</a>
         </div>
       </div>
     </div>

@@ -1,0 +1,7 @@
+:host {
+  display: contents;
+}
+
+.customer-shared-sidebar {
+  box-shadow: -28px 0 70px -56px rgba(16, 16, 16, 0.65);
+}

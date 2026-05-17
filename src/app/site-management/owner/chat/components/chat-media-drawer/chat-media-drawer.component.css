@@ -1,0 +1,22 @@
+:host ::ng-deep .chat-media-drawer.p-drawer {
+  border: 1px solid rgba(210, 197, 171, 0.3);
+  border-radius: 8px 0 0 8px;
+  background: #ffffff;
+  color: #1c1b1b;
+  overflow: hidden;
+}
+
+:host ::ng-deep .chat-media-drawer .p-drawer-header {
+  border-bottom: 1px solid rgba(210, 197, 171, 0.3);
+  padding: 1rem;
+}
+
+:host ::ng-deep .chat-media-drawer .p-drawer-content {
+  padding: 0;
+  overflow: hidden;
+}
+
+:host ::ng-deep .p-drawer-mask {
+  backdrop-filter: blur(8px);
+  background: rgba(252, 249, 248, 0.28);
+}

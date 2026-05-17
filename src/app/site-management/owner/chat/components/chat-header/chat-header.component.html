@@ -1,0 +1,96 @@
+<header
+  class="chat-header flex min-h-20 shrink-0 items-center justify-between gap-4 border-b border-[#d2c5ab]/30 bg-white px-6"
+>
+  <div class="flex min-w-0 flex-1 items-center gap-3">
+    <span class="relative shrink-0">
+      @if (conversation().customer.avatarUrl) {
+        <img
+          class="h-10 w-10 rounded-[5px] bg-[#f0edec] object-cover"
+          [src]="conversation().customer.avatarUrl"
+          [alt]="conversation().customer.fullName"
+        />
+      } @else {
+        <span class="grid h-10 w-10 place-items-center rounded-[5px] bg-[#645efb] text-xs font-black text-white">
+          {{ conversation().customer.initials }}
+        </span>
+      }
+
+      @if (conversation().customer.online) {
+        <span class="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-white bg-green-500"></span>
+      }
+    </span>
+
+    <div class="min-w-0">
+      <h2 class="truncate text-base font-black text-[#1c1b1b]">
+        {{ conversation().customer.fullName }}
+      </h2>
+      <div class="flex items-center gap-1.5">
+        <span
+          class="h-2 w-2 rounded-full"
+          [class.bg-green-500]="conversation().customer.online"
+          [class.bg-[#d2c5ab]]="!conversation().customer.online"
+        ></span>
+        <span class="text-xs font-medium text-[#4f4632]">
+          {{ conversation().customer.online ? 'Online' : 'Offline' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-header-actions flex shrink-0 items-center justify-end gap-3">
+    <button
+      type="button"
+      class="chat-header-action chat-header-action--media inline-flex min-h-10 items-center gap-2 rounded-[8px] px-3 text-sm font-bold text-[#4f4632] transition hover:bg-[#f6f3f2]"
+      [class.bg-[#ffc700]/10]="mediaDrawerOpen()"
+      [class.text-[#765b00]]="mediaDrawerOpen()"
+      (click)="mediaClicked.emit()"
+      title="Xem đa phương tiện"
+    >
+      <svg lucideImage class="h-5 w-5" [attr.stroke-width]="2"></svg>
+      <span class="chat-header-action__label">Media</span>
+    </button>
+
+    <button
+      type="button"
+      class="chat-header-action chat-header-action--transfer min-h-10 rounded-[8px] border border-[#645efb] px-4 text-sm font-bold text-[#3323cc] transition hover:bg-[#645efb]/5"
+      (click)="transferClicked.emit()"
+      aria-label="Chuyển nhân viên"
+      title="Chuyển nhân viên"
+    >
+      <svg
+        lucideUserRoundCog
+        class="chat-header-action__icon h-5 w-5"
+        [attr.stroke-width]="2"
+      ></svg>
+      <span class="chat-header-action__label">Chuyển nhân viên</span>
+      <span class="chat-header-action__short" aria-hidden="true">Chuyển</span>
+    </button>
+
+    <button
+      type="button"
+      class="chat-header-action chat-header-action--accept min-h-10 rounded-[8px] bg-[#ffc700] px-4 text-sm font-black text-[#1c1b1b] shadow-sm transition hover:bg-[#f5bf00]"
+      (click)="acceptClicked.emit()"
+      aria-label="Tiếp nhận tư vấn"
+      title="Tiếp nhận tư vấn"
+    >
+      <svg
+        lucideUserRoundCheck
+        class="chat-header-action__icon h-5 w-5"
+        [attr.stroke-width]="2.1"
+      ></svg>
+      <span class="chat-header-action__label">Tiếp nhận tư vấn</span>
+      <span class="chat-header-action__short" aria-hidden="true">Tiếp nhận</span>
+    </button>
+
+    <span class="h-6 w-px bg-[#d2c5ab]/40" aria-hidden="true"></span>
+
+    <button
+      type="button"
+      class="grid h-10 w-10 place-items-center rounded-[8px] text-[#4f4632] transition hover:bg-[#f6f3f2]"
+      (click)="closeClicked.emit()"
+      title="Đóng tư vấn"
+    >
+      <svg lucideX class="h-5 w-5" [attr.stroke-width]="2"></svg>
+    </button>
+  </div>
+</header>

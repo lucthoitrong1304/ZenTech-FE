@@ -1,0 +1,53 @@
+:host {
+  display: contents;
+}
+
+.customer-chat-popup {
+  height: min(38rem, calc(100vh - 2.5rem));
+  width: min(40rem, calc(100vw - 2.5rem));
+  transition:
+    width 220ms ease,
+    transform 220ms ease;
+}
+
+.customer-chat-popup--shared {
+  width: min(58rem, calc(100vw - 2.5rem));
+}
+
+.customer-chat-popup__sidebar {
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(1rem);
+  transition:
+    width 220ms ease,
+    opacity 180ms ease,
+    transform 220ms ease;
+}
+
+.customer-chat-popup__sidebar--open {
+  width: 18rem;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+@media (max-width: 640px) {
+  .customer-chat-popup {
+    inset: 0.75rem;
+    height: auto;
+    width: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  .customer-chat-popup--shared {
+    width: min(40rem, calc(100vw - 2.5rem));
+  }
+
+  .customer-chat-popup__sidebar {
+    display: none;
+  }
+}

@@ -1,5 +1,14 @@
 import { computed, inject, untracked } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import {
+  addEntities,
+  removeAllEntities,
+  removeEntity,
+  setAllEntities,
+  updateEntities,
+  updateEntity,
+  withEntities,
+} from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, forkJoin, map, of, pipe, switchMap, tap } from 'rxjs';
 import {
@@ -33,7 +42,14 @@ const EMPTY_REVIEW_DRAFT: ProductReviewDraft = {
   comment: '',
 };
 
-const INITIAL_STATE: ProductDetailViewModel = {
+const REVIEW_IMAGE_ENTITY_CONFIG = {
+  collection: 'reviewImage',
+  selectId: (image: ReviewImageUploadItem) => image.id,
+} as const;
+
+type ProductDetailState = Omit<ProductDetailViewModel, 'reviewImages'>;
+
+const INITIAL_STATE: ProductDetailState = {
   product: null,
   relatedProducts: [],
   selectedVariantId: null,
@@ -44,14 +60,18 @@ const INITIAL_STATE: ProductDetailViewModel = {
   reviewSubmitting: false,
   reviewFormError: null,
   reviewDraft: EMPTY_REVIEW_DRAFT,
-  reviewImages: [],
   reviewSuccessMessage: null,
   quantity: 1,
 };
 
 export const ProductDetailStore = signalStore(
-  withState<ProductDetailViewModel>(INITIAL_STATE),
-  withComputed(({ product, quantity, selectedVariantId, reviewImages }) => ({
+  withState<ProductDetailState>(INITIAL_STATE),
+  withEntities<ReviewImageUploadItem, 'reviewImage'>({
+    entity: {} as ReviewImageUploadItem,
+    collection: 'reviewImage',
+  }),
+  withComputed(({ product, quantity, selectedVariantId, reviewImageEntities }) => ({
+    reviewImages: computed(() => reviewImageEntities()),
     selectedVariant: computed(() => {
       const currentProduct = product();
       const currentVariantId = selectedVariantId();
@@ -115,8 +135,12 @@ export const ProductDetailStore = signalStore(
     }),
     reviewCount: computed(() => product()?.reviewCount ?? 0),
     rating: computed(() => product()?.rating ?? 0),
-    reviewImageUploading: computed(() => reviewImages().some(image => image.status === 'uploading')),
-    reviewImageFailed: computed(() => reviewImages().some(image => image.status === 'failed')),
+    reviewImageUploading: computed(() =>
+      reviewImageEntities().some(image => image.status === 'uploading')
+    ),
+    reviewImageFailed: computed(() =>
+      reviewImageEntities().some(image => image.status === 'failed')
+    ),
   })),
   withMethods((
     store,
@@ -144,12 +168,11 @@ export const ProductDetailStore = signalStore(
     };
 
     const updateReviewImage = (id: string, patch: Partial<ReviewImageUploadItem>): void => {
-      const reviewImages = store.reviewImages().map(image =>
-        image.id === id ? { ...image, ...patch } : image
+      patchState(
+        store,
+        updateEntity({ id, changes: patch }, REVIEW_IMAGE_ENTITY_CONFIG)
       );
-
-      patchState(store, { reviewImages });
-      syncDraftImageKeys(reviewImages);
+      syncDraftImageKeys();
     };
 
     const updateReviewImages = (patches: ReviewImageUploadResult[]): ReviewImageUploadItem[] => {
@@ -158,37 +181,44 @@ export const ProductDetailStore = signalStore(
         return patch ? { ...image, ...patch } : image;
       });
 
-      patchState(store, { reviewImages });
+      patchState(store, setAllEntities(reviewImages, REVIEW_IMAGE_ENTITY_CONFIG));
       syncDraftImageKeys(reviewImages);
       return reviewImages;
     };
 
     const markReviewImagesUploading = (images: ReviewImageUploadItem[]): void => {
-      const uploadIds = new Set(images.map(image => image.id));
-      const reviewImages = store.reviewImages().map(image =>
-        uploadIds.has(image.id) ? { ...image, status: 'uploading' as const, error: undefined } : image
+      patchState(
+        store,
+        updateEntities(
+          {
+            ids: images.map(image => image.id),
+            changes: { status: 'uploading', error: undefined },
+          },
+          REVIEW_IMAGE_ENTITY_CONFIG
+        )
       );
-
-      patchState(store, { reviewImages });
     };
 
     const resetForLoad = (): void => {
       clearPreviewUrls(readReviewImages());
-      patchState(store, {
-        product: null,
-        relatedProducts: [],
-        selectedVariantId: null,
-        loading: true,
-        error: null,
-        isNotFound: false,
-        reviewModalOpen: false,
-        reviewSubmitting: false,
-        reviewFormError: null,
-        reviewDraft: { ...EMPTY_REVIEW_DRAFT },
-        reviewImages: [],
-        reviewSuccessMessage: null,
-        quantity: 1,
-      });
+      patchState(
+        store,
+        removeAllEntities(REVIEW_IMAGE_ENTITY_CONFIG),
+        {
+          product: null,
+          relatedProducts: [],
+          selectedVariantId: null,
+          loading: true,
+          error: null,
+          isNotFound: false,
+          reviewModalOpen: false,
+          reviewSubmitting: false,
+          reviewFormError: null,
+          reviewDraft: { ...EMPTY_REVIEW_DRAFT },
+          reviewSuccessMessage: null,
+          quantity: 1,
+        }
+      );
     };
 
     const addReview = (review: ProductReview): void => {
@@ -203,20 +233,23 @@ export const ProductDetailStore = signalStore(
         (reviews.reduce((total, item) => total + item.rating, 0) / reviews.length).toFixed(1)
       );
 
-      patchState(store, {
-        product: {
-          ...product,
-          rating,
-          reviewCount: reviews.length,
-          reviews,
-        },
-        reviewModalOpen: false,
-        reviewSubmitting: false,
-        reviewFormError: null,
-        reviewDraft: { ...EMPTY_REVIEW_DRAFT },
-        reviewImages: [],
-        reviewSuccessMessage: 'Đánh giá của bạn đã được thêm vào sản phẩm thành công',
-      });
+      patchState(
+        store,
+        removeAllEntities(REVIEW_IMAGE_ENTITY_CONFIG),
+        {
+          product: {
+            ...product,
+            rating,
+            reviewCount: reviews.length,
+            reviews,
+          },
+          reviewModalOpen: false,
+          reviewSubmitting: false,
+          reviewFormError: null,
+          reviewDraft: { ...EMPTY_REVIEW_DRAFT },
+          reviewSuccessMessage: 'Đánh giá của bạn đã được thêm vào sản phẩm thành công',
+        }
+      );
     };
 
     const submitReviewWithImageKeys = (
@@ -359,23 +392,29 @@ export const ProductDetailStore = signalStore(
         )
       ),
       openReviewModal(): void {
-        patchState(store, {
-          reviewModalOpen: true,
-          reviewFormError: null,
-          reviewDraft: { ...EMPTY_REVIEW_DRAFT },
-          reviewImages: [],
-          reviewSuccessMessage: null,
-        });
+        patchState(
+          store,
+          removeAllEntities(REVIEW_IMAGE_ENTITY_CONFIG),
+          {
+            reviewModalOpen: true,
+            reviewFormError: null,
+            reviewDraft: { ...EMPTY_REVIEW_DRAFT },
+            reviewSuccessMessage: null,
+          }
+        );
       },
       closeReviewModal(): void {
         clearPreviewUrls(readReviewImages());
-        patchState(store, {
-          reviewModalOpen: false,
-          reviewSubmitting: false,
-          reviewFormError: null,
-          reviewDraft: { ...EMPTY_REVIEW_DRAFT },
-          reviewImages: [],
-        });
+        patchState(
+          store,
+          removeAllEntities(REVIEW_IMAGE_ENTITY_CONFIG),
+          {
+            reviewModalOpen: false,
+            reviewSubmitting: false,
+            reviewFormError: null,
+            reviewDraft: { ...EMPTY_REVIEW_DRAFT },
+          }
+        );
       },
       updateReviewDraft(draft: ProductReviewDraft): void {
         patchState(store, {
@@ -429,7 +468,7 @@ export const ProductDetailStore = signalStore(
           return;
         }
 
-        const uploadItems = validFiles.map(file => ({
+        const uploadItems: ReviewImageUploadItem[] = validFiles.map(file => ({
           id: createReviewImageId(),
           file,
           fileName: file.name,
@@ -437,24 +476,25 @@ export const ProductDetailStore = signalStore(
           status: 'pending' as const,
         }));
 
-        patchState(store, {
-          reviewImages: [...store.reviewImages(), ...uploadItems],
-          reviewFormError: null,
-        });
+        patchState(
+          store,
+          addEntities(uploadItems, REVIEW_IMAGE_ENTITY_CONFIG),
+          { reviewFormError: null }
+        );
       },
       removeReviewImage(imageId: string): void {
         const image = store.reviewImages().find(item => item.id === imageId);
-        const reviewImages = store.reviewImages().filter(item => item.id !== imageId);
 
         if (image) {
           URL.revokeObjectURL(image.previewUrl);
         }
 
-        patchState(store, {
-          reviewImages,
-          reviewFormError: null,
-        });
-        syncDraftImageKeys(reviewImages);
+        patchState(
+          store,
+          removeEntity(imageId, REVIEW_IMAGE_ENTITY_CONFIG),
+          { reviewFormError: null }
+        );
+        syncDraftImageKeys();
       },
       selectVariant(variantId: string): void {
         const product = store.product();

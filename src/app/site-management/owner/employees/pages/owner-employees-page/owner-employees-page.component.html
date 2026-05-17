@@ -1,0 +1,338 @@
+<section class="employees-page">
+  <div class="employees-command">
+    <div class="employees-command__copy">
+      <span class="employees-kicker">Team Access Matrix</span>
+      <h2>Quan ly nhan vien</h2>
+      <p>Theo doi, loc va moi nhan su moi vao he thong ZenTech.</p>
+    </div>
+
+    <button type="button" class="employees-primary-action" (click)="store.openCreateModal()">
+      <svg lucidePlus [attr.stroke-width]="2.2"></svg>
+      <span>Them nhan vien moi</span>
+    </button>
+  </div>
+
+  <div class="employees-filterbar">
+    <label class="employees-search">
+      <svg lucideSearch [attr.stroke-width]="2"></svg>
+      <input
+        type="search"
+        [value]="store.query().keyword"
+        placeholder="Tim theo ten hoac email..."
+        (input)="onKeywordInput($event)"
+        (keydown.enter)="onKeywordEnter($event)"
+      />
+    </label>
+
+    <select
+      class="employees-select"
+      aria-label="Loc trang thai"
+      [value]="store.query().active === null ? 'all' : store.query().active ? 'active' : 'inactive'"
+      (change)="onActiveFilterChange($event)"
+    >
+      <option value="all">Tat ca trang thai</option>
+      <option value="active">Dang hoat dong</option>
+      <option value="inactive">Chua kich hoat / Da khoa</option>
+    </select>
+
+    <select
+      class="employees-select"
+      aria-label="Loc vai tro"
+      [value]="store.query().role ?? 'all'"
+      (change)="onRoleFilterChange($event)"
+    >
+      <option value="all">Tat ca vai tro</option>
+      <option value="MANAGER">Quan ly</option>
+      <option value="EMPLOYEE">Nhan vien</option>
+    </select>
+
+    <select
+      class="employees-select"
+      aria-label="Sap xep"
+      [value]="store.query().sort"
+      (change)="onSortChange($event)"
+    >
+      <option value="createdAt,desc">Moi nhat</option>
+      <option value="createdAt,asc">Cu nhat</option>
+      <option value="fullName,asc">Ten A-Z</option>
+      <option value="email,asc">Email A-Z</option>
+      <option value="role,asc">Vai tro</option>
+    </select>
+
+    <button type="button" class="employees-filter-action" (click)="store.applyFilters()">
+      <svg lucideFilter [attr.stroke-width]="2"></svg>
+      <span>Loc</span>
+    </button>
+
+    <button type="button" class="employees-icon-action" aria-label="Lam moi bo loc" (click)="store.resetFilters()">
+      <svg lucideRefreshCw [attr.stroke-width]="2"></svg>
+    </button>
+  </div>
+
+  <article class="employees-panel">
+    <div class="employees-panel__heading">
+      <div>
+        <p>Employee Directory</p>
+        <h3>{{ store.totalElements() }} nhan vien</h3>
+      </div>
+
+      @if (store.loading()) {
+        <span class="employees-loading">
+          <svg lucideLoader2 class="employees-spin" [attr.stroke-width]="2"></svg>
+          Dang tai
+        </span>
+      }
+    </div>
+
+    <div class="employees-table-wrap">
+      <table class="employees-table">
+        <thead>
+          <tr>
+            <th>STT</th>
+            <th>Ho va ten</th>
+            <th>Vai tro</th>
+            <th>Trang thai</th>
+            <th>Ngay tao loi moi</th>
+            <th>Thao tac</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (employee of store.employees(); track employee.employeeId; let index = $index) {
+            <tr>
+              <td>
+                <strong class="employees-index">{{ getDisplayIndex(index) }}</strong>
+              </td>
+              <td>
+                <div class="employees-identity">
+                  @if (employee.imageUrl) {
+                    <img [src]="employee.imageUrl" [alt]="employee.fullName" />
+                  } @else {
+                    <span class="employees-avatar">{{ getEmployeeInitials(employee) }}</span>
+                  }
+                  <span>
+                    <strong>{{ employee.fullName }}</strong>
+                    <small>{{ employee.email }}</small>
+                  </span>
+                </div>
+              </td>
+              <td>
+                <span class="employees-role">{{ getRoleLabel(employee.role) }}</span>
+              </td>
+              <td>
+                <span class="employees-status" [class.employees-status--inactive]="!employee.active">
+                  {{ getStatusLabel(employee.active) }}
+                </span>
+              </td>
+              <td>{{ employee.createdAt ? (employee.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Chua co' }}</td>
+              <td>
+                <div class="employees-actions">
+                  <button
+                    type="button"
+                    class="employees-row-action"
+                    aria-label="Xem nhan vien"
+                    (click)="store.openEmployeeDetail(employee)"
+                  >
+                    <svg lucideEye [attr.stroke-width]="2"></svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="employees-row-action employees-row-action--muted"
+                    aria-label="Chinh sua nhan vien"
+                    (click)="store.openEmployeeDetail(employee)"
+                  >
+                    <svg lucidePencil [attr.stroke-width]="2"></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">
+                <div class="employees-empty">
+                  <svg lucideUsers [attr.stroke-width]="1.8"></svg>
+                  <h3>Chua co nhan vien phu hop</h3>
+                  <p>Thu doi bo loc hoac moi nhan vien moi vao he thong.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="employees-pagination">
+      <p>
+        Hien thi {{ store.pageStart() }}-{{ store.pageEnd() }} tren {{ store.totalElements() }} nhan vien
+      </p>
+
+      <div class="employees-page-buttons">
+        <button
+          type="button"
+          class="employees-page-button"
+          [disabled]="!store.canGoPrevious() || store.loading()"
+          (click)="store.goToPage(store.query().page - 1)"
+          aria-label="Trang truoc"
+        >
+          <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
+        </button>
+
+        @for (slot of pageSlots; track slot) {
+          @let pageNumber = getPageNumber(slot);
+          @if (pageNumber !== null) {
+            <button
+              type="button"
+              class="employees-page-button"
+              [class.employees-page-button--active]="pageNumber === store.query().page"
+              [disabled]="store.loading()"
+              (click)="store.goToPage(pageNumber)"
+            >
+              {{ pageNumber + 1 }}
+            </button>
+          }
+        }
+
+        <button
+          type="button"
+          class="employees-page-button"
+          [disabled]="!store.canGoNext() || store.loading()"
+          (click)="store.goToPage(store.query().page + 1)"
+          aria-label="Trang sau"
+        >
+          <svg lucideChevronRight [attr.stroke-width]="2"></svg>
+        </button>
+      </div>
+    </footer>
+  </article>
+</section>
+
+@if (store.createModalOpen()) {
+  <div class="employees-modal-backdrop" role="presentation">
+    <form class="employees-modal" (submit)="submitCreateEmployee($event)">
+      <header class="employees-modal__header">
+        <div>
+          <p>Invite Access</p>
+          <h2>Them nhan vien moi</h2>
+        </div>
+        <button type="button" class="employees-modal__close" aria-label="Dong form" (click)="store.closeCreateModal()">
+          <svg lucideX [attr.stroke-width]="2"></svg>
+        </button>
+      </header>
+
+      <div class="employees-modal__body">
+        <label class="employees-field">
+          <span>Ho va ten</span>
+          <div class="employees-input-shell">
+            <svg lucideUserRound [attr.stroke-width]="1.8"></svg>
+            <input
+              type="text"
+              [value]="store.createDraft().fullName"
+              placeholder="Nhap ho ten day du"
+              (input)="onCreateDraftInput('fullName', $event)"
+              autocomplete="name"
+            />
+          </div>
+          @if (store.createErrors().fullName) {
+            <small>{{ store.createErrors().fullName }}</small>
+          }
+        </label>
+
+        <label class="employees-field">
+          <span>Email</span>
+          <div class="employees-input-shell">
+            <svg lucideMail [attr.stroke-width]="1.8"></svg>
+            <input
+              type="email"
+              [value]="store.createDraft().email"
+              placeholder="example@zentech.vn"
+              (input)="onCreateDraftInput('email', $event)"
+              autocomplete="email"
+            />
+          </div>
+          @if (store.createErrors().email) {
+            <small>{{ store.createErrors().email }}</small>
+          }
+        </label>
+
+        <label class="employees-field">
+          <span>Vai tro</span>
+          <select [value]="store.createDraft().role" (change)="onCreateRoleChange($event)">
+            <option value="">Chon vai tro</option>
+            @for (role of employeeRoles; track role) {
+              <option [value]="role">{{ getRoleLabel(role) }}</option>
+            }
+          </select>
+          @if (store.createErrors().role) {
+            <small>{{ store.createErrors().role }}</small>
+          }
+        </label>
+
+        @if (store.createErrors().submit) {
+          <p class="employees-submit-error">{{ store.createErrors().submit }}</p>
+        }
+      </div>
+
+      <footer class="employees-modal__footer">
+        <button type="button" class="employees-secondary-action" (click)="store.closeCreateModal()">
+          Huy
+        </button>
+        <button type="submit" class="employees-primary-action" [disabled]="store.creating()">
+          @if (store.creating()) {
+            <svg lucideLoader2 class="employees-spin" [attr.stroke-width]="2"></svg>
+          } @else {
+            <svg lucidePlus [attr.stroke-width]="2.2"></svg>
+          }
+          <span>{{ store.creating() ? 'Dang tao...' : 'Them nhan vien' }}</span>
+        </button>
+      </footer>
+    </form>
+  </div>
+}
+
+@if (store.detailModalOpen()) {
+  @if (store.selectedEmployee(); as employee) {
+    <div class="employees-modal-backdrop" role="presentation">
+      <article class="employees-modal employees-modal--detail">
+        <header class="employees-modal__header">
+          <div>
+            <p>Employee Snapshot</p>
+            <h2>Thong tin nhan vien</h2>
+          </div>
+          <button type="button" class="employees-modal__close" aria-label="Dong thong tin" (click)="store.closeEmployeeDetail()">
+            <svg lucideX [attr.stroke-width]="2"></svg>
+          </button>
+        </header>
+
+        <div class="employees-detail">
+          <div class="employees-detail__avatar">
+            @if (employee.imageUrl) {
+              <img [src]="employee.imageUrl" [alt]="employee.fullName" />
+            } @else {
+              <span>{{ getEmployeeInitials(employee) }}</span>
+            }
+          </div>
+          <h3>{{ employee.fullName }}</h3>
+          <p>{{ employee.email }}</p>
+
+          <dl>
+            <div>
+              <dt>Vai tro</dt>
+              <dd>{{ getRoleLabel(employee.role) }}</dd>
+            </div>
+            <div>
+              <dt>Trang thai</dt>
+              <dd>{{ getStatusLabel(employee.active) }}</dd>
+            </div>
+            <div>
+              <dt>Ngay tao</dt>
+              <dd>{{ employee.createdAt ? (employee.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Chua co' }}</dd>
+            </div>
+          </dl>
+
+          <p class="employees-detail__notice">
+            Chuc nang chinh sua se duoc mo khi backend bo sung endpoint cap nhat nhan vien.
+          </p>
+        </div>
+      </article>
+    </div>
+  }
+}

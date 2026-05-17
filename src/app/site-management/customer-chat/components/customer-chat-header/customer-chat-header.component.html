@@ -1,0 +1,74 @@
+<header class="flex shrink-0 items-center justify-between gap-4 bg-[#101010] px-4 py-3 text-white">
+  <div class="flex min-w-0 items-center gap-3">
+    <span class="relative grid h-10 w-10 shrink-0 place-items-center rounded-[8px] bg-[#ffc700] text-[#101010]">
+      <svg lucideSparkles class="h-5 w-5" [attr.stroke-width]="2.15"></svg>
+      @if (staff()?.online) {
+        <span class="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-[#101010] bg-emerald-400"></span>
+      }
+    </span>
+
+    <div class="min-w-0">
+      <h2 class="truncate text-sm font-black uppercase tracking-[0.12em]">
+        ZenTech Support
+      </h2>
+      <p class="truncate text-xs font-semibold text-white/58">
+        @if (staff(); as currentStaff) {
+          {{ currentStaff.name }} đang hỗ trợ
+        } @else {
+          AI đang sẵn sàng tư vấn
+        }
+      </p>
+    </div>
+  </div>
+
+  @if (!compact() && product(); as currentProduct) {
+    <a
+      [routerLink]="['/products', currentProduct.id]"
+      class="hidden min-w-0 items-center gap-3 rounded-[8px] bg-white/7 px-3 py-2 text-left transition hover:bg-white/12 lg:flex"
+    >
+      <img
+        [src]="currentProduct.imageUrl"
+        [alt]="currentProduct.name"
+        class="h-10 w-10 rounded-[6px] object-cover"
+      />
+      <span class="min-w-0">
+        <strong class="block truncate text-xs font-black">{{ currentProduct.name }}</strong>
+        <small class="block truncate text-[11px] font-semibold text-white/55">
+          {{ currentProduct.stockLabel }}
+        </small>
+      </span>
+    </a>
+  }
+
+  <div class="flex shrink-0 items-center gap-2">
+    <button
+      type="button"
+      class="grid h-10 w-10 place-items-center rounded-[8px] text-white/72 transition hover:bg-white/10 hover:text-white"
+      [class.bg-white]="sharedSidebarOpen()"
+      [class.text-[#101010]]="sharedSidebarOpen()"
+      (click)="sharedClicked.emit()"
+      title="Nội dung đã chia sẻ"
+    >
+      <svg lucideImages class="h-5 w-5" [attr.stroke-width]="2"></svg>
+    </button>
+
+    @if (compact()) {
+      <a
+        routerLink="/chat"
+        class="grid h-10 w-10 place-items-center rounded-[8px] text-white/72 transition hover:bg-white/10 hover:text-white"
+        title="Mở toàn màn hình"
+      >
+        <svg lucideMaximize2 class="h-5 w-5" [attr.stroke-width]="2"></svg>
+      </a>
+    }
+
+    <button
+      type="button"
+      class="grid h-10 w-10 place-items-center rounded-[8px] text-white/72 transition hover:bg-white/10 hover:text-white"
+      (click)="closeClicked.emit()"
+      title="Thu gọn"
+    >
+      <svg lucideMinus class="h-5 w-5" [attr.stroke-width]="2"></svg>
+    </button>
+  </div>
+</header>

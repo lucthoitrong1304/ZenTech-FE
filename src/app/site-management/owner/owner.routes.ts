@@ -42,8 +42,22 @@ export const ownerRoutes: Routes = [
           primaryAction: 'Thêm nhân viên',
         },
         loadComponent: () =>
-          import('./pages/owner-placeholder/owner-placeholder.component').then(
-            m => m.OwnerPlaceholderComponent
+          import('./employees/pages/owner-employees-page/owner-employees-page.component').then(
+            m => m.OwnerEmployeesPageComponent
+          ),
+      },
+      {
+        path: 'chat',
+        data: {
+          eyebrow: 'Điều hành kinh doanh',
+          title: 'Tư vấn khách hàng',
+          description: 'Theo dõi tư vấn khách hàng, tiếp nhận từ AI và xử lý trực tiếp.',
+          primaryAction: 'Tư vấn mới',
+          hidePageHeader: true,
+        },
+        loadComponent: () =>
+          import('./chat/pages/owner-chat-page/owner-chat-page.component').then(
+            m => m.OwnerChatPageComponent
           ),
       },
       {

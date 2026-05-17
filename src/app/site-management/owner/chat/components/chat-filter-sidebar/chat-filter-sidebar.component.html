@@ -1,0 +1,87 @@
+<nav
+  class="chat-filter-sidebar flex h-full w-72 shrink-0 flex-col gap-6 overflow-y-auto bg-[#f6f3f2] p-6 text-sm tracking-wide text-[#1c1b1b]"
+  aria-label="Bộ lọc tư vấn khách hàng"
+>
+  <button
+    type="button"
+    class="flex items-center gap-2 text-[#4f4632] transition hover:text-[#1c1b1b]"
+    (click)="adminSidebarRequested.emit()"
+  >
+    <svg lucideArrowLeft class="h-4 w-4" [attr.stroke-width]="2"></svg>
+    <span class="font-medium">Quay lại Admin chính</span>
+  </button>
+
+  <section class="grid gap-4">
+    <h3
+      class="border-b border-[#d2c5ab]/30 px-2 pb-2 text-[13px] font-black uppercase tracking-[0.1em]"
+    >
+      Trạng thái tư vấn
+    </h3>
+
+    <div class="grid gap-1">
+      @for (item of statusCounts(); track item.status) {
+        <button
+          type="button"
+          class="flex min-h-11 w-full items-center justify-between rounded-[8px] px-3 text-left transition"
+          [ngClass]="
+            activeStatus() === item.status
+              ? 'border-l-4 border-[#ffc700] bg-white pl-2 font-black text-[#1c1b1b] shadow-[0_16px_40px_-34px_rgba(28,27,27,0.45)]'
+              : 'text-[#4f4632] hover:bg-white hover:text-[#1c1b1b]'
+          "
+          (click)="statusSelected.emit(item.status)"
+        >
+          <span class="min-w-0 truncate">{{ item.label }}</span>
+          @if (item.count > 0) {
+            <span
+              class="ml-3 min-w-5 rounded-full px-2 py-0.5 text-center text-[11px] font-black"
+              [ngClass]="
+                activeStatus() === item.status
+                  ? 'bg-[#ffc700] text-[#1c1b1b]'
+                  : 'bg-[#e5e2e1] text-[#4f4632]'
+              "
+            >
+              {{ item.count }}
+            </span>
+          }
+        </button>
+      }
+    </div>
+  </section>
+
+  <section class="grid gap-4">
+    <h3
+      class="border-b border-[#d2c5ab]/30 px-2 pb-2 text-[13px] font-black uppercase tracking-[0.1em]"
+    >
+      Yêu cầu chuyên gia
+    </h3>
+
+    <div class="grid gap-1">
+      @for (item of expertRequestCounts(); track item.status) {
+        <button
+          type="button"
+          class="flex min-h-11 w-full items-center justify-between rounded-[8px] px-3 text-left transition"
+          [ngClass]="
+            activeExpertRequest() === item.status
+              ? 'border-l-4 border-[#ffc700] bg-white pl-2 font-black text-[#1c1b1b] shadow-[0_16px_40px_-34px_rgba(28,27,27,0.45)]'
+              : 'text-[#4f4632] hover:bg-white hover:text-[#1c1b1b]'
+          "
+          (click)="expertRequestSelected.emit(item.status)"
+        >
+          <span class="min-w-0 truncate">{{ item.label }}</span>
+          @if (item.count > 0) {
+            <span
+              class="ml-3 min-w-5 rounded-full px-2 py-0.5 text-center text-[11px] font-black"
+              [ngClass]="
+                activeExpertRequest() === item.status
+                  ? 'bg-[#ffc700] text-[#1c1b1b]'
+                  : 'bg-[#e5e2e1] text-[#4f4632]'
+              "
+            >
+              {{ item.count }}
+            </span>
+          }
+        </button>
+      }
+    </div>
+  </section>
+</nav>

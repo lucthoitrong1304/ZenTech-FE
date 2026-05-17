@@ -1,0 +1,74 @@
+<section class="chat-scrollbar relative flex-1 overflow-y-auto bg-[#fcf9f8] p-6">
+  <div
+    class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(246,243,242,0.92),_rgba(252,249,248,0.72),_rgba(252,249,248,1))]"
+  ></div>
+
+  <div class="relative z-10 grid gap-6">
+    @for (message of messages(); track message.id) {
+      <article
+        class="flex max-w-[80%] gap-3"
+        [class.ml-auto]="message.sender === 'STAFF'"
+        [class.flex-row-reverse]="message.sender === 'STAFF'"
+      >
+        @if (message.sender === 'CUSTOMER') {
+          @if (conversation().customer.avatarUrl) {
+            <img
+              class="mt-1 h-8 w-8 shrink-0 rounded-[5px] bg-[#f0edec] object-cover"
+              [src]="conversation().customer.avatarUrl"
+              [alt]="conversation().customer.fullName"
+            />
+          } @else {
+            <span
+              class="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-[5px] bg-[#645efb] text-[10px] font-black text-white"
+            >
+              {{ conversation().customer.initials }}
+            </span>
+          }
+        } @else if (message.sender === 'AI') {
+          <span
+            class="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-[5px] border border-green-600/20 bg-green-50 text-green-700"
+          >
+            <svg lucideBot class="h-4 w-4" [attr.stroke-width]="2"></svg>
+          </span>
+        } @else {
+          <span
+            class="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-[5px] bg-[#ffc700] text-[10px] font-black text-[#1c1b1b]"
+          >
+            NV
+          </span>
+        }
+
+        <div class="grid gap-1" [class.justify-items-end]="message.sender === 'STAFF'">
+          <div
+            class="flex items-baseline gap-2"
+            [class.flex-row-reverse]="message.sender === 'STAFF'"
+          >
+            <strong
+              class="text-sm"
+              [class.text-green-700]="message.sender === 'AI'"
+              [class.text-[#1c1b1b]]="message.sender !== 'AI'"
+            >
+              {{ message.senderName }}
+            </strong>
+            <span class="text-[10px] font-medium text-[#4f4632]">{{ message.sentAtLabel }}</span>
+          </div>
+
+          <p
+            class="max-w-full rounded-[8px] p-3 text-sm leading-relaxed"
+            [class.rounded-tl-sm]="message.sender !== 'STAFF'"
+            [class.rounded-tr-sm]="message.sender === 'STAFF'"
+            [class.border]="message.sender === 'AI'"
+            [class.border-green-600]="message.sender === 'AI'"
+            [class.bg-green-50]="message.sender === 'AI'"
+            [class.text-green-700]="message.sender === 'AI'"
+            [class.bg-[#e5e2e1]]="message.sender === 'CUSTOMER'"
+            [class.text-[#1c1b1b]]="message.sender !== 'AI'"
+            [class.bg-[#ffdf94]/45]="message.sender === 'STAFF'"
+          >
+            {{ message.body }}
+          </p>
+        </div>
+      </article>
+    }
+  </div>
+</section>
