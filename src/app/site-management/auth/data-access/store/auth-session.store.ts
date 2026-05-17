@@ -50,7 +50,7 @@ export const AuthSessionStore = signalStore(
         successMessage: string | null,
         warningMessage: string | null = null,
       ): void => {
-        socialAuthService.signOut().catch(() => {});
+        socialAuthService.signOut(true).catch(() => {});
 
         authStorageService.clear();
         patchState(store, {
