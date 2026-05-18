@@ -15,7 +15,6 @@ import {
   CurrentAuthUser,
 } from '../../../../core/services/auth-storage.service';
 import { AuthService } from '../services/auth.service';
-import { SocialAuthService } from '@abacritt/angularx-social-login';
 
 interface AuthSessionState {
   currentUser: CurrentAuthUser | null;
@@ -43,15 +42,12 @@ export const AuthSessionStore = signalStore(
     (
       store,
       authService = inject(AuthService),
-      authStorageService = inject(AuthStorageService),
-      socialAuthService = inject(SocialAuthService),
+      authStorageService = inject(AuthStorageService)
     ) => {
       const completeLogout = (
         successMessage: string | null,
-        warningMessage: string | null = null,
+        warningMessage: string | null = null
       ): void => {
-        socialAuthService.signOut(true).catch(() => {});
-
         authStorageService.clear();
         patchState(store, {
           currentUser: null,
@@ -81,7 +77,7 @@ export const AuthSessionStore = signalStore(
               patchState(store, {
                 logoutSuccessMessage: null,
                 logoutWarningMessage: null,
-              }),
+              })
             ),
             switchMap(() => {
               const refreshToken = authStorageService.getRefreshToken();
@@ -92,17 +88,17 @@ export const AuthSessionStore = signalStore(
               }
 
               return authService.logout(refreshToken).pipe(
-                tap((message) => completeLogout(message || LOGOUT_SUCCESS_MESSAGE)),
+                tap(message => completeLogout(message || LOGOUT_SUCCESS_MESSAGE)),
                 catchError(() => {
                   completeLogout(null, LOGOUT_WARNING_MESSAGE);
                   return EMPTY;
-                }),
+                })
               );
-            }),
-          ),
+            })
+          )
         ),
       };
-    },
+    }
   ),
   withHooks({
     onInit(store) {
@@ -110,5 +106,5 @@ export const AuthSessionStore = signalStore(
 
       patchState(store, { currentUser: authStorageService.getCurrentUser() });
     },
-  }),
+  })
 );

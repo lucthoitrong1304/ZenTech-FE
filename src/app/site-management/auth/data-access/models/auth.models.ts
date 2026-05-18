@@ -6,11 +6,6 @@ export interface LoginRequest {
   password: string;
 }
 
-// Payload gửi idToken của Google lên backend
-export interface GoogleLoginRequest {
-  token: string;
-}
-
 // Payload đăng ký đầy đủ gửi backend, bao gồm vai trò tài khoản.
 export interface RegisterRequest {
   email: string;
