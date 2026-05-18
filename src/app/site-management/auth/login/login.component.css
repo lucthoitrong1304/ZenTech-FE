@@ -1,8 +1,1 @@
 @import '../auth-layout.css';
-
-.auth-btn-google-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-top: 1.25rem;
-}

@@ -2,7 +2,7 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
-import { GoogleLoginRequest, LoginRequest } from '../models/auth.models';
+import { LoginRequest } from '../models/auth.models';
 import { AuthService } from '../services/auth.service';
 import { AuthSessionStore } from './auth-session.store';
 import {
@@ -27,44 +27,23 @@ export const LoginStore = signalStore(
       login: rxMethod<LoginRequest>(
         pipe(
           tap(() => patchState(store, toRequestStartState())),
-          switchMap((payload) =>
+          switchMap(payload =>
             authService.login(payload).pipe(
               tap({
-                next: (response) => {
+                next: response => {
                   authSessionStore.setSession(response);
                   patchState(store, toRequestSuccessState(LOGIN_SUCCESS_MESSAGE));
                 },
-                error: (error) =>
+                error: error =>
                   patchState(
                     store,
-                    toRequestErrorState(parseAuthErrorMessage(error, LOGIN_ERROR_MESSAGE)),
+                    toRequestErrorState(parseAuthErrorMessage(error, LOGIN_ERROR_MESSAGE))
                   ),
               }),
-              catchError(() => EMPTY),
-            ),
-          ),
-        ),
-      ),
-      loginWithGoogle: rxMethod<GoogleLoginRequest>(
-        pipe(
-          tap(() => patchState(store, toRequestStartState())),
-          switchMap((payload) =>
-            authService.loginWithGoogle(payload).pipe(
-              tap({
-                next: (response) => {
-                  authSessionStore.setSession(response);
-                  patchState(store, toRequestSuccessState('Đăng nhập Google thành công!'));
-                },
-                error: (error) =>
-                  patchState(
-                    store,
-                    toRequestErrorState(parseAuthErrorMessage(error, 'Đăng nhập Google thất bại.')),
-                  ),
-              }),
-              catchError(() => EMPTY),
-            ),
-          ),
-        ),
+              catchError(() => EMPTY)
+            )
+          )
+        )
       ),
       clearMessages(): void {
         patchState(store, {
@@ -72,6 +51,6 @@ export const LoginStore = signalStore(
           successMessage: null,
         });
       },
-    }),
-  ),
+    })
+  )
 );

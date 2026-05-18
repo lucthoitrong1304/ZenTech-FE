@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked, ChangeDetectorRef } from '@angular/core';
+import { Component, effect, inject, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
   LucideArrowRight,
   LucideLockKeyhole,
   LucideMail,
-  LucideLoader2, LucideLoaderCircle
+  LucideLoader2
 } from '@lucide/angular';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -16,8 +16,6 @@ import { AuthSessionStore } from '../data-access/store/auth-session.store';
 import { LoginStore } from '../data-access/store/login.store';
 import { hasRole } from '../data-access/utils/auth-role.utils';
 import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
-import { SocialAuthService, GoogleSigninButtonModule } from '@abacritt/angularx-social-login';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-login',
@@ -33,8 +31,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     LucideLockKeyhole,
     LucideMail,
     AuthShellComponent,
-    LucideLoaderCircle,
-    GoogleSigninButtonModule,
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
@@ -51,8 +47,6 @@ export class LoginComponent {
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
   });
-
-  private readonly socialAuthService = inject(SocialAuthService);
 
   constructor() {
     effect(() => {
@@ -74,16 +68,6 @@ export class LoginComponent {
         untracked(() => this.toastService.error(message));
       }
     });
-
-    // 2. Lắng nghe kết quả trả về từ Google khi người dùng chọn tài khoản xong
-    // Thêm pipe(takeUntilDestroyed()) trước khi subscribe
-    this.socialAuthService.authState
-      .pipe(takeUntilDestroyed())
-      .subscribe((user) => {
-        if (user && user.idToken) {
-          this.loginStore.loginWithGoogle({ token: user.idToken });
-        }
-      });
   }
 
   onLogin(): void {
@@ -104,20 +88,13 @@ export class LoginComponent {
 
   protected hasControlError(controlName: 'email' | 'password', errorCode: string): boolean {
     const control = this.loginForm.controls[controlName];
+
     return control.hasError(errorCode) && (control.dirty || control.touched);
   }
 
   private getPostLoginRoute(): string {
     const roles = this.authSessionStore.currentUser()?.roles || [];
-    return hasRole(roles, Role.OWNER) ? '/owner/dashboard' : '/';
-  }
 
-  protected showGoogleButton = false;
-  private readonly cdr = inject(ChangeDetectorRef);
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.showGoogleButton = true;
-      this.cdr.detectChanges();
-    }, 0);
+    return hasRole(roles, Role.OWNER) ? '/owner/dashboard' : '/';
   }
 }
