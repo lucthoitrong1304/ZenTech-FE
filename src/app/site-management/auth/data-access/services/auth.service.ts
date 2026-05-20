@@ -28,6 +28,16 @@ export class AuthService {
     });
   }
 
+  loginWithGoogle(token: string): Observable<AuthResponse> {
+    return this.apiService.post<{ token: string }, AuthResponse>(
+      `${this.authBaseUrl}/google`,
+      { token },
+      {
+        context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
+      }
+    );
+  }
+
   registerCustomer(payload: RegisterCustomerPayload): Observable<string> {
     const request: RegisterRequest = {
       ...payload,
