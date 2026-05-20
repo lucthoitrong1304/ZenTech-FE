@@ -27,30 +27,53 @@ export const LoginStore = signalStore(
       login: rxMethod<LoginRequest>(
         pipe(
           tap(() => patchState(store, toRequestStartState())),
-          switchMap(payload =>
+          switchMap((payload) =>
             authService.login(payload).pipe(
               tap({
-                next: response => {
+                next: (response) => {
                   authSessionStore.setSession(response);
                   patchState(store, toRequestSuccessState(LOGIN_SUCCESS_MESSAGE));
                 },
-                error: error =>
+                error: (error) =>
                   patchState(
                     store,
-                    toRequestErrorState(parseAuthErrorMessage(error, LOGIN_ERROR_MESSAGE))
+                    toRequestErrorState(parseAuthErrorMessage(error, LOGIN_ERROR_MESSAGE)),
                   ),
               }),
-              catchError(() => EMPTY)
-            )
-          )
-        )
+              catchError(() => EMPTY),
+            ),
+          ),
+        ),
       ),
+
+      loginWithGoogle: rxMethod<string>(
+        pipe(
+          tap(() => patchState(store, toRequestStartState())),
+          switchMap((token) =>
+            authService.loginWithGoogle(token).pipe(
+              tap({
+                next: (response) => {
+                  authSessionStore.setSession(response);
+                  patchState(store, toRequestSuccessState(LOGIN_SUCCESS_MESSAGE));
+                },
+                error: (error) =>
+                  patchState(
+                    store,
+                    toRequestErrorState(parseAuthErrorMessage(error, 'Đăng nhập Google thất bại.')),
+                  ),
+              }),
+              catchError(() => EMPTY),
+            ),
+          ),
+        ),
+      ),
+
       clearMessages(): void {
         patchState(store, {
           errorMessage: null,
           successMessage: null,
         });
       },
-    })
-  )
+    }),
+  ),
 );
