@@ -2,7 +2,7 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
-import { GoogleLoginRequest, LoginRequest } from '../models/auth.models';
+import { LoginRequest } from '../models/auth.models';
 import { AuthService } from '../services/auth.service';
 import { AuthSessionStore } from './auth-session.store';
 import {
@@ -45,15 +45,16 @@ export const LoginStore = signalStore(
           ),
         ),
       ),
-      loginWithGoogle: rxMethod<GoogleLoginRequest>(
+
+      loginWithGoogle: rxMethod<string>(
         pipe(
           tap(() => patchState(store, toRequestStartState())),
-          switchMap((payload) =>
-            authService.loginWithGoogle(payload).pipe(
+          switchMap((token) =>
+            authService.loginWithGoogle(token).pipe(
               tap({
                 next: (response) => {
                   authSessionStore.setSession(response);
-                  patchState(store, toRequestSuccessState('Đăng nhập Google thành công!'));
+                  patchState(store, toRequestSuccessState(LOGIN_SUCCESS_MESSAGE));
                 },
                 error: (error) =>
                   patchState(
@@ -66,6 +67,7 @@ export const LoginStore = signalStore(
           ),
         ),
       ),
+
       clearMessages(): void {
         patchState(store, {
           errorMessage: null,

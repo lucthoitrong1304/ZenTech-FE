@@ -8,7 +8,6 @@ import { Role } from '../models/auth.enums';
 import {
   AuthResponse,
   ForgotPasswordRequest,
-  GoogleLoginRequest,
   LoginRequest,
   RegisterCustomerPayload,
   RegisterRequest,
@@ -29,11 +28,10 @@ export class AuthService {
     });
   }
 
-  // Thêm vào trong class AuthService
-  loginWithGoogle(payload: GoogleLoginRequest): Observable<AuthResponse> {
-    return this.apiService.post<GoogleLoginRequest, AuthResponse>(
+  loginWithGoogle(token: string): Observable<AuthResponse> {
+    return this.apiService.post<{ token: string }, AuthResponse>(
       `${this.authBaseUrl}/google`,
-      payload,
+      { token },
       {
         context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
       }
