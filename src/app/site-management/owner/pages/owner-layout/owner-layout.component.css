@@ -208,55 +208,6 @@
   padding: 72px 0 0;
 }
 
-.owner-page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 28px;
-}
-
-.owner-page-header h1 {
-  margin: 8px 0;
-  font-size: clamp(28px, 4vw, 46px);
-  font-weight: 950;
-  line-height: 0.98;
-}
-
-.owner-page-header span {
-  color: rgba(79, 70, 50, 0.72);
-  font-size: 14px;
-}
-
-.owner-page-header__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.owner-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  min-height: 42px;
-  border-radius: 10px;
-  padding: 0 15px;
-  font-size: 12px;
-  font-weight: 850;
-}
-
-.owner-action--soft {
-  border: 1px solid rgba(210, 197, 171, 0.24);
-  background: #ffffff;
-  color: #1c1b1b;
-}
-
-.owner-action--primary {
-  background: #fbbc04;
-  color: #1c1b1b;
-}
-
 @media (max-width: 980px) {
   .owner-account span {
     display: none;
@@ -293,11 +244,6 @@
     margin-left: 0;
     padding: 72px 0 0;
   }
-
-  .owner-page-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 }
 
 @media (max-width: 680px) {
@@ -324,9 +270,5 @@
 
   .owner-shell--chat-sidebar .owner-main {
     padding: 72px 0 0;
-  }
-
-  .owner-action {
-    flex: 1 1 150px;
   }
 }
