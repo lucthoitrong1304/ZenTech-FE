@@ -151,6 +151,43 @@ export const ownerRoutes: Routes = [
             m => m.OwnerPlaceholderComponent
           ),
       },
+      {
+        path: 'profile',
+        data: {
+          eyebrow: 'Tài khoản',
+          title: 'Hồ sơ cá nhân',
+          description: 'Quản lý thông tin cá nhân và chi tiết tài khoản của bạn.',
+        },
+        loadComponent: () =>
+          import('./pages/owner-placeholder/owner-placeholder.component').then(
+            m => m.OwnerPlaceholderComponent
+          ),
+      },
+      {
+        path: 'change-password',
+        data: {
+          eyebrow: 'Tài khoản',
+          title: 'Đổi mật khẩu',
+          description: 'Cập nhật mật khẩu mới để bảo mật tài khoản của bạn.',
+        },
+        loadComponent: () =>
+          import('./pages/owner-placeholder/owner-placeholder.component').then(
+            m => m.OwnerPlaceholderComponent
+          ),
+      },
+      {
+        path: 'settings',
+        data: {
+          eyebrow: 'Tài khoản',
+          title: 'Cài đặt hệ thống',
+          description: 'Cấu hình các cài đặt hệ thống và tùy chọn hiển thị.',
+        },
+        loadComponent: () =>
+          import('./pages/owner-placeholder/owner-placeholder.component').then(
+            m => m.OwnerPlaceholderComponent
+          ),
+      },
     ],
   },
 ];
+

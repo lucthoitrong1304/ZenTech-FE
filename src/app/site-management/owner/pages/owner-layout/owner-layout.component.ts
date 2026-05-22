@@ -8,7 +8,9 @@ import {
   LucideCalendar,
   LucideChartBar,
   LucideChartNoAxesCombined,
+  LucideChevronDown,
   LucideDownload,
+  LucideKey,
   LucideLayoutDashboard,
   LucideLogOut,
   LucideMegaphone,
@@ -16,14 +18,25 @@ import {
   LucidePackage,
   LucidePlus,
   LucideSearch,
+  LucideSettings,
   LucideShoppingBag,
   LucideStore,
+  LucideUser,
   LucideUsers,
   LucideWarehouse,
 } from '@lucide/angular';
+import { PopoverModule } from 'primeng/popover';
 import { filter } from 'rxjs';
+import { AuthStorageService } from '../../../../core/services/auth-storage.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { OwnerShellUiState } from '../../data-access/state/owner-shell-ui.state';
+
+export enum ProfileMenuOption {
+  Profile = 'PROFILE',
+  ChangePassword = 'CHANGE_PASSWORD',
+  Settings = 'SETTINGS',
+  Logout = 'LOGOUT',
+}
 
 interface OwnerNavItem {
   label: string;
@@ -54,17 +67,22 @@ const DEFAULT_HEADER: OwnerHeaderState = {
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
+    PopoverModule,
     LucideBell,
     LucideBot,
     LucideChartBar,
     LucideChartNoAxesCombined,
+    LucideChevronDown,
+    LucideKey,
     LucideLayoutDashboard,
     LucideLogOut,
     LucideMegaphone,
     LucideMessageCircle,
     LucidePackage,
     LucideSearch,
+    LucideSettings,
     LucideShoppingBag,
+    LucideUser,
     LucideUsers,
     LucideWarehouse,
   ],
@@ -77,7 +95,10 @@ export class OwnerLayoutComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly authSessionStore = inject(AuthSessionStore);
+  private readonly authStorageService = inject(AuthStorageService);
   protected readonly ownerShellUi = inject(OwnerShellUiState);
+  protected readonly ProfileMenuOption = ProfileMenuOption;
+
 
   protected readonly header = signal<OwnerHeaderState>(DEFAULT_HEADER);
   protected readonly currentUrl = signal(this.router.url);
@@ -98,6 +119,14 @@ export class OwnerLayoutComponent {
       .slice(0, 2)
       .map(part => part.charAt(0).toUpperCase())
       .join('');
+  });
+
+  protected readonly currentUserEmail = computed(() => {
+    const user = this.currentUser();
+    if (!user) {
+      return '';
+    }
+    return this.authStorageService.getSession()?.email || '';
   });
 
   protected readonly navSections: OwnerNavSection[] = [
@@ -157,6 +186,23 @@ export class OwnerLayoutComponent {
   protected logout(): void {
     this.authSessionStore.logout();
     this.router.navigate(['/auth/login']);
+  }
+
+  protected handleMenuOption(option: ProfileMenuOption): void {
+    switch (option) {
+      case ProfileMenuOption.Profile:
+        this.router.navigate(['/owner/profile']);
+        break;
+      case ProfileMenuOption.ChangePassword:
+        this.router.navigate(['/owner/change-password']);
+        break;
+      case ProfileMenuOption.Settings:
+        this.router.navigate(['/owner/settings']);
+        break;
+      case ProfileMenuOption.Logout:
+        this.logout();
+        break;
+    }
   }
 
   private syncSidebarMode(): void {
