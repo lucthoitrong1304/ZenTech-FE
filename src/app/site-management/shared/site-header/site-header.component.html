@@ -64,7 +64,12 @@
         <svg lucideSearch class="site-header__action-icon" [attr.stroke-width]="2"></svg>
       </button>
 
-      <button type="button" class="site-header__icon-button relative" aria-label="Shopping cart">
+      <button
+        type="button"
+        routerLink="/cart"
+        class="site-header__icon-button relative"
+        aria-label="Shopping cart"
+      >
         <svg lucideShoppingCart class="site-header__action-icon" [attr.stroke-width]="2"></svg>
         <span
           class="absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-full border border-[#0a0a0a] bg-[#ffc700] text-[9px] font-black text-[#0a0a0a]"

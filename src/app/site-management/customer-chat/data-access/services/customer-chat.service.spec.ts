@@ -17,7 +17,7 @@ describe('CustomerChatService', () => {
     try {
       getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
     } catch (error) {
-      if (!(error instanceof Error) || !error.message.includes('already been initialized')) {
+      if (!(error instanceof Error) || !isTestEnvironmentAlreadyInitialized(error)) {
         throw error;
       }
     }
@@ -71,7 +71,7 @@ describe('CustomerChatService', () => {
       })
     );
 
-    const putOptions = putFile.mock.calls[0][2] as {
+    const putOptions = (putFile.mock.calls[0] as unknown[])[2] as {
       headers: HttpHeaders;
       context: HttpContext;
     };
@@ -112,3 +112,10 @@ describe('CustomerChatService', () => {
     expect(result.attachmentType).toBe(ChatAttachmentType.FILE);
   });
 });
+
+function isTestEnvironmentAlreadyInitialized(error: Error): boolean {
+  return (
+    error.message.includes('already been initialized') ||
+    error.message.includes('already been called')
+  );
+}

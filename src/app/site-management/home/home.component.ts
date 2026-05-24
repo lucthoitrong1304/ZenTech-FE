@@ -4,6 +4,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../auth/data-access/store/auth-session.store';
+import { CartStore } from '../cart/data-access/store/cart.store';
 import { CategoryNavigationStore } from '../shared/data-access/store/category-navigation.store';
 import { HeaderNavItem } from '../shared/site-navigation.models';
 import { SiteHeaderComponent } from '../shared/site-header/site-header.component';
@@ -76,11 +77,11 @@ interface CommunityMember {
 export class HomeComponent implements OnInit, OnDestroy {
   private readonly authSessionStore = inject(AuthSessionStore);
   protected readonly categoryNavigationStore = inject(CategoryNavigationStore);
+  protected readonly cartStore = inject(CartStore);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly sanitizer = inject(DomSanitizer);
 
-  readonly cartCount = 2;
   readonly currentUser = this.authSessionStore.currentUser;
   readonly navItems = this.categoryNavigationStore.navItems;
   readonly activeNavLabel = signal<string | null>(null);

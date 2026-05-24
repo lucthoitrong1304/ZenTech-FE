@@ -7,6 +7,8 @@ import { MarkdownComponent } from 'ngx-markdown';
 import { distinctUntilChanged, map } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
+import { CartItemDraft } from '../../../cart/data-access/models/cart.model';
+import { CartStore } from '../../../cart/data-access/store/cart.store';
 import { ProductListItem } from '../../../product-catalog/data-access/models/product-catalog.models';
 import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
 import { SiteHeaderComponent } from '../../../shared/site-header/site-header.component';
@@ -43,6 +45,7 @@ export class ProductDetailPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  protected readonly cartStore = inject(CartStore);
 
   readonly navItems = this.categoryNavigationStore.navItems;
   readonly currentUser = this.authSessionStore.currentUser;
@@ -191,6 +194,40 @@ export class ProductDetailPageComponent {
     this.productDetailStore.submitReview();
   }
 
+  addSelectedProductToCart(): void {
+    const draft = this.createSelectedCartItemDraft();
+
+    if (!draft) {
+      this.toastService.warning('Vui long chon variant con hang truoc khi them vao gio.');
+      return;
+    }
+
+    if (!this.authSessionStore.isAuthenticated()) {
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
+    this.cartStore.addItem(draft);
+    this.toastService.success(`${draft.productName} da duoc them vao gio hang.`);
+  }
+
+  buySelectedProductNow(): void {
+    const draft = this.createSelectedCartItemDraft();
+
+    if (!draft) {
+      this.toastService.warning('Vui long chon variant con hang truoc khi mua.');
+      return;
+    }
+
+    if (!this.authSessionStore.isAuthenticated()) {
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
+    this.cartStore.addItem(draft);
+    this.router.navigate(['/cart']);
+  }
+
   incrementQuantity(): void {
     this.productDetailStore.incrementQuantity();
   }
@@ -201,5 +238,28 @@ export class ProductDetailPageComponent {
 
   onLogout(): void {
     this.authSessionStore.logout();
+  }
+
+  private createSelectedCartItemDraft(): CartItemDraft | null {
+    const product = this.productDetailStore.product();
+    const variant = this.productDetailStore.selectedVariant();
+    const quantity = this.productDetailStore.quantity();
+
+    if (!product || !variant || variant.stockQuantity <= 0 || quantity <= 0) {
+      return null;
+    }
+
+    return {
+      productId: product.id,
+      productSlug: product.slug,
+      productName: product.name,
+      variantId: variant.id,
+      variantName: variant.name,
+      image: product.image,
+      unitPrice: variant.salePrice ?? variant.originalPrice,
+      originalPrice: variant.salePrice ? variant.originalPrice : product.originalPrice,
+      quantity,
+      maxQuantity: variant.stockQuantity,
+    };
   }
 }

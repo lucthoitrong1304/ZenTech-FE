@@ -7,7 +7,7 @@
   <app-site-header
     [navItems]="navItems()"
     [activeNavLabel]="activeNavLabel()"
-    [cartCount]="cartCount"
+    [cartCount]="cartStore.itemCount()"
     [currentUser]="currentUser()"
     (navSelect)="onNavSelect($event)"
     (logout)="onLogout()"

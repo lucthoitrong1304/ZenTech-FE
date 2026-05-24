@@ -34,7 +34,7 @@ describe('OwnerChatStore', () => {
         platformBrowserTesting()
       );
     } catch (error) {
-      if (!(error instanceof Error) || !error.message.includes('already been initialized')) {
+      if (!(error instanceof Error) || !isTestEnvironmentAlreadyInitialized(error)) {
         throw error;
       }
     }
@@ -274,6 +274,13 @@ describe('OwnerChatStore', () => {
     expect(store.selectedConversation()?.expertRequestStatus).toBe('ACCEPTED');
   });
 });
+
+function isTestEnvironmentAlreadyInitialized(error: Error): boolean {
+  return (
+    error.message.includes('already been initialized') ||
+    error.message.includes('already been called')
+  );
+}
 
 function createWorkspace(): OwnerChatWorkspace {
   const conversations: OwnerChatConversation[] = [

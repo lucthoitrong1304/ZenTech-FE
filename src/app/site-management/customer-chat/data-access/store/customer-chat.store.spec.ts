@@ -22,7 +22,7 @@ describe('CustomerChatStore', () => {
     try {
       getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
     } catch (error) {
-      if (!(error instanceof Error) || !error.message.includes('already been initialized')) {
+      if (!(error instanceof Error) || !isTestEnvironmentAlreadyInitialized(error)) {
         throw error;
       }
     }
@@ -265,6 +265,13 @@ describe('CustomerChatStore', () => {
     expect(store.fullSidebarMode()).toBe('DETAILS');
   });
 });
+
+function isTestEnvironmentAlreadyInitialized(error: Error): boolean {
+  return (
+    error.message.includes('already been initialized') ||
+    error.message.includes('already been called')
+  );
+}
 
 function createPage<T>(content: T[]): PageResponse<T> {
   return {

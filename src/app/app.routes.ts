@@ -20,6 +20,13 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'cart',
+    loadComponent: () =>
+      import('./site-management/cart/pages/cart-page/cart-page.component').then(
+        m => m.CartPageComponent
+      )
+  },
+  {
     path: 'reset-password',
     loadComponent: () => import('./site-management/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },

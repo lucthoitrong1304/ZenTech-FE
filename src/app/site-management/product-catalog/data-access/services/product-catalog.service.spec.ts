@@ -17,7 +17,7 @@ describe('ProductCatalogService', () => {
     try {
       getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
     } catch (error) {
-      if (!(error instanceof Error) || !error.message.includes('already been initialized')) {
+      if (!(error instanceof Error) || !isTestEnvironmentAlreadyInitialized(error)) {
         throw error;
       }
     }
@@ -272,6 +272,13 @@ describe('ProductCatalogService', () => {
     ).rejects.toThrow(PRODUCT_CATEGORY_NOT_FOUND);
   });
 });
+
+function isTestEnvironmentAlreadyInitialized(error: Error): boolean {
+  return (
+    error.message.includes('already been initialized') ||
+    error.message.includes('already been called')
+  );
+}
 
 function createProductDetailResponse() {
   return {

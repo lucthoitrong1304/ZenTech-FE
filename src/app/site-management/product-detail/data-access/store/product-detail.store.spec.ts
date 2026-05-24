@@ -75,7 +75,7 @@ describe('ProductDetailStore', () => {
     try {
       getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
     } catch (error) {
-      if (!(error instanceof Error) || !error.message.includes('already been initialized')) {
+      if (!(error instanceof Error) || !isTestEnvironmentAlreadyInitialized(error)) {
         throw error;
       }
     }
@@ -322,4 +322,11 @@ function createReview(id: string, rating: number): ProductReview {
     createdAt: '2026-04-26T00:00:00.000Z',
     imageUrls: [],
   };
+}
+
+function isTestEnvironmentAlreadyInitialized(error: Error): boolean {
+  return (
+    error.message.includes('already been initialized') ||
+    error.message.includes('already been called')
+  );
 }
