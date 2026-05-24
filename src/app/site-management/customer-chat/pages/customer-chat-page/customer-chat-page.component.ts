@@ -17,6 +17,7 @@ import { MediaPreviewDialogComponent } from '../../../../shared/components/media
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
+import { CartStore } from '../../../cart/data-access/store/cart.store';
 import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
 import { SiteHeaderComponent } from '../../../shared/site-header/site-header.component';
 import { CustomerChatComposerComponent } from '../../components/customer-chat-composer/customer-chat-composer.component';
@@ -58,6 +59,7 @@ export class CustomerChatPageComponent implements OnInit {
   private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  protected readonly cartStore = inject(CartStore);
   protected readonly store = inject(CustomerChatStore);
 
   protected readonly navItems = this.categoryNavigationStore.navItems;

@@ -2,7 +2,7 @@
   <app-site-header
     [navItems]="navItems()"
     [activeNavLabel]="null"
-    [cartCount]="2"
+    [cartCount]="cartStore.itemCount()"
     [currentUser]="currentUser()"
     (logout)="onLogout()"
   />

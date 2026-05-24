@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
 import { ProductListItem } from '../../data-access/models/product-list-item.model';
@@ -14,4 +14,16 @@ import { ProductListItem } from '../../data-access/models/product-list-item.mode
 })
 export class ProductCardComponent {
   readonly product = input.required<ProductListItem>();
+  readonly addToCart = output<ProductListItem>();
+
+  onAddToCart(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!this.product().inStock) {
+      return;
+    }
+
+    this.addToCart.emit(this.product());
+  }
 }

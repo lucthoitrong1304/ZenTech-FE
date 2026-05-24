@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
+import { CartStore } from '../../../cart/data-access/store/cart.store';
+import { ProductDetail } from '../../../product-catalog/data-access/models/product-catalog.models';
 import {
   PRODUCT_CATEGORY_NOT_FOUND,
   ProductCatalogService,
@@ -23,6 +25,7 @@ describe('ProductListingStore', () => {
   function configureStore(options: {
     productCatalogService: Partial<ProductCatalogService>;
     categoryNavigationStore: Partial<InstanceType<typeof CategoryNavigationStore>>;
+    cartStore?: Partial<InstanceType<typeof CartStore>>;
   }): InstanceType<typeof ProductListingStore> {
     TestBed.configureTestingModule({
       providers: [
@@ -34,6 +37,10 @@ describe('ProductListingStore', () => {
         {
           provide: CategoryNavigationStore,
           useValue: options.categoryNavigationStore,
+        },
+        {
+          provide: CartStore,
+          useValue: options.cartStore ?? { addItem: vi.fn() },
         },
       ],
     });
@@ -146,6 +153,66 @@ describe('ProductListingStore', () => {
     expect(store.page()).toBe(0);
     expect(store.hasNext()).toBe(false);
   });
+
+  it('adds the first in-stock product detail variant to cart from listing cards', () => {
+    const addItem = vi.fn();
+    const detail = createProductDetail();
+    const store = configureStore({
+      productCatalogService: {
+        getProductDetail: vi.fn(() => of(detail)),
+      },
+      categoryNavigationStore: {
+        resolveCategoryBySlug: () => of(category),
+        findCategoryBySlug: () => category,
+      },
+      cartStore: { addItem },
+    });
+
+    store.addProductToCart(createProduct('product-1', 'Alpha', 90));
+
+    expect(addItem).toHaveBeenCalledWith(
+      expect.objectContaining({
+        productId: 'product-1',
+        productSlug: 'product-1',
+        productName: 'Alpha',
+        variantId: 'variant-2',
+        quantity: 1,
+        maxQuantity: 4,
+      })
+    );
+    expect(store.cartSuccessMessage()).toContain('Alpha');
+  });
+
+  it('reports a cart warning when product detail has no in-stock variants', () => {
+    const addItem = vi.fn();
+    const store = configureStore({
+      productCatalogService: {
+        getProductDetail: vi.fn(() =>
+          of({
+            ...createProductDetail(),
+            variants: [
+              {
+                id: 'variant-1',
+                name: 'Black',
+                originalPrice: 100,
+                stockQuantity: 0,
+              },
+            ],
+          })
+        ),
+      },
+      categoryNavigationStore: {
+        resolveCategoryBySlug: () => of(category),
+        findCategoryBySlug: () => category,
+      },
+      cartStore: { addItem },
+    });
+
+    store.addProductToCart(createProduct('product-1', 'Alpha', 90));
+
+    expect(addItem).not.toHaveBeenCalled();
+    expect(store.cartErrorMessage()).toBeTruthy();
+  });
 });
 
 function createListing(options: {
@@ -174,5 +241,40 @@ function createProduct(slug: string, name: string, price: number): ProductListIt
     image: `/${slug}.webp`,
     price,
     inStock: true,
+  };
+}
+
+function createProductDetail(): ProductDetail {
+  return {
+    id: 'product-1',
+    categorySlug: 'keyboards',
+    slug: 'product-1',
+    name: 'Alpha',
+    image: '/alpha.webp',
+    price: 90,
+    originalPrice: 100,
+    inStock: true,
+    gallery: ['/alpha.webp'],
+    description: '',
+    highlights: [],
+    specs: [],
+    maxQuantity: 4,
+    reviews: [],
+    relatedProductSlugs: [],
+    variants: [
+      {
+        id: 'variant-1',
+        name: 'Black',
+        originalPrice: 100,
+        stockQuantity: 0,
+      },
+      {
+        id: 'variant-2',
+        name: 'Silver',
+        originalPrice: 100,
+        salePrice: 90,
+        stockQuantity: 4,
+      },
+    ],
   };
 }
