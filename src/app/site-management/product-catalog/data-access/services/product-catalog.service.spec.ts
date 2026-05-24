@@ -1,4 +1,7 @@
+import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
+import { getTestBed } from '@angular/core/testing';
+import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { firstValueFrom, of } from 'rxjs';
 import { vi } from 'vitest';
 import { environment } from '../../../../../environments/environment';
@@ -9,6 +12,20 @@ import { PRODUCT_CATEGORY_NOT_FOUND, ProductCatalogService } from './product-cat
 describe('ProductCatalogService', () => {
   const categoriesUrl = `${environment.apiBaseUrl}/categories`;
   const productsUrl = `${environment.apiBaseUrl}/products`;
+
+  beforeAll(() => {
+    try {
+      getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
+    } catch (error) {
+      if (!(error instanceof Error) || !error.message.includes('already been initialized')) {
+        throw error;
+      }
+    }
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
 
   function configureService(api: object): ProductCatalogService {
     TestBed.configureTestingModule({
@@ -179,6 +196,7 @@ describe('ProductCatalogService', () => {
             customerName: 'Alex',
             isOwner: true,
             imageUrls: ['https://cdn.example.com/review-1.webp'],
+            videoUrl: 'https://cdn.example.com/review-1.mp4',
           },
         ],
         page: 0,
@@ -204,10 +222,11 @@ describe('ProductCatalogService', () => {
       comment: 'Great keyboard.',
       createdAt: '2026-04-20T00:00:00Z',
       imageUrls: ['https://cdn.example.com/review-1.webp'],
+      videoUrl: 'https://cdn.example.com/review-1.mp4',
     });
   });
 
-  it('posts reviews with backend-supported fields only', async () => {
+  it('posts reviews with review media keys', async () => {
     const post = vi.fn(() =>
       of({
         reviewId: 'review-2',
@@ -219,6 +238,7 @@ describe('ProductCatalogService', () => {
         customerName: 'Minh',
         isOwner: true,
         imageUrls: [],
+        videoUrl: 'https://cdn.example.com/review-2.mp4',
       })
     );
     const service = configureService({ post });
@@ -230,6 +250,7 @@ describe('ProductCatalogService', () => {
         title: 'Ignored title',
         comment: 'Solid.',
         imageKeys: ['uploads/reviews/customer-2/solid.webp'],
+        videoKey: 'uploads/reviews/customer-2/solid.mp4',
       })
     );
 
@@ -237,8 +258,10 @@ describe('ProductCatalogService', () => {
       rating: 4,
       comment: 'Solid.',
       imageKeys: ['uploads/reviews/customer-2/solid.webp'],
+      videoKey: 'uploads/reviews/customer-2/solid.mp4',
     });
     expect(review.reviewerName).toBe('Minh');
+    expect(review.videoUrl).toBe('https://cdn.example.com/review-2.mp4');
   });
 
   it('throws PRODUCT_CATEGORY_NOT_FOUND when category id is missing', async () => {

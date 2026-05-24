@@ -159,6 +159,14 @@ export class ProductDetailPageComponent {
     this.productDetailStore.removeReviewImage(imageId);
   }
 
+  onReviewVideoSelect(file: File): void {
+    this.productDetailStore.selectReviewVideo(file);
+  }
+
+  onReviewVideoRemove(): void {
+    this.productDetailStore.removeReviewVideo();
+  }
+
   onRelatedProductClick(product: ProductListItem): void {
     this.selectedImage.set(product.image);
   }

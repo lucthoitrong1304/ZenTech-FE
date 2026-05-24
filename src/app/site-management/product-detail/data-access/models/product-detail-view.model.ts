@@ -25,6 +25,18 @@ export interface ReviewImageUploadItem {
   error?: string;
 }
 
+export type ReviewVideoUploadStatus = 'pending' | 'uploading' | 'uploaded' | 'failed';
+
+export interface ReviewVideoUploadItem {
+  id: string;
+  file: File;
+  fileName: string;
+  previewUrl: string;
+  status: ReviewVideoUploadStatus;
+  videoKey?: string;
+  error?: string;
+}
+
 export interface ProductDetailViewModel {
   product: ProductDetail | null;
   relatedProducts: ProductListItem[];
@@ -37,6 +49,7 @@ export interface ProductDetailViewModel {
   reviewFormError: ProductReviewFormError | null;
   reviewDraft: ProductReviewDraft;
   reviewImages: ReviewImageUploadItem[];
+  reviewVideo: ReviewVideoUploadItem | null;
   reviewSuccessMessage: string | null;
   quantity: number;
 }
