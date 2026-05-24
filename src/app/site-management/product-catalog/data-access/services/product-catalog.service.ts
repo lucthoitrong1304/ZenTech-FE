@@ -103,6 +103,7 @@ export class ProductCatalogService {
           rating: payload.rating,
           comment: payload.comment.trim(),
           imageKeys: payload.imageKeys ?? [],
+          videoKey: payload.videoKey,
         }
       )
       .pipe(map(toProductReview));
@@ -171,12 +172,14 @@ interface ProductReviewItemResponseDto {
   customerName: string | null;
   isOwner: boolean;
   imageUrls: string[] | null;
+  videoUrl: string | null;
 }
 
 interface ProductReviewRequestDto {
   rating: number;
   comment: string;
   imageKeys: string[];
+  videoKey?: string;
 }
 
 interface ProductReviewListQuery {
@@ -312,6 +315,7 @@ function toProductReview(review: ProductReviewItemResponseDto): ProductReview {
     comment: review.comment?.trim() || '',
     createdAt: review.createdAt,
     imageUrls: uniqueStrings(review.imageUrls ?? []),
+    videoUrl: review.videoUrl?.trim() || undefined,
   };
 }
 

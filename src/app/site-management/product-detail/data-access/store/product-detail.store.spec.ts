@@ -1,4 +1,6 @@
-import { TestBed } from '@angular/core/testing';
+import '@angular/compiler';
+import { getTestBed, TestBed } from '@angular/core/testing';
+import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import {
@@ -6,7 +8,7 @@ import {
   ProductReview,
 } from '../../../product-catalog/data-access/models/product-catalog.models';
 import { ProductCatalogService } from '../../../product-catalog/data-access/services/product-catalog.service';
-import { ReviewImageUploadService } from '../services/review-image-upload.service';
+import { ReviewMediaUploadService } from '../services/review-media-upload.service';
 import { ProductDetailStore } from './product-detail.store';
 
 describe('ProductDetailStore', () => {
@@ -69,14 +71,26 @@ describe('ProductDetailStore', () => {
     });
   });
 
+  beforeAll(() => {
+    try {
+      getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
+    } catch (error) {
+      if (!(error instanceof Error) || !error.message.includes('already been initialized')) {
+        throw error;
+      }
+    }
+  });
+
   afterEach(() => {
+    TestBed.resetTestingModule();
     vi.restoreAllMocks();
   });
 
   function configureStore(
     service: Partial<ProductCatalogService>,
-    uploadService: Partial<ReviewImageUploadService> = {
+    uploadService: Partial<ReviewMediaUploadService> = {
       uploadReviewImage: () => of('uploads/reviews/user-1/image.webp'),
+      uploadReviewVideo: () => of('uploads/reviews/user-1/videos/video.mp4'),
     }
   ): InstanceType<typeof ProductDetailStore> {
     TestBed.configureTestingModule({
@@ -87,7 +101,7 @@ describe('ProductDetailStore', () => {
           useValue: service,
         },
         {
-          provide: ReviewImageUploadService,
+          provide: ReviewMediaUploadService,
           useValue: uploadService,
         },
       ],
@@ -210,6 +224,45 @@ describe('ProductDetailStore', () => {
       })
     );
     expect(store.reviewImages()).toEqual([]);
+  });
+
+  it('keeps selected review video local until submit, then uploads and sends video key', () => {
+    const uploadReviewVideo = vi.fn(() => of('uploads/reviews/user-1/videos/video.mp4'));
+    const addProductReview = vi.fn(() => of(createReview('r2', 5)));
+    const store = configureStore(
+      {
+        getProductDetail: () => of(product),
+        getProductReviews: () => of([]),
+        addProductReview,
+      },
+      { uploadReviewVideo }
+    );
+    const file = new File(['video'], 'review.mp4', { type: 'video/mp4' });
+
+    store.loadProduct('product-1');
+    store.selectReviewVideo(file);
+
+    expect(store.reviewVideo()).toMatchObject({
+      fileName: 'review.mp4',
+      status: 'pending',
+    });
+    expect(uploadReviewVideo).not.toHaveBeenCalled();
+    expect(store.reviewDraft().videoKey).toBeUndefined();
+
+    store.updateReviewDraft({
+      rating: 5,
+      comment: 'Works well',
+    });
+    store.submitReview();
+
+    expect(uploadReviewVideo).toHaveBeenCalledWith(file);
+    expect(addProductReview).toHaveBeenCalledWith(
+      'product-1',
+      expect.objectContaining({
+        videoKey: 'uploads/reviews/user-1/videos/video.mp4',
+      })
+    );
+    expect(store.reviewVideo()).toBeNull();
   });
 
   it('rejects invalid review image files before upload', () => {
