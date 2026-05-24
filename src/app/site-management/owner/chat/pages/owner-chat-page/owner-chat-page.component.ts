@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { MediaPreviewDialogComponent } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
+import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import { ChatComposerComponent } from '../../components/chat-composer/chat-composer.component';
 import { ChatEmptyStateComponent } from '../../components/chat-empty-state/chat-empty-state.component';
 import { ChatFilterSidebarComponent } from '../../components/chat-filter-sidebar/chat-filter-sidebar.component';
@@ -21,6 +23,7 @@ import { OwnerShellUiState } from '../../../data-access/state/owner-shell-ui.sta
     ChatHeaderComponent,
     ChatMediaDrawerComponent,
     ConversationListComponent,
+    MediaPreviewDialogComponent,
     MessageTimelineComponent,
   ],
   providers: [OwnerChatStore],
@@ -31,6 +34,7 @@ import { OwnerShellUiState } from '../../../data-access/state/owner-shell-ui.sta
 export class OwnerChatPageComponent implements OnInit {
   protected readonly store = inject(OwnerChatStore);
   protected readonly ownerShellUi = inject(OwnerShellUiState);
+  protected readonly previewItem = signal<MediaPreviewItem | null>(null);
 
   ngOnInit(): void {
     this.store.loadWorkspace();
@@ -38,5 +42,13 @@ export class OwnerChatPageComponent implements OnInit {
 
   protected showAdminSidebar(): void {
     this.ownerShellUi.showAdminSidebar();
+  }
+
+  protected openPreview(item: MediaPreviewItem): void {
+    this.previewItem.set(item);
+  }
+
+  protected closePreview(): void {
+    this.previewItem.set(null);
   }
 }

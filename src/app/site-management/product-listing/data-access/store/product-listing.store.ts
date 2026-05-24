@@ -168,16 +168,16 @@ export const ProductListingStore = signalStore(
       }
     };
 
-    const loadCategory = rxMethod<string>(
+    const loadCategory = rxMethod<{ slug: string; sortBy: ProductSortOptionValue }>(
       pipe(
-        tap(slug => handleEvent({ type: ProductListingEventType.CategoryLoadStarted, slug })),
-        switchMap(slug =>
+        tap(({ slug }) => handleEvent({ type: ProductListingEventType.CategoryLoadStarted, slug })),
+        switchMap(({ slug, sortBy }) =>
           categoryNavigationStore.resolveCategoryBySlug(slug).pipe(
             switchMap(category =>
               productCatalogService.getCategoryListing(category, {
                 page: 0,
                 size: store.size(),
-                sort: toApiSort(store.sortBy()),
+                sort: toApiSort(sortBy),
               })
             ),
             tap({
@@ -239,12 +239,6 @@ export const ProductListingStore = signalStore(
       loadMore,
       setSort(sortBy: ProductSortOptionValue): void {
         handleEvent({ type: ProductListingEventType.SortChanged, sortBy });
-
-        const slug = store.categorySlug();
-
-        if (slug) {
-          loadCategory(slug);
-        }
       },
     };
   })

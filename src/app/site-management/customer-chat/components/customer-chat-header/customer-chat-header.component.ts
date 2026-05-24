@@ -17,6 +17,7 @@ import {
 export class CustomerChatHeaderComponent {
   readonly staff = input<CustomerChatParticipant | null>(null);
   readonly product = input<CustomerChatProductContext | null>(null);
+  readonly status = input<string | null>(null);
   readonly compact = input(false);
   readonly sharedSidebarOpen = input(false);
   readonly closeClicked = output<void>();

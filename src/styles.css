@@ -44,3 +44,10 @@ body:has(.owner-shell)::-webkit-scrollbar-thumb:hover,
 .owner-sidebar::-webkit-scrollbar-thumb:hover {
   background: rgba(79, 70, 50, 0.46);
 }
+
+app-site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: block;
+}

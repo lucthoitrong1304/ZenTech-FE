@@ -38,9 +38,17 @@
         <app-message-timeline
           [conversation]="conversation"
           [messages]="store.selectedMessages()"
+          (previewRequested)="openPreview($event)"
         />
 
-        <app-chat-composer (messageSubmitted)="store.sendStaffMessage($event)" />
+        <app-chat-composer
+          [disabled]="conversation.status === 'CLOSED'"
+          [uploads]="store.uploads()"
+          [hasPendingAttachments]="store.hasPendingAttachments()"
+          (messageSubmitted)="store.sendStaffMessage($event)"
+          (filesSelected)="store.selectStaffFiles($event)"
+          (uploadRemoved)="store.removeStaffUpload($event)"
+        />
       } @else {
         <app-chat-empty-state />
       }
@@ -53,5 +61,8 @@
     [mediaItems]="store.selectedMedia()"
     (closed)="store.closeMediaDrawer()"
     (tabSelected)="store.setMediaTab($event)"
+    (previewRequested)="openPreview($event)"
   />
+
+  <app-media-preview-dialog [item]="previewItem()" (closed)="closePreview()" />
 </section>

@@ -8,7 +8,7 @@
 .product-detail-page {
   font-family:
     Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .product-detail-section {

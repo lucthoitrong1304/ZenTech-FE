@@ -1,14 +1,17 @@
 import { computed, inject } from '@angular/core';
-import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 import {
+  addEntities,
   addEntity,
-  removeAllEntities,
+  removeEntities,
+  removeEntity,
   setAllEntities,
+  updateEntities,
   updateEntity,
   withEntities,
 } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, Subscription, catchError, forkJoin, of, pipe, switchMap, tap, map } from 'rxjs';
 import { OwnerChatEvent, OwnerChatEventType } from '../models/owner-chat.event';
 import {
   OwnerChatConversation,
@@ -17,10 +20,25 @@ import {
   OwnerChatExpertRequestStatus,
   OwnerChatMediaItem,
   OwnerChatMediaTab,
+  OwnerChatMediaType,
   OwnerChatMessage,
   OwnerChatStatusFilter,
+  OwnerChatUpload,
+  OwnerChatWorkspace,
 } from '../models/owner-chat.models';
 import { OwnerChatService } from '../services/owner-chat.service';
+import { CustomerChatService } from '../../../../customer-chat/data-access/services/customer-chat.service';
+import { CustomerChatWebsocketService } from '../../../../customer-chat/data-access/services/customer-chat-websocket.service';
+import {
+  ChatMessageResponse,
+  ConversationResponse,
+  ConversationStatus,
+  ParticipantType,
+  formatTime,
+  ChatMessageType,
+  ChatAttachmentType,
+  formatBytes,
+} from '../../../../customer-chat/data-access/models/customer-chat.models';
 
 interface OwnerChatUiState {
   selectedConversationId: string | null;
@@ -48,6 +66,11 @@ const MEDIA_ENTITY_CONFIG = {
   selectId: (mediaItem: OwnerChatMediaItem) => mediaItem.id,
 } as const;
 
+const UPLOAD_ENTITY_CONFIG = {
+  collection: 'upload',
+  selectId: (upload: OwnerChatUpload) => upload.id,
+} as const;
+
 const INITIAL_STATE: OwnerChatUiState = {
   selectedConversationId: null,
   statusFilter: 'ALL',
@@ -60,18 +83,90 @@ const INITIAL_STATE: OwnerChatUiState = {
 };
 
 const STATUS_LABELS: Record<OwnerChatConversationStatus, string> = {
-  AI_ASSISTING: 'AI dang tu van',
-  WAITING_STAFF: 'Dang cho nhan vien',
-  STAFF_HANDLING: 'Nhan vien dang xu ly',
-  CLOSED: 'Da dong',
+  AI_ASSISTING: 'AI đang tư vấn',
+  WAITING_STAFF: 'Đang chờ nhân viên',
+  STAFF_HANDLING: 'Nhân viên đang xử lý',
+  CLOSED: 'Đã đóng',
 };
 
 const EXPERT_REQUEST_LABELS: Record<OwnerChatExpertRequestStatus, string> = {
-  WAITING: 'Dang cho phan hoi',
-  ACCEPTED: 'Da chap nhan',
-  DECLINED: 'Da tu choi',
-  CANCELLED: 'Da bi huy',
+  WAITING: 'Đang chờ phản hồi',
+  ACCEPTED: 'Đã chấp nhận',
+  DECLINED: 'Đã từ chối',
+  CANCELLED: 'Đã bị hủy',
 };
+
+function mapToOwnerChatMessage(
+  m: ChatMessageResponse,
+  customerName: string
+): OwnerChatMessage {
+  let sender: 'CUSTOMER' | 'AI' | 'STAFF' = 'CUSTOMER';
+  let senderName = customerName || 'Khách hàng';
+
+  if (m.senderType === ParticipantType.BOT) {
+    sender = 'AI';
+    senderName = 'ZenTech AI';
+  } else if (m.senderType === ParticipantType.CUSTOMER) {
+    sender = 'CUSTOMER';
+  } else {
+    sender = 'STAFF';
+    senderName = 'Bạn (Nhân viên)';
+  }
+
+  return {
+    id: m.id,
+    conversationId: m.conversationId,
+    sender,
+    senderName,
+    body: m.content || '',
+    sentAtLabel: formatTime(m.createdAt),
+    attachments: (m.attachments || []).map((attachment) => ({
+      id: attachment.id,
+      type: attachment.attachmentType as unknown as OwnerChatMediaType,
+      title: attachment.fileName,
+      url: attachment.mediaUrl || '',
+      thumbnailUrl:
+        attachment.attachmentType === ChatAttachmentType.IMAGE
+          ? attachment.mediaUrl || null
+          : null,
+    })),
+  };
+}
+
+function mapToOwnerChatMediaItems(m: ChatMessageResponse): OwnerChatMediaItem[] {
+  return (m.attachments || []).map((attachment) => ({
+    id: attachment.id,
+    conversationId: m.conversationId,
+    type: attachment.attachmentType as unknown as OwnerChatMediaType,
+    title: attachment.fileName,
+    subtitle: `${formatBytes(attachment.fileSize)} - ${formatTime(m.createdAt)}`,
+    url: attachment.mediaUrl || '',
+    thumbnailUrl:
+      attachment.attachmentType === ChatAttachmentType.IMAGE ? attachment.mediaUrl || null : null,
+  }));
+}
+
+function mapOutgoingMessageType(
+  attachmentType: ChatAttachmentType | null,
+  attachmentCount: number
+): ChatMessageType {
+  if (attachmentCount === 0) {
+    return ChatMessageType.TEXT;
+  }
+
+  if (attachmentCount > 1) {
+    return ChatMessageType.MEDIA;
+  }
+
+  switch (attachmentType) {
+    case ChatAttachmentType.IMAGE:
+      return ChatMessageType.IMAGE;
+    case ChatAttachmentType.VIDEO:
+      return ChatMessageType.VIDEO;
+    default:
+      return ChatMessageType.FILE;
+  }
+}
 
 export const OwnerChatStore = signalStore(
   withState<OwnerChatUiState>(INITIAL_STATE),
@@ -87,11 +182,16 @@ export const OwnerChatStore = signalStore(
     entity: {} as OwnerChatMediaItem,
     collection: 'media',
   }),
+  withEntities<OwnerChatUpload, 'upload'>({
+    entity: {} as OwnerChatUpload,
+    collection: 'upload',
+  }),
   withComputed(
     ({
       conversationEntities,
       messageEntities,
       mediaEntities,
+      uploadEntities,
       selectedConversationId,
       statusFilter,
       expertRequestFilter,
@@ -101,6 +201,20 @@ export const OwnerChatStore = signalStore(
       conversations: computed(() => conversationEntities()),
       messages: computed(() => messageEntities()),
       mediaItems: computed(() => mediaEntities()),
+      uploads: computed(() => {
+        const conversationId = selectedConversationId();
+        return conversationId
+          ? uploadEntities().filter(upload => upload.conversationId === conversationId)
+          : [];
+      }),
+      hasPendingAttachments: computed(() => {
+        const conversationId = selectedConversationId();
+        return !!conversationId && uploadEntities().some(
+          upload =>
+            upload.conversationId === conversationId &&
+            (upload.status === 'PENDING' || upload.status === 'FAILED')
+        );
+      }),
       filteredConversations: computed(() => {
         const normalizedKeyword = normalize(searchKeyword());
 
@@ -169,7 +283,16 @@ export const OwnerChatStore = signalStore(
       hasSelection: computed(() => selectedConversationId() !== null),
     })
   ),
-  withMethods((store, ownerChatService = inject(OwnerChatService)) => {
+  withMethods((
+    store,
+    ownerChatService = inject(OwnerChatService),
+    customerChatService = inject(CustomerChatService),
+    websocketService = inject(CustomerChatWebsocketService)
+  ) => {
+    let queueSub: Subscription | null = null;
+    let messageSub: Subscription | null = null;
+    let conversationSub: Subscription | null = null;
+
     const handleEvent = (event: OwnerChatEvent): void => {
       switch (event.type) {
         case OwnerChatEventType.WorkspaceLoadStarted:
@@ -193,7 +316,7 @@ export const OwnerChatStore = signalStore(
         case OwnerChatEventType.WorkspaceLoadFailed:
           patchState(store, {
             loading: false,
-            errorMessage: 'Khong the tai khong gian tu van khach hang.',
+            errorMessage: 'Không thể tải không gian tư vấn khách hàng.',
           });
           break;
 
@@ -294,14 +417,61 @@ export const OwnerChatStore = signalStore(
       }
     };
 
+    const loadConversationMessages = (conversationId: string, customerName: string) => {
+      return customerChatService.getMessages(conversationId, 0, 100).pipe(
+        tap((pageRes) => {
+          const mappedMessages = (pageRes.content || []).map((m) =>
+            mapToOwnerChatMessage(m, customerName)
+          );
+          const mediaItems = (pageRes.content || []).flatMap((m) =>
+            mapToOwnerChatMediaItems(m)
+          );
+          patchState(
+            store,
+            setAllEntities(mappedMessages, MESSAGE_ENTITY_CONFIG),
+            setAllEntities(mediaItems, MEDIA_ENTITY_CONFIG)
+          );
+        }),
+        catchError(() => EMPTY)
+      );
+    };
+
     const loadWorkspace = rxMethod<void>(
       pipe(
         tap(() => handleEvent({ type: OwnerChatEventType.WorkspaceLoadStarted })),
         switchMap(() =>
-          ownerChatService.getWorkspace().pipe(
+          ownerChatService.getWorkspace(0, 100).pipe(
             tap({
-              next: workspace =>
-                handleEvent({ type: OwnerChatEventType.WorkspaceLoadSucceeded, workspace }),
+              next: workspace => {
+                handleEvent({ type: OwnerChatEventType.WorkspaceLoadSucceeded, workspace });
+
+                websocketService.connect();
+
+                if (queueSub) {
+                  queueSub.unsubscribe();
+                }
+
+                queueSub = websocketService
+                  .subscribe<ConversationResponse>('/topic/owner.chat.queue')
+                  .subscribe((updatedConv) => {
+                    const mapped = ownerChatService.mapToOwnerChatConversation(updatedConv);
+                    const exists = store.conversationEntities().some((c) => c.id === mapped.id);
+                    if (exists) {
+                      patchState(
+                        store,
+                        updateEntity(
+                          { id: mapped.id, changes: mapped },
+                          CONVERSATION_ENTITY_CONFIG
+                        )
+                      );
+                    } else {
+                      patchState(
+                        store,
+                        addEntity(mapped, CONVERSATION_ENTITY_CONFIG)
+                      );
+                    }
+                  });
+              },
               error: () => handleEvent({ type: OwnerChatEventType.WorkspaceLoadFailed }),
             }),
             catchError(() => EMPTY)
@@ -310,13 +480,246 @@ export const OwnerChatStore = signalStore(
       )
     );
 
+    const selectConversation = rxMethod<string>(
+      pipe(
+        tap((id) => {
+          handleEvent({ type: OwnerChatEventType.ConversationSelected, conversationId: id });
+
+          if (messageSub) {
+            messageSub.unsubscribe();
+            messageSub = null;
+          }
+          if (conversationSub) {
+            conversationSub.unsubscribe();
+            conversationSub = null;
+          }
+        }),
+        switchMap((id) => {
+          const conv = store.conversationEntities().find((c) => c.id === id);
+          const customerName = conv?.customer.fullName || 'Khách hàng';
+
+          return loadConversationMessages(id, customerName).pipe(
+            tap(() => {
+              messageSub = websocketService
+                .subscribe<ChatMessageResponse>(`/topic/conversations.${id}`)
+                .subscribe((msg) => {
+                  const exists = store.messages().some((existing) => existing.id === msg.id);
+                  if (!exists) {
+                    const mappedMsg = mapToOwnerChatMessage(msg, customerName);
+                    const mediaItems = mapToOwnerChatMediaItems(msg);
+                    patchState(
+                      store,
+                      addEntity(mappedMsg, MESSAGE_ENTITY_CONFIG),
+                      addEntities(mediaItems, MEDIA_ENTITY_CONFIG)
+                    );
+
+                    patchState(
+                      store,
+                      updateEntity(
+                        {
+                          id: id,
+                          changes: {
+                            lastMessagePreview: msg.content || '',
+                            lastMessageAtLabel: formatTime(msg.createdAt),
+                          },
+                        },
+                        CONVERSATION_ENTITY_CONFIG
+                      )
+                    );
+                  }
+                });
+
+              conversationSub = websocketService
+                .subscribe<ConversationResponse>(`/topic/conversations.${id}`)
+                .subscribe((updatedConv) => {
+                  const mapped = ownerChatService.mapToOwnerChatConversation(updatedConv);
+                  patchState(
+                    store,
+                    updateEntity(
+                      { id: id, changes: { status: mapped.status } },
+                      CONVERSATION_ENTITY_CONFIG
+                    )
+                  );
+                });
+            })
+          );
+        })
+      )
+    );
+
+    const acceptConversation = rxMethod<void>(
+      pipe(
+        switchMap(() => {
+          const conversationId = store.selectedConversationId();
+          if (!conversationId) return EMPTY;
+
+          return ownerChatService.claimConversation(conversationId).pipe(
+            tap((updatedConv) => {
+              const mapped = ownerChatService.mapToOwnerChatConversation(updatedConv);
+              patchState(
+                store,
+                updateEntity(
+                  { id: conversationId, changes: mapped },
+                  CONVERSATION_ENTITY_CONFIG
+                )
+              );
+              handleEvent({ type: OwnerChatEventType.ConversationAccepted, conversationId });
+            }),
+            catchError(() => EMPTY)
+          );
+        })
+      )
+    );
+
+    const closeConversation = rxMethod<void>(
+      pipe(
+        switchMap(() => {
+          const conversationId = store.selectedConversationId();
+          if (!conversationId) return EMPTY;
+
+          return customerChatService.closeConversation(conversationId).pipe(
+            tap((updatedConv) => {
+              const mapped = ownerChatService.mapToOwnerChatConversation(updatedConv);
+              patchState(
+                store,
+                updateEntity(
+                  { id: conversationId, changes: mapped },
+                  CONVERSATION_ENTITY_CONFIG
+                )
+              );
+              handleEvent({ type: OwnerChatEventType.ConversationClosed, conversationId });
+            }),
+            catchError(() => EMPTY)
+          );
+        })
+      )
+    );
+
+    const sendStaffMessage = rxMethod<string>(
+      pipe(
+        map((body) => body.trim()),
+        switchMap((body) => {
+          const conversationId = store.selectedConversationId();
+          if (!conversationId) {
+            return EMPTY;
+          }
+
+          const pendingUploads = store.uploadEntities().filter(
+            upload =>
+              upload.conversationId === conversationId &&
+              (upload.status === 'PENDING' || upload.status === 'FAILED')
+          );
+
+          if (!body && pendingUploads.length === 0) {
+            return EMPTY;
+          }
+
+          if (pendingUploads.length === 0) {
+            const messageRequest = {
+              messageType: ChatMessageType.TEXT,
+              content: body,
+              attachments: [],
+            };
+            websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
+            return of(null);
+          }
+
+          const uploadIds = pendingUploads.map(upload => upload.id);
+          patchState(
+            store,
+            updateEntities(
+              {
+                predicate: upload => uploadIds.includes(upload.id),
+                changes: { progress: 35, status: 'UPLOADING' },
+              },
+              UPLOAD_ENTITY_CONFIG
+            ),
+            { errorMessage: null }
+          );
+
+          const uploadRequests = pendingUploads.map(upload =>
+            customerChatService.uploadFile(upload.file).pipe(
+              map(result => ({
+                uploadId: upload.id,
+                attachment: {
+                  fileKey: result.fileKey,
+                  fileName: result.fileName,
+                  contentType: result.contentType,
+                  fileSize: result.fileSize,
+                  attachmentType: result.attachmentType,
+                },
+              }))
+            )
+          );
+
+          return forkJoin(uploadRequests).pipe(
+            tap({
+              next: results => {
+                const attachments = results.map(result => result.attachment);
+                const firstAttachmentType = attachments[0]?.attachmentType ?? null;
+                websocketService.publish(`/app/chat/${conversationId}/send`, {
+                  messageType: mapOutgoingMessageType(firstAttachmentType, attachments.length),
+                  content: body || attachments.map(attachment => attachment.fileName).join(', '),
+                  attachments,
+                });
+                patchState(store, removeEntities(uploadIds, UPLOAD_ENTITY_CONFIG));
+              },
+              error: () => {
+                patchState(
+                  store,
+                  updateEntities(
+                    {
+                      predicate: upload => uploadIds.includes(upload.id),
+                      changes: { status: 'FAILED', progress: 100 },
+                    },
+                    UPLOAD_ENTITY_CONFIG
+                  ),
+                  { errorMessage: 'Khong the tai tep len. Vui long thu lai.' }
+                );
+              },
+            }),
+            catchError(() => EMPTY)
+          );
+        })
+      )
+    );
+
+    const selectStaffFiles = rxMethod<File[]>(
+      pipe(
+        tap(files => {
+          const conversationId = store.selectedConversationId();
+          if (!conversationId || files.length === 0) {
+            return;
+          }
+
+          const uploads: OwnerChatUpload[] = files.map(file => ({
+            id: `staff-upload-${conversationId}-${Date.now()}-${file.name}`,
+            conversationId,
+            file,
+            fileName: file.name,
+            sizeLabel: formatBytes(file.size),
+            progress: 0,
+            status: 'PENDING',
+          }));
+
+          patchState(store, addEntities(uploads, UPLOAD_ENTITY_CONFIG));
+        })
+      )
+    );
+
     return {
       dispatch: handleEvent,
       loadWorkspace,
-      selectConversation(conversationId: string): void {
-        handleEvent({ type: OwnerChatEventType.ConversationSelected, conversationId });
-      },
+      selectConversation,
       clearSelection(): void {
+        if (messageSub) {
+          messageSub.unsubscribe();
+          messageSub = null;
+        }
+        if (conversationSub) {
+          conversationSub.unsubscribe();
+          conversationSub = null;
+        }
         handleEvent({ type: OwnerChatEventType.SelectionCleared });
       },
       setSearchKeyword(searchKeyword: string): void {
@@ -346,44 +749,20 @@ export const OwnerChatStore = signalStore(
       setMediaTab(activeMediaTab: OwnerChatMediaTab): void {
         handleEvent({ type: OwnerChatEventType.MediaTabChanged, activeMediaTab });
       },
-      acceptConversation(): void {
-        const conversationId = store.selectedConversationId();
-
-        if (!conversationId) {
-          return;
-        }
-
-        handleEvent({ type: OwnerChatEventType.ConversationAccepted, conversationId });
+      acceptConversation,
+      closeConversation,
+      sendStaffMessage,
+      selectStaffFiles,
+      removeStaffUpload(uploadId: string): void {
+        patchState(store, removeEntity(uploadId, UPLOAD_ENTITY_CONFIG));
       },
-      closeConversation(): void {
-        const conversationId = store.selectedConversationId();
-
-        if (!conversationId) {
-          return;
-        }
-
-        handleEvent({ type: OwnerChatEventType.ConversationClosed, conversationId });
-      },
-      sendStaffMessage(body: string): void {
-        const conversation = store.selectedConversation();
-        const trimmedBody = body.trim();
-
-        if (!conversation || !trimmedBody) {
-          return;
-        }
-
-        handleEvent({
-          type: OwnerChatEventType.StaffMessageSubmitted,
-          conversation,
-          message: {
-            id: `msg-staff-${Date.now()}`,
-            conversationId: conversation.id,
-            sender: 'STAFF',
-            senderName: 'Ban (Nhan vien)',
-            body: trimmedBody,
-            sentAtLabel: 'Vua xong',
-          },
-        });
+    };
+  }),
+  withHooks((store) => {
+    const ws = inject(CustomerChatWebsocketService);
+    return {
+      onDestroy() {
+        ws.disconnect();
       },
     };
   })

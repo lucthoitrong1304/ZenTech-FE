@@ -12,10 +12,30 @@
         ZenTech Support
       </h2>
       <p class="truncate text-xs font-semibold text-white/58">
-        @if (staff(); as currentStaff) {
-          {{ currentStaff.name }} đang hỗ trợ
-        } @else {
-          AI đang sẵn sàng tư vấn
+        @switch (status()) {
+          @case ('BOT_CONSULTING') {
+            AI đang sẵn sàng tư vấn
+          }
+          @case ('WAITING_FOR_AGENT') {
+            Đang chờ nhân viên kết nối...
+          }
+          @case ('AGENT_HANDLING') {
+            @if (staff(); as currentStaff) {
+              {{ currentStaff.name }} đang hỗ trợ
+            } @else {
+              Nhân viên đang hỗ trợ
+            }
+          }
+          @case ('CLOSED') {
+            Cuộc hội thoại đã đóng
+          }
+          @default {
+            @if (staff(); as currentStaff) {
+              {{ currentStaff.name }} đang hỗ trợ
+            } @else {
+              AI đang sẵn sàng tư vấn
+            }
+          }
         }
       </p>
     </div>

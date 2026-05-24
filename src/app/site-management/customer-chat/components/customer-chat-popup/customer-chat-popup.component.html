@@ -23,6 +23,7 @@
           [customer]="store.customer()"
           [staff]="store.staff()"
           [compact]="true"
+          (previewRequested)="openPreview($event)"
         />
 
         <app-customer-upload-queue
@@ -31,6 +32,7 @@
         />
 
         <app-customer-chat-composer
+          [hasPendingAttachments]="store.hasPendingAttachments()"
           (messageSubmitted)="store.sendMessage($event)"
           (filesSelected)="store.selectFiles($event)"
         />
@@ -51,8 +53,11 @@
         [linkCount]="store.sharedCounts().links"
         (tabSelected)="store.setSharedContentTab($event)"
         (closed)="store.closeSharedSidebar()"
+        (previewRequested)="openPreview($event)"
       />
     </div>
+
+    <app-media-preview-dialog [item]="previewItem()" (closed)="closePreview()" />
   </section>
 } @else {
   <app-customer-chat-launcher

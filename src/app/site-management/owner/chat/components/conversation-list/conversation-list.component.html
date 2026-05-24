@@ -19,7 +19,7 @@
     </label>
   </div>
 
-  <div class="chat-scrollbar flex-1 space-y-1 overflow-y-auto p-2">
+  <div class="chat-scrollbar min-h-0 flex-1 overscroll-contain space-y-1 overflow-y-auto p-2">
     @for (conversation of conversations(); track conversation.id) {
       <button
         type="button"
