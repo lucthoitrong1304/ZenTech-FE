@@ -108,7 +108,7 @@ describe('CustomerChatStore', () => {
 
     expect(store.uploads()[0].status).toBe('COMPLETE');
     expect(store.uploads()[0].progress).toBe(100);
-    expect(store.sharedItems()[0].id).toBe('uploaded-1');
+    expect(store.sharedItems().some(item => item.id === 'uploaded-1')).toBe(true);
     expect(store.activeSharedTab()).toBe('MEDIA');
   });
 
@@ -120,6 +120,24 @@ describe('CustomerChatStore', () => {
 
     store.toggleSharedSidebar();
     expect(store.sharedSidebarOpen()).toBe(true);
+  });
+
+  it('switches full chat between details and expanded shared content', () => {
+    const store = configureStore();
+
+    store.loadSession();
+    store.openFullChat();
+
+    expect(store.fullSidebarMode()).toBe('DETAILS');
+    expect(store.activeSharedTab()).toBe('ALL');
+    expect(store.selectedSharedItems().length).toBe(3);
+
+    store.requestSharedContent();
+    expect(store.fullSidebarMode()).toBe('SHARED');
+    expect(store.activeSharedTab()).toBe('ALL');
+
+    store.requestConversationDetails();
+    expect(store.fullSidebarMode()).toBe('DETAILS');
   });
 });
 

@@ -8,4 +8,5 @@
 .product-listing-page {
   font-family:
     Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: clip;
 }

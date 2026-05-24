@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, ElementRef, output, signal, viewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePaperclip, LucideSendHorizontal } from '@lucide/angular';
 
@@ -10,6 +18,7 @@ import { LucidePaperclip, LucideSendHorizontal } from '@lucide/angular';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerChatComposerComponent {
+  readonly secureCaption = input(false);
   readonly messageSubmitted = output<string>();
   readonly filesSelected = output<File[]>();
   protected readonly draft = signal('');

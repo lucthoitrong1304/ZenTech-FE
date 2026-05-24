@@ -54,7 +54,7 @@ describe('ProductListingStore', () => {
       },
     });
 
-    store.loadCategory('keyboards');
+    store.loadCategory({ slug: 'keyboards', sortBy: 'featured' });
 
     expect(resolveCategoryBySlug).toHaveBeenCalledWith('keyboards');
     expect(getCategoryListing).toHaveBeenCalledWith(category, {
@@ -78,7 +78,7 @@ describe('ProductListingStore', () => {
       },
     });
 
-    store.loadCategory('missing');
+    store.loadCategory({ slug: 'missing', sortBy: 'featured' });
 
     expect(getCategoryListing).not.toHaveBeenCalled();
     expect(store.loading()).toBe(false);
@@ -104,7 +104,7 @@ describe('ProductListingStore', () => {
       },
     });
 
-    store.loadCategory('keyboards');
+    store.loadCategory({ slug: 'keyboards', sortBy: 'featured' });
     store.loadMore();
 
     expect(resolveCategoryBySlug).toHaveBeenCalledTimes(1);
@@ -133,10 +133,11 @@ describe('ProductListingStore', () => {
       },
     });
 
-    store.loadCategory('keyboards');
+    store.loadCategory({ slug: 'keyboards', sortBy: 'featured' });
     store.setSort('price-desc');
+    store.loadCategory({ slug: 'keyboards', sortBy: 'price-desc' });
 
-    expect(getCategoryListing).toHaveBeenCalledWith(category, {
+    expect(getCategoryListing).toHaveBeenLastCalledWith(category, {
       page: 0,
       size: 10,
       sort: 'PRICE_DESC',

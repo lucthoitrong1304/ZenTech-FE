@@ -4,10 +4,18 @@
 >
   <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,199,0,0.12),_rgba(252,249,248,0.2),_rgba(252,249,248,1)_70%)]"></div>
 
-  <div class="relative z-10 grid gap-5">
+  <div class="relative z-10 mx-auto grid w-full max-w-4xl gap-5">
+    @if (!compact()) {
+      <div class="flex justify-center py-2">
+        <span class="rounded-full bg-[#f6f3f2] px-4 py-1 text-xs font-black uppercase tracking-[0.14em] text-[#4f4632]">
+          Today
+        </span>
+      </div>
+    }
+
     @for (message of messages(); track message.id) {
       <article
-        class="flex max-w-[86%] gap-3"
+        class="message-bubble flex max-w-[86%] gap-3"
         [class.ml-auto]="message.sender === 'CUSTOMER'"
         [class.flex-row-reverse]="message.sender === 'CUSTOMER'"
       >

@@ -4,7 +4,9 @@ export type CustomerChatMessageSender = 'CUSTOMER' | 'AI' | 'STAFF';
 
 export type CustomerChatSharedItemType = 'IMAGE' | 'VIDEO' | 'FILE' | 'LINK';
 
-export type CustomerChatSharedTab = 'MEDIA' | 'FILES' | 'LINKS';
+export type CustomerChatSharedTab = 'ALL' | 'MEDIA' | 'FILES' | 'LINKS';
+
+export type CustomerChatFullSidebarMode = 'DETAILS' | 'SHARED';
 
 export type CustomerChatUploadStatus = 'UPLOADING' | 'COMPLETE' | 'FAILED';
 

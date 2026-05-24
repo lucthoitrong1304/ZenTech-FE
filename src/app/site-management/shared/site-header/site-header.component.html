@@ -4,9 +4,10 @@
   <div class="site-header__inner">
     <div class="site-header__left">
       <button
+        #categoryTrigger
         type="button"
         class="site-header__icon-button site-header__mobile-trigger"
-        (click)="categoryMenu.toggle($event)"
+        (click)="categoryMenu.toggle($event, categoryTrigger)"
         aria-label="Open categories"
       >
         <svg lucideMenu class="site-header__action-icon" [attr.stroke-width]="2"></svg>
@@ -73,9 +74,10 @@
       </button>
 
       <button
+        #accountTrigger
         type="button"
         class="site-header__account-trigger"
-        (click)="accountMenu.toggle($event)"
+        (click)="accountMenu.toggle($event, accountTrigger)"
         [attr.aria-label]="accountTriggerLabel()"
       >
         <span class="site-header__account-badge">

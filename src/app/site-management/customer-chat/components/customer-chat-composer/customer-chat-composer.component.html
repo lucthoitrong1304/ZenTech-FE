@@ -1,6 +1,6 @@
-<footer class="shrink-0 border-t border-[#d2c5ab]/25 bg-white p-3">
+<footer class="shrink-0 bg-white p-3 shadow-[0_-10px_40px_-24px_rgba(16,16,16,0.22)]">
   <form
-    class="flex items-end gap-2 rounded-[8px] bg-[#f6f3f2] p-2 ring-1 ring-[#d2c5ab]/25 transition focus-within:ring-[#ffc700]"
+    class="mx-auto flex max-w-4xl items-end gap-2 rounded-[8px] bg-[#f6f3f2] p-2 ring-1 ring-[#d2c5ab]/25 transition focus-within:ring-2 focus-within:ring-[#ffc700]"
     (ngSubmit)="submit()"
   >
     <input
@@ -39,4 +39,10 @@
       <svg lucideSendHorizontal class="h-5 w-5" [attr.stroke-width]="2.2"></svg>
     </button>
   </form>
+
+  @if (secureCaption()) {
+    <p class="mx-auto mt-2 max-w-4xl text-center text-[10px] font-bold uppercase tracking-[0.18em] text-[#4f4632]/70">
+      ZenTech Secure Chat End-to-End Encrypted
+    </p>
+  }
 </footer>

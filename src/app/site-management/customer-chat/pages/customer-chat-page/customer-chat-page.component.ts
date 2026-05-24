@@ -1,7 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, effect, inject, untracked } from '@angular/core';
 import { Router } from '@angular/router';
-import { LucidePanelRightClose, LucidePanelRightOpen } from '@lucide/angular';
+import {
+  LucideExternalLink,
+  LucideFileText,
+  LucideImage,
+  LucideLink,
+  LucideMessageCircle,
+  LucideMoreVertical,
+  LucidePhone,
+  LucidePlus,
+  LucideSearch,
+  LucideVideo,
+} from '@lucide/angular';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
@@ -24,8 +35,16 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
     CustomerMessageTimelineComponent,
     CustomerSharedContentSidebarComponent,
     CustomerUploadQueueComponent,
-    LucidePanelRightClose,
-    LucidePanelRightOpen,
+    LucideExternalLink,
+    LucideFileText,
+    LucideImage,
+    LucideLink,
+    LucideMessageCircle,
+    LucideMoreVertical,
+    LucidePhone,
+    LucidePlus,
+    LucideSearch,
+    LucideVideo,
   ],
   templateUrl: './customer-chat-page.component.html',
   styleUrl: './customer-chat-page.component.css',

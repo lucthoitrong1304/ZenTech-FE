@@ -2,8 +2,17 @@
   display: block;
 }
 
+.customer-chat-page {
+  overflow-x: clip;
+}
+
 .customer-chat-full {
-  height: calc(100vh - 7rem);
+  height: calc(100vh - 6rem);
+  min-height: 44rem;
+}
+
+.customer-chat-details {
+  box-shadow: -24px 0 64px -56px rgba(16, 16, 16, 0.72);
 }
 
 :host ::ng-deep .chat-scrollbar {

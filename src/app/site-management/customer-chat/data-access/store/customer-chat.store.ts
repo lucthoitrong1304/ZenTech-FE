@@ -12,6 +12,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, filter, map, pipe, switchMap, tap } from 'rxjs';
 import { CustomerChatEvent, CustomerChatEventType } from '../models/customer-chat.event';
 import {
+  CustomerChatFullSidebarMode,
   CustomerChatMessage,
   CustomerChatSession,
   CustomerChatSharedItem,
@@ -24,6 +25,7 @@ import { CustomerChatService } from '../services/customer-chat.service';
 interface CustomerChatUiState {
   session: CustomerChatSession | null;
   activeSharedTab: CustomerChatSharedTab;
+  fullSidebarMode: CustomerChatFullSidebarMode;
   popupOpen: boolean;
   sharedSidebarOpen: boolean;
   loading: boolean;
@@ -50,6 +52,7 @@ const UPLOAD_ENTITY_CONFIG = {
 const INITIAL_STATE: CustomerChatUiState = {
   session: null,
   activeSharedTab: 'MEDIA',
+  fullSidebarMode: 'DETAILS',
   popupOpen: false,
   sharedSidebarOpen: false,
   loading: false,
@@ -73,9 +76,15 @@ export const CustomerChatStore = signalStore(
     entity: {} as CustomerChatUpload,
     collection: 'upload',
   }),
-  withComputed(({ session, messageEntities, sharedItemEntities, uploadEntities, activeSharedTab }) => ({
+  withComputed(
+    ({ session, messageEntities, sharedItemEntities, uploadEntities, activeSharedTab }) => ({
     messages: computed(() => messageEntities()),
     sharedItems: computed(() => sharedItemEntities()),
+    sharedMediaItems: computed(() =>
+      sharedItemEntities().filter(item => item.type === 'IMAGE' || item.type === 'VIDEO')
+    ),
+    sharedFileItems: computed(() => sharedItemEntities().filter(item => item.type === 'FILE')),
+    sharedLinkItems: computed(() => sharedItemEntities().filter(item => item.type === 'LINK')),
     uploads: computed(() => uploadEntities()),
     customer: computed(() => session()?.customer ?? null),
     assistant: computed(() => session()?.assistant ?? null),
@@ -85,6 +94,8 @@ export const CustomerChatStore = signalStore(
     selectedSharedItems: computed(() =>
       sharedItemEntities().filter(item => {
         switch (activeSharedTab()) {
+          case 'ALL':
+            return true;
           case 'MEDIA':
             return item.type === 'IMAGE' || item.type === 'VIDEO';
           case 'FILES':
@@ -94,14 +105,19 @@ export const CustomerChatStore = signalStore(
         }
       })
     ),
-    sharedCounts: computed(() => ({
-      media: sharedItemEntities().filter(item => item.type === 'IMAGE' || item.type === 'VIDEO')
-        .length,
-      files: sharedItemEntities().filter(item => item.type === 'FILE').length,
-      links: sharedItemEntities().filter(item => item.type === 'LINK').length,
-    })),
+    sharedCounts: computed(() => {
+      const items = sharedItemEntities();
+
+      return {
+        all: items.length,
+        media: items.filter(item => item.type === 'IMAGE' || item.type === 'VIDEO').length,
+        files: items.filter(item => item.type === 'FILE').length,
+        links: items.filter(item => item.type === 'LINK').length,
+      };
+    }),
     hasActiveUploads: computed(() => uploadEntities().some(upload => upload.status === 'UPLOADING')),
-  })),
+  })
+  ),
   withMethods((store, customerChatService = inject(CustomerChatService)) => {
     const handleEvent = (event: CustomerChatEvent): void => {
       switch (event.type) {
@@ -168,6 +184,7 @@ export const CustomerChatStore = signalStore(
             addEntities(event.sharedItems, SHARED_ITEM_ENTITY_CONFIG),
             {
               activeSharedTab: event.activeSharedTab,
+              fullSidebarMode: 'SHARED',
               sharedSidebarOpen: true,
             }
           );
@@ -188,7 +205,7 @@ export const CustomerChatStore = signalStore(
           break;
 
         case CustomerChatEventType.PopupOpened:
-          patchState(store, { popupOpen: true, sharedSidebarOpen: false });
+          patchState(store, { activeSharedTab: 'MEDIA', popupOpen: true, sharedSidebarOpen: false });
           break;
 
         case CustomerChatEventType.PopupClosed:
@@ -202,8 +219,20 @@ export const CustomerChatStore = signalStore(
         case CustomerChatEventType.FullChatOpened:
           patchState(store, {
             popupOpen: false,
-            sharedSidebarOpen: true,
+            activeSharedTab: 'ALL',
+            fullSidebarMode: 'DETAILS',
           });
+          break;
+
+        case CustomerChatEventType.SharedContentRequested:
+          patchState(store, {
+            activeSharedTab: 'ALL',
+            fullSidebarMode: 'SHARED',
+          });
+          break;
+
+        case CustomerChatEventType.ConversationDetailsRequested:
+          patchState(store, { fullSidebarMode: 'DETAILS' });
           break;
 
         case CustomerChatEventType.UploadRemoved:
@@ -213,6 +242,7 @@ export const CustomerChatStore = signalStore(
         case CustomerChatEventType.SharedContentTabChanged:
           patchState(store, {
             activeSharedTab: event.activeSharedTab,
+            fullSidebarMode: 'SHARED',
             sharedSidebarOpen: true,
           });
           break;
@@ -345,6 +375,12 @@ export const CustomerChatStore = signalStore(
       },
       openFullChat(): void {
         handleEvent({ type: CustomerChatEventType.FullChatOpened });
+      },
+      requestSharedContent(): void {
+        handleEvent({ type: CustomerChatEventType.SharedContentRequested });
+      },
+      requestConversationDetails(): void {
+        handleEvent({ type: CustomerChatEventType.ConversationDetailsRequested });
       },
       removeUpload(uploadId: string): void {
         handleEvent({ type: CustomerChatEventType.UploadRemoved, uploadId });

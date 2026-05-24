@@ -55,9 +55,10 @@ export class ProductListingPageComponent {
   constructor() {
     effect(() => {
       const slug = this.categorySlug();
+      const sortBy = this.productListingStore.sortBy();
 
       if (slug) {
-        this.productListingStore.loadCategory(slug);
+        this.productListingStore.loadCategory({ slug, sortBy });
       }
     });
 

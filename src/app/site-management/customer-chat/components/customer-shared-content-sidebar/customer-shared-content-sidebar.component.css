@@ -5,3 +5,7 @@
 .customer-shared-sidebar {
   box-shadow: -28px 0 70px -56px rgba(16, 16, 16, 0.65);
 }
+
+.customer-shared-sidebar--expanded {
+  box-shadow: -24px 0 64px -56px rgba(16, 16, 16, 0.72);
+}
