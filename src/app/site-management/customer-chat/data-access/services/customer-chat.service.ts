@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpContext, HttpHeaders } from '@angular/common/http';
 import { Observable, map, switchMap } from 'rxjs';
 import { ApiService } from '../../../../core/api/api.service';
+import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../../../../core/tokens/api-context.token';
 import { environment } from '../../../../../environments/environment';
 import {
   ApiResponse,
@@ -87,18 +89,18 @@ export class CustomerChatService {
     const attachmentType = this.getAttachmentType(file.type);
 
     return this.apiService
-      .post<unknown, ApiResponse<UploadPresignResponse>>(presignUrl, {
+      .post<unknown, UploadPresignResponse>(presignUrl, {
         originalFilename: file.name,
         contentType: file.type || 'application/octet-stream',
         fileSize: file.size,
         purpose,
       })
       .pipe(
-        map((res) => res.data),
         switchMap((presignRes) => {
           return this.apiService
             .putFile(presignRes.presignedUrl, file, {
-              headers: presignRes.requiredHeaders || {},
+              headers: new HttpHeaders(presignRes.requiredHeaders || {}),
+              context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
             })
             .pipe(
               map(() => ({
