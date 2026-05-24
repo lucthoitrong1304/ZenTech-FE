@@ -19,12 +19,17 @@ import { LucidePaperclip, LucideSendHorizontal } from '@lucide/angular';
 })
 export class CustomerChatComposerComponent {
   readonly secureCaption = input(false);
+  readonly disabled = input(false);
   readonly messageSubmitted = output<string>();
   readonly filesSelected = output<File[]>();
   protected readonly draft = signal('');
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
   protected submit(): void {
+    if (this.disabled()) {
+      return;
+    }
+
     const body = this.draft().trim();
 
     if (!body) {
@@ -38,7 +43,7 @@ export class CustomerChatComposerComponent {
   protected onEnter(event: Event): void {
     const keyboardEvent = event as KeyboardEvent;
 
-    if (keyboardEvent.shiftKey) {
+    if (keyboardEvent.shiftKey || this.disabled()) {
       return;
     }
 
@@ -47,10 +52,16 @@ export class CustomerChatComposerComponent {
   }
 
   protected openFilePicker(): void {
+    if (this.disabled()) {
+      return;
+    }
     this.fileInput()?.nativeElement.click();
   }
 
   protected onFileChange(event: Event): void {
+    if (this.disabled()) {
+      return;
+    }
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files ?? []);
 

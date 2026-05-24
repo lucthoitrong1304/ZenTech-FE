@@ -13,7 +13,8 @@
 
     <button
       type="button"
-      class="grid h-10 w-10 shrink-0 place-items-center rounded-[7px] text-[#4f4632] transition hover:bg-white hover:text-[#101010]"
+      class="grid h-10 w-10 shrink-0 place-items-center rounded-[7px] text-[#4f4632] transition hover:bg-white hover:text-[#101010] disabled:cursor-not-allowed disabled:opacity-45"
+      [disabled]="disabled()"
       (click)="openFilePicker()"
       title="Đính kèm"
     >
@@ -21,10 +22,11 @@
     </button>
 
     <textarea
-      class="max-h-28 min-h-10 flex-1 resize-none border-0 bg-transparent py-2 text-sm text-[#101010] outline-none placeholder:text-[#4f4632]/70"
+      class="max-h-28 min-h-10 flex-1 resize-none border-0 bg-transparent py-2 text-sm text-[#101010] outline-none placeholder:text-[#4f4632]/70 disabled:cursor-not-allowed"
       rows="1"
       name="customerChatDraft"
-      placeholder="Nhập tin nhắn..."
+      [placeholder]="disabled() ? 'Cuộc hội thoại đã đóng...' : 'Nhập tin nhắn...'"
+      [disabled]="disabled()"
       [ngModel]="draft()"
       (ngModelChange)="draft.set($event)"
       (keydown.enter)="onEnter($event)"
@@ -33,7 +35,7 @@
     <button
       type="submit"
       class="grid h-10 w-10 shrink-0 place-items-center rounded-[7px] bg-[#ffc700] text-[#101010] transition hover:bg-[#f5bf00] disabled:cursor-not-allowed disabled:opacity-45"
-      [disabled]="!draft().trim()"
+      [disabled]="!draft().trim() || disabled()"
       title="Gửi"
     >
       <svg lucideSendHorizontal class="h-5 w-5" [attr.stroke-width]="2.2"></svg>

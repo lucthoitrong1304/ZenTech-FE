@@ -13,6 +13,7 @@
         <app-customer-chat-header
           [staff]="store.staff()"
           [product]="store.product()"
+          [status]="store.session()?.status || null"
           [sharedSidebarOpen]="store.fullSidebarMode() === 'SHARED'"
           (closeClicked)="store.requestConversationDetails()"
           (sharedClicked)="store.requestSharedContent()"
@@ -27,45 +28,48 @@
             <aside class="chat-scrollbar hidden w-72 shrink-0 flex-col gap-6 overflow-y-auto bg-[#f6f3f2] p-6 text-sm text-[#1c1b1b] xl:flex">
               <button
                 type="button"
-                class="flex min-h-12 w-full items-center justify-center gap-2 rounded-[8px] bg-[#ffc700] px-4 text-sm font-black text-[#251a00] shadow-sm transition hover:bg-[#f5bf00]"
+                class="new-conv-btn"
+                (click)="store.createNewConversation()"
               >
                 <svg lucidePlus class="h-5 w-5" [attr.stroke-width]="2.2"></svg>
                 New Conversation
               </button>
 
               <div class="grid gap-2">
-                <p class="mt-2 text-xs font-black uppercase tracking-[0.14em] text-[#4f4632]">
+                <p class="recent-convs-header">
                   Recent Conversations
                 </p>
 
-                <button
-                  type="button"
-                  class="flex min-w-0 items-center gap-3 rounded-[8px] bg-white px-4 py-3 text-left font-black text-[#101010] shadow-sm"
-                >
-                  <svg lucideMessageCircle class="h-5 w-5 shrink-0 text-[#4b41e1]" [attr.stroke-width]="2"></svg>
-                  <span class="min-w-0 flex-1">
-                    <span class="block truncate">Product Support</span>
-                    <span class="mt-1 block truncate text-xs font-semibold text-[#4f4632]">
-                      {{ store.product()?.name || 'ZenTech item' }}
+                @for (conv of store.conversations(); track conv.id) {
+                  <button
+                    type="button"
+                    class="sidebar-conv-btn"
+                    [class.active]="store.activeConversationId() === conv.id"
+                    [class.inactive]="store.activeConversationId() !== conv.id"
+                    (click)="store.switchConversation(conv.id)"
+                  >
+                    <svg
+                      lucideMessageCircle
+                      class="sidebar-conv-icon"
+                      [class.active]="store.activeConversationId() === conv.id"
+                      [attr.stroke-width]="2"
+                    ></svg>
+                    <span class="sidebar-conv-text-container">
+                      <span class="sidebar-conv-title">{{ conv.title || 'Product Support' }}</span>
+                      <span class="sidebar-conv-subtitle">
+                        @switch (conv.status) {
+                          @case ('BOT_CONSULTING') { Trợ lý ảo }
+                          @case ('WAITING_FOR_AGENT') { Chờ kết nối }
+                          @case ('AGENT_HANDLING') { Nhân viên hỗ trợ }
+                          @case ('CLOSED') { Đã đóng }
+                          @default { Hoạt động }
+                        }
+                      </span>
                     </span>
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  class="flex min-w-0 items-center gap-3 rounded-[8px] px-4 py-3 text-left font-bold text-[#4f4632] transition hover:bg-white/70"
-                >
-                  <svg lucideMessageCircle class="h-5 w-5 shrink-0" [attr.stroke-width]="2"></svg>
-                  <span class="truncate">Warranty Questions</span>
-                </button>
-
-                <button
-                  type="button"
-                  class="flex min-w-0 items-center gap-3 rounded-[8px] px-4 py-3 text-left font-bold text-[#4f4632] transition hover:bg-white/70"
-                >
-                  <svg lucideMessageCircle class="h-5 w-5 shrink-0" [attr.stroke-width]="2"></svg>
-                  <span class="truncate">Shipping Delay Support</span>
-                </button>
+                  </button>
+                } @empty {
+                  <p class="text-xs text-[#4f4632]/70 font-semibold p-2">Chưa có hội thoại nào</p>
+                }
               </div>
             </aside>
 
@@ -83,6 +87,7 @@
 
               <app-customer-chat-composer
                 [secureCaption]="true"
+                [disabled]="store.session()?.status === 'CLOSED'"
                 (messageSubmitted)="store.sendMessage($event)"
                 (filesSelected)="store.selectFiles($event)"
               />
@@ -138,6 +143,33 @@
                       </button>
                     </div>
                   </section>
+                }
+
+                @if (store.session(); as session) {
+                  @if (session.status !== 'CLOSED') {
+                    <div class="chat-actions-section">
+                      @if (session.status === 'BOT_CONSULTING') {
+                        <button
+                          type="button"
+                          class="request-agent-btn"
+                          (click)="store.requestAgent()"
+                        >
+                          Yêu cầu gặp nhân viên
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        class="close-conversation-btn"
+                        (click)="store.closeConversation()"
+                      >
+                        Đóng cuộc hội thoại
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="chat-closed-container">
+                      <span class="closed-badge">Cuộc hội thoại đã đóng</span>
+                    </div>
+                  }
                 }
 
                 <div class="grid gap-8 px-6 pb-8">

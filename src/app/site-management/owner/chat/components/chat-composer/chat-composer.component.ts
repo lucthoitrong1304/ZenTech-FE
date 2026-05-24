@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucideSend } from '@lucide/angular';
 
@@ -10,10 +10,14 @@ import { LucidePlus, LucideSend } from '@lucide/angular';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChatComposerComponent {
+  readonly disabled = input(false);
   readonly messageSubmitted = output<string>();
   protected readonly draft = signal('');
 
   protected submit(): void {
+    if (this.disabled()) {
+      return;
+    }
     const value = this.draft().trim();
 
     if (!value) {
@@ -27,7 +31,7 @@ export class ChatComposerComponent {
   protected onEnter(event: Event): void {
     const keyboardEvent = event as KeyboardEvent;
 
-    if (keyboardEvent.shiftKey) {
+    if (keyboardEvent.shiftKey || this.disabled()) {
       return;
     }
 

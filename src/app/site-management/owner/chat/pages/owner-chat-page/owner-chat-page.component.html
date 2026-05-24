@@ -40,7 +40,10 @@
           [messages]="store.selectedMessages()"
         />
 
-        <app-chat-composer (messageSubmitted)="store.sendStaffMessage($event)" />
+        <app-chat-composer
+          [disabled]="conversation.status === 'CLOSED'"
+          (messageSubmitted)="store.sendStaffMessage($event)"
+        />
       } @else {
         <app-chat-empty-state />
       }
