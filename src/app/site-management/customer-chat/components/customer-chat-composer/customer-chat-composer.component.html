@@ -35,7 +35,7 @@
     <button
       type="submit"
       class="grid h-10 w-10 shrink-0 place-items-center rounded-[7px] bg-[#ffc700] text-[#101010] transition hover:bg-[#f5bf00] disabled:cursor-not-allowed disabled:opacity-45"
-      [disabled]="!draft().trim() || disabled()"
+      [disabled]="(!draft().trim() && !hasPendingAttachments()) || disabled()"
       title="Gửi"
     >
       <svg lucideSendHorizontal class="h-5 w-5" [attr.stroke-width]="2.2"></svg>

@@ -8,7 +8,7 @@ export type CustomerChatSharedTab = 'ALL' | 'MEDIA' | 'FILES' | 'LINKS';
 
 export type CustomerChatFullSidebarMode = 'DETAILS' | 'SHARED';
 
-export type CustomerChatUploadStatus = 'UPLOADING' | 'COMPLETE' | 'FAILED';
+export type CustomerChatUploadStatus = 'PENDING' | 'UPLOADING' | 'COMPLETE' | 'FAILED';
 
 export interface CustomerChatParticipant {
   id: string;
@@ -55,6 +55,8 @@ export interface CustomerChatSharedItem {
 
 export interface CustomerChatUpload {
   id: string;
+  conversationId: string;
+  file: File;
   fileName: string;
   sizeLabel: string;
   progress: number;

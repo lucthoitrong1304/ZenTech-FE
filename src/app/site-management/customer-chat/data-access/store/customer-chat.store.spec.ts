@@ -1,6 +1,6 @@
 import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
-import { EMPTY, Observable, of } from 'rxjs';
+import { EMPTY, Observable, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
 import {
@@ -32,22 +32,25 @@ describe('CustomerChatStore', () => {
     TestBed.resetTestingModule();
   });
 
-  function configureStore() {
-    const conversation = createConversation();
+  function configureStore(options: { uploadFails?: boolean; conversations?: ConversationResponse[] } = {}) {
+    const conversation = options.conversations?.[0] ?? createConversation();
+    const conversations = options.conversations ?? [conversation];
     const messages = createMessages();
     const chatService = {
-      getMyConversations: vi.fn(() => of(createPage([conversation]))),
+      getMyConversations: vi.fn(() => of(createPage(conversations))),
       getMessages: vi.fn(() => of(createPage(messages))),
       createOrGetConversation: vi.fn(() => of(conversation)),
-      createNewConversation: vi.fn(() => of(conversation)),
+      createNewConversation: vi.fn(() => of(createConversation('conversation-2'))),
       uploadFile: vi.fn(() =>
-        of({
-          fileKey: 'uploads/chat/conversation-1/layout.png',
-          fileName: 'layout.png',
-          contentType: 'image/png',
-          fileSize: 4,
-          attachmentType: ChatAttachmentType.IMAGE,
-        })
+        options.uploadFails
+          ? throwError(() => new Error('upload failed'))
+          : of({
+              fileKey: 'uploads/chat/conversation-1/layout.png',
+              fileName: 'layout.png',
+              contentType: 'image/png',
+              fileSize: 4,
+              attachmentType: ChatAttachmentType.IMAGE,
+            })
       ),
       requestAgent: vi.fn(() => of(conversation)),
       closeConversation: vi.fn(() => of({ ...conversation, status: ConversationStatus.CLOSED })),
@@ -139,17 +142,57 @@ describe('CustomerChatStore', () => {
     expect(store.selectedSharedItems().map((item) => item.id)).toEqual(['attachment-image-1']);
   });
 
-  it('uploads files, marks progress complete, and publishes attachment message', () => {
+  it('queues selected files without uploading or publishing immediately', () => {
     const { store, chatService, websocketService } = configureStore();
     const file = new File(['demo'], 'layout.png', { type: 'image/png' });
 
     store.loadSession();
     store.selectFiles([file]);
 
+    expect(chatService.uploadFile).not.toHaveBeenCalled();
+    expect(websocketService.publish).not.toHaveBeenCalled();
+    expect(store.uploads()[0]).toMatchObject({
+      conversationId: 'conversation-1',
+      fileName: 'layout.png',
+      status: 'PENDING',
+      progress: 0,
+    });
+  });
+
+  it('uploads pending files and publishes one attachment message when sending', () => {
+    const { store, chatService, websocketService } = configureStore();
+    const file = new File(['demo'], 'layout.png', { type: 'image/png' });
+
+    store.loadSession();
+    store.selectFiles([file]);
+    store.sendMessage('Xem giup minh file nay');
+
     expect(chatService.uploadFile).toHaveBeenCalledWith(file);
-    expect(store.uploads()[0].status).toBe('COMPLETE');
-    expect(store.uploads()[0].progress).toBe(100);
-    expect(websocketService.publish).toHaveBeenLastCalledWith('/app/chat/conversation-1/send', {
+    expect(store.uploads()).toEqual([]);
+    expect(websocketService.publish).toHaveBeenCalledWith('/app/chat/conversation-1/send', {
+      messageType: ChatMessageType.IMAGE,
+      content: 'Xem giup minh file nay',
+      attachments: [
+        {
+          fileKey: 'uploads/chat/conversation-1/layout.png',
+          fileName: 'layout.png',
+          contentType: 'image/png',
+          fileSize: 4,
+          attachmentType: ChatAttachmentType.IMAGE,
+        },
+      ],
+    });
+  });
+
+  it('allows sending a file-only pending message', () => {
+    const { store, websocketService } = configureStore();
+    const file = new File(['demo'], 'layout.png', { type: 'image/png' });
+
+    store.loadSession();
+    store.selectFiles([file]);
+    store.sendMessage('');
+
+    expect(websocketService.publish).toHaveBeenCalledWith('/app/chat/conversation-1/send', {
       messageType: ChatMessageType.IMAGE,
       content: 'layout.png',
       attachments: [
@@ -162,6 +205,36 @@ describe('CustomerChatStore', () => {
         },
       ],
     });
+  });
+
+  it('keeps pending uploads scoped to their conversation when switching conversations', () => {
+    const { store } = configureStore({
+      conversations: [createConversation('conversation-1'), createConversation('conversation-2')],
+    });
+    const file = new File(['demo'], 'layout.png', { type: 'image/png' });
+
+    store.loadSession();
+    store.selectFiles([file]);
+    expect(store.uploads().map((upload) => upload.fileName)).toEqual(['layout.png']);
+
+    store.switchConversation('conversation-2');
+    expect(store.uploads()).toEqual([]);
+
+    store.switchConversation('conversation-1');
+    expect(store.uploads().map((upload) => upload.fileName)).toEqual(['layout.png']);
+  });
+
+  it('marks pending uploads failed and does not publish when upload fails', () => {
+    const { store, websocketService } = configureStore({ uploadFails: true });
+    const file = new File(['demo'], 'layout.png', { type: 'image/png' });
+
+    store.loadSession();
+    store.selectFiles([file]);
+    store.sendMessage('Gui file');
+
+    expect(store.uploads()[0].status).toBe('FAILED');
+    expect(store.uploads()[0].progress).toBe(100);
+    expect(websocketService.publish).not.toHaveBeenCalled();
   });
 
   it('opens and closes the shared content sidebar', () => {
@@ -204,9 +277,9 @@ function createPage<T>(content: T[]): PageResponse<T> {
   };
 }
 
-function createConversation(): ConversationResponse {
+function createConversation(id = 'conversation-1'): ConversationResponse {
   return {
-    id: 'conversation-1',
+    id,
     customerId: 'customer-1',
     customerName: 'Ban',
     customerEmail: 'ban@example.com',

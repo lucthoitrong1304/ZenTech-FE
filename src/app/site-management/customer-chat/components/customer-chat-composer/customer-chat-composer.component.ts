@@ -20,6 +20,7 @@ import { LucidePaperclip, LucideSendHorizontal } from '@lucide/angular';
 export class CustomerChatComposerComponent {
   readonly secureCaption = input(false);
   readonly disabled = input(false);
+  readonly hasPendingAttachments = input(false);
   readonly messageSubmitted = output<string>();
   readonly filesSelected = output<File[]>();
   protected readonly draft = signal('');
@@ -32,7 +33,7 @@ export class CustomerChatComposerComponent {
 
     const body = this.draft().trim();
 
-    if (!body) {
+    if (!body && !this.hasPendingAttachments()) {
       return;
     }
 

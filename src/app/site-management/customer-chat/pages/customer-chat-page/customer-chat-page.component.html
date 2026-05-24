@@ -88,6 +88,7 @@
               <app-customer-chat-composer
                 [secureCaption]="true"
                 [disabled]="store.session()?.status === 'CLOSED'"
+                [hasPendingAttachments]="store.hasPendingAttachments()"
                 (messageSubmitted)="store.sendMessage($event)"
                 (filesSelected)="store.selectFiles($event)"
               />

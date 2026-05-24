@@ -3,13 +3,14 @@ import { patchState, signalStore, withComputed, withHooks, withMethods, withStat
 import {
   addEntities,
   addEntity,
+  removeEntities,
   removeEntity,
   setAllEntities,
   updateEntities,
   withEntities,
 } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, Subscription, catchError, filter, forkJoin, map, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, Subscription, catchError, filter, forkJoin, map, of, pipe, switchMap, tap } from 'rxjs';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
 import { CustomerChatEvent, CustomerChatEventType } from '../models/customer-chat.event';
 import {
@@ -95,7 +96,14 @@ export const CustomerChatStore = signalStore(
     collection: 'upload',
   }),
   withComputed(
-    ({ session, messageEntities, sharedItemEntities, uploadEntities, activeSharedTab }) => ({
+    ({
+      session,
+      messageEntities,
+      sharedItemEntities,
+      uploadEntities,
+      activeConversationId,
+      activeSharedTab,
+    }) => ({
       messages: computed(() => messageEntities()),
       sharedItems: computed(() => sharedItemEntities()),
       sharedMediaItems: computed(() =>
@@ -103,7 +111,19 @@ export const CustomerChatStore = signalStore(
       ),
       sharedFileItems: computed(() => sharedItemEntities().filter((item) => item.type === 'FILE')),
       sharedLinkItems: computed(() => sharedItemEntities().filter((item) => item.type === 'LINK')),
-      uploads: computed(() => uploadEntities()),
+      uploads: computed(() => {
+        const conversationId = activeConversationId();
+        return conversationId
+          ? uploadEntities().filter((upload) => upload.conversationId === conversationId)
+          : [];
+      }),
+      hasPendingAttachments: computed(() => {
+        const conversationId = activeConversationId();
+        return !!conversationId && uploadEntities().some((upload) =>
+          upload.conversationId === conversationId &&
+          (upload.status === 'PENDING' || upload.status === 'FAILED')
+        );
+      }),
       customer: computed(() => session()?.customer ?? null),
       assistant: computed(() => session()?.assistant ?? null),
       staff: computed(() => session()?.staff ?? null),
@@ -138,7 +158,10 @@ export const CustomerChatStore = signalStore(
         };
       }),
       hasActiveUploads: computed(() =>
-        uploadEntities().some((upload) => upload.status === 'UPLOADING')
+        uploadEntities().some(
+          (upload) =>
+            upload.conversationId === activeConversationId() && upload.status === 'UPLOADING'
+        )
       ),
     })
   ),
@@ -228,7 +251,9 @@ export const CustomerChatStore = signalStore(
               store,
               updateEntities(
                 {
-                  predicate: (upload) => upload.status === 'UPLOADING',
+                  predicate: (upload) =>
+                    upload.conversationId === event.conversationId &&
+                    upload.status === 'UPLOADING',
                   changes: { status: 'FAILED', progress: 100 },
                 },
                 UPLOAD_ENTITY_CONFIG
@@ -295,6 +320,28 @@ export const CustomerChatStore = signalStore(
       };
 
       const SHARED_ITEM_CONFIG = SHARED_ITEM_ENTITY_CONFIG;
+
+      const mapMessageType = (
+        attachmentType: ChatAttachmentType | null,
+        attachmentCount: number
+      ): ChatMessageType => {
+        if (attachmentCount === 0) {
+          return ChatMessageType.TEXT;
+        }
+
+        if (attachmentCount > 1) {
+          return ChatMessageType.MEDIA;
+        }
+
+        switch (attachmentType) {
+          case ChatAttachmentType.IMAGE:
+            return ChatMessageType.IMAGE;
+          case ChatAttachmentType.VIDEO:
+            return ChatMessageType.VIDEO;
+          default:
+            return ChatMessageType.FILE;
+        }
+      };
 
       const switchConversation = rxMethod<string>(
         pipe(
@@ -496,17 +543,99 @@ export const CustomerChatStore = signalStore(
       const sendMessage = rxMethod<string>(
         pipe(
           map((body) => body.trim()),
-          filter(Boolean),
-          tap((body) => {
+          switchMap((body) => {
             const conversationId = store.activeConversationId();
-            if (conversationId) {
+            if (!conversationId) {
+              return EMPTY;
+            }
+
+            const pendingUploads = store.uploadEntities().filter(
+              (upload) =>
+                upload.conversationId === conversationId &&
+                (upload.status === 'PENDING' || upload.status === 'FAILED')
+            );
+
+            if (!body && pendingUploads.length === 0) {
+              return EMPTY;
+            }
+
+            if (pendingUploads.length === 0) {
               const messageRequest = {
                 messageType: ChatMessageType.TEXT,
                 content: body,
                 attachments: [],
               };
               websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
+              return of(null);
             }
+
+            const uploadIds = pendingUploads.map((upload) => upload.id);
+            patchState(
+              store,
+              updateEntities(
+                {
+                  predicate: (upload) => uploadIds.includes(upload.id),
+                  changes: { progress: 35, status: 'UPLOADING' },
+                },
+                UPLOAD_ENTITY_CONFIG
+              ),
+              { sending: true, errorMessage: null }
+            );
+
+            const uploadRequests = pendingUploads.map((upload) =>
+              customerChatService.uploadFile(upload.file).pipe(
+                map((result) => ({
+                  uploadId: upload.id,
+                  attachment: {
+                    fileKey: result.fileKey,
+                    fileName: result.fileName,
+                    contentType: result.contentType,
+                    fileSize: result.fileSize,
+                    attachmentType: result.attachmentType,
+                  },
+                }))
+              )
+            );
+
+            return forkJoin(uploadRequests).pipe(
+              tap({
+                next: (results) => {
+                  const attachments = results.map((result) => result.attachment);
+                  const firstAttachmentType = attachments[0]?.attachmentType ?? null;
+                  const content =
+                    body || attachments.map((attachment) => attachment.fileName).join(', ');
+                  const messageRequest = {
+                    messageType: mapMessageType(firstAttachmentType, attachments.length),
+                    content,
+                    attachments,
+                  };
+
+                  websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
+                  patchState(
+                    store,
+                    removeEntities(uploadIds, UPLOAD_ENTITY_CONFIG),
+                    { sending: false, errorMessage: null }
+                  );
+                },
+                error: () => {
+                  patchState(
+                    store,
+                    updateEntities(
+                      {
+                        predicate: (upload) => uploadIds.includes(upload.id),
+                        changes: { status: 'FAILED', progress: 100 },
+                      },
+                      UPLOAD_ENTITY_CONFIG
+                    ),
+                    {
+                      sending: false,
+                      errorMessage: 'KhÃ´ng thá»ƒ táº£i tá»‡p lÃªn. Vui lÃ²ng thá»­ láº¡i.',
+                    }
+                  );
+                },
+              }),
+              catchError(() => EMPTY)
+            );
           })
         )
       );
@@ -515,73 +644,22 @@ export const CustomerChatStore = signalStore(
         pipe(
           filter((files) => files.length > 0),
           tap((files) => {
+            const conversationId = store.activeConversationId();
+            if (!conversationId) {
+              return;
+            }
+
             const uploads: CustomerChatUpload[] = files.map((file) => ({
-              id: `upload-${Date.now()}-${file.name}`,
+              id: `upload-${conversationId}-${Date.now()}-${file.name}`,
+              conversationId,
+              file,
               fileName: file.name,
               sizeLabel: formatBytes(file.size),
-              progress: 10,
-              status: 'UPLOADING',
+              progress: 0,
+              status: 'PENDING',
             }));
 
             patchState(store, addEntities(uploads, UPLOAD_ENTITY_CONFIG));
-          }),
-          switchMap((files) => {
-            const uploadObservables = files.map((file) =>
-              customerChatService.uploadFile(file).pipe(
-                tap((result) => {
-                  patchState(
-                    store,
-                    updateEntities(
-                      {
-                        predicate: (upload) =>
-                          upload.fileName === file.name && upload.status === 'UPLOADING',
-                        changes: { progress: 100, status: 'COMPLETE' },
-                      },
-                      UPLOAD_ENTITY_CONFIG
-                    )
-                  );
-
-                  const conversationId = store.activeConversationId();
-                  if (conversationId) {
-                    const attachmentRequest = {
-                      fileKey: result.fileKey,
-                      fileName: result.fileName,
-                      contentType: result.contentType,
-                      fileSize: result.fileSize,
-                      attachmentType: result.attachmentType,
-                    };
-
-                    const messageRequest = {
-                      messageType:
-                        result.attachmentType === ChatAttachmentType.IMAGE
-                          ? ChatMessageType.IMAGE
-                          : result.attachmentType === ChatAttachmentType.VIDEO
-                            ? ChatMessageType.VIDEO
-                            : ChatMessageType.FILE,
-                      content: result.fileName,
-                      attachments: [attachmentRequest],
-                    };
-
-                    websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
-                  }
-                }),
-                catchError(() => {
-                  patchState(
-                    store,
-                    updateEntities(
-                      {
-                        predicate: (upload) =>
-                          upload.fileName === file.name && upload.status === 'UPLOADING',
-                        changes: { status: 'FAILED', progress: 100 },
-                      },
-                      UPLOAD_ENTITY_CONFIG
-                    )
-                  );
-                  return EMPTY;
-                })
-              )
-            );
-            return forkJoin(uploadObservables).pipe(catchError(() => EMPTY));
           })
         )
       );

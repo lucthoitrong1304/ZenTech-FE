@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { LucideBot } from '@lucide/angular';
+import { LucideBot, LucideFileText, LucideImage } from '@lucide/angular';
 import {
   OwnerChatConversation,
   OwnerChatMessage,
@@ -9,7 +9,7 @@ import {
 @Component({
   selector: 'app-message-timeline',
   standalone: true,
-  imports: [CommonModule, LucideBot],
+  imports: [CommonModule, LucideBot, LucideFileText, LucideImage],
   templateUrl: './message-timeline.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

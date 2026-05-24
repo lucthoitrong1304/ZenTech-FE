@@ -42,7 +42,7 @@ export type CustomerChatEvent =
       sharedItems: CustomerChatSharedItem[];
       activeSharedTab: CustomerChatSharedTab;
     }
-  | { type: CustomerChatEventType.UploadsFailed }
+  | { type: CustomerChatEventType.UploadsFailed; conversationId: string }
   | { type: CustomerChatEventType.PopupOpened }
   | { type: CustomerChatEventType.PopupClosed }
   | { type: CustomerChatEventType.PopupToggled; popupOpen: boolean }

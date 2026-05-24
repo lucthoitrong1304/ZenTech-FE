@@ -31,6 +31,7 @@
         />
 
         <app-customer-chat-composer
+          [hasPendingAttachments]="store.hasPendingAttachments()"
           (messageSubmitted)="store.sendMessage($event)"
           (filesSelected)="store.selectFiles($event)"
         />

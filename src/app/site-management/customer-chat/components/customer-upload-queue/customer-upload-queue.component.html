@@ -5,6 +5,8 @@
         <div class="flex min-w-0 items-center gap-3">
           <span
             class="grid h-9 w-9 shrink-0 place-items-center rounded-[7px]"
+            [class.bg-white]="upload.status === 'PENDING'"
+            [class.text-[#4f4632]]="upload.status === 'PENDING'"
             [class.bg-[#101010]]="upload.status === 'UPLOADING'"
             [class.text-[#ffc700]]="upload.status === 'UPLOADING'"
             [class.bg-emerald-100]="upload.status === 'COMPLETE'"
@@ -25,7 +27,9 @@
             </strong>
             <small class="block truncate text-[11px] font-semibold text-[#4f4632]">
               {{ upload.sizeLabel }} ·
-              @if (upload.status === 'UPLOADING') {
+              @if (upload.status === 'PENDING') {
+                Cho gui
+              } @else if (upload.status === 'UPLOADING') {
                 Đang tải lên
               } @else if (upload.status === 'COMPLETE') {
                 Đã tải lên
@@ -48,6 +52,7 @@
         <div class="h-1.5 overflow-hidden rounded-full bg-[#d2c5ab]/35">
           <span
             class="block h-full rounded-full transition-all duration-300"
+            [class.bg-[#d2c5ab]]="upload.status === 'PENDING'"
             [class.bg-[#ffc700]]="upload.status === 'UPLOADING'"
             [class.bg-emerald-500]="upload.status === 'COMPLETE'"
             [class.bg-red-500]="upload.status === 'FAILED'"
