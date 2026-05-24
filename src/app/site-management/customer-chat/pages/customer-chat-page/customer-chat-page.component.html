@@ -7,8 +7,8 @@
     (logout)="onLogout()"
   />
 
-  <main class="flex min-h-[calc(100vh-4rem)] flex-col px-0 py-0 lg:px-4 lg:py-4">
-    <section class="customer-chat-full flex min-h-[44rem] flex-1 overflow-hidden bg-white shadow-[0_28px_80px_-56px_rgba(16,16,16,0.65)] lg:rounded-[8px] lg:ring-1 lg:ring-[#d2c5ab]/35">
+  <main class="customer-chat-main flex min-h-0 flex-1 flex-col overflow-hidden px-0 py-0 lg:px-4 lg:py-4">
+    <section class="customer-chat-full flex min-h-0 flex-1 overflow-hidden bg-white shadow-[0_28px_80px_-56px_rgba(16,16,16,0.65)] lg:rounded-[8px] lg:ring-1 lg:ring-[#d2c5ab]/35">
       <div class="flex min-w-0 flex-1 flex-col">
         <app-customer-chat-header
           [staff]="store.staff()"
@@ -78,6 +78,7 @@
                 [messages]="store.messages()"
                 [customer]="store.customer()"
                 [staff]="store.staff()"
+                (previewRequested)="openPreview($event)"
               />
 
               <app-customer-upload-queue
@@ -105,6 +106,7 @@
                 [linkCount]="store.sharedCounts().links"
                 (tabSelected)="store.setSharedContentTab($event)"
                 (closed)="store.requestConversationDetails()"
+                (previewRequested)="openPreview($event)"
               />
             } @else {
               <aside class="customer-chat-details chat-scrollbar hidden w-80 shrink-0 overflow-y-auto bg-white lg:flex lg:flex-col">
@@ -187,12 +189,11 @@
                     </div>
                     <div class="grid grid-cols-3 gap-2">
                       @for (item of store.sharedMediaItems().slice(0, 6); track item.id) {
-                        <a
-                          [href]="item.url"
-                          target="_blank"
-                          rel="noreferrer"
-                          class="group relative aspect-square overflow-hidden rounded-[8px] bg-[#f0edec] text-[#4f4632]"
+                        <button
+                          type="button"
+                          class="group relative aspect-square w-full overflow-hidden rounded-[8px] border-0 bg-[#f0edec] p-0 text-[#4f4632]"
                           [title]="item.title"
+                          (click)="openPreview(item)"
                         >
                           @if (item.thumbnailUrl) {
                             <img
@@ -210,7 +211,7 @@
                               <svg lucideVideo class="h-6 w-6" [attr.stroke-width]="2"></svg>
                             </span>
                           }
-                        </a>
+                        </button>
                       } @empty {
                         <span class="col-span-3 rounded-[8px] bg-[#f6f3f2] p-4 text-center text-xs font-bold text-[#4f4632]">
                           No media yet
@@ -234,7 +235,7 @@
                       @for (item of store.sharedFileItems().slice(0, 3); track item.id) {
                         <a
                           [href]="item.url"
-                          target="_blank"
+                          [attr.download]="item.title"
                           rel="noreferrer"
                           class="flex min-w-0 items-center gap-3 rounded-[8px] p-2 transition hover:bg-[#f6f3f2]"
                         >
@@ -313,4 +314,6 @@
       </div>
     </section>
   </main>
+
+  <app-media-preview-dialog [item]="previewItem()" (closed)="closePreview()" />
 </div>

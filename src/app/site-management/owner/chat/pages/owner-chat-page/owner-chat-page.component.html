@@ -38,6 +38,7 @@
         <app-message-timeline
           [conversation]="conversation"
           [messages]="store.selectedMessages()"
+          (previewRequested)="openPreview($event)"
         />
 
         <app-chat-composer
@@ -60,5 +61,8 @@
     [mediaItems]="store.selectedMedia()"
     (closed)="store.closeMediaDrawer()"
     (tabSelected)="store.setMediaTab($event)"
+    (previewRequested)="openPreview($event)"
   />
+
+  <app-media-preview-dialog [item]="previewItem()" (closed)="closePreview()" />
 </section>

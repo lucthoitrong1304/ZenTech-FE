@@ -11,6 +11,7 @@ import {
   LucideSearch,
   LucideX,
 } from '@lucide/angular';
+import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import {
   CustomerChatSharedItem,
   CustomerChatSharedTab,
@@ -53,6 +54,7 @@ export class CustomerSharedContentSidebarComponent {
   readonly linkCount = input(0);
   readonly tabSelected = output<CustomerChatSharedTab>();
   readonly closed = output<void>();
+  readonly previewRequested = output<MediaPreviewItem>();
 
   protected tabs(): SharedTabOption[] {
     const compactTabs: SharedTabOption[] = [
@@ -70,6 +72,18 @@ export class CustomerSharedContentSidebarComponent {
 
   protected isMedia(item: CustomerChatSharedItem): boolean {
     return item.type === 'IMAGE' || item.type === 'VIDEO';
+  }
+
+  protected requestPreview(item: CustomerChatSharedItem): void {
+    if (!this.isMedia(item)) {
+      return;
+    }
+
+    this.previewRequested.emit({
+      type: item.type === 'VIDEO' ? 'VIDEO' : 'IMAGE',
+      title: item.title,
+      url: item.url,
+    });
   }
 
   protected mediaItems(): CustomerChatSharedItem[] {

@@ -46,12 +46,11 @@
             @if (mediaItems().length > 0) {
               <div class="grid grid-cols-3 gap-3">
                 @for (item of mediaItems(); track item.id) {
-                  <a
-                    [href]="item.url"
-                    target="_blank"
-                    rel="noreferrer"
-                    class="group relative aspect-square overflow-hidden rounded-[8px] bg-[#f0edec] text-[#4f4632] transition hover:bg-[#ebe7e7]"
+                  <button
+                    type="button"
+                    class="group relative aspect-square w-full overflow-hidden rounded-[8px] border-0 bg-[#f0edec] p-0 text-[#4f4632] transition hover:bg-[#ebe7e7]"
                     [title]="item.title"
+                    (click)="requestPreview(item)"
                   >
                     @if (item.thumbnailUrl) {
                       <img
@@ -70,7 +69,7 @@
                         <svg lucidePlayCircle class="h-9 w-9" [attr.stroke-width]="1.8"></svg>
                       </span>
                     }
-                  </a>
+                  </button>
                 }
               </div>
             } @else {
@@ -88,7 +87,7 @@
               @for (item of fileItems(); track item.id) {
                 <a
                   [href]="item.url"
-                  target="_blank"
+                  [attr.download]="item.title"
                   rel="noreferrer"
                   class="flex min-w-0 items-center gap-4 rounded-[8px] bg-[#fcf9f8] p-3 shadow-[0_18px_40px_-34px_rgba(16,16,16,0.75)] transition hover:bg-[#f6f3f2]"
                 >
@@ -185,11 +184,10 @@
         @if (items().length > 0) {
           @for (item of items(); track item.id) {
             @if (isMedia(item)) {
-              <a
-                [href]="item.url"
-                target="_blank"
-                rel="noreferrer"
-                class="group relative aspect-[4/3] overflow-hidden rounded-[8px] bg-[#ebe7e7]"
+              <button
+                type="button"
+                class="group relative aspect-[4/3] w-full overflow-hidden rounded-[8px] border-0 bg-[#ebe7e7] p-0"
+                (click)="requestPreview(item)"
               >
                 @if (item.thumbnailUrl) {
                   <img
@@ -215,11 +213,11 @@
                     <svg lucidePlayCircle class="h-9 w-9" [attr.stroke-width]="1.8"></svg>
                   </span>
                 }
-              </a>
+              </button>
             } @else if (item.type === 'FILE') {
               <a
                 [href]="item.url"
-                target="_blank"
+                [attr.download]="item.title"
                 rel="noreferrer"
                 class="flex min-w-0 items-center gap-3 rounded-[8px] bg-[#f6f3f2] p-3 transition hover:bg-[#ebe7e7]"
               >

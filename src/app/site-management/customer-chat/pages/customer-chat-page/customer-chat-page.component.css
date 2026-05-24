@@ -5,12 +5,26 @@
 }
 
 .customer-chat-page {
+  display: flex;
+  height: 100dvh;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
   overflow-x: clip;
 }
 
+.customer-chat-page app-site-header {
+  flex: 0 0 auto;
+}
+
+.customer-chat-main {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .customer-chat-full {
-  height: calc(100vh - 6rem);
-  min-height: 44rem;
+  height: 100%;
+  min-height: 0;
 }
 
 .customer-chat-details {
@@ -52,8 +66,8 @@
 
 @media (max-width: 1024px) {
   .customer-chat-full {
-    height: auto;
-    min-height: calc(100vh - 6rem);
+    height: 100%;
+    min-height: 0;
   }
 }
 

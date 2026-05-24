@@ -1,4 +1,4 @@
-<section class="chat-scrollbar relative flex-1 overflow-y-auto bg-[#fcf9f8] p-6">
+<section class="chat-scrollbar relative min-h-0 flex-1 overscroll-contain overflow-y-auto bg-[#fcf9f8] p-6">
   <div
     class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(246,243,242,0.92),_rgba(252,249,248,0.72),_rgba(252,249,248,1))]"
   ></div>
@@ -72,20 +72,37 @@
             @if (message.attachments.length > 0) {
               <div class="grid gap-2">
                 @for (attachment of message.attachments; track attachment.id) {
-                  <a
-                    [href]="attachment.url"
-                    target="_blank"
-                    rel="noreferrer"
-                    class="flex min-w-0 items-center gap-2 rounded-[6px] bg-white/70 p-2 text-[#1c1b1b] transition hover:bg-white"
-                    [title]="attachment.title"
-                  >
-                    @if (attachment.type === 'IMAGE' && attachment.thumbnailUrl) {
-                      <img
-                        [src]="attachment.thumbnailUrl"
-                        [alt]="attachment.title"
-                        class="h-12 w-12 rounded-[5px] object-cover"
-                      />
-                    } @else {
+                  @if (isPreviewable(attachment)) {
+                    <button
+                      type="button"
+                      class="flex min-w-0 items-center gap-2 rounded-[6px] border-0 bg-white/70 p-2 text-left text-[#1c1b1b] transition hover:bg-white"
+                      [title]="attachment.title"
+                      (click)="requestPreview(attachment)"
+                    >
+                      @if (attachment.type === 'IMAGE' && attachment.thumbnailUrl) {
+                        <img
+                          [src]="attachment.thumbnailUrl"
+                          [alt]="attachment.title"
+                          class="h-12 w-12 rounded-[5px] object-cover"
+                        />
+                      } @else {
+                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] bg-[#f6f3f2] text-[#4f4632]">
+                          <svg lucideImage class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                        </span>
+                      }
+                      <span class="min-w-0 truncate text-xs font-black">
+                        {{ attachment.title }}
+                      </span>
+                    </button>
+                  } @else {
+                    <a
+                      [href]="attachment.url"
+                      [attr.download]="attachment.type === 'FILE' ? attachment.title : null"
+                      [attr.target]="attachment.type === 'LINK' ? '_blank' : null"
+                      rel="noreferrer"
+                      class="flex min-w-0 items-center gap-2 rounded-[6px] bg-white/70 p-2 text-[#1c1b1b] transition hover:bg-white"
+                      [title]="attachment.title"
+                    >
                       <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] bg-[#f6f3f2] text-[#4f4632]">
                         @if (attachment.type === 'FILE') {
                           <svg lucideFileText class="h-5 w-5" [attr.stroke-width]="2"></svg>
@@ -93,11 +110,11 @@
                           <svg lucideImage class="h-5 w-5" [attr.stroke-width]="2"></svg>
                         }
                       </span>
-                    }
-                    <span class="min-w-0 truncate text-xs font-black">
-                      {{ attachment.title }}
-                    </span>
-                  </a>
+                      <span class="min-w-0 truncate text-xs font-black">
+                        {{ attachment.title }}
+                      </span>
+                    </a>
+                  }
                 }
               </div>
             }

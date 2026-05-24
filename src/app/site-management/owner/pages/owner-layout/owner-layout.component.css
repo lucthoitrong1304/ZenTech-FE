@@ -4,6 +4,12 @@
   color: #1c1b1b;
 }
 
+.owner-shell--chat-sidebar {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .owner-topbar {
   position: fixed;
   inset: 0 0 auto;
@@ -225,7 +231,11 @@
 }
 
 .owner-shell--chat-sidebar .owner-main {
+  box-sizing: border-box;
+  height: 100vh;
+  min-height: 0;
   margin-left: 0;
+  overflow: hidden;
   padding: 72px 0 0;
 }
 

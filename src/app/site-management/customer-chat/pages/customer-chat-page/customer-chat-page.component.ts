@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, effect, inject, untracked } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   LucideExternalLink,
@@ -13,6 +13,8 @@ import {
   LucideSearch,
   LucideVideo,
 } from '@lucide/angular';
+import { MediaPreviewDialogComponent } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
+import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
@@ -22,6 +24,7 @@ import { CustomerChatHeaderComponent } from '../../components/customer-chat-head
 import { CustomerMessageTimelineComponent } from '../../components/customer-message-timeline/customer-message-timeline.component';
 import { CustomerSharedContentSidebarComponent } from '../../components/customer-shared-content-sidebar/customer-shared-content-sidebar.component';
 import { CustomerUploadQueueComponent } from '../../components/customer-upload-queue/customer-upload-queue.component';
+import { CustomerChatSharedItem } from '../../data-access/models/customer-chat.models';
 import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
 
 @Component({
@@ -35,6 +38,7 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
     CustomerMessageTimelineComponent,
     CustomerSharedContentSidebarComponent,
     CustomerUploadQueueComponent,
+    MediaPreviewDialogComponent,
     LucideExternalLink,
     LucideFileText,
     LucideImage,
@@ -58,6 +62,7 @@ export class CustomerChatPageComponent implements OnInit {
 
   protected readonly navItems = this.categoryNavigationStore.navItems;
   protected readonly currentUser = this.authSessionStore.currentUser;
+  protected readonly previewItem = signal<MediaPreviewItem | null>(null);
 
   constructor() {
     effect(() => {
@@ -95,5 +100,21 @@ export class CustomerChatPageComponent implements OnInit {
 
   protected onLogout(): void {
     this.authSessionStore.logout();
+  }
+
+  protected openPreview(item: MediaPreviewItem | CustomerChatSharedItem): void {
+    if (item.type !== 'IMAGE' && item.type !== 'VIDEO') {
+      return;
+    }
+
+    this.previewItem.set({
+      type: item.type === 'VIDEO' ? 'VIDEO' : 'IMAGE',
+      title: item.title,
+      url: item.url,
+    });
+  }
+
+  protected closePreview(): void {
+    this.previewItem.set(null);
   }
 }
