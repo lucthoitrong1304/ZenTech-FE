@@ -1,0 +1,122 @@
+.orders-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(160px, auto) minmax(170px, auto) minmax(150px, auto) auto auto;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(210, 197, 171, 0.16);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 16px 42px rgba(28, 27, 27, 0.04);
+}
+
+.orders-toolbar__search,
+.orders-toolbar__date {
+  position: relative;
+  display: block;
+}
+
+.orders-toolbar__search svg,
+.orders-toolbar__date svg {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  width: 17px;
+  height: 17px;
+  transform: translateY(-50%);
+  color: rgba(79, 70, 50, 0.52);
+  pointer-events: none;
+}
+
+.orders-toolbar input,
+.orders-toolbar select {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: #f6f3f2;
+  color: #1c1b1b;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  outline: 0;
+}
+
+.orders-toolbar input {
+  padding: 0 14px 0 42px;
+}
+
+.orders-toolbar select {
+  cursor: pointer;
+  padding: 0 14px;
+}
+
+.orders-toolbar__date select {
+  padding-left: 42px;
+}
+
+.orders-toolbar input:focus,
+.orders-toolbar select:focus {
+  box-shadow: 0 0 0 2px rgba(251, 188, 4, 0.34);
+}
+
+.orders-toolbar__filter,
+.orders-toolbar__reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 15px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.orders-toolbar__filter {
+  background: #151515;
+  color: #fcf9f8;
+}
+
+.orders-toolbar__reset {
+  background: #f0edec;
+  color: #4f4632;
+}
+
+.orders-toolbar__filter:disabled,
+.orders-toolbar__reset:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.orders-toolbar__filter svg,
+.orders-toolbar__reset svg {
+  width: 17px;
+  height: 17px;
+}
+
+.orders-toolbar__filter strong {
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 999px;
+  background: #fbbc04;
+  color: #1c1b1b;
+  font-size: 10px;
+}
+
+@media (max-width: 1240px) {
+  .orders-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .orders-toolbar {
+    grid-template-columns: 1fr;
+  }
+}

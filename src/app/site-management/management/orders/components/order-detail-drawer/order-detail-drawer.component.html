@@ -1,0 +1,106 @@
+@if (visible()) {
+  <div class="order-drawer-backdrop" role="presentation" (click)="close.emit()">
+    <aside class="order-drawer" aria-label="Chi tiết đơn hàng" (click)="$event.stopPropagation()">
+      <header class="order-drawer__header">
+        <div>
+          <p>Order Snapshot</p>
+          <h2>Chi tiết đơn hàng</h2>
+        </div>
+        <button type="button" class="order-drawer__icon" aria-label="Đóng chi tiết đơn hàng" (click)="close.emit()">
+          <svg lucideX [attr.stroke-width]="2"></svg>
+        </button>
+      </header>
+
+      @if (order(); as selectedOrder) {
+        <div class="order-drawer__body">
+          <section class="order-drawer__section">
+            <h3>Thông tin khách hàng</h3>
+            <dl class="order-drawer__fields">
+              <div>
+                <dt>Tên khách hàng</dt>
+                <dd>{{ selectedOrder.customer.fullName }}</dd>
+              </div>
+              <div>
+                <dt>Địa chỉ giao hàng</dt>
+                <dd>{{ selectedOrder.customer.shippingAddress }}</dd>
+              </div>
+              <div class="order-drawer__split">
+                <span>
+                  <dt>Phương thức</dt>
+                  <dd>
+                    <i aria-hidden="true"></i>
+                    {{ selectedOrder.paymentMethod }}
+                  </dd>
+                </span>
+                <span>
+                  <dt>Ngày đặt</dt>
+                  <dd>{{ selectedOrder.createdAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+                </span>
+              </div>
+            </dl>
+          </section>
+
+          <section class="order-drawer__items">
+            <h3>Sản phẩm đã đặt</h3>
+            @for (item of selectedOrder.items; track item.orderItemId) {
+              <article class="order-item">
+                <div class="order-item__media">
+                  @if (item.productImage) {
+                    <img [src]="item.productImage" [alt]="item.productName" />
+                  } @else {
+                    <span>ZT</span>
+                  }
+                  <strong>{{ item.quantity }}</strong>
+                </div>
+                <div class="order-item__copy">
+                  <h4>{{ item.productName }}</h4>
+                  <p>{{ item.variantName || 'Phiên bản tiêu chuẩn' }}</p>
+                </div>
+                <b>{{ item.unitPrice * item.quantity | currency: 'VND' : 'symbol' : '1.0-0' }}</b>
+              </article>
+            }
+          </section>
+
+          <section class="order-summary">
+            <div>
+              <span>Tạm tính</span>
+              <strong>{{ selectedOrder.subtotal | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Phí vận chuyển</span>
+              <strong>{{ selectedOrder.shippingFee | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+            @if (selectedOrder.discountAmount > 0) {
+              <div>
+                <span>Giảm giá</span>
+                <strong>-{{ selectedOrder.discountAmount | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+              </div>
+            }
+            <div class="order-summary__total">
+              <span>
+                <small>Tổng thanh toán</small>
+                <strong>{{ selectedOrder.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+              </span>
+              <em>{{ getPaymentStatusLabel(selectedOrder.paymentStatus) }}</em>
+            </div>
+          </section>
+        </div>
+
+        <footer class="order-drawer__footer">
+          <button
+            type="button"
+            class="order-drawer__primary"
+            [disabled]="selectedOrder.orderStatus === 'DELIVERED' || selectedOrder.orderStatus === 'CANCELLED'"
+            (click)="markDelivered.emit(selectedOrder.orderId)"
+          >
+            Đánh dấu đã giao
+          </button>
+          <button type="button" class="order-drawer__secondary" (click)="printInvoice.emit(selectedOrder.orderId)">
+            <svg lucidePrinter [attr.stroke-width]="2"></svg>
+            <span>In hóa đơn</span>
+          </button>
+        </footer>
+      }
+    </aside>
+  </div>
+}
