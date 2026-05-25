@@ -142,6 +142,8 @@ export class LoginComponent implements AfterViewInit {
   private getPostLoginRoute(): string {
     const roles = this.authSessionStore.currentUser()?.roles || [];
 
-    return hasRole(roles, Role.OWNER) ? '/owner/dashboard' : '/';
+    return (hasRole(roles, Role.OWNER) || hasRole(roles, Role.MANAGER) || hasRole(roles, Role.EMPLOYEE)) 
+      ? '/management/dashboard' 
+      : '/';
   }
 }

@@ -51,8 +51,8 @@ export const routes: Routes = [
     ]
   },
   {
-    path: 'owner',
-    loadChildren: () => import('./site-management/owner/owner.routes').then(m => m.ownerRoutes)
+    path: 'management',
+    loadChildren: () => import('./site-management/management/management.routes').then(m => m.managementRoutes)
   },
   { // Keep global error route untouched
     path: 'error',
