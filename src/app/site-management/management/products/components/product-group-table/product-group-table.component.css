@@ -1,0 +1,232 @@
+.product-group-panel {
+  overflow: hidden;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 8px 40px rgba(28, 27, 27, 0.04);
+}
+
+.product-group-table-wrap {
+  overflow-x: auto;
+}
+
+.product-group-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.product-group-table th {
+  background: #f6f3f2;
+  color: rgba(79, 70, 50, 0.72);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  padding: 18px 22px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.product-group-table td {
+  border-top: 1px solid rgba(229, 226, 225, 0.72);
+  color: rgba(79, 70, 50, 0.88);
+  font-size: 13px;
+  padding: 16px 22px;
+  vertical-align: middle;
+}
+
+.product-group-table tr:hover td {
+  background: rgba(246, 243, 242, 0.36);
+}
+
+.product-group-table__index {
+  width: 76px;
+  color: rgba(79, 70, 50, 0.62);
+  font-weight: 800;
+}
+
+.product-group-table__right {
+  text-align: right;
+}
+
+.product-group-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.product-group-name strong {
+  color: #1c1b1b;
+  font-size: 15px;
+}
+
+.product-group-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 8px;
+  background: #f0edec;
+  color: #765b00;
+}
+
+.product-group-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.product-group-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 6px 10px;
+}
+
+.product-group-status span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #22c55e;
+}
+
+.product-group-status--inactive {
+  background: #e5e2e1;
+  color: #4f4632;
+}
+
+.product-group-status--inactive span {
+  background: #81765f;
+}
+
+.product-group-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.product-group-row-action {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.product-group-row-action svg {
+  width: 16px;
+  height: 16px;
+}
+
+.product-group-row-action--edit {
+  color: #4b41e1;
+}
+
+.product-group-row-action--edit:hover {
+  background: rgba(75, 65, 225, 0.1);
+}
+
+.product-group-row-action--delete {
+  color: #be0037;
+}
+
+.product-group-row-action--delete:hover {
+  background: rgba(255, 190, 192, 0.3);
+}
+
+.product-group-skeleton {
+  height: 54px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f6f3f2, #ebe7e7, #f6f3f2);
+  background-size: 200% 100%;
+  animation: product-group-shimmer 1.2s infinite linear;
+}
+
+.product-group-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.product-group-empty svg {
+  width: 42px;
+  height: 42px;
+  color: rgba(79, 70, 50, 0.42);
+}
+
+.product-group-empty h3,
+.product-group-empty p {
+  margin: 0;
+}
+
+.product-group-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid rgba(229, 226, 225, 0.72);
+  background: rgba(246, 243, 242, 0.34);
+  padding: 16px 22px;
+}
+
+.product-group-pagination p {
+  margin: 0;
+  color: rgba(79, 70, 50, 0.72);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.product-group-page-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.product-group-page-button {
+  display: grid;
+  min-width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #4f4632;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.product-group-page-button--active {
+  background: #ffc700;
+  color: #251a00;
+}
+
+.product-group-page-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.product-group-page-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+@keyframes product-group-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .product-group-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

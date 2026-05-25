@@ -82,8 +82,23 @@ export const managementRoutes: Routes = [
           primaryAction: 'Thêm sản phẩm',
         },
         loadComponent: () =>
-          import('./pages/management-placeholder/management-placeholder.component').then(
-            m => m.ManagementPlaceholderComponent
+          import('./products/pages/management-products-page/management-products-page.component').then(
+            m => m.ManagementProductsPageComponent
+          ),
+      },
+      {
+        path: 'product-groups',
+        data: {
+          eyebrow: 'Điều hành kinh doanh',
+          title: 'Nhóm sản phẩm',
+          description: 'Phân loại và quản lý nhóm sản phẩm đang hiển thị trong cửa hàng.',
+          primaryAction: 'Thêm nhóm mới',
+        },
+        loadComponent: () =>
+          import(
+            './products/pages/management-product-groups-page/management-product-groups-page.component'
+          ).then(
+            m => m.ManagementProductGroupsPageComponent
           ),
       },
       {

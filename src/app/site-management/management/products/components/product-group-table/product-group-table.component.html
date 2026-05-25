@@ -1,0 +1,134 @@
+<article class="product-group-panel">
+  <div class="product-group-table-wrap">
+    <table class="product-group-table">
+      <thead>
+        <tr>
+          <th class="product-group-table__index">STT</th>
+          <th>Ten nhom</th>
+          <th>So luong san pham</th>
+          <th>Trang thai</th>
+          <th class="product-group-table__right">Thao tac</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of skeletonRows; track $index) {
+            <tr>
+              <td colspan="5">
+                <div class="product-group-skeleton"></div>
+              </td>
+            </tr>
+          }
+        } @else {
+          @for (group of groups(); track group.groupId; let index = $index) {
+            <tr>
+              <td class="product-group-table__index">{{ pageStart() + index | number: '2.0-0' }}</td>
+              <td>
+                <span class="product-group-name">
+                  <span class="product-group-icon">
+                    @switch (group.iconName) {
+                      @case ('keyboard') {
+                        <svg lucideKeyboard [attr.stroke-width]="2"></svg>
+                      }
+                      @case ('mouse') {
+                        <svg lucideMouse [attr.stroke-width]="2"></svg>
+                      }
+                      @case ('headphones') {
+                        <svg lucideHeadphones [attr.stroke-width]="2"></svg>
+                      }
+                      @case ('monitor') {
+                        <svg lucideMonitor [attr.stroke-width]="2"></svg>
+                      }
+                      @default {
+                        <svg lucidePackage [attr.stroke-width]="2"></svg>
+                      }
+                    }
+                  </span>
+                  <strong>{{ group.name }}</strong>
+                </span>
+              </td>
+              <td>{{ group.productCount }} san pham</td>
+              <td>
+                <span class="product-group-status" [class.product-group-status--inactive]="!group.active">
+                  <span></span>
+                  {{ group.active ? 'Dang hoat dong' : 'Ngung hoat dong' }}
+                </span>
+              </td>
+              <td>
+                <div class="product-group-actions">
+                  <button
+                    type="button"
+                    class="product-group-row-action product-group-row-action--edit"
+                    aria-label="Chinh sua nhom"
+                    (click)="editGroup.emit(group)"
+                  >
+                    <svg lucidePencil [attr.stroke-width]="2"></svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="product-group-row-action product-group-row-action--delete"
+                    aria-label="Xoa nhom"
+                    (click)="deleteGroup.emit(group)"
+                  >
+                    <svg lucideTrash2 [attr.stroke-width]="2"></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">
+                <div class="product-group-empty">
+                  <svg lucidePackage [attr.stroke-width]="1.8"></svg>
+                  <h3>Chua co nhom san pham phu hop</h3>
+                  <p>Thu doi bo loc hoac tao nhom moi.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="product-group-pagination">
+    <p>Hien thi {{ pageStart() }}-{{ pageEnd() }} tren {{ totalElements() }} nhom</p>
+
+    <div class="product-group-page-buttons">
+      <button
+        type="button"
+        class="product-group-page-button"
+        [disabled]="!canGoPrevious() || loading()"
+        (click)="pageChange.emit(page() - 1)"
+        aria-label="Trang truoc"
+      >
+        <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
+      </button>
+
+      @for (slot of pageSlots; track slot) {
+        @let pageNumber = getPageNumber(slot);
+        @if (pageNumber !== null) {
+          <button
+            type="button"
+            class="product-group-page-button"
+            [class.product-group-page-button--active]="pageNumber === page()"
+            [disabled]="loading()"
+            (click)="pageChange.emit(pageNumber)"
+          >
+            {{ pageNumber + 1 }}
+          </button>
+        }
+      }
+
+      <button
+        type="button"
+        class="product-group-page-button"
+        [disabled]="!canGoNext() || loading()"
+        (click)="pageChange.emit(page() + 1)"
+        aria-label="Trang sau"
+      >
+        <svg lucideChevronRight [attr.stroke-width]="2"></svg>
+      </button>
+    </div>
+  </footer>
+</article>

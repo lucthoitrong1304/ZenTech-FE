@@ -1,0 +1,120 @@
+<p-dialog
+  styleClass="product-group-dialog"
+  [visible]="visible()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: 'min(720px, 94vw)' }"
+  (onHide)="close.emit()"
+>
+  <ng-template pTemplate="header">
+    <div class="product-group-dialog__header">
+      <div>
+        <h2>{{ title() }}</h2>
+        <p>{{ description() }}</p>
+      </div>
+    </div>
+  </ng-template>
+
+  @if (draft(); as currentDraft) {
+    <div class="product-group-dialog__body">
+      <label class="product-group-field">
+        <span>Ten nhom</span>
+        <input
+          type="text"
+          [value]="currentDraft.name"
+          placeholder="Nhap ten nhom..."
+          [class.product-group-field__input--invalid]="errors().name"
+          (input)="onNameInput($event)"
+        />
+        @if (errors().name) {
+          <small>{{ errors().name }}</small>
+        }
+      </label>
+
+      <label class="product-group-switch">
+        <input type="checkbox" [checked]="currentDraft.active" (change)="onActiveChange($event)" />
+        <span></span>
+        <strong>{{ currentDraft.active ? 'Dang hoat dong' : 'Ngung hoat dong' }}</strong>
+      </label>
+
+      <section class="product-picker">
+        <header>
+          <span>Them san pham vao nhom</span>
+          <strong>{{ currentDraft.productIds.length }} da chon</strong>
+        </header>
+
+        <label class="product-picker__search">
+          <svg lucideSearch [attr.stroke-width]="2"></svg>
+          <input
+            type="search"
+            [value]="productSearch()"
+            placeholder="Tim kiem san pham..."
+            (input)="onProductSearchInput($event)"
+          />
+        </label>
+
+        <div class="product-picker__options">
+          @for (option of filteredProductOptions(); track option.productId) {
+            <button
+              type="button"
+              class="product-picker__option"
+              [class.product-picker__option--selected]="isProductSelected(option.productId)"
+              (click)="productToggle.emit(option.productId)"
+            >
+              <span class="product-picker__avatar">
+                <svg lucidePackage [attr.stroke-width]="2"></svg>
+              </span>
+              <span>
+                <strong>{{ option.name }}</strong>
+                <small>{{ option.sku }} / {{ option.categoryName }}</small>
+              </span>
+              @if (isProductSelected(option.productId)) {
+                <svg lucideCheck class="product-picker__check" [attr.stroke-width]="2.4"></svg>
+              }
+            </button>
+          } @empty {
+            <p class="product-picker__empty">Khong tim thay san pham phu hop.</p>
+          }
+        </div>
+
+        <div class="product-picker__selected">
+          <span>San pham da chon</span>
+
+          @if (selectedProductOptions().length > 0) {
+            <div>
+              @for (option of selectedProductOptions(); track option.productId) {
+                <button type="button" (click)="productToggle.emit(option.productId)">
+                  {{ option.name }}
+                  <svg lucideX [attr.stroke-width]="2"></svg>
+                </button>
+              }
+            </div>
+          } @else {
+            <p>Chua chon san pham.</p>
+          }
+        </div>
+
+        @if (errors().productIds) {
+          <small class="product-picker__error">{{ errors().productIds }}</small>
+        }
+      </section>
+
+      @if (errors().submit) {
+        <p class="product-group-dialog__submit-error">{{ errors().submit }}</p>
+      }
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="product-group-dialog__footer">
+      <button type="button" class="product-group-dialog__ghost" [disabled]="saving()" (click)="close.emit()">
+        Huy
+      </button>
+      <button type="button" class="product-group-dialog__primary" [disabled]="saving()" (click)="save.emit()">
+        {{ mode() === 'edit' ? 'Luu thay doi' : 'Tao nhom' }}
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

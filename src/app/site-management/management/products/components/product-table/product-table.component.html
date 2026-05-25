@@ -1,0 +1,131 @@
+<article class="product-panel">
+  <div class="product-table-wrap">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th>Hinh anh</th>
+          <th>San pham & SKU</th>
+          <th>Danh muc</th>
+          <th>Gia niem yet</th>
+          <th class="product-table__center">Kho</th>
+          <th>Trang thai</th>
+          <th class="product-table__right">Thao tac</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of skeletonRows; track $index) {
+            <tr>
+              <td colspan="7">
+                <div class="product-skeleton"></div>
+              </td>
+            </tr>
+          }
+        } @else {
+          @for (product of products(); track product.productId) {
+            <tr>
+              <td>
+                @if (product.imageUrl) {
+                  <img class="product-image" [src]="product.imageUrl" [alt]="product.name" loading="lazy" />
+                } @else {
+                  <div class="product-image product-image--placeholder">
+                    {{ product.name.charAt(0).toUpperCase() }}
+                  </div>
+                }
+              </td>
+              <td>
+                <span class="product-name">
+                  <strong>{{ product.name }}</strong>
+                  <small>SKU: {{ product.sku }}</small>
+                </span>
+              </td>
+              <td>{{ product.categoryName }}</td>
+              <td>
+                <strong>{{ product.price | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+              </td>
+              <td class="product-table__center">
+                <strong [class.product-stock--alert]="product.status !== 'IN_STOCK'">{{ product.stock }}</strong>
+              </td>
+              <td>
+                <span class="product-status" [class]="'product-status product-status--' + product.status.toLowerCase()">
+                  {{ getStatusLabel(product.status) }}
+                </span>
+              </td>
+              <td>
+                <div class="product-actions">
+                  <button
+                    type="button"
+                    class="product-row-action product-row-action--edit"
+                    aria-label="Chinh sua san pham"
+                    (click)="editProduct.emit(product)"
+                  >
+                    <svg lucidePencil [attr.stroke-width]="2"></svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="product-row-action product-row-action--delete"
+                    aria-label="Xoa san pham"
+                    (click)="deleteProduct.emit(product)"
+                  >
+                    <svg lucideTrash2 [attr.stroke-width]="2"></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7">
+                <div class="product-empty">
+                  <svg lucidePackage [attr.stroke-width]="1.8"></svg>
+                  <h3>Chua co san pham phu hop</h3>
+                  <p>Thu doi bo loc hoac xoa tu khoa tim kiem.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="product-pagination">
+    <p>Hien thi {{ pageStart() }}-{{ pageEnd() }} tren {{ totalElements() }} san pham</p>
+
+    <div class="product-page-buttons">
+      <button
+        type="button"
+        class="product-page-button"
+        [disabled]="!canGoPrevious() || loading()"
+        (click)="pageChange.emit(page() - 1)"
+        aria-label="Trang truoc"
+      >
+        <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
+      </button>
+
+      @for (slot of pageSlots; track slot) {
+        @let pageNumber = getPageNumber(slot);
+        @if (pageNumber !== null) {
+          <button
+            type="button"
+            class="product-page-button"
+            [class.product-page-button--active]="pageNumber === page()"
+            [disabled]="loading()"
+            (click)="pageChange.emit(pageNumber)"
+          >
+            {{ pageNumber + 1 }}
+          </button>
+        }
+      }
+
+      <button
+        type="button"
+        class="product-page-button"
+        [disabled]="!canGoNext() || loading()"
+        (click)="pageChange.emit(page() + 1)"
+        aria-label="Trang sau"
+      >
+        <svg lucideChevronRight [attr.stroke-width]="2"></svg>
+      </button>
+    </div>
+  </footer>
+</article>

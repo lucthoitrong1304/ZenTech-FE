@@ -1,0 +1,63 @@
+.management-product-groups-page {
+  display: grid;
+  max-width: 1280px;
+  margin: 0 auto;
+  gap: 24px;
+}
+
+.product-group-command {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.product-group-command h1 {
+  margin: 0;
+  color: #1c1b1b;
+  font-size: clamp(32px, 4vw, 44px);
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+
+.product-group-command p {
+  max-width: 640px;
+  margin: 12px 0 0;
+  color: rgba(79, 70, 50, 0.74);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.product-group-primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: #ffc700;
+  color: #251a00;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 0 22px;
+  white-space: nowrap;
+}
+
+.product-group-primary-action svg {
+  width: 18px;
+  height: 18px;
+}
+
+.product-group-toolbar-shell {
+  border-top: 1px solid rgba(229, 226, 225, 0.42);
+  padding-top: 18px;
+}
+
+@media (max-width: 760px) {
+  .product-group-command {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

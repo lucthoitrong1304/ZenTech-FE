@@ -1,0 +1,61 @@
+<div class="product-toolbar">
+  <label class="product-toolbar__search">
+    <svg lucideSearch [attr.stroke-width]="2"></svg>
+    <input
+      type="search"
+      [value]="keyword()"
+      placeholder="Tim ten san pham hoac SKU..."
+      (input)="onKeywordInput($event)"
+      (keydown.enter)="onKeywordEnter($event)"
+    />
+  </label>
+
+  <select
+    class="product-toolbar__select"
+    aria-label="Loc danh muc san pham"
+    [value]="categoryId()"
+    (change)="onCategoryChange($event)"
+  >
+    <option value="all">Tat ca danh muc</option>
+    @for (category of categories(); track category.categoryId) {
+      <option [value]="category.categoryId">{{ category.name }}</option>
+    }
+  </select>
+
+  <select
+    class="product-toolbar__select"
+    aria-label="Loc trang thai kho"
+    [value]="stockStatus()"
+    (change)="onStockStatusChange($event)"
+  >
+    <option value="all">Tat ca trang thai</option>
+    <option value="IN_STOCK">Con hang</option>
+    <option value="LOW_STOCK">Sap het hang</option>
+    <option value="OUT_OF_STOCK">Het hang</option>
+  </select>
+
+  <select
+    class="product-toolbar__select product-toolbar__select--compact"
+    aria-label="Sap xep san pham"
+    [value]="sort()"
+    (change)="onSortChange($event)"
+  >
+    <option value="name,asc">Ten A-Z</option>
+    <option value="price,desc">Gia cao</option>
+    <option value="price,asc">Gia thap</option>
+    <option value="stock,asc">Ton kho thap</option>
+  </select>
+
+  <button type="button" class="product-toolbar__filter" [disabled]="loading()" (click)="applyFilters.emit()">
+    <svg lucideFilter [attr.stroke-width]="2"></svg>
+    <span>Loc</span>
+    @if (activeFilterCount() > 0) {
+      <strong>{{ activeFilterCount() }}</strong>
+    }
+  </button>
+
+  <button type="button" class="product-toolbar__reset" [disabled]="loading()" (click)="resetFilters.emit()">
+    <svg lucideX [attr.stroke-width]="2"></svg>
+    <span>Xoa</span>
+  </button>
+</div>
