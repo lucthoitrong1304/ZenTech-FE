@@ -2,7 +2,7 @@
   <app-site-header
     [navItems]="navItems()"
     [activeNavLabel]="productListingStore.category()?.label || null"
-    [cartCount]="2"
+    [cartCount]="cartStore.itemCount()"
     [currentUser]="currentUser()"
     (logout)="onLogout()"
   />
@@ -51,7 +51,10 @@
           description="Catalog hiện chưa có sản phẩm trong danh mục này"
         />
       } @else {
-        <app-product-grid [products]="productListingStore.sortedProducts()" />
+        <app-product-grid
+          [products]="productListingStore.sortedProducts()"
+          (addToCart)="onAddToCart($event)"
+        />
 
         @if (productListingStore.hasNext()) {
           <section class="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">

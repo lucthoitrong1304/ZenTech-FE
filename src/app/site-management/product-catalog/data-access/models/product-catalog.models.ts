@@ -72,6 +72,7 @@ export interface ProductReview {
   comment: string;
   createdAt: string;
   imageUrls: string[];
+  videoUrl?: string;
 }
 
 export interface ProductReviewPayload {
@@ -80,6 +81,7 @@ export interface ProductReviewPayload {
   title?: string;
   comment: string;
   imageKeys?: string[];
+  videoKey?: string;
 }
 
 export interface ProductDetail extends ProductListItem {

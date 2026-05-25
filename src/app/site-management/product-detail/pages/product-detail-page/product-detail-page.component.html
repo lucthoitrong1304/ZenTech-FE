@@ -2,7 +2,7 @@
   <app-site-header
     [navItems]="navItems()"
     [activeNavLabel]="null"
-    [cartCount]="2"
+    [cartCount]="cartStore.itemCount()"
     [currentUser]="currentUser()"
     (logout)="onLogout()"
   />
@@ -150,22 +150,24 @@
             </div>
 
             <div class="mt-auto grid gap-3 sm:grid-cols-2">
-              <a
-                routerLink="/auth/login"
+              <button
+                type="button"
                 class="inline-flex min-w-0 items-center justify-center rounded-full bg-[#ffc700] px-6 py-4 text-center text-sm font-black text-[#251a00] transition hover:bg-[#f5bf00]"
-                [class.pointer-events-none]="!productDetailStore.selectedInStock()"
                 [class.opacity-50]="!productDetailStore.selectedInStock()"
+                [disabled]="!productDetailStore.selectedInStock()"
+                (click)="buySelectedProductNow()"
               >
                 Buy Now
-              </a>
-              <a
-                routerLink="/auth/login"
+              </button>
+              <button
+                type="button"
                 class="inline-flex min-w-0 items-center justify-center rounded-full bg-[#4b41e1] px-6 py-4 text-center text-sm font-black text-white transition hover:bg-[#332bc9]"
-                [class.pointer-events-none]="!productDetailStore.selectedInStock()"
                 [class.opacity-50]="!productDetailStore.selectedInStock()"
+                [disabled]="!productDetailStore.selectedInStock()"
+                (click)="addSelectedProductToCart()"
               >
                 Add to Cart
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -291,12 +293,16 @@
           [productName]="product.name"
           [draft]="productDetailStore.reviewDraft()"
           [reviewImages]="productDetailStore.reviewImages()"
+          [reviewVideo]="productDetailStore.reviewVideo()"
           [error]="productDetailStore.reviewFormError()"
           [submitting]="productDetailStore.reviewSubmitting()"
           [imageUploading]="productDetailStore.reviewImageUploading()"
+          [videoUploading]="productDetailStore.reviewVideoUploading()"
           (draftChange)="onReviewDraftChange($event)"
           (imageSelect)="onReviewImageSelect($event)"
           (imageRemove)="onReviewImageRemove($event)"
+          (videoSelect)="onReviewVideoSelect($event)"
+          (videoRemove)="onReviewVideoRemove()"
           (submitReview)="submitReview()"
           (cancelReview)="closeReviewModal()"
         />

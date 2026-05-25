@@ -1,0 +1,77 @@
+<article
+  class="group grid gap-5 rounded-[8px] bg-white p-4 shadow-[0_24px_70px_-58px_rgba(16,16,16,0.55)] ring-1 ring-[#d2c5ab]/20 transition duration-300 hover:shadow-[0_28px_80px_-54px_rgba(16,16,16,0.55)] md:grid-cols-[10rem_1fr] md:p-5"
+>
+  <a
+    [routerLink]="['/products', item().productSlug]"
+    class="block aspect-[4/3] overflow-hidden rounded-[6px] bg-[#f0edec]"
+  >
+    <img
+      [src]="item().image"
+      [alt]="item().productName"
+      class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+      loading="lazy"
+    />
+  </a>
+
+  <div class="grid min-w-0 gap-6">
+    <div class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="min-w-0">
+        <a
+          [routerLink]="['/products', item().productSlug]"
+          class="block truncate text-xl font-black tracking-tight text-[#101010] transition hover:text-[#4b41e1]"
+        >
+          {{ item().productName }}
+        </a>
+        <p class="mt-1 truncate text-xs font-bold uppercase tracking-[0.18em] text-[#4f4632]">
+          {{ item().variantName }}
+        </p>
+      </div>
+
+      <div class="shrink-0 text-left sm:text-right">
+        <p class="text-2xl font-black tabular-nums text-[#101010]">
+          {{ item().unitPrice | currency: 'USD' : 'symbol' : '1.0-0' }}
+        </p>
+        @if (item().originalPrice && item().originalPrice !== item().unitPrice) {
+          <p class="text-sm font-semibold text-[#81765f] line-through">
+            {{ item().originalPrice | currency: 'USD' : 'symbol' : '1.0-0' }}
+          </p>
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="inline-flex h-11 items-center overflow-hidden rounded-full bg-[#f6f3f2] text-[#101010]">
+        <button
+          type="button"
+          class="grid h-11 w-11 place-items-center text-[#4f4632] transition hover:bg-[#ebe7e7] disabled:cursor-not-allowed disabled:opacity-40"
+          [disabled]="item().quantity <= 1"
+          (click)="onDecrement()"
+          aria-label="Decrease quantity"
+        >
+          <svg lucideMinus class="h-4 w-4" [attr.stroke-width]="2.4"></svg>
+        </button>
+        <span class="grid h-11 w-12 place-items-center text-sm font-black tabular-nums">
+          {{ item().quantity | number: '2.0-0' }}
+        </span>
+        <button
+          type="button"
+          class="grid h-11 w-11 place-items-center text-[#4f4632] transition hover:bg-[#ebe7e7] disabled:cursor-not-allowed disabled:opacity-40"
+          [disabled]="item().quantity >= item().maxQuantity"
+          (click)="onIncrement()"
+          aria-label="Increase quantity"
+        >
+          <svg lucidePlus class="h-4 w-4" [attr.stroke-width]="2.4"></svg>
+        </button>
+      </div>
+
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[#81765f] transition hover:text-[#be0037]"
+        (click)="onRemove()"
+      >
+        <svg lucideTrash2 class="h-4 w-4" [attr.stroke-width]="2.2"></svg>
+        Remove
+      </button>
+    </div>
+  </div>
+</article>

@@ -1,10 +1,12 @@
-﻿:host {
+:host {
   display: block;
 }
 
-.management-chat-shell {
+.owner-chat-shell {
   display: flex;
+  height: calc(100vh - 152px);
   min-height: calc(100vh - 152px);
+  min-width: 0;
   overflow: hidden;
   border: 1px solid rgba(210, 197, 171, 0.22);
   border-radius: 8px;
@@ -12,23 +14,26 @@
   box-shadow: 0 28px 80px -56px rgba(28, 27, 27, 0.42);
 }
 
-:host-context(.management-shell--chat-sidebar) .management-chat-shell {
-  min-height: calc(100vh - 72px);
+:host-context(.owner-shell--chat-sidebar) .owner-chat-shell {
+  height: calc(100vh - 72px);
+  min-height: 0;
   border: 0;
   border-radius: 0;
   box-shadow: none;
 }
 
-.management-chat-workspace {
+.owner-chat-workspace {
   display: flex;
+  min-height: 0;
   min-width: 0;
   flex: 1;
   overflow: hidden;
   background: #fcf9f8;
 }
 
-.management-chat-detail {
+.owner-chat-detail {
   display: flex;
+  min-height: 0;
   min-width: 0;
   flex: 1;
   flex-direction: column;
@@ -59,12 +64,14 @@
 }
 
 @media (max-width: 1220px) {
-  .management-chat-shell {
+  .owner-chat-shell {
+    height: calc(100vh - 144px);
     min-height: calc(100vh - 144px);
   }
 
-  :host-context(.management-shell--chat-sidebar) .management-chat-shell {
-    min-height: calc(100vh - 72px);
+  :host-context(.owner-shell--chat-sidebar) .owner-chat-shell {
+    height: calc(100vh - 72px);
+    min-height: 0;
   }
 
   :host ::ng-deep .chat-filter-sidebar {
@@ -77,8 +84,9 @@
 }
 
 @media (max-width: 880px) {
-  .management-chat-shell {
+  .owner-chat-shell {
     display: grid;
+    height: calc(100vh - 72px);
     min-height: auto;
   }
 
@@ -88,11 +96,11 @@
     max-height: 22rem;
   }
 
-  .management-chat-workspace {
+  .owner-chat-workspace {
     display: grid;
   }
 
-  .management-chat-detail {
+  .owner-chat-detail {
     min-height: 34rem;
   }
 }

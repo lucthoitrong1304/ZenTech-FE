@@ -1,0 +1,31 @@
+<p-dialog
+  styleClass="media-preview-dialog"
+  [visible]="!!item()"
+  [modal]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [showHeader]="false"
+  [blockScroll]="true"
+  [style]="{ width: 'min(72rem, calc(100vw - 2rem))' }"
+  (visibleChange)="onVisibleChange($event)"
+>
+  @if (item(); as preview) {
+    <section class="media-preview" [attr.aria-label]="preview.title">
+      <header class="media-preview__header">
+        <h2>{{ preview.title }}</h2>
+        <button type="button" class="media-preview__close" (click)="closed.emit()" title="Dong preview">
+          <svg lucideX class="h-5 w-5" [attr.stroke-width]="2"></svg>
+        </button>
+      </header>
+
+      <div class="media-preview__stage">
+        @if (preview.type === 'IMAGE') {
+          <img [src]="preview.url" [alt]="preview.title" />
+        } @else {
+          <video [src]="preview.url" controls autoplay playsinline></video>
+        }
+      </div>
+    </section>
+  }
+</p-dialog>

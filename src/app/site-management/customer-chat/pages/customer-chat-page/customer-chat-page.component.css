@@ -1,9 +1,48 @@
+@reference "tailwindcss";
+
 :host {
   display: block;
 }
 
+.customer-chat-page {
+  display: flex;
+  height: 100dvh;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  overflow-x: clip;
+}
+
+.customer-chat-page app-site-header {
+  flex: 0 0 auto;
+}
+
+.customer-chat-main {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .customer-chat-full {
-  height: calc(100vh - 7rem);
+  height: 100%;
+  min-height: 0;
+}
+
+.customer-chat-details {
+  box-shadow: -24px 0 64px -56px rgba(16, 16, 16, 0.72);
+}
+
+:host ::ng-deep .chat-scrollbar {
+  scrollbar-color: rgba(79, 70, 50, 0.28) transparent;
+  scrollbar-width: thin;
+}
+
+:host ::ng-deep .chat-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+:host ::ng-deep .chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 :host ::ng-deep .chat-scrollbar {
@@ -27,7 +66,67 @@
 
 @media (max-width: 1024px) {
   .customer-chat-full {
-    height: auto;
-    min-height: calc(100vh - 6rem);
+    height: 100%;
+    min-height: 0;
   }
+}
+
+.new-conv-btn {
+  @apply flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#ffc700] px-4 text-sm font-black text-[#111827] shadow-sm transition hover:bg-[#ffd633];
+}
+
+.recent-convs-header {
+  @apply mt-2 text-xs font-black uppercase tracking-[0.14em] text-[#4f4632];
+}
+
+.sidebar-conv-btn {
+  @apply flex min-w-0 items-center gap-3 rounded-[8px] px-4 py-3 text-left font-bold transition hover:bg-white/70;
+}
+
+.sidebar-conv-btn.active {
+  @apply bg-white shadow-sm text-[#101010];
+}
+
+.sidebar-conv-btn.inactive {
+  @apply text-[#4f4632];
+}
+
+.sidebar-conv-icon {
+  @apply h-5 w-5 shrink-0;
+}
+
+.sidebar-conv-icon.active {
+  @apply text-[#4f4632];
+}
+
+.sidebar-conv-text-container {
+  @apply min-w-0 flex-1;
+}
+
+.sidebar-conv-title {
+  @apply block truncate;
+}
+
+.sidebar-conv-subtitle {
+  @apply mt-1 block truncate text-xs font-semibold text-[#4f4632]/70;
+}
+
+.chat-actions-section {
+  @apply grid gap-2 w-full mt-3 px-6;
+}
+
+.request-agent-btn {
+  @apply flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#4f4642] px-4 text-sm font-bold text-white transition hover:bg-[#3f3835] shadow-sm;
+}
+
+.close-conversation-btn {
+  @apply flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#e11d48] px-4 text-sm font-bold text-white transition hover:bg-[#be123c] shadow-sm;
+}
+
+.chat-closed-container {
+  @apply w-full mt-3 px-6;
+}
+
+.closed-badge {
+  @apply inline-flex items-center justify-center w-full rounded-full bg-gray-100 text-gray-500 text-xs font-bold py-2.5 border border-gray-200;
 }

@@ -20,6 +20,13 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'cart',
+    loadComponent: () =>
+      import('./site-management/cart/pages/cart-page/cart-page.component').then(
+        m => m.CartPageComponent
+      )
+  },
+  {
     path: 'reset-password',
     loadComponent: () => import('./site-management/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },
@@ -29,6 +36,10 @@ export const routes: Routes = [
       import('./site-management/customer-chat/pages/customer-chat-page/customer-chat-page.component').then(
         m => m.CustomerChatPageComponent
       )
+  },
+  {
+    path: 'account',
+    loadChildren: () => import('./site-management/account/account.routes').then(m => m.accountRoutes)
   },
   {
     path: 'auth',

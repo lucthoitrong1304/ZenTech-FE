@@ -20,6 +20,8 @@ export enum CustomerChatEventType {
   PopupClosed = 'Popup Closed',
   PopupToggled = 'Popup Toggled',
   FullChatOpened = 'Full Chat Opened',
+  SharedContentRequested = 'Shared Content Requested',
+  ConversationDetailsRequested = 'Conversation Details Requested',
   UploadRemoved = 'Upload Removed',
   SharedContentTabChanged = 'Shared Content Tab Changed',
   SharedSidebarToggled = 'Shared Sidebar Toggled',
@@ -40,11 +42,13 @@ export type CustomerChatEvent =
       sharedItems: CustomerChatSharedItem[];
       activeSharedTab: CustomerChatSharedTab;
     }
-  | { type: CustomerChatEventType.UploadsFailed }
+  | { type: CustomerChatEventType.UploadsFailed; conversationId: string }
   | { type: CustomerChatEventType.PopupOpened }
   | { type: CustomerChatEventType.PopupClosed }
   | { type: CustomerChatEventType.PopupToggled; popupOpen: boolean }
   | { type: CustomerChatEventType.FullChatOpened }
+  | { type: CustomerChatEventType.SharedContentRequested }
+  | { type: CustomerChatEventType.ConversationDetailsRequested }
   | { type: CustomerChatEventType.UploadRemoved; uploadId: string }
   | { type: CustomerChatEventType.SharedContentTabChanged; activeSharedTab: CustomerChatSharedTab }
   | { type: CustomerChatEventType.SharedSidebarToggled; sharedSidebarOpen: boolean }

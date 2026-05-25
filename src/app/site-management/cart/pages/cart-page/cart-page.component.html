@@ -1,0 +1,84 @@
+<div class="min-h-screen bg-[#fcf9f8] text-[#1c1b1b]">
+  <app-site-header
+    [navItems]="navItems()"
+    [activeNavLabel]="null"
+    [cartCount]="cartStore.itemCount()"
+    [currentUser]="currentUser()"
+    (logout)="onLogout()"
+  />
+
+  <main class="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:px-8 lg:py-14 xl:grid-cols-[minmax(0,1fr)_26rem]">
+    <section class="min-w-0">
+      <div class="mb-10 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div class="min-w-0">
+          <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
+            ZenTech checkout queue
+          </p>
+          <h1 class="mt-3 break-words text-5xl font-black tracking-tight text-[#101010]">
+            Your Cart
+          </h1>
+          <p class="mt-3 text-sm font-bold uppercase tracking-[0.16em] text-[#4f4632]">
+            {{ cartStore.itemCount() }} items secured in your queue
+          </p>
+        </div>
+
+        @if (!cartStore.isEmpty()) {
+          <button
+            type="button"
+            class="text-xs font-black uppercase tracking-[0.18em] text-[#81765f] transition hover:text-[#be0037]"
+            (click)="cartStore.clearCart()"
+          >
+            Clear cart
+          </button>
+        }
+      </div>
+
+      @if (cartStore.isEmpty()) {
+        <div class="grid min-h-[24rem] place-items-center rounded-[10px] bg-white p-8 text-center shadow-[0_26px_90px_-70px_rgba(16,16,16,0.7)] ring-1 ring-[#d2c5ab]/20">
+          <div class="max-w-xl">
+            <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
+              Empty queue
+            </p>
+            <h2 class="mt-4 text-3xl font-black tracking-tight text-[#101010]">
+              Gio hang cua ban dang trong.
+            </h2>
+            <p class="mt-3 text-sm font-semibold leading-7 text-[#4f4632]">
+              Chon san pham tu catalog, them variant phu hop, roi quay lai day de kiem tra don hang.
+            </p>
+            <a
+              routerLink="/categories/keyboards"
+              class="mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-[#101010] px-6 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#4b41e1]"
+            >
+              Continue Shopping
+            </a>
+          </div>
+        </div>
+      } @else {
+        <div class="grid gap-5">
+          @for (item of cartStore.items(); track item.variantId) {
+            <app-cart-item-row
+              [item]="item"
+              (increment)="cartStore.incrementItem($event)"
+              (decrement)="cartStore.decrementItem($event)"
+              (remove)="cartStore.removeItem($event)"
+            />
+          }
+        </div>
+
+        <a
+          routerLink="/categories/keyboards"
+          class="mt-8 inline-flex items-center text-xs font-black uppercase tracking-[0.18em] text-[#4b41e1] transition hover:text-[#332bc9]"
+        >
+          Continue Shopping
+        </a>
+      }
+    </section>
+
+    <app-cart-summary
+      [itemCount]="cartStore.itemCount()"
+      [subtotal]="cartStore.subtotal()"
+      [total]="cartStore.total()"
+      (checkout)="onCheckout()"
+    />
+  </main>
+</div>

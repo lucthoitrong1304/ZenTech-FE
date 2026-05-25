@@ -3,9 +3,12 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { addEntities, removeAllEntities, setAllEntities, withEntities } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
+import { CartItemDraft } from '../../../cart/data-access/models/cart.model';
+import { CartStore } from '../../../cart/data-access/store/cart.store';
 import {
   ProductCategoryListing,
   ProductCategoryListingSort,
+  ProductDetail,
 } from '../../../product-catalog/data-access/models/product-catalog.models';
 import {
   PRODUCT_CATEGORY_NOT_FOUND,
@@ -29,6 +32,9 @@ interface ProductListingUiState {
   hasPrevious: boolean;
   loading: boolean;
   loadingMore: boolean;
+  addingToCartProductId: string | null;
+  cartSuccessMessage: string | null;
+  cartErrorMessage: string | null;
   error: string | null;
   isInvalidCategory: boolean;
 }
@@ -50,6 +56,9 @@ const INITIAL_STATE: ProductListingUiState = {
   hasPrevious: false,
   loading: false,
   loadingMore: false,
+  addingToCartProductId: null,
+  cartSuccessMessage: null,
+  cartErrorMessage: null,
   error: null,
   isInvalidCategory: false,
 };
@@ -68,7 +77,8 @@ export const ProductListingStore = signalStore(
   withMethods((
     store,
     productCatalogService = inject(ProductCatalogService),
-    categoryNavigationStore = inject(CategoryNavigationStore)
+    categoryNavigationStore = inject(CategoryNavigationStore),
+    cartStore = inject(CartStore)
   ) => {
     const applyListingMetadata = (listing: ProductCategoryListing): ProductListingUiState => ({
       categorySlug: store.categorySlug(),
@@ -82,6 +92,9 @@ export const ProductListingStore = signalStore(
       hasPrevious: listing.hasPrevious,
       loading: false,
       loadingMore: false,
+      addingToCartProductId: store.addingToCartProductId(),
+      cartSuccessMessage: store.cartSuccessMessage(),
+      cartErrorMessage: store.cartErrorMessage(),
       error: null,
       isInvalidCategory: false,
     });
@@ -165,19 +178,50 @@ export const ProductListingStore = signalStore(
         case ProductListingEventType.SortChanged:
           patchState(store, { sortBy: event.sortBy });
           break;
+
+        case ProductListingEventType.ProductAddToCartStarted:
+          patchState(store, {
+            addingToCartProductId: event.productId,
+            cartSuccessMessage: null,
+            cartErrorMessage: null,
+          });
+          break;
+
+        case ProductListingEventType.ProductAddToCartSucceeded:
+          patchState(store, {
+            addingToCartProductId: null,
+            cartSuccessMessage: `${event.productName} da duoc them vao gio hang.`,
+            cartErrorMessage: null,
+          });
+          break;
+
+        case ProductListingEventType.ProductAddToCartFailed:
+          patchState(store, {
+            addingToCartProductId: null,
+            cartSuccessMessage: null,
+            cartErrorMessage: event.error,
+          });
+          break;
+
+        case ProductListingEventType.CartMessageCleared:
+          patchState(store, {
+            cartSuccessMessage: null,
+            cartErrorMessage: null,
+          });
+          break;
       }
     };
 
-    const loadCategory = rxMethod<string>(
+    const loadCategory = rxMethod<{ slug: string; sortBy: ProductSortOptionValue }>(
       pipe(
-        tap(slug => handleEvent({ type: ProductListingEventType.CategoryLoadStarted, slug })),
-        switchMap(slug =>
+        tap(({ slug }) => handleEvent({ type: ProductListingEventType.CategoryLoadStarted, slug })),
+        switchMap(({ slug, sortBy }) =>
           categoryNavigationStore.resolveCategoryBySlug(slug).pipe(
             switchMap(category =>
               productCatalogService.getCategoryListing(category, {
                 page: 0,
                 size: store.size(),
-                sort: toApiSort(store.sortBy()),
+                sort: toApiSort(sortBy),
               })
             ),
             tap({
@@ -237,14 +281,50 @@ export const ProductListingStore = signalStore(
       dispatch: handleEvent,
       loadCategory,
       loadMore,
+      addProductToCart: rxMethod<ProductListItem>(
+        pipe(
+          tap(product =>
+            handleEvent({
+              type: ProductListingEventType.ProductAddToCartStarted,
+              productId: product.id,
+            })
+          ),
+          switchMap(product =>
+            productCatalogService.getProductDetail(product.slug).pipe(
+              tap({
+                next: detail => {
+                  const variant = detail.variants.find(item => item.stockQuantity > 0) ?? null;
+
+                  if (!variant) {
+                    handleEvent({
+                      type: ProductListingEventType.ProductAddToCartFailed,
+                      error: 'San pham nay hien khong con variant kha dung.',
+                    });
+                    return;
+                  }
+
+                  cartStore.addItem(toCartItemDraft(detail, variant.id, 1));
+                  handleEvent({
+                    type: ProductListingEventType.ProductAddToCartSucceeded,
+                    productName: detail.name,
+                  });
+                },
+                error: () =>
+                  handleEvent({
+                    type: ProductListingEventType.ProductAddToCartFailed,
+                    error: 'Khong the them san pham vao gio hang luc nay.',
+                  }),
+              }),
+              catchError(() => EMPTY)
+            )
+          )
+        )
+      ),
       setSort(sortBy: ProductSortOptionValue): void {
         handleEvent({ type: ProductListingEventType.SortChanged, sortBy });
-
-        const slug = store.categorySlug();
-
-        if (slug) {
-          loadCategory(slug);
-        }
+      },
+      clearCartMessages(): void {
+        handleEvent({ type: ProductListingEventType.CartMessageCleared });
       },
     };
   })
@@ -260,4 +340,26 @@ function toApiSort(sortBy: ProductSortOptionValue): ProductCategoryListingSort {
     default:
       return 'NEWEST';
   }
+}
+
+function toCartItemDraft(
+  product: ProductDetail,
+  variantId: string,
+  quantity: number
+): CartItemDraft {
+  const variant = product.variants.find(item => item.id === variantId) ?? product.variants[0];
+  const unitPrice = variant?.salePrice ?? variant?.originalPrice ?? product.price;
+
+  return {
+    productId: product.id,
+    productSlug: product.slug,
+    productName: product.name,
+    variantId: variant?.id ?? product.id,
+    variantName: variant?.name ?? 'Default',
+    image: product.image,
+    unitPrice,
+    originalPrice: variant?.salePrice ? variant.originalPrice : product.originalPrice,
+    quantity,
+    maxQuantity: variant?.stockQuantity ?? product.maxQuantity,
+  };
 }

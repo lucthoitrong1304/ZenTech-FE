@@ -59,18 +59,18 @@
       }
     </div>
 
-    <a
-      routerLink="/auth/login"
+    <button
+      type="button"
       class="mt-auto inline-flex w-full min-w-0 items-center justify-center rounded-[10px] px-3 py-3 text-center text-[10px] font-black uppercase tracking-[0.14em] transition"
       [ngClass]="
         product().inStock
           ? 'bg-[#101010] text-white hover:bg-[#4b41e1]'
           : 'cursor-not-allowed bg-[#ebe7e7] text-[#81765f]'
       "
-      [attr.aria-disabled]="!product().inStock"
-      [tabIndex]="product().inStock ? 0 : -1"
+      [disabled]="!product().inStock"
+      (click)="onAddToCart($event)"
     >
       {{ product().inStock ? 'Add to Cart' : 'Notify Me' }}
-    </a>
+    </button>
   </div>
 </article>

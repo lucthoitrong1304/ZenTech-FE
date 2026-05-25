@@ -5,6 +5,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { distinctUntilChanged, map } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
+import { CartStore } from '../../../cart/data-access/store/cart.store';
+import { ProductListItem } from '../../../product-catalog/data-access/models/product-catalog.models';
 import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
 import { SiteHeaderComponent } from '../../../shared/site-header/site-header.component';
 import {
@@ -38,6 +40,7 @@ export class ProductListingPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  protected readonly cartStore = inject(CartStore);
   protected readonly productListingStore = inject(ProductListingStore);
 
   readonly navItems = this.categoryNavigationStore.navItems;
@@ -55,9 +58,10 @@ export class ProductListingPageComponent {
   constructor() {
     effect(() => {
       const slug = this.categorySlug();
+      const sortBy = this.productListingStore.sortBy();
 
       if (slug) {
-        this.productListingStore.loadCategory(slug);
+        this.productListingStore.loadCategory({ slug, sortBy });
       }
     });
 
@@ -84,6 +88,28 @@ export class ProductListingPageComponent {
         });
       }
     });
+
+    effect(() => {
+      const message = this.productListingStore.cartSuccessMessage();
+
+      if (message) {
+        untracked(() => {
+          this.toastService.success(message);
+          this.productListingStore.clearCartMessages();
+        });
+      }
+    });
+
+    effect(() => {
+      const message = this.productListingStore.cartErrorMessage();
+
+      if (message) {
+        untracked(() => {
+          this.toastService.warning(message);
+          this.productListingStore.clearCartMessages();
+        });
+      }
+    });
   }
 
   onSortChange(sortBy: ProductSortOptionValue): void {
@@ -92,6 +118,15 @@ export class ProductListingPageComponent {
 
   onLoadMore(): void {
     this.productListingStore.loadMore();
+  }
+
+  onAddToCart(product: ProductListItem): void {
+    if (!this.authSessionStore.isAuthenticated()) {
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
+    this.productListingStore.addProductToCart(product);
   }
 
   onLogout(): void {

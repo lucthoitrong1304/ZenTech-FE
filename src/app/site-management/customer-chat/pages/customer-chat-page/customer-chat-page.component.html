@@ -2,56 +2,83 @@
   <app-site-header
     [navItems]="navItems()"
     [activeNavLabel]="null"
-    [cartCount]="2"
+    [cartCount]="cartStore.itemCount()"
     [currentUser]="currentUser()"
     (logout)="onLogout()"
   />
 
-  <main class="mx-auto flex min-h-[calc(100vh-4rem)] max-w-[1400px] flex-col px-3 py-4 sm:px-4 lg:py-6">
-    <section class="customer-chat-full flex min-h-[44rem] flex-1 overflow-hidden rounded-[8px] bg-white shadow-[0_28px_80px_-56px_rgba(16,16,16,0.65)] ring-1 ring-[#d2c5ab]/35">
+  <main class="customer-chat-main flex min-h-0 flex-1 flex-col overflow-hidden px-0 py-0 lg:px-4 lg:py-4">
+    <section class="customer-chat-full flex min-h-0 flex-1 overflow-hidden bg-white shadow-[0_28px_80px_-56px_rgba(16,16,16,0.65)] lg:rounded-[8px] lg:ring-1 lg:ring-[#d2c5ab]/35">
       <div class="flex min-w-0 flex-1 flex-col">
         <app-customer-chat-header
           [staff]="store.staff()"
           [product]="store.product()"
-          [sharedSidebarOpen]="store.sharedSidebarOpen()"
-          (closeClicked)="store.closeSharedSidebar()"
-          (sharedClicked)="store.toggleSharedSidebar()"
+          [status]="store.session()?.status || null"
+          [sharedSidebarOpen]="store.fullSidebarMode() === 'SHARED'"
+          (closeClicked)="store.requestConversationDetails()"
+          (sharedClicked)="store.requestSharedContent()"
         />
 
         @if (store.loading()) {
           <div class="grid flex-1 place-items-center bg-[#fcf9f8] text-sm font-black text-[#4f4632]">
-            Đang tải cuộc trò chuyện...
+            Dang tai cuoc tro chuyen...
           </div>
         } @else if (store.session()) {
-          <div class="flex min-h-0 flex-1">
-            <div class="flex min-w-0 flex-1 flex-col">
-              <div class="flex shrink-0 items-center justify-between gap-3 border-b border-[#d2c5ab]/25 bg-white px-5 py-3">
-                <div class="min-w-0">
-                  <p class="text-[10px] font-black uppercase tracking-[0.2em] text-[#4f4632]">
-                    Cuộc trò chuyện
-                  </p>
-                  <h1 class="truncate text-xl font-black text-[#101010]">
-                    Tư vấn sản phẩm với ZenTech
-                  </h1>
-                </div>
-                <button
-                  type="button"
-                  class="grid h-10 w-10 shrink-0 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
-                  (click)="store.toggleSharedSidebar()"
-                  title="Bật/tắt nội dung đã chia sẻ"
-                >
-                  @if (store.sharedSidebarOpen()) {
-                    <svg lucidePanelRightClose class="h-5 w-5" [attr.stroke-width]="2"></svg>
-                  } @else {
-                    <svg lucidePanelRightOpen class="h-5 w-5" [attr.stroke-width]="2"></svg>
-                  }
-                </button>
-              </div>
+          <div class="flex min-h-0 flex-1 overflow-hidden">
+            <aside class="chat-scrollbar hidden w-72 shrink-0 flex-col gap-6 overflow-y-auto bg-[#f6f3f2] p-6 text-sm text-[#1c1b1b] xl:flex">
+              <button
+                type="button"
+                class="new-conv-btn"
+                (click)="store.createNewConversation()"
+              >
+                <svg lucidePlus class="h-5 w-5" [attr.stroke-width]="2.2"></svg>
+                New Conversation
+              </button>
 
+              <div class="grid gap-2">
+                <p class="recent-convs-header">
+                  Recent Conversations
+                </p>
+
+                @for (conv of store.conversations(); track conv.id) {
+                  <button
+                    type="button"
+                    class="sidebar-conv-btn"
+                    [class.active]="store.activeConversationId() === conv.id"
+                    [class.inactive]="store.activeConversationId() !== conv.id"
+                    (click)="store.switchConversation(conv.id)"
+                  >
+                    <svg
+                      lucideMessageCircle
+                      class="sidebar-conv-icon"
+                      [class.active]="store.activeConversationId() === conv.id"
+                      [attr.stroke-width]="2"
+                    ></svg>
+                    <span class="sidebar-conv-text-container">
+                      <span class="sidebar-conv-title">{{ conv.title || 'Product Support' }}</span>
+                      <span class="sidebar-conv-subtitle">
+                        @switch (conv.status) {
+                          @case ('BOT_CONSULTING') { Trợ lý ảo }
+                          @case ('WAITING_FOR_AGENT') { Chờ kết nối }
+                          @case ('AGENT_HANDLING') { Nhân viên hỗ trợ }
+                          @case ('CLOSED') { Đã đóng }
+                          @default { Hoạt động }
+                        }
+                      </span>
+                    </span>
+                  </button>
+                } @empty {
+                  <p class="text-xs text-[#4f4632]/70 font-semibold p-2">Chưa có hội thoại nào</p>
+                }
+              </div>
+            </aside>
+
+            <section class="flex min-w-0 flex-1 flex-col bg-[#fcf9f8]">
               <app-customer-message-timeline
                 [messages]="store.messages()"
                 [customer]="store.customer()"
                 [staff]="store.staff()"
+                (previewRequested)="openPreview($event)"
               />
 
               <app-customer-upload-queue
@@ -60,21 +87,216 @@
               />
 
               <app-customer-chat-composer
+                [secureCaption]="true"
+                [disabled]="store.session()?.status === 'CLOSED'"
+                [hasPendingAttachments]="store.hasPendingAttachments()"
                 (messageSubmitted)="store.sendMessage($event)"
                 (filesSelected)="store.selectFiles($event)"
               />
-            </div>
+            </section>
 
-            <app-customer-shared-content-sidebar
-              [open]="store.sharedSidebarOpen()"
-              [activeTab]="store.activeSharedTab()"
-              [items]="store.selectedSharedItems()"
-              [mediaCount]="store.sharedCounts().media"
-              [fileCount]="store.sharedCounts().files"
-              [linkCount]="store.sharedCounts().links"
-              (tabSelected)="store.setSharedContentTab($event)"
-              (closed)="store.closeSharedSidebar()"
-            />
+            @if (store.fullSidebarMode() === 'SHARED') {
+              <app-customer-shared-content-sidebar
+                [open]="true"
+                mode="expanded"
+                [activeTab]="store.activeSharedTab()"
+                [items]="store.selectedSharedItems()"
+                [mediaCount]="store.sharedCounts().media"
+                [fileCount]="store.sharedCounts().files"
+                [linkCount]="store.sharedCounts().links"
+                (tabSelected)="store.setSharedContentTab($event)"
+                (closed)="store.requestConversationDetails()"
+                (previewRequested)="openPreview($event)"
+              />
+            } @else {
+              <aside class="customer-chat-details chat-scrollbar hidden w-80 shrink-0 overflow-y-auto bg-white lg:flex lg:flex-col">
+                @if (store.staff() || store.assistant(); as currentContact) {
+                  <section class="grid justify-items-center gap-4 px-6 py-7 text-center">
+                    <span class="relative grid h-20 w-20 place-items-center rounded-[8px] bg-[#645efb] text-2xl font-black text-white">
+                      {{ currentContact.initials }}
+                      @if (currentContact.online) {
+                        <span class="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-[#ffc700] ring-2 ring-white"></span>
+                      }
+                    </span>
+                    <div class="min-w-0">
+                      <h2 class="truncate text-lg font-black text-[#101010]">{{ currentContact.name }}</h2>
+                      <p class="mt-1 text-sm font-semibold text-[#4f4632]">{{ currentContact.roleLabel }}</p>
+                    </div>
+                    <div class="flex gap-2">
+                      <button
+                        type="button"
+                        class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
+                        title="Goi ho tro"
+                      >
+                        <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
+                        title="Tim kiem"
+                      >
+                        <svg lucideSearch class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
+                        title="Tuy chon"
+                      >
+                        <svg lucideMoreVertical class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                      </button>
+                    </div>
+                  </section>
+                }
+
+                @if (store.session(); as session) {
+                  @if (session.status !== 'CLOSED') {
+                    <div class="chat-actions-section">
+                      @if (session.status === 'BOT_CONSULTING') {
+                        <button
+                          type="button"
+                          class="request-agent-btn"
+                          (click)="store.requestAgent()"
+                        >
+                          Yêu cầu gặp nhân viên
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        class="close-conversation-btn"
+                        (click)="store.closeConversation()"
+                      >
+                        Đóng cuộc hội thoại
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="chat-closed-container">
+                      <span class="closed-badge">Cuộc hội thoại đã đóng</span>
+                    </div>
+                  }
+                }
+
+                <div class="grid gap-8 px-6 pb-8">
+                  <section class="grid gap-3">
+                    <div class="flex items-center justify-between gap-3">
+                      <h3 class="text-sm font-black text-[#101010]">Shared Media</h3>
+                      <button
+                        type="button"
+                        class="text-xs font-black text-[#4b41e1] transition hover:text-[#3323cc]"
+                        (click)="store.setSharedContentTab('MEDIA')"
+                      >
+                        See All
+                      </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                      @for (item of store.sharedMediaItems().slice(0, 6); track item.id) {
+                        <button
+                          type="button"
+                          class="group relative aspect-square w-full overflow-hidden rounded-[8px] border-0 bg-[#f0edec] p-0 text-[#4f4632]"
+                          [title]="item.title"
+                          (click)="openPreview(item)"
+                        >
+                          @if (item.thumbnailUrl) {
+                            <img
+                              [src]="item.thumbnailUrl"
+                              [alt]="item.title"
+                              class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                            />
+                          } @else {
+                            <span class="grid h-full w-full place-items-center">
+                              <svg lucideImage class="h-6 w-6" [attr.stroke-width]="2"></svg>
+                            </span>
+                          }
+                          @if (item.type === 'VIDEO') {
+                            <span class="absolute inset-0 grid place-items-center bg-black/20 text-white">
+                              <svg lucideVideo class="h-6 w-6" [attr.stroke-width]="2"></svg>
+                            </span>
+                          }
+                        </button>
+                      } @empty {
+                        <span class="col-span-3 rounded-[8px] bg-[#f6f3f2] p-4 text-center text-xs font-bold text-[#4f4632]">
+                          No media yet
+                        </span>
+                      }
+                    </div>
+                  </section>
+
+                  <section class="grid gap-3">
+                    <div class="flex items-center justify-between gap-3">
+                      <h3 class="text-sm font-black text-[#101010]">Shared Files</h3>
+                      <button
+                        type="button"
+                        class="text-xs font-black text-[#4b41e1] transition hover:text-[#3323cc]"
+                        (click)="store.setSharedContentTab('FILES')"
+                      >
+                        See All
+                      </button>
+                    </div>
+                    <div class="grid gap-2">
+                      @for (item of store.sharedFileItems().slice(0, 3); track item.id) {
+                        <a
+                          [href]="item.url"
+                          [attr.download]="item.title"
+                          rel="noreferrer"
+                          class="flex min-w-0 items-center gap-3 rounded-[8px] p-2 transition hover:bg-[#f6f3f2]"
+                        >
+                          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[8px] bg-[#ffdad6] text-[#93000a]">
+                            <svg lucideFileText class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                          </span>
+                          <span class="min-w-0">
+                            <strong class="block truncate text-sm font-black text-[#101010]">{{ item.title }}</strong>
+                            <small class="block truncate text-xs font-semibold text-[#4f4632]">
+                              {{ item.subtitle }}
+                            </small>
+                          </span>
+                        </a>
+                      } @empty {
+                        <p class="rounded-[8px] bg-[#f6f3f2] p-3 text-xs font-bold text-[#4f4632]">
+                          No files yet
+                        </p>
+                      }
+                    </div>
+                  </section>
+
+                  <section class="grid gap-3">
+                    <div class="flex items-center justify-between gap-3">
+                      <h3 class="text-sm font-black text-[#101010]">Shared Links</h3>
+                      <button
+                        type="button"
+                        class="text-xs font-black text-[#4b41e1] transition hover:text-[#3323cc]"
+                        (click)="store.setSharedContentTab('LINKS')"
+                      >
+                        See All
+                      </button>
+                    </div>
+                    <div class="grid gap-2">
+                      @for (item of store.sharedLinkItems().slice(0, 3); track item.id) {
+                        <a
+                          [href]="item.url"
+                          target="_blank"
+                          rel="noreferrer"
+                          class="flex min-w-0 items-start gap-3 rounded-[8px] p-2 transition hover:bg-[#f6f3f2]"
+                        >
+                          <span class="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-[8px] bg-[#e2dfff] text-[#3323cc]">
+                            <svg lucideLink class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                          </span>
+                          <span class="min-w-0 flex-1">
+                            <strong class="block truncate text-sm font-black text-[#101010]">{{ item.title }}</strong>
+                            <small class="block truncate text-xs font-semibold text-[#3323cc]">
+                              {{ item.subtitle }}
+                            </small>
+                          </span>
+                          <svg lucideExternalLink class="h-4 w-4 shrink-0 text-[#4f4632]" [attr.stroke-width]="2"></svg>
+                        </a>
+                      } @empty {
+                        <p class="rounded-[8px] bg-[#f6f3f2] p-3 text-xs font-bold text-[#4f4632]">
+                          No links yet
+                        </p>
+                      }
+                    </div>
+                  </section>
+                </div>
+              </aside>
+            }
           </div>
         } @else {
           <div class="grid flex-1 place-items-center bg-[#fcf9f8] p-8 text-center">
@@ -82,9 +304,9 @@
               <p class="text-[11px] font-black uppercase tracking-[0.2em] text-[#4b41e1]">
                 ZenTech Support
               </p>
-              <h1 class="mt-3 text-2xl font-black">Chưa thể mở cuộc trò chuyện.</h1>
+              <h1 class="mt-3 text-2xl font-black">Chua the mo cuoc tro chuyen.</h1>
               <p class="mt-2 text-sm font-semibold text-[#4f4632]">
-                {{ store.errorMessage() || 'Vui lòng thử lại sau.' }}
+                {{ store.errorMessage() || 'Vui long thu lai sau.' }}
               </p>
             </div>
           </div>
@@ -92,4 +314,6 @@
       </div>
     </section>
   </main>
+
+  <app-media-preview-dialog [item]="previewItem()" (closed)="closePreview()" />
 </div>

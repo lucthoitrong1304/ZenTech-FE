@@ -1,117 +1,263 @@
 @if (open()) {
-  <aside class="customer-shared-sidebar chat-scrollbar flex h-full w-full shrink-0 flex-col overflow-y-auto bg-white text-[#101010] lg:w-80">
-    <header class="flex shrink-0 items-center justify-between gap-3 border-b border-[#d2c5ab]/25 px-4 py-4">
-      <div class="min-w-0">
-        <h2 class="truncate text-base font-black">Nội dung đã chia sẻ</h2>
-        <p class="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#4f4632]">
-          Media · Tệp · Links
-        </p>
-      </div>
-      <button
-        type="button"
-        class="grid h-9 w-9 shrink-0 place-items-center rounded-[7px] text-[#4f4632] transition hover:bg-[#f6f3f2] hover:text-[#101010]"
-        (click)="closed.emit()"
-        title="Đóng"
-      >
-        <svg lucideX class="h-4 w-4" [attr.stroke-width]="2"></svg>
-      </button>
-    </header>
-
-    <nav class="grid grid-cols-3 gap-2 border-b border-[#d2c5ab]/25 p-3">
-      @for (tab of tabs(); track tab.value) {
+  @if (mode() === 'expanded') {
+    <aside class="customer-shared-sidebar customer-shared-sidebar--expanded chat-scrollbar hidden h-full w-full shrink-0 flex-col overflow-y-auto bg-white text-[#101010] lg:flex lg:w-[28rem]">
+      <header class="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 bg-white/90 px-5 backdrop-blur-xl">
         <button
           type="button"
-          class="rounded-[8px] px-2 py-2 text-xs font-black transition"
-          [class.bg-[#101010]]="activeTab() === tab.value"
-          [class.text-white]="activeTab() === tab.value"
-          [class.bg-[#f6f3f2]]="activeTab() !== tab.value"
-          [class.text-[#4f4632]]="activeTab() !== tab.value"
-          (click)="tabSelected.emit(tab.value)"
+          class="grid h-10 w-10 shrink-0 place-items-center rounded-[8px] text-[#4f4632] transition hover:bg-[#f6f3f2] hover:text-[#101010]"
+          (click)="closed.emit()"
+          title="Quay lai chi tiet"
         >
-          {{ tab.label }}
-          <span class="ml-1 opacity-65">{{ tab.count }}</span>
+          <svg lucideArrowLeft class="h-5 w-5" [attr.stroke-width]="2"></svg>
         </button>
-      }
-    </nav>
 
-    <div class="grid flex-1 content-start gap-3 p-4">
-      @if (items().length > 0) {
-        @for (item of items(); track item.id) {
-          @if (isMedia(item)) {
-            <a
-              [href]="item.url"
-              target="_blank"
-              rel="noreferrer"
-              class="group relative aspect-[4/3] overflow-hidden rounded-[8px] bg-[#ebe7e7]"
-            >
-              @if (item.thumbnailUrl) {
-                <img
-                  [src]="item.thumbnailUrl"
-                  [alt]="item.title"
-                  class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                />
-              } @else {
-                <span class="grid h-full w-full place-items-center text-[#4f4632]">
-                  <svg lucideImage class="h-7 w-7" [attr.stroke-width]="2"></svg>
-                </span>
-              }
+        <h2 class="min-w-0 flex-1 truncate text-lg font-black text-[#101010]">Shared Content</h2>
 
-              <span class="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.82))] px-3 pb-3 pt-10 text-white">
-                <strong class="block truncate text-xs font-black">{{ item.title }}</strong>
-                <small class="block truncate text-[11px] font-semibold text-white/70">
-                  {{ item.subtitle }}
-                </small>
-              </span>
+        <button
+          type="button"
+          class="grid h-10 w-10 shrink-0 place-items-center rounded-[8px] text-[#4f4632] transition hover:bg-[#f6f3f2] hover:text-[#101010]"
+          title="Tim kiem"
+        >
+          <svg lucideSearch class="h-5 w-5" [attr.stroke-width]="2"></svg>
+        </button>
+      </header>
 
-              @if (item.type === 'VIDEO') {
-                <span class="absolute inset-0 grid place-items-center bg-black/20 text-white">
-                  <svg lucidePlayCircle class="h-9 w-9" [attr.stroke-width]="1.8"></svg>
-                </span>
-              }
-            </a>
-          } @else if (item.type === 'FILE') {
-            <a
-              [href]="item.url"
-              target="_blank"
-              rel="noreferrer"
-              class="flex min-w-0 items-center gap-3 rounded-[8px] bg-[#f6f3f2] p-3 transition hover:bg-[#ebe7e7]"
-            >
-              <span class="grid h-11 w-11 shrink-0 place-items-center rounded-[7px] bg-red-50 text-red-600">
-                <svg lucideFileText class="h-5 w-5" [attr.stroke-width]="2"></svg>
-              </span>
-              <span class="min-w-0 flex-1">
-                <strong class="block truncate text-sm font-black">{{ item.title }}</strong>
-                <small class="block truncate text-xs font-semibold text-[#4f4632]">
-                  {{ item.subtitle }}
-                </small>
-              </span>
-              <svg lucideDownload class="h-5 w-5 shrink-0 text-[#4f4632]" [attr.stroke-width]="2"></svg>
-            </a>
-          } @else {
-            <a
-              [href]="item.url"
-              target="_blank"
-              rel="noreferrer"
-              class="flex min-w-0 items-center gap-3 rounded-[8px] bg-[#f6f3f2] p-3 transition hover:bg-[#ebe7e7]"
-            >
-              <span class="grid h-11 w-11 shrink-0 place-items-center rounded-[7px] bg-[#e2dfff] text-[#3323cc]">
-                <svg lucideLink class="h-5 w-5" [attr.stroke-width]="2"></svg>
-              </span>
-              <span class="min-w-0 flex-1">
-                <strong class="block truncate text-sm font-black">{{ item.title }}</strong>
-                <small class="block truncate text-xs font-semibold text-[#4f4632]">
-                  {{ item.subtitle }}
-                </small>
-              </span>
-              <svg lucideExternalLink class="h-5 w-5 shrink-0 text-[#4f4632]" [attr.stroke-width]="2"></svg>
-            </a>
-          }
+      <nav class="sticky top-16 z-10 flex shrink-0 gap-2 overflow-x-auto bg-white px-5 py-3">
+        @for (tab of tabs(); track tab.value) {
+          <button
+            type="button"
+            class="whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition"
+            [class.bg-[#645efb]]="activeTab() === tab.value"
+            [class.text-white]="activeTab() === tab.value"
+            [class.bg-[#f6f3f2]]="activeTab() !== tab.value"
+            [class.text-[#4f4632]]="activeTab() !== tab.value"
+            (click)="tabSelected.emit(tab.value)"
+          >
+            {{ tab.label }}
+            <span class="ml-1 opacity-65">{{ tab.count }}</span>
+          </button>
         }
-      } @else {
-        <div class="grid min-h-52 place-items-center rounded-[8px] bg-[#f6f3f2] p-6 text-center">
-          <p class="text-sm font-bold text-[#4f4632]">Chưa có nội dung trong mục này.</p>
+      </nav>
+
+      <div class="grid content-start gap-9 px-5 pb-8 pt-4">
+        @if (activeTab() === 'ALL' || activeTab() === 'MEDIA') {
+          <section class="grid gap-4">
+            <h3 class="text-xs font-black uppercase tracking-[0.16em] text-[#4f4632]">Media</h3>
+            @if (mediaItems().length > 0) {
+              <div class="grid grid-cols-3 gap-3">
+                @for (item of mediaItems(); track item.id) {
+                  <button
+                    type="button"
+                    class="group relative aspect-square w-full overflow-hidden rounded-[8px] border-0 bg-[#f0edec] p-0 text-[#4f4632] transition hover:bg-[#ebe7e7]"
+                    [title]="item.title"
+                    (click)="requestPreview(item)"
+                  >
+                    @if (item.thumbnailUrl) {
+                      <img
+                        [src]="item.thumbnailUrl"
+                        [alt]="item.title"
+                        class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
+                    } @else {
+                      <span class="grid h-full w-full place-items-center">
+                        <svg lucideImage class="h-7 w-7" [attr.stroke-width]="2"></svg>
+                      </span>
+                    }
+
+                    @if (item.type === 'VIDEO') {
+                      <span class="absolute inset-0 grid place-items-center bg-black/20 text-white">
+                        <svg lucidePlayCircle class="h-9 w-9" [attr.stroke-width]="1.8"></svg>
+                      </span>
+                    }
+                  </button>
+                }
+              </div>
+            } @else {
+              <p class="rounded-[8px] bg-[#f6f3f2] p-4 text-sm font-bold text-[#4f4632]">
+                Chua co media duoc chia se.
+              </p>
+            }
+          </section>
+        }
+
+        @if (activeTab() === 'ALL' || activeTab() === 'FILES') {
+          <section class="grid gap-4">
+            <h3 class="text-xs font-black uppercase tracking-[0.16em] text-[#4f4632]">Files</h3>
+            <div class="grid gap-3">
+              @for (item of fileItems(); track item.id) {
+                <a
+                  [href]="item.url"
+                  [attr.download]="item.title"
+                  rel="noreferrer"
+                  class="flex min-w-0 items-center gap-4 rounded-[8px] bg-[#fcf9f8] p-3 shadow-[0_18px_40px_-34px_rgba(16,16,16,0.75)] transition hover:bg-[#f6f3f2]"
+                >
+                  <span class="grid h-12 w-12 shrink-0 place-items-center rounded-[8px] bg-[#ffdad6] text-[#93000a]">
+                    <svg lucideFileText class="h-6 w-6" [attr.stroke-width]="2"></svg>
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <strong class="block truncate text-sm font-black text-[#101010]">{{ item.title }}</strong>
+                    <small class="mt-1 block truncate text-xs font-semibold text-[#4f4632]">
+                      {{ item.subtitle }}
+                    </small>
+                  </span>
+                  <svg lucideDownload class="h-5 w-5 shrink-0 text-[#4f4632]" [attr.stroke-width]="2"></svg>
+                </a>
+              } @empty {
+                <p class="rounded-[8px] bg-[#f6f3f2] p-4 text-sm font-bold text-[#4f4632]">
+                  Chua co tep duoc chia se.
+                </p>
+              }
+            </div>
+          </section>
+        }
+
+        @if (activeTab() === 'ALL' || activeTab() === 'LINKS') {
+          <section class="grid gap-4">
+            <h3 class="text-xs font-black uppercase tracking-[0.16em] text-[#4f4632]">Links</h3>
+            <div class="grid gap-3">
+              @for (item of linkItems(); track item.id) {
+                <a
+                  [href]="item.url"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="flex min-w-0 items-start gap-4 rounded-[8px] bg-[#fcf9f8] p-3 shadow-[0_18px_40px_-34px_rgba(16,16,16,0.75)] transition hover:bg-[#f6f3f2]"
+                >
+                  <span class="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-[8px] bg-[#e2dfff] text-[#3323cc]">
+                    <svg lucideLink class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <strong class="block truncate text-sm font-black text-[#101010]">{{ item.title }}</strong>
+                    <small class="mt-1 block truncate text-xs font-semibold text-[#3323cc]">
+                      {{ item.subtitle }}
+                    </small>
+                    <small class="mt-2 block text-[11px] font-semibold text-[#4f4632]">Shared recently</small>
+                  </span>
+                  <svg lucideExternalLink class="h-5 w-5 shrink-0 text-[#4f4632]" [attr.stroke-width]="2"></svg>
+                </a>
+              } @empty {
+                <p class="rounded-[8px] bg-[#f6f3f2] p-4 text-sm font-bold text-[#4f4632]">
+                  Chua co link duoc chia se.
+                </p>
+              }
+            </div>
+          </section>
+        }
+      </div>
+    </aside>
+  } @else {
+    <aside class="customer-shared-sidebar chat-scrollbar flex h-full w-full shrink-0 flex-col overflow-y-auto bg-white text-[#101010] lg:w-80">
+      <header class="flex shrink-0 items-center justify-between gap-3 px-4 py-4">
+        <div class="min-w-0">
+          <h2 class="truncate text-base font-black">Noi dung da chia se</h2>
+          <p class="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#4f4632]">
+            Media - Tep - Links
+          </p>
         </div>
-      }
-    </div>
-  </aside>
+        <button
+          type="button"
+          class="grid h-9 w-9 shrink-0 place-items-center rounded-[7px] text-[#4f4632] transition hover:bg-[#f6f3f2] hover:text-[#101010]"
+          (click)="closed.emit()"
+          title="Dong"
+        >
+          <svg lucideX class="h-4 w-4" [attr.stroke-width]="2"></svg>
+        </button>
+      </header>
+
+      <nav class="grid grid-cols-3 gap-2 p-3">
+        @for (tab of tabs(); track tab.value) {
+          <button
+            type="button"
+            class="rounded-[8px] px-2 py-2 text-xs font-black transition"
+            [class.bg-[#101010]]="activeTab() === tab.value"
+            [class.text-white]="activeTab() === tab.value"
+            [class.bg-[#f6f3f2]]="activeTab() !== tab.value"
+            [class.text-[#4f4632]]="activeTab() !== tab.value"
+            (click)="tabSelected.emit(tab.value)"
+          >
+            {{ tab.label }}
+            <span class="ml-1 opacity-65">{{ tab.count }}</span>
+          </button>
+        }
+      </nav>
+
+      <div class="grid flex-1 content-start gap-3 p-4">
+        @if (items().length > 0) {
+          @for (item of items(); track item.id) {
+            @if (isMedia(item)) {
+              <button
+                type="button"
+                class="group relative aspect-[4/3] w-full overflow-hidden rounded-[8px] border-0 bg-[#ebe7e7] p-0"
+                (click)="requestPreview(item)"
+              >
+                @if (item.thumbnailUrl) {
+                  <img
+                    [src]="item.thumbnailUrl"
+                    [alt]="item.title"
+                    class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                  />
+                } @else {
+                  <span class="grid h-full w-full place-items-center text-[#4f4632]">
+                    <svg lucideImage class="h-7 w-7" [attr.stroke-width]="2"></svg>
+                  </span>
+                }
+
+                <span class="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.82))] px-3 pb-3 pt-10 text-white">
+                  <strong class="block truncate text-xs font-black">{{ item.title }}</strong>
+                  <small class="block truncate text-[11px] font-semibold text-white/70">
+                    {{ item.subtitle }}
+                  </small>
+                </span>
+
+                @if (item.type === 'VIDEO') {
+                  <span class="absolute inset-0 grid place-items-center bg-black/20 text-white">
+                    <svg lucidePlayCircle class="h-9 w-9" [attr.stroke-width]="1.8"></svg>
+                  </span>
+                }
+              </button>
+            } @else if (item.type === 'FILE') {
+              <a
+                [href]="item.url"
+                [attr.download]="item.title"
+                rel="noreferrer"
+                class="flex min-w-0 items-center gap-3 rounded-[8px] bg-[#f6f3f2] p-3 transition hover:bg-[#ebe7e7]"
+              >
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-[7px] bg-red-50 text-red-600">
+                  <svg lucideFileText class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <strong class="block truncate text-sm font-black">{{ item.title }}</strong>
+                  <small class="block truncate text-xs font-semibold text-[#4f4632]">
+                    {{ item.subtitle }}
+                  </small>
+                </span>
+                <svg lucideDownload class="h-5 w-5 shrink-0 text-[#4f4632]" [attr.stroke-width]="2"></svg>
+              </a>
+            } @else {
+              <a
+                [href]="item.url"
+                target="_blank"
+                rel="noreferrer"
+                class="flex min-w-0 items-center gap-3 rounded-[8px] bg-[#f6f3f2] p-3 transition hover:bg-[#ebe7e7]"
+              >
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-[7px] bg-[#e2dfff] text-[#3323cc]">
+                  <svg lucideLink class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                </span>
+                <span class="min-w-0 flex-1">
+                  <strong class="block truncate text-sm font-black">{{ item.title }}</strong>
+                  <small class="block truncate text-xs font-semibold text-[#4f4632]">
+                    {{ item.subtitle }}
+                  </small>
+                </span>
+                <svg lucideExternalLink class="h-5 w-5 shrink-0 text-[#4f4632]" [attr.stroke-width]="2"></svg>
+              </a>
+            }
+          }
+        } @else {
+          <div class="grid min-h-52 place-items-center rounded-[8px] bg-[#f6f3f2] p-6 text-center">
+            <p class="text-sm font-bold text-[#4f4632]">Chua co noi dung trong muc nay.</p>
+          </div>
+        }
+      </div>
+    </aside>
+  }
 }

@@ -1,10 +1,16 @@
-﻿.management-shell {
+.owner-shell {
   min-height: 100vh;
   background: #fcf9f8;
   color: #1c1b1b;
 }
 
-.management-topbar {
+.owner-shell--chat-sidebar {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.owner-topbar {
   position: fixed;
   inset: 0 0 auto;
   z-index: 50;
@@ -18,31 +24,31 @@
   backdrop-filter: blur(18px);
 }
 
-.management-breadcrumb {
+.owner-breadcrumb {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.management-breadcrumb__brand {
+.owner-breadcrumb__brand {
   text-decoration: none;
   font-size: 22px;
   font-weight: 900;
 }
 
-.management-breadcrumb__separator {
+.owner-breadcrumb__separator {
   color: rgba(79, 70, 50, 0.42);
 }
 
-.management-breadcrumb__section,
-.management-breadcrumb__page {
+.owner-breadcrumb__section,
+.owner-breadcrumb__page {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.management-breadcrumb__section {
+.owner-breadcrumb__section {
   border-radius: 7px;
   background: #eef2ff;
   color: #4f46e5;
@@ -51,23 +57,23 @@
   padding: 6px 10px;
 }
 
-.management-breadcrumb__page {
+.owner-breadcrumb__page {
   font-size: 13px;
 }
 
-.management-topbar__actions {
+.owner-topbar__actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
 }
 
-.management-icon-button {
+.owner-icon-button {
   border: 0;
   cursor: pointer;
 }
 
-.management-icon-button {
+.owner-icon-button {
   display: grid;
   width: 38px;
   height: 38px;
@@ -77,12 +83,12 @@
   color: #4f4632;
 }
 
-:is(.management-icon-button, .management-nav__link) svg {
+:is(.owner-icon-button, .owner-nav__link) svg {
   width: 18px;
   height: 18px;
 }
 
-.management-account-trigger {
+.owner-account-trigger {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -96,13 +102,13 @@
   text-align: left;
 }
 
-.management-account-trigger:hover {
+.owner-account-trigger:hover {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(79, 70, 50, 0.24);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
-.management-avatar {
+.owner-avatar {
   display: grid;
   width: 32px;
   height: 32px;
@@ -115,19 +121,19 @@
   flex-shrink: 0;
 }
 
-.management-account-info {
+.owner-account-info {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
 }
 
-.management-account-name {
+.owner-account-name {
   font-size: 13px;
   font-weight: 600;
   color: #1c1b1b;
 }
 
-.management-account-role {
+.owner-account-role {
   color: rgba(79, 70, 50, 0.62);
   font-size: 9px;
   font-weight: 800;
@@ -135,18 +141,18 @@
   letter-spacing: 0.05em;
 }
 
-.management-account-chevron {
+.owner-account-chevron {
   width: 14px;
   height: 14px;
   color: rgba(79, 70, 50, 0.42);
   transition: transform 0.2s ease;
 }
 
-.management-account-trigger:hover .management-account-chevron {
+.owner-account-trigger:hover .owner-account-chevron {
   color: #1c1b1b;
 }
 
-.management-sidebar {
+.owner-sidebar {
   position: fixed;
   inset: 72px auto 0 0;
   z-index: 40;
@@ -160,18 +166,18 @@
   padding: 24px 16px;
 }
 
-.management-sidebar__heading {
+.owner-sidebar__heading {
   padding: 0 14px 8px;
 }
 
-.management-sidebar__heading h2 {
+.owner-sidebar__heading h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 800;
 }
 
-.management-sidebar__heading p,
-.management-nav__section > p {
+.owner-sidebar__heading p,
+.owner-nav__section > p {
   margin: 7px 0 0;
   color: rgba(79, 70, 50, 0.58);
   font-size: 10px;
@@ -179,21 +185,21 @@
   text-transform: uppercase;
 }
 
-.management-nav {
+.owner-nav {
   display: grid;
   gap: 18px;
 }
 
-.management-nav__section {
+.owner-nav__section {
   display: grid;
   gap: 6px;
 }
 
-.management-nav__section > p {
+.owner-nav__section > p {
   padding: 0 14px;
 }
 
-.management-nav__link {
+.owner-nav__link {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -206,101 +212,105 @@
   text-transform: uppercase;
 }
 
-.management-nav__link:hover {
+.owner-nav__link:hover {
   background: rgba(255, 255, 255, 0.66);
   color: #1c1b1b;
 }
 
-.management-nav__link--active {
+.owner-nav__link--active {
   border-left: 4px solid #fbbc04;
   background: rgba(251, 188, 4, 0.12);
   color: #1c1b1b;
   padding-left: 10px;
 }
 
-.management-main {
+.owner-main {
   min-height: 100vh;
   margin-left: 256px;
   padding: 104px 32px 48px;
 }
 
-.management-shell--chat-sidebar .management-main {
+.owner-shell--chat-sidebar .owner-main {
+  box-sizing: border-box;
+  height: 100vh;
+  min-height: 0;
   margin-left: 0;
+  overflow: hidden;
   padding: 72px 0 0;
 }
 
 @media (max-width: 980px) {
-  .management-account-info,
-  .management-account-chevron {
+  .owner-account-info,
+  .owner-account-chevron {
     display: none;
   }
 
-  .management-account-trigger {
+  .owner-account-trigger {
     padding: 6px;
   }
 
-  .management-sidebar {
+  .owner-sidebar {
     width: 84px;
     padding-inline: 12px;
   }
 
-  .management-sidebar__heading,
-  .management-nav__section > p,
-  .management-nav__link span {
+  .owner-sidebar__heading,
+  .owner-nav__section > p,
+  .owner-nav__link span {
     display: none;
   }
 
-  .management-nav__link {
+  .owner-nav__link {
     justify-content: center;
     padding-inline: 0;
   }
 
-  .management-nav__link--active {
+  .owner-nav__link--active {
     border-left: 0;
   }
 
-  .management-main {
+  .owner-main {
     margin-left: 84px;
     padding-inline: 20px;
   }
 
-  .management-shell--chat-sidebar .management-main {
+  .owner-shell--chat-sidebar .owner-main {
     margin-left: 0;
     padding: 72px 0 0;
   }
 }
 
 @media (max-width: 680px) {
-  .management-topbar {
+  .owner-topbar {
     padding-inline: 16px;
   }
 
-  .management-sidebar {
+  .owner-sidebar {
     display: none;
   }
 
-  .management-breadcrumb {
+  .owner-breadcrumb {
     gap: 8px;
   }
 
-  .management-breadcrumb__section {
+  .owner-breadcrumb__section {
     max-width: 30vw;
   }
 
-  .management-main {
+  .owner-main {
     margin-left: 0;
     padding: 96px 16px 32px;
   }
 
-  .management-shell--chat-sidebar .management-main {
+  .owner-shell--chat-sidebar .owner-main {
     padding: 72px 0 0;
   }
 }
 
 /* ==========================================================================
-   Management Account Dropdown Styles (PrimeNG Popover)
+   Owner Account Dropdown Styles (PrimeNG Popover)
    ========================================================================== */
-::ng-deep .management-account-menu.p-popover {
+::ng-deep .owner-account-menu.p-popover {
   min-width: 240px;
   background: #18181b !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -309,33 +319,33 @@
   margin-top: 8px;
 }
 
-::ng-deep .management-account-menu .p-popover-content {
+::ng-deep .owner-account-menu .p-popover-content {
   padding: 0 !important;
   background: transparent !important;
 }
 
-::ng-deep .management-account-menu .p-popover-arrow {
+::ng-deep .owner-account-menu .p-popover-arrow {
   display: none !important;
 }
 
-.management-dropdown {
+.owner-dropdown {
   display: flex;
   flex-direction: column;
 }
 
-.management-dropdown__header {
+.owner-dropdown__header {
   padding: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.management-dropdown__name {
+.owner-dropdown__name {
   display: block;
   font-size: 14px;
   font-weight: 600;
   color: #ffffff;
 }
 
-.management-dropdown__email {
+.owner-dropdown__email {
   display: block;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.42);
@@ -343,14 +353,14 @@
   word-break: break-all;
 }
 
-.management-dropdown__list {
+.owner-dropdown__list {
   display: flex;
   flex-direction: column;
   padding: 8px;
   gap: 4px;
 }
 
-.management-dropdown__item {
+.owner-dropdown__item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -367,23 +377,23 @@
   transition: all 0.2s ease;
 }
 
-.management-dropdown__item:hover {
+.owner-dropdown__item:hover {
   background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
 }
 
-.management-dropdown__item svg {
+.owner-dropdown__item svg {
   width: 16px;
   height: 16px;
   color: rgba(255, 255, 255, 0.42);
   transition: color 0.2s ease;
 }
 
-.management-dropdown__item:hover svg {
+.owner-dropdown__item:hover svg {
   color: #ffffff;
 }
 
-.management-dropdown__item--logout {
+.owner-dropdown__item--logout {
   color: #f43f5e;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 4px;
@@ -391,15 +401,15 @@
   border-radius: 0 0 8px 8px;
 }
 
-.management-dropdown__item--logout:hover {
+.owner-dropdown__item--logout:hover {
   background: rgba(244, 63, 94, 0.08);
   color: #fb7185;
 }
 
-.management-dropdown__item--logout svg {
+.owner-dropdown__item--logout svg {
   color: #f43f5e;
 }
 
-.management-dropdown__item--logout:hover svg {
+.owner-dropdown__item--logout:hover svg {
   color: #fb7185;
 }
