@@ -1,0 +1,87 @@
+.account-shell__body {
+  display: grid;
+  grid-template-columns: 18rem minmax(0, 1fr);
+  min-height: calc(100vh - 4rem);
+}
+
+.account-shell__sidebar {
+  position: sticky;
+  top: 4rem;
+  align-self: start;
+  height: calc(100vh - 4rem);
+  background: #f6f3f2;
+  padding: 2rem 1rem;
+}
+
+.account-shell__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.account-shell__nav-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-radius: 999px;
+  color: #5f5748;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.85rem 1.25rem;
+  text-transform: uppercase;
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.account-shell__nav-link:hover {
+  color: #1c1b1b;
+  transform: translateX(0.15rem);
+}
+
+.account-shell__nav-link--active {
+  background: #ffc700;
+  color: #1c1b1b;
+}
+
+.account-shell__nav-icon {
+  height: 1.1rem;
+  width: 1.1rem;
+  flex: 0 0 auto;
+}
+
+.account-shell__content {
+  min-width: 0;
+  padding: 3rem;
+}
+
+@media (max-width: 900px) {
+  .account-shell__body {
+    display: block;
+  }
+
+  .account-shell__sidebar {
+    position: static;
+    height: auto;
+    padding: 1rem;
+  }
+
+  .account-shell__nav {
+    flex-direction: row;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+  }
+
+  .account-shell__nav-link {
+    flex: 0 0 auto;
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+  }
+
+  .account-shell__content {
+    padding: 1.25rem;
+  }
+}

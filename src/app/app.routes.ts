@@ -38,6 +38,10 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'account',
+    loadChildren: () => import('./site-management/account/account.routes').then(m => m.accountRoutes)
+  },
+  {
     path: 'auth',
     children: [
       { path: 'login', loadComponent: () => import('./site-management/auth/login/login.component').then(m => m.LoginComponent) },
