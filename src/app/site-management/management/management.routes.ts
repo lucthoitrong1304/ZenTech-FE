@@ -66,11 +66,11 @@ export const managementRoutes: Routes = [
           eyebrow: 'Điều hành kinh doanh',
           title: 'Đơn hàng',
           description: 'Theo dõi vòng đời đơn hàng, thanh toán và trạng thái giao nhận.',
-          primaryAction: 'Tạo đơn hàng',
+          primaryAction: 'Xuất báo cáo',
         },
         loadComponent: () =>
-          import('./pages/management-placeholder/management-placeholder.component').then(
-            m => m.ManagementPlaceholderComponent
+          import('./orders/pages/management-orders-page/management-orders-page.component').then(
+            m => m.ManagementOrdersPageComponent
           ),
       },
       {

@@ -1,0 +1,217 @@
+.orders-panel {
+  overflow: hidden;
+  border: 1px solid rgba(210, 197, 171, 0.16);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 28px 64px rgba(28, 27, 27, 0.06);
+}
+
+.orders-table-wrap {
+  overflow-x: auto;
+}
+
+.orders-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
+.orders-table th,
+.orders-table td {
+  border-top: 1px solid rgba(210, 197, 171, 0.14);
+  padding: 18px 22px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.orders-table thead th {
+  border-top: 0;
+  background: #f6f3f2;
+  color: rgba(79, 70, 50, 0.64);
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.orders-table td {
+  color: #1c1b1b;
+  font-size: 13px;
+}
+
+.orders-table__money {
+  text-align: right;
+}
+
+.orders-code {
+  color: #4f46e5;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 13px;
+}
+
+.orders-customer {
+  display: grid;
+  gap: 4px;
+}
+
+.orders-customer small {
+  color: rgba(79, 70, 50, 0.62);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.orders-status {
+  display: inline-flex;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 950;
+  padding: 6px 10px;
+  text-transform: uppercase;
+}
+
+.orders-status--processing {
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+}
+
+.orders-status--delivered {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+}
+
+.orders-status--cancelled {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+}
+
+.orders-status--payment_pending {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+}
+
+.orders-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.orders-row-action,
+.orders-page-button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: #f6f3f2;
+  color: #4f4632;
+  cursor: pointer;
+}
+
+.orders-row-action {
+  width: 34px;
+  height: 34px;
+}
+
+.orders-row-action--edit {
+  background: rgba(251, 188, 4, 0.14);
+  color: #8a5b00;
+}
+
+.orders-row-action svg,
+.orders-page-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.orders-empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 56px 20px;
+  text-align: center;
+}
+
+.orders-empty svg {
+  width: 34px;
+  height: 34px;
+  color: #fbbc04;
+}
+
+.orders-empty h3,
+.orders-empty p {
+  margin: 0;
+}
+
+.orders-empty h3 {
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.orders-empty p {
+  color: rgba(79, 70, 50, 0.72);
+  font-size: 13px;
+}
+
+.orders-skeleton {
+  height: 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f6f3f2, #ebe7e7, #f6f3f2);
+  background-size: 220% 100%;
+  animation: orders-shimmer 1.2s infinite linear;
+}
+
+.orders-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid rgba(210, 197, 171, 0.14);
+  background: rgba(246, 243, 242, 0.54);
+  padding: 16px 22px;
+}
+
+.orders-pagination p {
+  margin: 0;
+  color: rgba(79, 70, 50, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.orders-page-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.orders-page-button {
+  width: 34px;
+  height: 34px;
+  background: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.orders-page-button--active {
+  background: #fbbc04;
+  color: #1c1b1b;
+}
+
+.orders-page-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+@keyframes orders-shimmer {
+  to {
+    background-position: -220% 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .orders-pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .orders-page-buttons {
+    flex-wrap: wrap;
+  }
+}

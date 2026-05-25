@@ -1,0 +1,124 @@
+@if (visible()) {
+  <div class="order-edit-backdrop" role="presentation" (click)="close.emit()">
+    <form class="order-edit" aria-label="Chỉnh sửa đơn hàng" (click)="$event.stopPropagation()" (submit)="submit($event)">
+      <header class="order-edit__header">
+        <div>
+          <p>Order Control</p>
+          <h2>Cập nhật đơn hàng</h2>
+        </div>
+        <button type="button" class="order-edit__icon" aria-label="Đóng chỉnh sửa đơn hàng" (click)="close.emit()">
+          <svg lucideX [attr.stroke-width]="2"></svg>
+        </button>
+      </header>
+
+      @if (order(); as selectedOrder) {
+        @if (draft(); as currentDraft) {
+          <div class="order-edit__body">
+            <section class="order-edit__section">
+              <h3>Thông tin khách hàng</h3>
+
+              <label class="order-edit__field">
+                <span>Tên khách hàng</span>
+                <input type="text" [value]="currentDraft.customerName" (input)="onCustomerNameInput($event)" />
+                @if (errors().customerName) {
+                  <small>{{ errors().customerName }}</small>
+                }
+              </label>
+
+              <label class="order-edit__field">
+                <span>Địa chỉ giao hàng</span>
+                <textarea rows="3" [value]="currentDraft.shippingAddress" (input)="onShippingAddressInput($event)"></textarea>
+                @if (errors().shippingAddress) {
+                  <small>{{ errors().shippingAddress }}</small>
+                }
+              </label>
+
+              <div class="order-edit__split">
+                <label class="order-edit__field">
+                  <span>Trạng thái đơn hàng</span>
+                  <select [value]="currentDraft.orderStatus" (change)="onStatusChange($event)">
+                    <option value="PROCESSING">Đang xử lý</option>
+                    <option value="DELIVERED">Đã giao</option>
+                    <option value="CANCELLED">Đã hủy</option>
+                    <option value="PAYMENT_PENDING">Chờ thanh toán</option>
+                  </select>
+                </label>
+
+                <div class="order-edit__readonly">
+                  <span>Ngày đặt</span>
+                  <strong>{{ selectedOrder.createdAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="order-edit__items">
+              <h3>Sản phẩm đã đặt</h3>
+              @for (item of selectedOrder.items; track item.orderItemId) {
+                <article class="order-edit-item">
+                  <div class="order-edit-item__media">
+                    @if (item.productImage) {
+                      <img [src]="item.productImage" [alt]="item.productName" />
+                    } @else {
+                      <span>ZT</span>
+                    }
+                  </div>
+                  <div class="order-edit-item__copy">
+                    <h4>{{ item.productName }}</h4>
+                    <p>{{ item.variantName || 'Phiên bản tiêu chuẩn' }}</p>
+                  </div>
+                  <div class="order-edit-item__quantity">
+                    <button type="button" (click)="setQuantity(item.orderItemId, getDraftQuantity(item.orderItemId) - 1)">
+                      <svg lucideMinus [attr.stroke-width]="2"></svg>
+                    </button>
+                    <input
+                      type="number"
+                      min="1"
+                      [value]="getDraftQuantity(item.orderItemId)"
+                      (input)="setQuantity(item.orderItemId, +$any($event.target).value)"
+                    />
+                    <button type="button" (click)="setQuantity(item.orderItemId, getDraftQuantity(item.orderItemId) + 1)">
+                      <svg lucidePlus [attr.stroke-width]="2"></svg>
+                    </button>
+                  </div>
+                  <strong>{{ item.unitPrice * getDraftQuantity(item.orderItemId) | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                </article>
+              }
+              @if (errors().items) {
+                <small class="order-edit__error">{{ errors().items }}</small>
+              }
+            </section>
+
+            <section class="order-edit-summary">
+              <div>
+                <span>Tạm tính</span>
+                <strong>{{ selectedOrder.subtotal | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+              </div>
+              <div>
+                <span>Phí vận chuyển</span>
+                <strong>{{ selectedOrder.shippingFee | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+              </div>
+              <div class="order-edit-summary__total">
+                <span>
+                  <small>Tổng thanh toán</small>
+                  <strong>{{ selectedOrder.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                </span>
+                <em>Đã thanh toán</em>
+              </div>
+            </section>
+
+            @if (errors().submit) {
+              <p class="order-edit__submit-error">{{ errors().submit }}</p>
+            }
+          </div>
+
+          <footer class="order-edit__footer">
+            <button type="button" class="order-edit__secondary" [disabled]="saving()" (click)="cancel.emit()">Hủy bỏ</button>
+            <button type="submit" class="order-edit__primary" [disabled]="saving()">
+              {{ saving() ? 'Đang lưu...' : 'Lưu thay đổi' }}
+            </button>
+          </footer>
+        }
+      }
+    </form>
+  </div>
+}

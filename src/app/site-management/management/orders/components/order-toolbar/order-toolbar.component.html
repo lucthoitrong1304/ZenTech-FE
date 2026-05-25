@@ -1,0 +1,60 @@
+<div class="orders-toolbar">
+  <label class="orders-toolbar__search">
+    <svg lucideSearch [attr.stroke-width]="2"></svg>
+    <input
+      type="search"
+      [value]="keyword()"
+      placeholder="Tìm theo mã đơn hoặc tên khách hàng..."
+      (input)="onKeywordInput($event)"
+      (keydown.enter)="onKeywordEnter($event)"
+    />
+  </label>
+
+  <select
+    class="orders-toolbar__select"
+    aria-label="Lọc trạng thái đơn hàng"
+    [value]="status()"
+    (change)="onStatusChange($event)"
+  >
+    <option value="all">Tất cả trạng thái</option>
+    <option value="PROCESSING">Đang xử lý</option>
+    <option value="DELIVERED">Đã giao</option>
+    <option value="CANCELLED">Đã hủy</option>
+    <option value="PAYMENT_PENDING">Chờ thanh toán</option>
+  </select>
+
+  <label class="orders-toolbar__date">
+    <svg lucideCalendar [attr.stroke-width]="2"></svg>
+    <select aria-label="Lọc thời gian" [value]="dateFilter()" (change)="onDateFilterChange($event)">
+      <option value="all">Mọi thời gian</option>
+      <option value="today">Hôm nay</option>
+      <option value="last7days">7 ngày gần đây</option>
+      <option value="last30days">30 ngày gần đây</option>
+    </select>
+  </label>
+
+  <select
+    class="orders-toolbar__select orders-toolbar__select--compact"
+    aria-label="Sắp xếp đơn hàng"
+    [value]="sort()"
+    (change)="onSortChange($event)"
+  >
+    <option value="createdAt,desc">Mới nhất</option>
+    <option value="createdAt,asc">Cũ nhất</option>
+    <option value="finalPrice,desc">Giá trị cao</option>
+    <option value="finalPrice,asc">Giá trị thấp</option>
+  </select>
+
+  <button type="button" class="orders-toolbar__filter" [disabled]="loading()" (click)="applyFilters.emit()">
+    <svg lucideFilter [attr.stroke-width]="2"></svg>
+    <span>Lọc</span>
+    @if (activeFilterCount() > 0) {
+      <strong>{{ activeFilterCount() }}</strong>
+    }
+  </button>
+
+  <button type="button" class="orders-toolbar__reset" [disabled]="loading()" (click)="resetFilters.emit()">
+    <svg lucideX [attr.stroke-width]="2"></svg>
+    <span>Xóa</span>
+  </button>
+</div>

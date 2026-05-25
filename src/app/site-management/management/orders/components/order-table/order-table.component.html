@@ -1,0 +1,123 @@
+<article class="orders-panel">
+  <div class="orders-table-wrap">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>Mã đơn</th>
+          <th>Ngày đặt</th>
+          <th>Khách hàng</th>
+          <th class="orders-table__money">Tổng tiền</th>
+          <th>Thanh toán</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (loading()) {
+          @for (_ of skeletonRows; track $index) {
+            <tr>
+              <td colspan="7">
+                <div class="orders-skeleton"></div>
+              </td>
+            </tr>
+          }
+        } @else {
+          @for (order of orders(); track order.orderId) {
+            <tr>
+              <td>
+                <strong class="orders-code">#{{ order.orderCode }}</strong>
+              </td>
+              <td>{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <span class="orders-customer">
+                  <strong>{{ order.customer.fullName }}</strong>
+                  <small>{{ order.customer.email }}</small>
+                </span>
+              </td>
+              <td class="orders-table__money">
+                <strong>{{ order.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+              </td>
+              <td>{{ getPaymentMethodLabel(order.paymentMethod) }}</td>
+              <td>
+                <span class="orders-status" [class]="'orders-status orders-status--' + order.orderStatus.toLowerCase()">
+                  {{ getStatusLabel(order.orderStatus) }}
+                </span>
+              </td>
+              <td>
+                <div class="orders-actions">
+                  <button
+                    type="button"
+                    class="orders-row-action"
+                    aria-label="Xem chi tiết đơn hàng"
+                    (click)="viewOrder.emit(order.orderId)"
+                  >
+                    <svg lucideEye [attr.stroke-width]="2"></svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="orders-row-action orders-row-action--edit"
+                    aria-label="Chỉnh sửa đơn hàng"
+                    (click)="editOrder.emit(order)"
+                  >
+                    <svg lucidePencil [attr.stroke-width]="2"></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7">
+                <div class="orders-empty">
+                  <svg lucideShoppingBag [attr.stroke-width]="1.8"></svg>
+                  <h3>Chưa có đơn hàng phù hợp</h3>
+                  <p>Thử đổi bộ lọc hoặc xóa từ khóa tìm kiếm.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="orders-pagination">
+    <p>Hiển thị {{ pageStart() }}-{{ pageEnd() }} trên {{ totalElements() }} đơn hàng</p>
+
+    <div class="orders-page-buttons">
+      <button
+        type="button"
+        class="orders-page-button"
+        [disabled]="!canGoPrevious() || loading()"
+        (click)="pageChange.emit(page() - 1)"
+        aria-label="Trang trước"
+      >
+        <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
+      </button>
+
+      @for (slot of pageSlots; track slot) {
+        @let pageNumber = getPageNumber(slot);
+        @if (pageNumber !== null) {
+          <button
+            type="button"
+            class="orders-page-button"
+            [class.orders-page-button--active]="pageNumber === page()"
+            [disabled]="loading()"
+            (click)="pageChange.emit(pageNumber)"
+          >
+            {{ pageNumber + 1 }}
+          </button>
+        }
+      }
+
+      <button
+        type="button"
+        class="orders-page-button"
+        [disabled]="!canGoNext() || loading()"
+        (click)="pageChange.emit(page() + 1)"
+        aria-label="Trang sau"
+      >
+        <svg lucideChevronRight [attr.stroke-width]="2"></svg>
+      </button>
+    </div>
+  </footer>
+</article>

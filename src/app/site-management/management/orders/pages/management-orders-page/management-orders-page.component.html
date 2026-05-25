@@ -1,0 +1,80 @@
+<section class="orders-page">
+  <div class="orders-command">
+    <div class="orders-command__copy">
+      <span class="orders-kicker">Order Control Center</span>
+      <h1>Quản lý Đơn hàng</h1>
+      <p>Theo dõi, xử lý và cập nhật trạng thái các đơn hàng trong hệ thống.</p>
+    </div>
+
+    <button type="button" class="orders-primary-action" (click)="exportReport()">
+      <svg lucideFileDown [attr.stroke-width]="2.2"></svg>
+      <span>Xuất báo cáo</span>
+    </button>
+  </div>
+
+  <app-order-toolbar
+    [keyword]="store.query().keyword"
+    [status]="store.query().status"
+    [dateFilter]="store.query().dateFilter"
+    [sort]="store.query().sort"
+    [activeFilterCount]="store.activeFilterCount()"
+    [loading]="store.loading()"
+    (keywordChange)="setKeyword($event)"
+    (statusChange)="setStatusFilter($event)"
+    (dateFilterChange)="setDateFilter($event)"
+    (sortChange)="setSort($event)"
+    (applyFilters)="store.applyFilters()"
+    (resetFilters)="store.resetFilters()"
+  />
+
+  <div class="orders-stats">
+    <article>
+      <span>Tổng đơn hàng</span>
+      <strong>{{ store.totalElements() }}</strong>
+    </article>
+    <article>
+      <span>Trang hiện tại</span>
+      <strong>{{ store.totalPages() === 0 ? 0 : store.query().page + 1 }}</strong>
+    </article>
+    <article>
+      <span>Đang hiển thị</span>
+      <strong>{{ store.orders().length }}</strong>
+    </article>
+  </div>
+
+  <app-order-table
+    [orders]="store.orders()"
+    [loading]="store.loading()"
+    [page]="store.query().page"
+    [totalPages]="store.totalPages()"
+    [totalElements]="store.totalElements()"
+    [pageStart]="store.pageStart()"
+    [pageEnd]="store.pageEnd()"
+    [canGoPrevious]="store.canGoPrevious()"
+    [canGoNext]="store.canGoNext()"
+    (viewOrder)="store.openDetail($event)"
+    (editOrder)="store.openEdit($event)"
+    (pageChange)="store.goToPage($event)"
+  />
+
+  <app-order-detail-drawer
+    [visible]="store.detailDrawerOpen()"
+    [order]="store.selectedOrder()"
+    (close)="store.closeDrawer()"
+    (markDelivered)="store.markDelivered($event)"
+    (printInvoice)="printInvoice($event)"
+  />
+
+  <app-order-edit-drawer
+    [visible]="store.editDrawerOpen()"
+    [order]="store.selectedOrder()"
+    [draft]="store.editDraft()"
+    [errors]="store.editErrors()"
+    [saving]="store.saving()"
+    (close)="store.closeDrawer()"
+    (cancel)="store.cancelEdit()"
+    (save)="store.saveEditDraft()"
+    (draftChange)="updateDraft($event)"
+    (quantityChange)="updateQuantity($event)"
+  />
+</section>
