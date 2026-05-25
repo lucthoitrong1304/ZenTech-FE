@@ -18,15 +18,15 @@ import {
 import { CustomerChatService } from '../../../../customer-chat/data-access/services/customer-chat.service';
 import { CustomerChatWebsocketService } from '../../../../customer-chat/data-access/services/customer-chat-websocket.service';
 import {
-  OwnerChatConversation,
-  OwnerChatMediaItem,
-  OwnerChatMessage,
-  OwnerChatWorkspace,
-} from '../models/owner-chat.models';
-import { OwnerChatService } from '../services/owner-chat.service';
-import { OwnerChatStore } from './owner-chat.store';
+  ManagementChatConversation,
+  ManagementChatMediaItem,
+  ManagementChatMessage,
+  ManagementChatWorkspace,
+} from '../models/management-chat.models';
+import { ManagementChatService } from '../services/management-chat.service';
+import { ManagementChatStore } from './management-chat.store';
 
-describe('OwnerChatStore', () => {
+describe('ManagementChatStore', () => {
   beforeAll(() => {
     try {
       getTestBed().initTestEnvironment(
@@ -55,10 +55,10 @@ describe('OwnerChatStore', () => {
       topicSubjects.set(destination, created);
       return created;
     };
-    const ownerChatService = {
+    const managementChatService = {
       getWorkspace: vi.fn(() => of(workspace)),
       claimConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.AGENT_HANDLING))),
-      mapToOwnerChatConversation: vi.fn(mapConversationResponse),
+      mapToManagementChatConversation: vi.fn(mapConversationResponse),
     };
     const customerChatService = {
       getMessages: vi.fn(() => of(createPage(createChatMessages()))),
@@ -82,10 +82,10 @@ describe('OwnerChatStore', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        OwnerChatStore,
+        ManagementChatStore,
         {
-          provide: OwnerChatService,
-          useValue: ownerChatService,
+          provide: ManagementChatService,
+          useValue: managementChatService,
         },
         {
           provide: CustomerChatService,
@@ -99,7 +99,7 @@ describe('OwnerChatStore', () => {
     });
 
     return {
-      store: TestBed.inject(OwnerChatStore),
+      store: TestBed.inject(ManagementChatStore),
       customerChatService,
       websocketService,
       emitTopic<T>(destination: string, value: T): void {
@@ -282,8 +282,8 @@ function isTestEnvironmentAlreadyInitialized(error: Error): boolean {
   );
 }
 
-function createWorkspace(): OwnerChatWorkspace {
-  const conversations: OwnerChatConversation[] = [
+function createWorkspace(): ManagementChatWorkspace {
+  const conversations: ManagementChatConversation[] = [
     {
       id: 'conv-1',
       customer: {
@@ -317,7 +317,7 @@ function createWorkspace(): OwnerChatWorkspace {
       productContext: 'Ban phim',
     },
   ];
-  const messages: OwnerChatMessage[] = [
+  const messages: ManagementChatMessage[] = [
     {
       id: 'msg-1',
       conversationId: 'conv-1',
@@ -328,7 +328,7 @@ function createWorkspace(): OwnerChatWorkspace {
       attachments: [],
     },
   ];
-  const mediaItems: OwnerChatMediaItem[] = [
+  const mediaItems: ManagementChatMediaItem[] = [
     {
       id: 'image-1',
       conversationId: 'conv-1',
@@ -352,7 +352,7 @@ function createWorkspace(): OwnerChatWorkspace {
   return { conversations, messages, mediaItems };
 }
 
-function mapConversationResponse(conv: ConversationResponse): OwnerChatConversation {
+function mapConversationResponse(conv: ConversationResponse): ManagementChatConversation {
   return {
     id: conv.id,
     customer: {

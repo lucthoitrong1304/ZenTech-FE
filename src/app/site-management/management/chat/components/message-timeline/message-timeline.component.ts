@@ -3,10 +3,10 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { LucideBot, LucideFileText, LucideImage } from '@lucide/angular';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import {
-  OwnerChatConversation,
-  OwnerChatMessageAttachment,
-  OwnerChatMessage,
-} from '../../data-access/models/owner-chat.models';
+  ManagementChatConversation,
+  ManagementChatMessageAttachment,
+  ManagementChatMessage,
+} from '../../data-access/models/management-chat.models';
 
 @Component({
   selector: 'app-message-timeline',
@@ -19,15 +19,15 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MessageTimelineComponent {
-  readonly conversation = input.required<OwnerChatConversation>();
-  readonly messages = input.required<OwnerChatMessage[]>();
+  readonly conversation = input.required<ManagementChatConversation>();
+  readonly messages = input.required<ManagementChatMessage[]>();
   readonly previewRequested = output<MediaPreviewItem>();
 
-  protected isPreviewable(attachment: OwnerChatMessageAttachment): boolean {
+  protected isPreviewable(attachment: ManagementChatMessageAttachment): boolean {
     return attachment.type === 'IMAGE' || attachment.type === 'VIDEO';
   }
 
-  protected requestPreview(attachment: OwnerChatMessageAttachment): void {
+  protected requestPreview(attachment: ManagementChatMessageAttachment): void {
     if (!this.isPreviewable(attachment)) {
       return;
     }

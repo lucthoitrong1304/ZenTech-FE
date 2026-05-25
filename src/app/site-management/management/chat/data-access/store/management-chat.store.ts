@@ -12,21 +12,21 @@ import {
 } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, Subscription, catchError, forkJoin, of, pipe, switchMap, tap, map } from 'rxjs';
-import { OwnerChatEvent, OwnerChatEventType } from '../models/owner-chat.event';
+import { ManagementChatEvent, ManagementChatEventType } from '../models/management-chat.event';
 import {
-  OwnerChatConversation,
-  OwnerChatConversationStatus,
-  OwnerChatExpertRequestFilter,
-  OwnerChatExpertRequestStatus,
-  OwnerChatMediaItem,
-  OwnerChatMediaTab,
-  OwnerChatMediaType,
-  OwnerChatMessage,
-  OwnerChatStatusFilter,
-  OwnerChatUpload,
-  OwnerChatWorkspace,
-} from '../models/owner-chat.models';
-import { OwnerChatService } from '../services/owner-chat.service';
+  ManagementChatConversation,
+  ManagementChatConversationStatus,
+  ManagementChatExpertRequestFilter,
+  ManagementChatExpertRequestStatus,
+  ManagementChatMediaItem,
+  ManagementChatMediaTab,
+  ManagementChatMediaType,
+  ManagementChatMessage,
+  ManagementChatStatusFilter,
+  ManagementChatUpload,
+  ManagementChatWorkspace,
+} from '../models/management-chat.models';
+import { ManagementChatService } from '../services/management-chat.service';
 import { CustomerChatService } from '../../../../customer-chat/data-access/services/customer-chat.service';
 import { CustomerChatWebsocketService } from '../../../../customer-chat/data-access/services/customer-chat-websocket.service';
 import {
@@ -40,12 +40,12 @@ import {
   formatBytes,
 } from '../../../../customer-chat/data-access/models/customer-chat.models';
 
-interface OwnerChatUiState {
+interface ManagementChatUiState {
   selectedConversationId: string | null;
-  statusFilter: OwnerChatStatusFilter;
-  expertRequestFilter: OwnerChatExpertRequestFilter;
+  statusFilter: ManagementChatStatusFilter;
+  expertRequestFilter: ManagementChatExpertRequestFilter;
   searchKeyword: string;
-  activeMediaTab: OwnerChatMediaTab;
+  activeMediaTab: ManagementChatMediaTab;
   mediaDrawerOpen: boolean;
   loading: boolean;
   errorMessage: string | null;
@@ -53,25 +53,25 @@ interface OwnerChatUiState {
 
 const CONVERSATION_ENTITY_CONFIG = {
   collection: 'conversation',
-  selectId: (conversation: OwnerChatConversation) => conversation.id,
+  selectId: (conversation: ManagementChatConversation) => conversation.id,
 } as const;
 
 const MESSAGE_ENTITY_CONFIG = {
   collection: 'message',
-  selectId: (message: OwnerChatMessage) => message.id,
+  selectId: (message: ManagementChatMessage) => message.id,
 } as const;
 
 const MEDIA_ENTITY_CONFIG = {
   collection: 'media',
-  selectId: (mediaItem: OwnerChatMediaItem) => mediaItem.id,
+  selectId: (mediaItem: ManagementChatMediaItem) => mediaItem.id,
 } as const;
 
 const UPLOAD_ENTITY_CONFIG = {
   collection: 'upload',
-  selectId: (upload: OwnerChatUpload) => upload.id,
+  selectId: (upload: ManagementChatUpload) => upload.id,
 } as const;
 
-const INITIAL_STATE: OwnerChatUiState = {
+const INITIAL_STATE: ManagementChatUiState = {
   selectedConversationId: null,
   statusFilter: 'ALL',
   expertRequestFilter: 'ALL',
@@ -82,24 +82,24 @@ const INITIAL_STATE: OwnerChatUiState = {
   errorMessage: null,
 };
 
-const STATUS_LABELS: Record<OwnerChatConversationStatus, string> = {
+const STATUS_LABELS: Record<ManagementChatConversationStatus, string> = {
   AI_ASSISTING: 'AI đang tư vấn',
   WAITING_STAFF: 'Đang chờ nhân viên',
   STAFF_HANDLING: 'Nhân viên đang xử lý',
   CLOSED: 'Đã đóng',
 };
 
-const EXPERT_REQUEST_LABELS: Record<OwnerChatExpertRequestStatus, string> = {
+const EXPERT_REQUEST_LABELS: Record<ManagementChatExpertRequestStatus, string> = {
   WAITING: 'Đang chờ phản hồi',
   ACCEPTED: 'Đã chấp nhận',
   DECLINED: 'Đã từ chối',
   CANCELLED: 'Đã bị hủy',
 };
 
-function mapToOwnerChatMessage(
+function mapToManagementChatMessage(
   m: ChatMessageResponse,
   customerName: string
-): OwnerChatMessage {
+): ManagementChatMessage {
   let sender: 'CUSTOMER' | 'AI' | 'STAFF' = 'CUSTOMER';
   let senderName = customerName || 'Khách hàng';
 
@@ -122,7 +122,7 @@ function mapToOwnerChatMessage(
     sentAtLabel: formatTime(m.createdAt),
     attachments: (m.attachments || []).map((attachment) => ({
       id: attachment.id,
-      type: attachment.attachmentType as unknown as OwnerChatMediaType,
+      type: attachment.attachmentType as unknown as ManagementChatMediaType,
       title: attachment.fileName,
       url: attachment.mediaUrl || '',
       thumbnailUrl:
@@ -133,11 +133,11 @@ function mapToOwnerChatMessage(
   };
 }
 
-function mapToOwnerChatMediaItems(m: ChatMessageResponse): OwnerChatMediaItem[] {
+function mapToManagementChatMediaItems(m: ChatMessageResponse): ManagementChatMediaItem[] {
   return (m.attachments || []).map((attachment) => ({
     id: attachment.id,
     conversationId: m.conversationId,
-    type: attachment.attachmentType as unknown as OwnerChatMediaType,
+    type: attachment.attachmentType as unknown as ManagementChatMediaType,
     title: attachment.fileName,
     subtitle: `${formatBytes(attachment.fileSize)} - ${formatTime(m.createdAt)}`,
     url: attachment.mediaUrl || '',
@@ -168,22 +168,22 @@ function mapOutgoingMessageType(
   }
 }
 
-export const OwnerChatStore = signalStore(
-  withState<OwnerChatUiState>(INITIAL_STATE),
-  withEntities<OwnerChatConversation, 'conversation'>({
-    entity: {} as OwnerChatConversation,
+export const ManagementChatStore = signalStore(
+  withState<ManagementChatUiState>(INITIAL_STATE),
+  withEntities<ManagementChatConversation, 'conversation'>({
+    entity: {} as ManagementChatConversation,
     collection: 'conversation',
   }),
-  withEntities<OwnerChatMessage, 'message'>({
-    entity: {} as OwnerChatMessage,
+  withEntities<ManagementChatMessage, 'message'>({
+    entity: {} as ManagementChatMessage,
     collection: 'message',
   }),
-  withEntities<OwnerChatMediaItem, 'media'>({
-    entity: {} as OwnerChatMediaItem,
+  withEntities<ManagementChatMediaItem, 'media'>({
+    entity: {} as ManagementChatMediaItem,
     collection: 'media',
   }),
-  withEntities<OwnerChatUpload, 'upload'>({
-    entity: {} as OwnerChatUpload,
+  withEntities<ManagementChatUpload, 'upload'>({
+    entity: {} as ManagementChatUpload,
     collection: 'upload',
   }),
   withComputed(
@@ -264,7 +264,7 @@ export const OwnerChatStore = signalStore(
         });
       }),
       statusCounts: computed(() =>
-        (Object.keys(STATUS_LABELS) as OwnerChatConversationStatus[]).map(status => ({
+        (Object.keys(STATUS_LABELS) as ManagementChatConversationStatus[]).map(status => ({
           status,
           label: STATUS_LABELS[status],
           count: conversationEntities().filter(conversation => conversation.status === status)
@@ -272,7 +272,7 @@ export const OwnerChatStore = signalStore(
         }))
       ),
       expertRequestCounts: computed(() =>
-        (Object.keys(EXPERT_REQUEST_LABELS) as OwnerChatExpertRequestStatus[]).map(status => ({
+        (Object.keys(EXPERT_REQUEST_LABELS) as ManagementChatExpertRequestStatus[]).map(status => ({
           status,
           label: EXPERT_REQUEST_LABELS[status],
           count: conversationEntities().filter(
@@ -285,7 +285,7 @@ export const OwnerChatStore = signalStore(
   ),
   withMethods((
     store,
-    ownerChatService = inject(OwnerChatService),
+    managementChatService = inject(ManagementChatService),
     customerChatService = inject(CustomerChatService),
     websocketService = inject(CustomerChatWebsocketService)
   ) => {
@@ -293,13 +293,13 @@ export const OwnerChatStore = signalStore(
     let messageSub: Subscription | null = null;
     let conversationSub: Subscription | null = null;
 
-    const handleEvent = (event: OwnerChatEvent): void => {
+    const handleEvent = (event: ManagementChatEvent): void => {
       switch (event.type) {
-        case OwnerChatEventType.WorkspaceLoadStarted:
+        case ManagementChatEventType.WorkspaceLoadStarted:
           patchState(store, { loading: true, errorMessage: null });
           break;
 
-        case OwnerChatEventType.WorkspaceLoadSucceeded:
+        case ManagementChatEventType.WorkspaceLoadSucceeded:
           patchState(
             store,
             setAllEntities(event.workspace.conversations, CONVERSATION_ENTITY_CONFIG),
@@ -313,14 +313,14 @@ export const OwnerChatStore = signalStore(
           );
           break;
 
-        case OwnerChatEventType.WorkspaceLoadFailed:
+        case ManagementChatEventType.WorkspaceLoadFailed:
           patchState(store, {
             loading: false,
             errorMessage: 'Không thể tải không gian tư vấn khách hàng.',
           });
           break;
 
-        case OwnerChatEventType.ConversationSelected:
+        case ManagementChatEventType.ConversationSelected:
           patchState(
             store,
             updateEntity(
@@ -334,7 +334,7 @@ export const OwnerChatStore = signalStore(
           );
           break;
 
-        case OwnerChatEventType.SelectionCleared:
+        case ManagementChatEventType.SelectionCleared:
           patchState(store, {
             selectedConversationId: null,
             mediaDrawerOpen: false,
@@ -342,35 +342,35 @@ export const OwnerChatStore = signalStore(
           });
           break;
 
-        case OwnerChatEventType.SearchKeywordChanged:
+        case ManagementChatEventType.SearchKeywordChanged:
           patchState(store, { searchKeyword: event.searchKeyword });
           break;
 
-        case OwnerChatEventType.StatusFilterChanged:
+        case ManagementChatEventType.StatusFilterChanged:
           patchState(store, { statusFilter: event.statusFilter });
           break;
 
-        case OwnerChatEventType.ExpertRequestFilterChanged:
+        case ManagementChatEventType.ExpertRequestFilterChanged:
           patchState(store, { expertRequestFilter: event.expertRequestFilter });
           break;
 
-        case OwnerChatEventType.MediaDrawerToggled:
+        case ManagementChatEventType.MediaDrawerToggled:
           patchState(store, { mediaDrawerOpen: event.open });
           break;
 
-        case OwnerChatEventType.MediaDrawerOpened:
+        case ManagementChatEventType.MediaDrawerOpened:
           patchState(store, { mediaDrawerOpen: true });
           break;
 
-        case OwnerChatEventType.MediaDrawerClosed:
+        case ManagementChatEventType.MediaDrawerClosed:
           patchState(store, { mediaDrawerOpen: false });
           break;
 
-        case OwnerChatEventType.MediaTabChanged:
+        case ManagementChatEventType.MediaTabChanged:
           patchState(store, { activeMediaTab: event.activeMediaTab });
           break;
 
-        case OwnerChatEventType.ConversationAccepted:
+        case ManagementChatEventType.ConversationAccepted:
           patchState(
             store,
             updateEntity(
@@ -383,7 +383,7 @@ export const OwnerChatStore = signalStore(
           );
           break;
 
-        case OwnerChatEventType.ConversationClosed:
+        case ManagementChatEventType.ConversationClosed:
           patchState(
             store,
             updateEntity(
@@ -394,7 +394,7 @@ export const OwnerChatStore = signalStore(
           );
           break;
 
-        case OwnerChatEventType.StaffMessageSubmitted:
+        case ManagementChatEventType.StaffMessageSubmitted:
           patchState(
             store,
             addEntity(event.message, MESSAGE_ENTITY_CONFIG),
@@ -421,10 +421,10 @@ export const OwnerChatStore = signalStore(
       return customerChatService.getMessages(conversationId, 0, 100).pipe(
         tap((pageRes) => {
           const mappedMessages = (pageRes.content || []).map((m) =>
-            mapToOwnerChatMessage(m, customerName)
+            mapToManagementChatMessage(m, customerName)
           );
           const mediaItems = (pageRes.content || []).flatMap((m) =>
-            mapToOwnerChatMediaItems(m)
+            mapToManagementChatMediaItems(m)
           );
           patchState(
             store,
@@ -438,12 +438,12 @@ export const OwnerChatStore = signalStore(
 
     const loadWorkspace = rxMethod<void>(
       pipe(
-        tap(() => handleEvent({ type: OwnerChatEventType.WorkspaceLoadStarted })),
+        tap(() => handleEvent({ type: ManagementChatEventType.WorkspaceLoadStarted })),
         switchMap(() =>
-          ownerChatService.getWorkspace(0, 100).pipe(
+          managementChatService.getWorkspace(0, 100).pipe(
             tap({
               next: workspace => {
-                handleEvent({ type: OwnerChatEventType.WorkspaceLoadSucceeded, workspace });
+                handleEvent({ type: ManagementChatEventType.WorkspaceLoadSucceeded, workspace });
 
                 websocketService.connect();
 
@@ -452,9 +452,9 @@ export const OwnerChatStore = signalStore(
                 }
 
                 queueSub = websocketService
-                  .subscribe<ConversationResponse>('/topic/owner.chat.queue')
+                  .subscribe<ConversationResponse>('/topic/management.chat.queue')
                   .subscribe((updatedConv) => {
-                    const mapped = ownerChatService.mapToOwnerChatConversation(updatedConv);
+                    const mapped = managementChatService.mapToManagementChatConversation(updatedConv);
                     const exists = store.conversationEntities().some((c) => c.id === mapped.id);
                     if (exists) {
                       patchState(
@@ -472,7 +472,7 @@ export const OwnerChatStore = signalStore(
                     }
                   });
               },
-              error: () => handleEvent({ type: OwnerChatEventType.WorkspaceLoadFailed }),
+              error: () => handleEvent({ type: ManagementChatEventType.WorkspaceLoadFailed }),
             }),
             catchError(() => EMPTY)
           )
@@ -483,7 +483,7 @@ export const OwnerChatStore = signalStore(
     const selectConversation = rxMethod<string>(
       pipe(
         tap((id) => {
-          handleEvent({ type: OwnerChatEventType.ConversationSelected, conversationId: id });
+          handleEvent({ type: ManagementChatEventType.ConversationSelected, conversationId: id });
 
           if (messageSub) {
             messageSub.unsubscribe();
@@ -505,8 +505,8 @@ export const OwnerChatStore = signalStore(
                 .subscribe((msg) => {
                   const exists = store.messages().some((existing) => existing.id === msg.id);
                   if (!exists) {
-                    const mappedMsg = mapToOwnerChatMessage(msg, customerName);
-                    const mediaItems = mapToOwnerChatMediaItems(msg);
+                    const mappedMsg = mapToManagementChatMessage(msg, customerName);
+                    const mediaItems = mapToManagementChatMediaItems(msg);
                     patchState(
                       store,
                       addEntity(mappedMsg, MESSAGE_ENTITY_CONFIG),
@@ -532,7 +532,7 @@ export const OwnerChatStore = signalStore(
               conversationSub = websocketService
                 .subscribe<ConversationResponse>(`/topic/conversations.${id}`)
                 .subscribe((updatedConv) => {
-                  const mapped = ownerChatService.mapToOwnerChatConversation(updatedConv);
+                  const mapped = managementChatService.mapToManagementChatConversation(updatedConv);
                   patchState(
                     store,
                     updateEntity(
@@ -553,9 +553,9 @@ export const OwnerChatStore = signalStore(
           const conversationId = store.selectedConversationId();
           if (!conversationId) return EMPTY;
 
-          return ownerChatService.claimConversation(conversationId).pipe(
+          return managementChatService.claimConversation(conversationId).pipe(
             tap((updatedConv) => {
-              const mapped = ownerChatService.mapToOwnerChatConversation(updatedConv);
+              const mapped = managementChatService.mapToManagementChatConversation(updatedConv);
               patchState(
                 store,
                 updateEntity(
@@ -563,7 +563,7 @@ export const OwnerChatStore = signalStore(
                   CONVERSATION_ENTITY_CONFIG
                 )
               );
-              handleEvent({ type: OwnerChatEventType.ConversationAccepted, conversationId });
+              handleEvent({ type: ManagementChatEventType.ConversationAccepted, conversationId });
             }),
             catchError(() => EMPTY)
           );
@@ -579,7 +579,7 @@ export const OwnerChatStore = signalStore(
 
           return customerChatService.closeConversation(conversationId).pipe(
             tap((updatedConv) => {
-              const mapped = ownerChatService.mapToOwnerChatConversation(updatedConv);
+              const mapped = managementChatService.mapToManagementChatConversation(updatedConv);
               patchState(
                 store,
                 updateEntity(
@@ -587,7 +587,7 @@ export const OwnerChatStore = signalStore(
                   CONVERSATION_ENTITY_CONFIG
                 )
               );
-              handleEvent({ type: OwnerChatEventType.ConversationClosed, conversationId });
+              handleEvent({ type: ManagementChatEventType.ConversationClosed, conversationId });
             }),
             catchError(() => EMPTY)
           );
@@ -692,7 +692,7 @@ export const OwnerChatStore = signalStore(
             return;
           }
 
-          const uploads: OwnerChatUpload[] = files.map(file => ({
+          const uploads: ManagementChatUpload[] = files.map(file => ({
             id: `staff-upload-${conversationId}-${Date.now()}-${file.name}`,
             conversationId,
             file,
@@ -720,34 +720,34 @@ export const OwnerChatStore = signalStore(
           conversationSub.unsubscribe();
           conversationSub = null;
         }
-        handleEvent({ type: OwnerChatEventType.SelectionCleared });
+        handleEvent({ type: ManagementChatEventType.SelectionCleared });
       },
       setSearchKeyword(searchKeyword: string): void {
-        handleEvent({ type: OwnerChatEventType.SearchKeywordChanged, searchKeyword });
+        handleEvent({ type: ManagementChatEventType.SearchKeywordChanged, searchKeyword });
       },
-      setStatusFilter(statusFilter: OwnerChatStatusFilter): void {
-        handleEvent({ type: OwnerChatEventType.StatusFilterChanged, statusFilter });
+      setStatusFilter(statusFilter: ManagementChatStatusFilter): void {
+        handleEvent({ type: ManagementChatEventType.StatusFilterChanged, statusFilter });
       },
-      setExpertRequestFilter(expertRequestFilter: OwnerChatExpertRequestFilter): void {
+      setExpertRequestFilter(expertRequestFilter: ManagementChatExpertRequestFilter): void {
         handleEvent({
-          type: OwnerChatEventType.ExpertRequestFilterChanged,
+          type: ManagementChatEventType.ExpertRequestFilterChanged,
           expertRequestFilter,
         });
       },
       toggleMediaDrawer(): void {
         handleEvent({
-          type: OwnerChatEventType.MediaDrawerToggled,
+          type: ManagementChatEventType.MediaDrawerToggled,
           open: !store.mediaDrawerOpen(),
         });
       },
       openMediaDrawer(): void {
-        handleEvent({ type: OwnerChatEventType.MediaDrawerOpened });
+        handleEvent({ type: ManagementChatEventType.MediaDrawerOpened });
       },
       closeMediaDrawer(): void {
-        handleEvent({ type: OwnerChatEventType.MediaDrawerClosed });
+        handleEvent({ type: ManagementChatEventType.MediaDrawerClosed });
       },
-      setMediaTab(activeMediaTab: OwnerChatMediaTab): void {
-        handleEvent({ type: OwnerChatEventType.MediaTabChanged, activeMediaTab });
+      setMediaTab(activeMediaTab: ManagementChatMediaTab): void {
+        handleEvent({ type: ManagementChatEventType.MediaTabChanged, activeMediaTab });
       },
       acceptConversation,
       closeConversation,

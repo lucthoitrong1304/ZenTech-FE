@@ -484,8 +484,14 @@ export const CustomerChatStore = signalStore(
       const loadSession = rxMethod<void>(
         pipe(
           tap(() => patchState(store, { loading: true, errorMessage: null })),
-          switchMap(() =>
-            customerChatService.getMyConversations(0, 100).pipe(
+          switchMap(() => {
+            const session = authStorageService.getSession();
+            const isStaff = session?.roles.some(role => ['OWNER', 'MANAGER', 'EMPLOYEE', 'ADMIN'].includes(role)) ?? false;
+            if (isStaff) {
+              patchState(store, { loading: false });
+              return EMPTY;
+            }
+            return customerChatService.getMyConversations(0, 100).pipe(
               switchMap((pageResponse) => {
                 const list = pageResponse.content || [];
                 patchState(store, { conversations: list });
@@ -511,8 +517,8 @@ export const CustomerChatStore = signalStore(
                 });
                 return EMPTY;
               })
-            )
-          )
+            );
+          })
         )
       );
 

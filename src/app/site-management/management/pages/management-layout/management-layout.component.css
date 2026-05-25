@@ -1,16 +1,16 @@
-.owner-shell {
+.management-shell {
   min-height: 100vh;
   background: #fcf9f8;
   color: #1c1b1b;
 }
 
-.owner-shell--chat-sidebar {
+.management-shell--chat-sidebar {
   height: 100vh;
   min-height: 0;
   overflow: hidden;
 }
 
-.owner-topbar {
+.management-topbar {
   position: fixed;
   inset: 0 0 auto;
   z-index: 50;
@@ -24,31 +24,31 @@
   backdrop-filter: blur(18px);
 }
 
-.owner-breadcrumb {
+.management-breadcrumb {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.owner-breadcrumb__brand {
+.management-breadcrumb__brand {
   text-decoration: none;
   font-size: 22px;
   font-weight: 900;
 }
 
-.owner-breadcrumb__separator {
+.management-breadcrumb__separator {
   color: rgba(79, 70, 50, 0.42);
 }
 
-.owner-breadcrumb__section,
-.owner-breadcrumb__page {
+.management-breadcrumb__section,
+.management-breadcrumb__page {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.owner-breadcrumb__section {
+.management-breadcrumb__section {
   border-radius: 7px;
   background: #eef2ff;
   color: #4f46e5;
@@ -57,23 +57,23 @@
   padding: 6px 10px;
 }
 
-.owner-breadcrumb__page {
+.management-breadcrumb__page {
   font-size: 13px;
 }
 
-.owner-topbar__actions {
+.management-topbar__actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
 }
 
-.owner-icon-button {
+.management-icon-button {
   border: 0;
   cursor: pointer;
 }
 
-.owner-icon-button {
+.management-icon-button {
   display: grid;
   width: 38px;
   height: 38px;
@@ -83,12 +83,12 @@
   color: #4f4632;
 }
 
-:is(.owner-icon-button, .owner-nav__link) svg {
+:is(.management-icon-button, .management-nav__link) svg {
   width: 18px;
   height: 18px;
 }
 
-.owner-account-trigger {
+.management-account-trigger {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -102,13 +102,13 @@
   text-align: left;
 }
 
-.owner-account-trigger:hover {
+.management-account-trigger:hover {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(79, 70, 50, 0.24);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
-.owner-avatar {
+.management-avatar {
   display: grid;
   width: 32px;
   height: 32px;
@@ -121,19 +121,19 @@
   flex-shrink: 0;
 }
 
-.owner-account-info {
+.management-account-info {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
 }
 
-.owner-account-name {
+.management-account-name {
   font-size: 13px;
   font-weight: 600;
   color: #1c1b1b;
 }
 
-.owner-account-role {
+.management-account-role {
   color: rgba(79, 70, 50, 0.62);
   font-size: 9px;
   font-weight: 800;
@@ -141,18 +141,18 @@
   letter-spacing: 0.05em;
 }
 
-.owner-account-chevron {
+.management-account-chevron {
   width: 14px;
   height: 14px;
   color: rgba(79, 70, 50, 0.42);
   transition: transform 0.2s ease;
 }
 
-.owner-account-trigger:hover .owner-account-chevron {
+.management-account-trigger:hover .management-account-chevron {
   color: #1c1b1b;
 }
 
-.owner-sidebar {
+.management-sidebar {
   position: fixed;
   inset: 72px auto 0 0;
   z-index: 40;
@@ -166,18 +166,18 @@
   padding: 24px 16px;
 }
 
-.owner-sidebar__heading {
+.management-sidebar__heading {
   padding: 0 14px 8px;
 }
 
-.owner-sidebar__heading h2 {
+.management-sidebar__heading h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 800;
 }
 
-.owner-sidebar__heading p,
-.owner-nav__section > p {
+.management-sidebar__heading p,
+.management-nav__section > p {
   margin: 7px 0 0;
   color: rgba(79, 70, 50, 0.58);
   font-size: 10px;
@@ -185,21 +185,21 @@
   text-transform: uppercase;
 }
 
-.owner-nav {
+.management-nav {
   display: grid;
   gap: 18px;
 }
 
-.owner-nav__section {
+.management-nav__section {
   display: grid;
   gap: 6px;
 }
 
-.owner-nav__section > p {
+.management-nav__section > p {
   padding: 0 14px;
 }
 
-.owner-nav__link {
+.management-nav__link {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -212,25 +212,25 @@
   text-transform: uppercase;
 }
 
-.owner-nav__link:hover {
+.management-nav__link:hover {
   background: rgba(255, 255, 255, 0.66);
   color: #1c1b1b;
 }
 
-.owner-nav__link--active {
+.management-nav__link--active {
   border-left: 4px solid #fbbc04;
   background: rgba(251, 188, 4, 0.12);
   color: #1c1b1b;
   padding-left: 10px;
 }
 
-.owner-main {
+.management-main {
   min-height: 100vh;
   margin-left: 256px;
   padding: 104px 32px 48px;
 }
 
-.owner-shell--chat-sidebar .owner-main {
+.management-shell--chat-sidebar .management-main {
   box-sizing: border-box;
   height: 100vh;
   min-height: 0;
@@ -240,69 +240,69 @@
 }
 
 @media (max-width: 980px) {
-  .owner-account-info,
-  .owner-account-chevron {
+  .management-account-info,
+  .management-account-chevron {
     display: none;
   }
 
-  .owner-account-trigger {
+  .management-account-trigger {
     padding: 6px;
   }
 
-  .owner-sidebar {
+  .management-sidebar {
     width: 84px;
     padding-inline: 12px;
   }
 
-  .owner-sidebar__heading,
-  .owner-nav__section > p,
-  .owner-nav__link span {
+  .management-sidebar__heading,
+  .management-nav__section > p,
+  .management-nav__link span {
     display: none;
   }
 
-  .owner-nav__link {
+  .management-nav__link {
     justify-content: center;
     padding-inline: 0;
   }
 
-  .owner-nav__link--active {
+  .management-nav__link--active {
     border-left: 0;
   }
 
-  .owner-main {
+  .management-main {
     margin-left: 84px;
     padding-inline: 20px;
   }
 
-  .owner-shell--chat-sidebar .owner-main {
+  .management-shell--chat-sidebar .management-main {
     margin-left: 0;
     padding: 72px 0 0;
   }
 }
 
 @media (max-width: 680px) {
-  .owner-topbar {
+  .management-topbar {
     padding-inline: 16px;
   }
 
-  .owner-sidebar {
+  .management-sidebar {
     display: none;
   }
 
-  .owner-breadcrumb {
+  .management-breadcrumb {
     gap: 8px;
   }
 
-  .owner-breadcrumb__section {
+  .management-breadcrumb__section {
     max-width: 30vw;
   }
 
-  .owner-main {
+  .management-main {
     margin-left: 0;
     padding: 96px 16px 32px;
   }
 
-  .owner-shell--chat-sidebar .owner-main {
+  .management-shell--chat-sidebar .management-main {
     padding: 72px 0 0;
   }
 }
@@ -310,7 +310,7 @@
 /* ==========================================================================
    Owner Account Dropdown Styles (PrimeNG Popover)
    ========================================================================== */
-::ng-deep .owner-account-menu.p-popover {
+::ng-deep .management-account-menu.p-popover {
   min-width: 240px;
   background: #18181b !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -319,33 +319,33 @@
   margin-top: 8px;
 }
 
-::ng-deep .owner-account-menu .p-popover-content {
+::ng-deep .management-account-menu .p-popover-content {
   padding: 0 !important;
   background: transparent !important;
 }
 
-::ng-deep .owner-account-menu .p-popover-arrow {
+::ng-deep .management-account-menu .p-popover-arrow {
   display: none !important;
 }
 
-.owner-dropdown {
+.management-dropdown {
   display: flex;
   flex-direction: column;
 }
 
-.owner-dropdown__header {
+.management-dropdown__header {
   padding: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.owner-dropdown__name {
+.management-dropdown__name {
   display: block;
   font-size: 14px;
   font-weight: 600;
   color: #ffffff;
 }
 
-.owner-dropdown__email {
+.management-dropdown__email {
   display: block;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.42);
@@ -353,14 +353,14 @@
   word-break: break-all;
 }
 
-.owner-dropdown__list {
+.management-dropdown__list {
   display: flex;
   flex-direction: column;
   padding: 8px;
   gap: 4px;
 }
 
-.owner-dropdown__item {
+.management-dropdown__item {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -377,23 +377,23 @@
   transition: all 0.2s ease;
 }
 
-.owner-dropdown__item:hover {
+.management-dropdown__item:hover {
   background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
 }
 
-.owner-dropdown__item svg {
+.management-dropdown__item svg {
   width: 16px;
   height: 16px;
   color: rgba(255, 255, 255, 0.42);
   transition: color 0.2s ease;
 }
 
-.owner-dropdown__item:hover svg {
+.management-dropdown__item:hover svg {
   color: #ffffff;
 }
 
-.owner-dropdown__item--logout {
+.management-dropdown__item--logout {
   color: #f43f5e;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 4px;
@@ -401,15 +401,15 @@
   border-radius: 0 0 8px 8px;
 }
 
-.owner-dropdown__item--logout:hover {
+.management-dropdown__item--logout:hover {
   background: rgba(244, 63, 94, 0.08);
   color: #fb7185;
 }
 
-.owner-dropdown__item--logout svg {
+.management-dropdown__item--logout svg {
   color: #f43f5e;
 }
 
-.owner-dropdown__item--logout:hover svg {
+.management-dropdown__item--logout:hover svg {
   color: #fb7185;
 }

@@ -12,20 +12,20 @@ import {
   formatTime,
 } from '../../../../customer-chat/data-access/models/customer-chat.models';
 import {
-  OwnerChatConversation,
-  OwnerChatConversationStatus,
-  OwnerChatCustomer,
-  OwnerChatWorkspace,
-} from '../models/owner-chat.models';
+  ManagementChatConversation,
+  ManagementChatConversationStatus,
+  ManagementChatCustomer,
+  ManagementChatWorkspace,
+} from '../models/management-chat.models';
 
 @Injectable({
   providedIn: 'root',
 })
-export class OwnerChatService {
+export class ManagementChatService {
   private readonly apiService = inject(ApiService);
-  private readonly baseUrl = `${environment.apiBaseUrl}/owner/chat/conversations`;
+  private readonly baseUrl = `${environment.apiBaseUrl}/management/chat/conversations`;
 
-  getWorkspace(page = 0, size = 100): Observable<OwnerChatWorkspace> {
+  getWorkspace(page = 0, size = 100): Observable<ManagementChatWorkspace> {
     return this.apiService
       .get<ApiResponse<PageResponse<ConversationResponse>>>(this.baseUrl, {
         params: { page, size },
@@ -33,7 +33,7 @@ export class OwnerChatService {
       .pipe(
         map((res) => {
           const conversations = (res.data?.content || []).map((conv) =>
-            this.mapToOwnerChatConversation(conv)
+            this.mapToManagementChatConversation(conv)
           );
           return {
             conversations,
@@ -56,11 +56,11 @@ export class OwnerChatService {
       .pipe(map((res) => res.data));
   }
 
-  public mapToOwnerChatConversation(conv: ConversationResponse): OwnerChatConversation {
+  public mapToManagementChatConversation(conv: ConversationResponse): ManagementChatConversation {
     const participants = conv.participants || [];
     const customerParticipant = participants.find((p) => p.userType === ParticipantType.CUSTOMER);
 
-    const customer: OwnerChatCustomer = {
+    const customer: ManagementChatCustomer = {
       id: customerParticipant?.referenceId || conv.customerId || '',
       fullName: customerParticipant?.displayName || conv.customerName || 'Khách hàng',
       avatarUrl: customerParticipant?.avatarUrl || null,
@@ -68,7 +68,7 @@ export class OwnerChatService {
       online: true,
     };
 
-    let status: OwnerChatConversationStatus = 'CLOSED';
+    let status: ManagementChatConversationStatus = 'CLOSED';
     switch (conv.status) {
       case ConversationStatus.BOT_CONSULTING:
         status = 'AI_ASSISTING';

@@ -4,12 +4,12 @@ import { LucideDownload, LucideFileText, LucideImage, LucideLink, LucidePlayCirc
 import { DrawerModule } from 'primeng/drawer';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import {
-  OwnerChatMediaItem,
-  OwnerChatMediaTab,
-} from '../../data-access/models/owner-chat.models';
+  ManagementChatMediaItem,
+  ManagementChatMediaTab,
+} from '../../data-access/models/management-chat.models';
 
 interface MediaTabOption {
-  value: OwnerChatMediaTab;
+  value: ManagementChatMediaTab;
   label: string;
 }
 
@@ -38,12 +38,12 @@ const MEDIA_TABS: MediaTabOption[] = [
 })
 export class ChatMediaDrawerComponent {
   readonly open = input.required<boolean>();
-  readonly activeTab = input.required<OwnerChatMediaTab>();
-  readonly mediaItems = input.required<OwnerChatMediaItem[]>();
+  readonly activeTab = input.required<ManagementChatMediaTab>();
+  readonly mediaItems = input.required<ManagementChatMediaItem[]>();
 
   readonly openChanged = output<boolean>();
   readonly closed = output<void>();
-  readonly tabSelected = output<OwnerChatMediaTab>();
+  readonly tabSelected = output<ManagementChatMediaTab>();
   readonly previewRequested = output<MediaPreviewItem>();
 
   protected readonly tabs = MEDIA_TABS;
@@ -56,11 +56,11 @@ export class ChatMediaDrawerComponent {
     }
   }
 
-  protected isMediaItem(item: OwnerChatMediaItem): boolean {
+  protected isMediaItem(item: ManagementChatMediaItem): boolean {
     return item.type === 'IMAGE' || item.type === 'VIDEO';
   }
 
-  protected requestPreview(item: OwnerChatMediaItem): void {
+  protected requestPreview(item: ManagementChatMediaItem): void {
     if (!this.isMediaItem(item)) {
       return;
     }

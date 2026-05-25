@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideFileUp, LucidePlus, LucideSend, LucideX } from '@lucide/angular';
-import { OwnerChatUpload } from '../../data-access/models/owner-chat.models';
+import { ManagementChatUpload } from '../../data-access/models/management-chat.models';
 
 @Component({
   selector: 'app-chat-composer',
@@ -20,7 +20,7 @@ import { OwnerChatUpload } from '../../data-access/models/owner-chat.models';
 })
 export class ChatComposerComponent {
   readonly disabled = input(false);
-  readonly uploads = input<OwnerChatUpload[]>([]);
+  readonly uploads = input<ManagementChatUpload[]>([]);
   readonly hasPendingAttachments = input(false);
   readonly messageSubmitted = output<string>();
   readonly filesSelected = output<File[]>();

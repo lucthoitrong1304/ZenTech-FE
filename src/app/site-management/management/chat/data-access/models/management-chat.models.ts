@@ -12,6 +12,8 @@ export type ManagementChatMediaType = 'IMAGE' | 'VIDEO' | 'FILE' | 'LINK';
 
 export type ManagementChatMediaTab = 'ALL' | 'MEDIA' | 'FILES' | 'LINKS';
 
+export type ManagementChatUploadStatus = 'PENDING' | 'UPLOADING' | 'FAILED';
+
 export interface ManagementChatCustomer {
   id: string;
   fullName: string;
@@ -31,6 +33,14 @@ export interface ManagementChatConversation {
   productContext: string;
 }
 
+export interface ManagementChatMessageAttachment {
+  id: string;
+  type: ManagementChatMediaType;
+  title: string;
+  url: string;
+  thumbnailUrl: string | null;
+}
+
 export interface ManagementChatMessage {
   id: string;
   conversationId: string;
@@ -38,6 +48,7 @@ export interface ManagementChatMessage {
   senderName: string;
   body: string;
   sentAtLabel: string;
+  attachments: ManagementChatMessageAttachment[];
 }
 
 export interface ManagementChatMediaItem {
@@ -48,6 +59,16 @@ export interface ManagementChatMediaItem {
   subtitle: string;
   url: string;
   thumbnailUrl: string | null;
+}
+
+export interface ManagementChatUpload {
+  id: string;
+  conversationId: string;
+  file: File;
+  fileName: string;
+  sizeLabel: string;
+  progress: number;
+  status: ManagementChatUploadStatus;
 }
 
 export interface ManagementChatWorkspace {

@@ -9,11 +9,11 @@ import { ChatHeaderComponent } from '../../components/chat-header/chat-header.co
 import { ChatMediaDrawerComponent } from '../../components/chat-media-drawer/chat-media-drawer.component';
 import { ConversationListComponent } from '../../components/conversation-list/conversation-list.component';
 import { MessageTimelineComponent } from '../../components/message-timeline/message-timeline.component';
-import { OwnerChatStore } from '../../data-access/store/owner-chat.store';
-import { OwnerShellUiState } from '../../../data-access/state/owner-shell-ui.state';
+import { ManagementChatStore } from '../../data-access/store/management-chat.store';
+import { ManagementShellUiState } from '../../../data-access/state/management-shell-ui.state';
 
 @Component({
-  selector: 'app-owner-chat-page',
+  selector: 'app-management-chat-page',
   standalone: true,
   imports: [
     CommonModule,
@@ -26,14 +26,14 @@ import { OwnerShellUiState } from '../../../data-access/state/owner-shell-ui.sta
     MediaPreviewDialogComponent,
     MessageTimelineComponent,
   ],
-  providers: [OwnerChatStore],
-  templateUrl: './owner-chat-page.component.html',
-  styleUrl: './owner-chat-page.component.css',
+  providers: [ManagementChatStore],
+  templateUrl: './management-chat-page.component.html',
+  styleUrl: './management-chat-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OwnerChatPageComponent implements OnInit {
-  protected readonly store = inject(OwnerChatStore);
-  protected readonly ownerShellUi = inject(OwnerShellUiState);
+export class ManagementChatPageComponent implements OnInit {
+  protected readonly store = inject(ManagementChatStore);
+  protected readonly managementShellUi = inject(ManagementShellUiState);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
 
   ngOnInit(): void {
@@ -41,7 +41,7 @@ export class OwnerChatPageComponent implements OnInit {
   }
 
   protected showAdminSidebar(): void {
-    this.ownerShellUi.showAdminSidebar();
+    this.managementShellUi.showAdminSidebar();
   }
 
   protected openPreview(item: MediaPreviewItem): void {
