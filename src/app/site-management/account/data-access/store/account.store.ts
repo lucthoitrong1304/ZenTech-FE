@@ -29,6 +29,7 @@ import {
   VoucherStatus,
 } from '../models/account.models';
 import { AccountService } from '../services/account.service';
+import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 
 interface AccountUiState {
   profile: AccountProfile | null;
@@ -198,97 +199,111 @@ export const AccountStore = signalStore(
       })),
     })
   ),
-  withMethods((store, accountService = inject(AccountService)) => {
-    const loadProfile = rxMethod<void>(
-      pipe(
-        tap(() => patchState(store, { loading: true, error: null })),
-        switchMap(() =>
-          accountService.getProfile().pipe(
-            tap({
-              next: res => {
-                if (res.success) {
-                  patchState(store, { profile: res.data, loading: false });
-                } else {
-                  patchState(store, { error: res.message || 'Failed to load profile', loading: false });
-                }
-              },
-              error: err => {
-                patchState(store, { error: err.message || 'Failed to load profile', loading: false });
-              },
-            }),
-            catchError(() => EMPTY)
+  withMethods(
+    (
+      store,
+      accountService = inject(AccountService),
+      authSessionStore = inject(AuthSessionStore)
+    ) => {
+      const loadProfile = rxMethod<void>(
+        pipe(
+          tap(() => patchState(store, { loading: true, error: null })),
+          switchMap(() =>
+            accountService.getProfile().pipe(
+              tap({
+                next: res => {
+                  if (res.success) {
+                    patchState(store, { profile: res.data, loading: false });
+                    if (res.data) {
+                      authSessionStore.updateCurrentUserProfile(res.data.fullName, res.data.imageUrl);
+                    }
+                  } else {
+                    patchState(store, { error: res.message || 'Failed to load profile', loading: false });
+                  }
+                },
+                error: err => {
+                  patchState(store, { error: err.message || 'Failed to load profile', loading: false });
+                },
+              }),
+              catchError(() => EMPTY)
+            )
           )
         )
-      )
-    );
+      );
 
-    const updateProfile = rxMethod<UpdateMyProfileRequest>(
-      pipe(
-        tap(() => patchState(store, { loading: true, error: null })),
-        switchMap(payload =>
-          accountService.updateProfile(payload).pipe(
-            tap({
-              next: res => {
-                if (res.success) {
-                  patchState(store, {
-                    profile: res.data,
-                    loading: false,
-                    actionMessage: 'Cập nhật thông tin thành công!',
-                  });
-                } else {
-                  patchState(store, { error: res.message || 'Failed to update profile', loading: false });
-                }
-              },
-              error: err => {
-                patchState(store, { error: err.message || 'Failed to update profile', loading: false });
-              },
-            }),
-            catchError(() => EMPTY)
+      const updateProfile = rxMethod<UpdateMyProfileRequest>(
+        pipe(
+          tap(() => patchState(store, { loading: true, error: null })),
+          switchMap(payload =>
+            accountService.updateProfile(payload).pipe(
+              tap({
+                next: res => {
+                  if (res.success) {
+                    patchState(store, {
+                      profile: res.data,
+                      loading: false,
+                      actionMessage: 'Cập nhật thông tin thành công!',
+                    });
+                    if (res.data) {
+                      authSessionStore.updateCurrentUserProfile(res.data.fullName, res.data.imageUrl);
+                    }
+                  } else {
+                    patchState(store, { error: res.message || 'Failed to update profile', loading: false });
+                  }
+                },
+                error: err => {
+                  patchState(store, { error: err.message || 'Failed to update profile', loading: false });
+                },
+              }),
+              catchError(() => EMPTY)
+            )
           )
         )
-      )
-    );
+      );
 
-    const uploadAvatar = rxMethod<{ file: File }>(
-      pipe(
-        tap(() => patchState(store, { loading: true, error: null })),
-        switchMap(({ file }) =>
-          accountService.requestAvatarUploadPresign(file.name, file.type, file.size).pipe(
-            switchMap(presign =>
-              accountService.uploadToR2(presign, file).pipe(
-                switchMap(() => {
-                  const fullName = store.profile()?.fullName || '';
-                  return accountService.updateProfile({ fullName, imageUrl: presign.fileKey });
-                })
-              )
-            ),
-            tap({
-              next: res => {
-                if (res.success) {
+      const uploadAvatar = rxMethod<{ file: File }>(
+        pipe(
+          tap(() => patchState(store, { loading: true, error: null })),
+          switchMap(({ file }) =>
+            accountService.requestAvatarUploadPresign(file.name, file.type, file.size).pipe(
+              switchMap(presign =>
+                accountService.uploadToR2(presign, file).pipe(
+                  switchMap(() => {
+                    const fullName = store.profile()?.fullName || '';
+                    return accountService.updateProfile({ fullName, imageUrl: presign.fileKey });
+                  })
+                )
+              ),
+              tap({
+                next: res => {
+                  if (res.success) {
+                    patchState(store, {
+                      profile: res.data,
+                      loading: false,
+                      actionMessage: 'Cập nhật ảnh đại diện thành công!',
+                    });
+                    if (res.data) {
+                      authSessionStore.updateCurrentUserProfile(res.data.fullName, res.data.imageUrl);
+                    }
+                  } else {
+                    patchState(store, {
+                      error: res.message || 'Failed to update profile picture',
+                      loading: false,
+                    });
+                  }
+                },
+                error: err => {
                   patchState(store, {
-                    profile: res.data,
-                    loading: false,
-                    actionMessage: 'Cập nhật ảnh đại diện thành công!',
-                  });
-                } else {
-                  patchState(store, {
-                    error: res.message || 'Failed to update profile picture',
+                    error: err.message || 'Failed to upload and update avatar',
                     loading: false,
                   });
-                }
-              },
-              error: err => {
-                patchState(store, {
-                  error: err.message || 'Failed to upload and update avatar',
-                  loading: false,
-                });
-              },
-            }),
-            catchError(() => EMPTY)
+                },
+              }),
+              catchError(() => EMPTY)
+            )
           )
         )
-      )
-    );
+      );
 
     const loadAddresses = rxMethod<void>(
       pipe(

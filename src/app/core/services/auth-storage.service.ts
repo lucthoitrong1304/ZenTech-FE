@@ -14,6 +14,7 @@ export interface AuthSessionSource {
   fullName: string;
   roles: string[];
   expiresIn?: number;
+  avatarUrl?: string | null;
 }
 
 export interface StoredAuthSession {
@@ -26,6 +27,7 @@ export interface StoredAuthSession {
   fullName: string;
   roles: string[];
   expiresIn?: number;
+  avatarUrl?: string | null;
 }
 
 export interface CurrentAuthUser {
@@ -70,6 +72,7 @@ export class AuthStorageService {
       fullName: response.fullName,
       roles: response.roles,
       expiresIn: response.expiresIn,
+      avatarUrl: response.avatarUrl || null,
     };
 
     this.setAccessToken(session.accessToken);
@@ -102,9 +105,18 @@ export class AuthStorageService {
     return {
       isAuthenticated: true,
       fullName: session?.fullName || session?.email,
-      avatarUrl: null,
+      avatarUrl: session?.avatarUrl || null,
       roles: session?.roles || [],
     };
+  }
+
+  updateProfileInfo(fullName: string, avatarUrl: string | null): void {
+    const session = this.getSession();
+    if (session) {
+      session.fullName = fullName;
+      session.avatarUrl = avatarUrl;
+      localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+    }
   }
 
   clear(): void {

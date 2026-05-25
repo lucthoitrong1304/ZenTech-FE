@@ -14,7 +14,7 @@ describe('AccountStore', () => {
   it('hydrates mock account collections for the overview', () => {
     const store = configureStore();
 
-    expect(store.profile().fullName).toBeTruthy();
+    expect(store.profile()?.fullName).toBeTruthy();
     expect(store.orders().length).toBeGreaterThan(0);
     expect(store.addresses().some(address => address.isDefault)).toBe(true);
     expect(store.activeVoucherCount()).toBeGreaterThan(0);
@@ -36,7 +36,7 @@ describe('AccountStore', () => {
       addressId: 'address-hq',
     });
 
-    expect(store.defaultAddress()?.id).toBe('address-hq');
+    expect(store.defaultAddress()?.addressId).toBe('address-hq');
     expect(store.addresses().filter(address => address.isDefault)).toHaveLength(1);
   });
 
@@ -48,6 +48,6 @@ describe('AccountStore', () => {
       keyword: 'Mercury',
     });
 
-    expect(store.filteredOrders().map(order => order.id)).toEqual(['KN-9012338']);
+    expect(store.filteredOrders().map(order => order.orderId)).toEqual(['KN-9012338']);
   });
 });
