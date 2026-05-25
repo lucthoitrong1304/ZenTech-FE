@@ -150,7 +150,12 @@
         <span>Đăng ký</span>
       </button>
     } @else {
-      <button class="site-header__menu-item" type="button">
+      <button
+        class="site-header__menu-item"
+        type="button"
+        routerLink="/account"
+        (click)="accountMenu.hide()"
+      >
         <svg lucideSettings class="site-header__menu-icon" [attr.stroke-width]="2"></svg>
         <span>Quản lý tài khoản</span>
       </button>

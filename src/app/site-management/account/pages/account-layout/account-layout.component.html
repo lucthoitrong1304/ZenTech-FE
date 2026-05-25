@@ -1,0 +1,42 @@
+<div class="account-shell min-h-screen bg-[#fcf9f8] text-[#1c1b1b]">
+  <app-site-header
+    [navItems]="navItems()"
+    [cartCount]="cartStore.itemCount()"
+    [currentUser]="currentUser()"
+    (logout)="onLogout()"
+  />
+
+  <div class="account-shell__body">
+    <aside class="account-shell__sidebar" aria-label="Account navigation">
+      <nav class="account-shell__nav">
+        @for (item of accountNavItems; track item.link) {
+          <a
+            [routerLink]="item.link"
+            routerLinkActive="account-shell__nav-link--active"
+            class="account-shell__nav-link"
+          >
+            @switch (item.icon) {
+              @case ('overview') {
+                <svg lucideLayoutDashboard class="account-shell__nav-icon" [attr.stroke-width]="2"></svg>
+              }
+              @case ('orders') {
+                <svg lucideReceiptText class="account-shell__nav-icon" [attr.stroke-width]="2"></svg>
+              }
+              @case ('addresses') {
+                <svg lucideMapPin class="account-shell__nav-icon" [attr.stroke-width]="2"></svg>
+              }
+              @case ('vouchers') {
+                <svg lucideTicket class="account-shell__nav-icon" [attr.stroke-width]="2"></svg>
+              }
+            }
+            <span>{{ item.label }}</span>
+          </a>
+        }
+      </nav>
+    </aside>
+
+    <main class="account-shell__content">
+      <router-outlet />
+    </main>
+  </div>
+</div>
