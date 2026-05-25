@@ -1,0 +1,56 @@
+<section class="management-product-groups-page">
+  <div class="product-group-command">
+    <div>
+      <h1>Quan ly Nhom san pham</h1>
+      <p>Phan loai va quan ly cac nhom san pham de toi uu trai nghiem khach hang.</p>
+    </div>
+
+    <button type="button" class="product-group-primary-action" (click)="store.openCreateDialog()">
+      <svg lucidePlus [attr.stroke-width]="2.4"></svg>
+      <span>Them nhom moi</span>
+    </button>
+  </div>
+
+  <div class="product-group-toolbar-shell">
+    <app-product-group-toolbar
+      [keyword]="store.query().keyword"
+      [activeFilter]="store.query().activeFilter"
+      [sort]="store.query().sort"
+      [activeFilterCount]="store.activeFilterCount()"
+      [loading]="store.loading()"
+      (keywordChange)="store.setKeyword($event)"
+      (activeFilterChange)="setActiveFilter($event)"
+      (sortChange)="setSort($event)"
+      (applyFilters)="store.applyFilters()"
+      (resetFilters)="store.resetFilters()"
+    />
+  </div>
+
+  <app-product-group-table
+    [groups]="store.groups()"
+    [loading]="store.loading()"
+    [page]="store.query().page"
+    [totalPages]="store.totalPages()"
+    [totalElements]="store.totalElements()"
+    [pageStart]="store.pageStart()"
+    [pageEnd]="store.pageEnd()"
+    [canGoPrevious]="store.canGoPrevious()"
+    [canGoNext]="store.canGoNext()"
+    (editGroup)="store.openEditDialog($event)"
+    (deleteGroup)="confirmDeleteGroup($event)"
+    (pageChange)="store.goToPage($event)"
+  />
+
+  <app-product-group-dialog
+    [visible]="store.dialogVisible()"
+    [mode]="store.dialogMode()"
+    [draft]="store.draft()"
+    [productOptions]="store.productOptions()"
+    [errors]="store.formErrors()"
+    [saving]="store.saving()"
+    (close)="store.closeDialog()"
+    (save)="store.saveDraft()"
+    (draftChange)="updateDraft($event)"
+    (productToggle)="store.toggleProduct($event)"
+  />
+</section>

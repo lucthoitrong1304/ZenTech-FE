@@ -1,0 +1,98 @@
+<section class="management-products-page">
+  <div class="product-command">
+    <div>
+      <nav class="product-eyebrow" aria-label="Product breadcrumb">
+        <span>He thong</span>
+        <span>/</span>
+        <strong>Quan ly San pham</strong>
+      </nav>
+      <h1>Quan ly San pham</h1>
+      <p>Quan ly danh muc, ton kho, SKU va trang thai hien thi san pham.</p>
+    </div>
+
+    <button type="button" class="product-primary-action" (click)="addProduct()">
+      <svg lucidePackagePlus [attr.stroke-width]="2.2"></svg>
+      <span>Them san pham moi</span>
+    </button>
+  </div>
+
+  <app-product-toolbar
+    [keyword]="store.query().keyword"
+    [categoryId]="store.query().categoryId"
+    [stockStatus]="store.query().stockStatus"
+    [sort]="store.query().sort"
+    [categories]="store.categories()"
+    [activeFilterCount]="store.activeFilterCount()"
+    [loading]="store.loading()"
+    (keywordChange)="store.setKeyword($event)"
+    (categoryChange)="store.setCategoryFilter($event)"
+    (stockStatusChange)="setStockFilter($event)"
+    (sortChange)="setSort($event)"
+    (applyFilters)="store.applyFilters()"
+    (resetFilters)="store.resetFilters()"
+  />
+
+  <app-product-table
+    [products]="store.products()"
+    [loading]="store.loading()"
+    [page]="store.query().page"
+    [totalPages]="store.totalPages()"
+    [totalElements]="store.totalElements()"
+    [pageStart]="store.pageStart()"
+    [pageEnd]="store.pageEnd()"
+    [canGoPrevious]="store.canGoPrevious()"
+    [canGoNext]="store.canGoNext()"
+    (editProduct)="editProduct($event)"
+    (deleteProduct)="confirmDeleteProduct($event)"
+    (pageChange)="store.goToPage($event)"
+  />
+
+  <div class="product-stats-grid">
+    <article>
+      <span class="product-stat-icon product-stat-icon--secondary">
+        <svg lucideWarehouse [attr.stroke-width]="2"></svg>
+      </span>
+      <div>
+        <p>Tong san pham</p>
+        <strong>{{ store.stats().totalProducts }}</strong>
+        <small>
+          <svg lucideTrendingUp [attr.stroke-width]="2"></svg>
+          +12% thang nay
+        </small>
+      </div>
+    </article>
+
+    <article>
+      <span class="product-stat-icon product-stat-icon--danger">
+        <svg lucideTriangleAlert [attr.stroke-width]="2"></svg>
+      </span>
+      <div>
+        <p>Het hang</p>
+        <strong>{{ store.stats().outOfStock }}</strong>
+        <small class="product-stat-alert">Can nhap them</small>
+      </div>
+    </article>
+
+    <article>
+      <span class="product-stat-icon">
+        <svg lucideWallet [attr.stroke-width]="2"></svg>
+      </span>
+      <div>
+        <p>Gia tri kho</p>
+        <strong>{{ store.stats().inventoryValue | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+        <small>Uoc tinh theo ton kho</small>
+      </div>
+    </article>
+
+    <article class="product-ai-card">
+      <span class="product-stat-icon">
+        <svg lucideSparkles [attr.stroke-width]="2"></svg>
+      </span>
+      <div>
+        <p>AI du bao xu huong</p>
+        <strong>Nhu cau Gaming tang 25%</strong>
+        <small>{{ store.stats().lowStock }} SKU dang sap het hang</small>
+      </div>
+    </article>
+  </div>
+</section>

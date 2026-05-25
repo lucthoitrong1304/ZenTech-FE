@@ -40,8 +40,10 @@ export enum ProfileMenuOption {
 
 interface ManagementNavItem {
   label: string;
-  path: string;
+  path?: string;
   icon: string;
+  key?: string;
+  children?: ManagementNavItem[];
 }
 
 interface ManagementNavSection {
@@ -102,6 +104,7 @@ export class ManagementLayoutComponent {
 
   protected readonly header = signal<ManagementHeaderState>(DEFAULT_HEADER);
   protected readonly currentUrl = signal(this.router.url);
+  protected readonly expandedNavKeys = signal<ReadonlySet<string>>(new Set(['products']));
   protected readonly chatSidebarActive = computed(
     () => this.isChatRoute(this.currentUrl()) && this.managementShellUi.sidebarMode() === 'chatFilters'
   );
@@ -143,7 +146,15 @@ export class ManagementLayoutComponent {
         { label: 'Nhân viên', path: '/management/employees', icon: 'employees' },
         { label: 'Tư vấn khách hàng', path: '/management/chat', icon: 'chat' },
         { label: 'Đơn hàng', path: '/management/orders', icon: 'orders' },
-        { label: 'Sản phẩm', path: '/management/products', icon: 'products' },
+        {
+          label: 'Sản phẩm',
+          icon: 'products',
+          key: 'products',
+          children: [
+            { label: 'Quản lý sản phẩm', path: '/management/products', icon: 'products' },
+            { label: 'Quản lý nhóm', path: '/management/product-groups', icon: 'products' },
+          ],
+        },
         { label: 'Kho hàng', path: '/management/inventory', icon: 'inventory' },
         { label: 'Khách hàng', path: '/management/customers', icon: 'customers' },
         { label: 'Marketing', path: '/management/marketing', icon: 'marketing' },
@@ -175,12 +186,47 @@ export class ManagementLayoutComponent {
   }
 
   protected handleNavItemClicked(item: ManagementNavItem): void {
+    if (!item.path) {
+      this.toggleNavItem(item);
+      return;
+    }
+
     if (this.isChatRoute(item.path)) {
       this.managementShellUi.showChatFilters();
       return;
     }
 
     this.managementShellUi.showAdminSidebar();
+  }
+
+  protected toggleNavItem(item: ManagementNavItem): void {
+    const key = item.key ?? item.label;
+
+    this.expandedNavKeys.update(current => {
+      const next = new Set(current);
+
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+
+      return next;
+    });
+  }
+
+  protected isNavItemExpanded(item: ManagementNavItem): boolean {
+    return this.expandedNavKeys().has(item.key ?? item.label);
+  }
+
+  protected isNavItemActive(item: ManagementNavItem): boolean {
+    const currentPath = this.currentUrl().split(/[?#]/)[0];
+
+    if (item.path) {
+      return currentPath === item.path || currentPath.startsWith(`${item.path}/`);
+    }
+
+    return item.children?.some(child => this.isNavItemActive(child)) ?? false;
   }
 
   protected logout(): void {

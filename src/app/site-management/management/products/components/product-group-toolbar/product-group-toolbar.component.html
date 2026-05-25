@@ -1,0 +1,57 @@
+<div class="product-group-toolbar">
+  <label class="product-group-toolbar__search">
+    <svg lucideSearch [attr.stroke-width]="2"></svg>
+    <input
+      type="search"
+      [value]="keyword()"
+      placeholder="Tim nhom san pham..."
+      (input)="onKeywordInput($event)"
+      (keydown.enter)="onKeywordEnter($event)"
+    />
+  </label>
+
+  <select
+    class="product-group-toolbar__select"
+    aria-label="Loc trang thai nhom"
+    [value]="activeFilter()"
+    (change)="onActiveFilterChange($event)"
+  >
+    <option value="all">Tat ca trang thai</option>
+    <option value="active">Dang hoat dong</option>
+    <option value="inactive">Ngung hoat dong</option>
+  </select>
+
+  <select
+    class="product-group-toolbar__select product-group-toolbar__select--compact"
+    aria-label="Sap xep nhom"
+    [value]="sort()"
+    (change)="onSortChange($event)"
+  >
+    <option value="name,asc">Ten A-Z</option>
+    <option value="productCount,desc">Nhieu san pham</option>
+    <option value="productCount,asc">It san pham</option>
+  </select>
+
+  <button
+    type="button"
+    class="product-group-toolbar__filter"
+    [disabled]="loading()"
+    (click)="applyFilters.emit()"
+  >
+    <svg lucideFilter [attr.stroke-width]="2"></svg>
+    <span>Loc</span>
+    @if (activeFilterCount() > 0) {
+      <strong>{{ activeFilterCount() }}</strong>
+    }
+  </button>
+
+  <button
+    type="button"
+    class="product-group-toolbar__reset"
+    [disabled]="loading()"
+    (click)="resetFilters.emit()"
+  >
+    <svg lucideX [attr.stroke-width]="2"></svg>
+    <span>Xoa</span>
+  </button>
+</div>
