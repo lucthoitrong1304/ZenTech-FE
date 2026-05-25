@@ -29,7 +29,7 @@ export class App {
 
     return !(
       url === '/chat' ||
-      url.startsWith('/owner') ||
+      url.startsWith('/management') ||
       url.startsWith('/auth') ||
       url.startsWith('/error')
     );
