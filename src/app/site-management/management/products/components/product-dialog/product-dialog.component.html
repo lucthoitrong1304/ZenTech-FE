@@ -1,0 +1,314 @@
+<p-dialog
+  styleClass="product-dialog"
+  [visible]="visible()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: 'min(920px, 94vw)' }"
+  (onHide)="close.emit()"
+>
+  <ng-template pTemplate="header">
+    <div class="product-dialog__header">
+      <div>
+        <h2>{{ title() }}</h2>
+        <p>{{ description() }}</p>
+      </div>
+    </div>
+  </ng-template>
+
+  @if (loadingDetail()) {
+    <div class="product-dialog__loading">
+      <div class="spinner"></div>
+      <p>Đang tải chi tiết sản phẩm...</p>
+    </div>
+  } @else if (draft()) {
+    <div class="product-dialog__tabs-header">
+      <button
+        type="button"
+        class="product-dialog__tab-btn"
+        [class.product-dialog__tab-btn--active]="activeTab() === 'basic'"
+        (click)="setTab('basic')"
+      >
+        Thông tin cơ bản
+      </button>
+      <button
+        type="button"
+        class="product-dialog__tab-btn"
+        [class.product-dialog__tab-btn--active]="activeTab() === 'specs'"
+        (click)="setTab('specs')"
+      >
+        Mô tả & Cấu hình (Markdown)
+      </button>
+      <button
+        type="button"
+        class="product-dialog__tab-btn"
+        [class.product-dialog__tab-btn--active]="activeTab() === 'variants'"
+        (click)="setTab('variants')"
+      >
+        Biến thể sản phẩm ({{ formState().variants.length }})
+      </button>
+    </div>
+
+    <div class="product-dialog__body">
+      <!-- TAB 1: BASIC INFO -->
+      <div [hidden]="activeTab() !== 'basic'" class="product-tab-content">
+        <label class="product-field">
+          <span>Tên sản phẩm *</span>
+          <input
+            type="text"
+            [value]="formState().productName"
+            placeholder="Nhập tên sản phẩm..."
+            (input)="onFieldChange({ productName: $any($event.target).value })"
+          />
+        </label>
+
+        <div class="product-fields-row">
+          <label class="product-field">
+            <span>Nhóm sản phẩm</span>
+            <select
+              [value]="formState().productGroupId || ''"
+              (change)="onFieldChange({ productGroupId: $any($event.target).value || null })"
+            >
+              <option value="">-- Không chọn nhóm --</option>
+              @for (g of groups(); track g.groupId) {
+                <option [value]="g.groupId">{{ g.name }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="product-field">
+            <span>Key ảnh đại diện (R2 Key)</span>
+            <input
+              type="text"
+              [value]="formState().representativeImageKey || ''"
+              placeholder="Ví dụ: Alpha65/yellow.png..."
+              (input)="onFieldChange({ representativeImageKey: $any($event.target).value || null })"
+            />
+          </label>
+        </div>
+
+        <div class="product-picker-container">
+          <span class="product-picker-label">Danh mục sản phẩm *</span>
+          <div class="category-grid">
+            @for (cat of categories(); track cat.categoryId) {
+              <button
+                type="button"
+                class="category-tag-btn"
+                [class.category-tag-btn--selected]="isCategorySelected(cat.categoryId)"
+                (click)="onCategoryToggle(cat.categoryId)"
+              >
+                {{ cat.name }}
+                @if (isCategorySelected(cat.categoryId)) {
+                  <svg lucideCheck class="w-4 h-4 ml-1" [attr.stroke-width]="2"></svg>
+                }
+              </button>
+            }
+          </div>
+        </div>
+
+        <label class="product-field">
+          <span>Danh sách Key ảnh phụ (Mỗi dòng 1 R2 Key)</span>
+          <textarea
+            rows="4"
+            [value]="imageKeysRaw"
+            placeholder="Nhập các R2 key ảnh phụ, mỗi dòng 1 key..."
+            (input)="onImageKeysChange($any($event.target).value)"
+          ></textarea>
+        </label>
+      </div>
+
+      <!-- TAB 2: MARKDOWN SPECS -->
+      <div [hidden]="activeTab() !== 'specs'" class="product-tab-content">
+        <div class="product-info-alert">
+          <svg lucideInfo [attr.stroke-width]="2" class="w-5 h-5 text-indigo-500"></svg>
+          <p>
+            Bạn có thể viết mô tả, cấu hình bằng định dạng Markdown tiêu chuẩn. Hệ thống sẽ tự động chuyển thành cấu trúc tài liệu lưu ở database.
+          </p>
+        </div>
+
+        <label class="product-field">
+          <span>Giới thiệu / Mô tả sản phẩm</span>
+          <textarea
+            rows="5"
+            [value]="formState().descriptionRaw"
+            placeholder="Nhập mô tả sản phẩm (Markdown)..."
+            (input)="onFieldChange({ descriptionRaw: $any($event.target).value })"
+          ></textarea>
+        </label>
+
+        <label class="product-field">
+          <span>Thông số kỹ thuật (Specifications)</span>
+          <textarea
+            rows="4"
+            [value]="formState().specificationsRaw"
+            placeholder="Nhập thông số kỹ thuật..."
+            (input)="onFieldChange({ specificationsRaw: $any($event.target).value })"
+          ></textarea>
+        </label>
+
+        <label class="product-field">
+          <span>Khả năng tương thích (Compatibility)</span>
+          <textarea
+            rows="3"
+            [value]="formState().compatibilityRaw"
+            placeholder="Nhập khả năng tương thích..."
+            (input)="onFieldChange({ compatibilityRaw: $any($event.target).value })"
+          ></textarea>
+        </label>
+
+        <label class="product-field">
+          <span>Trong hộp gồm có (Box Contents)</span>
+          <textarea
+            rows="3"
+            [value]="formState().boxContentsRaw"
+            placeholder="Nhập các phụ kiện kèm theo trong hộp..."
+            (input)="onFieldChange({ boxContentsRaw: $any($event.target).value })"
+          ></textarea>
+        </label>
+
+        <label class="product-field">
+          <span>Thông tin hỗ trợ (Support Info)</span>
+          <textarea
+            rows="3"
+            [value]="formState().supportInfoRaw"
+            placeholder="Nhập đường dẫn tài liệu hướng dẫn, driver..."
+            (input)="onFieldChange({ supportInfoRaw: $any($event.target).value })"
+          ></textarea>
+        </label>
+      </div>
+
+      <!-- TAB 3: VARIANTS -->
+      <div [hidden]="activeTab() !== 'variants'" class="product-tab-content">
+        <div class="variants-table-container">
+          <table class="variants-table">
+            <thead>
+              <tr>
+                <th>Tên biến thể</th>
+                <th>Màu sắc</th>
+                <th>Mã màu Hex</th>
+                <th>Giá bán gốc</th>
+                <th>Giá khuyến mãi</th>
+                <th>Tồn kho</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (v of formState().variants; track $index) {
+                <tr>
+                  <td><strong>{{ v.name }}</strong></td>
+                  <td>{{ v.nameColor }}</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <span class="w-4 h-4 rounded-full border border-gray-300" [style.background-color]="v.colorCode"></span>
+                      <code>{{ v.colorCode }}</code>
+                    </div>
+                  </td>
+                  <td>{{ v.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</td>
+                  <td>{{ v.salePrice ? (v.salePrice | currency: 'VND' : 'symbol' : '1.0-0') : 'Không có' }}</td>
+                  <td>{{ v.stockQuantity }}</td>
+                  <td>
+                    <button type="button" class="variant-delete-btn" (click)="removeVariant($index)">
+                      <svg lucideTrash [attr.stroke-width]="2" class="w-4 h-4"></svg>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="variants-table-empty">
+                    Chưa có biến thể nào. Sản phẩm bắt buộc phải có ít nhất 1 biến thể.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <section class="add-variant-panel">
+          <h3>Thêm biến thể mới</h3>
+          <div class="variant-form-grid">
+            <label class="product-field">
+              <span>Tên phích cắm / Layout</span>
+              <input
+                type="text"
+                [ngModel]="newVariant().name"
+                (ngModelChange)="onNewVariantFieldChange({ name: $event })"
+                placeholder="Ví dụ: US Plug, Wireless, v.v."
+              />
+            </label>
+
+            <label class="product-field">
+              <span>Tên màu sắc</span>
+              <input
+                type="text"
+                [ngModel]="newVariant().nameColor"
+                (ngModelChange)="onNewVariantFieldChange({ nameColor: $event })"
+                placeholder="Ví dụ: Space Gray, Neon..."
+              />
+            </label>
+
+            <label class="product-field">
+              <span>Mã màu Hex</span>
+              <input
+                type="text"
+                [ngModel]="newVariant().colorCode"
+                (ngModelChange)="onNewVariantFieldChange({ colorCode: $event })"
+                placeholder="Ví dụ: #5A5A5A"
+              />
+            </label>
+
+            <label class="product-field">
+              <span>Giá bán gốc *</span>
+              <input
+                type="number"
+                [ngModel]="newVariant().originalPrice"
+                (ngModelChange)="onNewVariantFieldChange({ originalPrice: $event })"
+                placeholder="Nhập giá gốc..."
+              />
+            </label>
+
+            <label class="product-field">
+              <span>Giá khuyến mãi (nếu có)</span>
+              <input
+                type="number"
+                [ngModel]="newVariant().salePrice"
+                (ngModelChange)="onNewVariantFieldChange({ salePrice: $event || null })"
+                placeholder="Giá khuyến mãi..."
+              />
+            </label>
+
+            <label class="product-field">
+              <span>Số lượng tồn kho *</span>
+              <input
+                type="number"
+                [ngModel]="newVariant().stockQuantity"
+                (ngModelChange)="onNewVariantFieldChange({ stockQuantity: $event })"
+                placeholder="Tồn kho..."
+              />
+            </label>
+          </div>
+
+          <button type="button" class="variant-add-btn" (click)="addVariant()">
+            <svg lucidePlus [attr.stroke-width]="2.4" class="w-4 h-4"></svg>
+            <span>Thêm biến thể</span>
+          </button>
+        </section>
+      </div>
+
+      @if (errors().submit) {
+        <p class="product-dialog__submit-error">{{ errors().submit }}</p>
+      }
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="product-dialog__footer">
+      <button type="button" class="product-dialog__ghost" [disabled]="saving()" (click)="close.emit()">
+        Hủy
+      </button>
+      <button type="button" class="product-dialog__primary" [disabled]="saving() || loadingDetail()" (click)="onSave()">
+        {{ mode() === 'edit' ? 'Lưu thay đổi' : 'Thêm sản phẩm' }}
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

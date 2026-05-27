@@ -125,6 +125,7 @@ interface CategoryProductListItemResponseDto {
   originalPrice: number | null;
   salePrice: number | null;
   averageRating: number | null;
+  stockQuantity: number | null;
 }
 
 interface ProductDetailResponseDto {
@@ -294,7 +295,7 @@ function toProductListItem(
         ? originalPrice
         : undefined,
     rating: product.averageRating ?? undefined,
-    inStock: true,
+    inStock: (product.stockQuantity ?? 0) > 0,
   };
 }
 
