@@ -37,10 +37,11 @@
                 <label class="order-edit__field">
                   <span>Trạng thái đơn hàng</span>
                   <select [value]="currentDraft.orderStatus" (change)="onStatusChange($event)">
-                    <option value="PROCESSING">Đang xử lý</option>
-                    <option value="DELIVERED">Đã giao</option>
+                    <option value="CREATED">Chờ thanh toán</option>
+                    <option value="CONFIRMED">Đang xử lý</option>
+                    <option value="SHIPPED">Đang giao</option>
+                    <option value="COMPLETED">Đã hoàn thành</option>
                     <option value="CANCELLED">Đã hủy</option>
-                    <option value="PAYMENT_PENDING">Chờ thanh toán</option>
                   </select>
                 </label>
 

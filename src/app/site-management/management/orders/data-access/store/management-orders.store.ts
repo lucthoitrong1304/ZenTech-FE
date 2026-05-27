@@ -14,7 +14,7 @@ import {
   ManagementOrderSort,
   ManagementOrderStatusFilter,
 } from '../models/management-order.models';
-import { ManagementOrderMockService } from '../services/management-order-mock.service';
+import { ManagementOrderService } from '../services/management-order.service';
 
 export type ManagementOrderDrawerMode = 'detail' | 'edit' | null;
 
@@ -113,7 +113,7 @@ export const ManagementOrdersStore = signalStore(
       }),
     })
   ),
-  withMethods((store, orderService = inject(ManagementOrderMockService)) => {
+  withMethods((store, orderService = inject(ManagementOrderService)) => {
     const applyOrdersPage = (page: ManagementOrderPage): void => {
       patchState(
         store,
@@ -335,6 +335,32 @@ export const ManagementOrdersStore = signalStore(
       )
     );
 
+    const loadOrderDetail = rxMethod<string>(
+      pipe(
+        tap(() => patchState(store, { loading: true, errorMessage: null })),
+        switchMap(orderId =>
+          orderService.getOrderDetail(orderId).pipe(
+            tap({
+              next: order => {
+                patchState(store, {
+                  selectedOrderSnapshot: order,
+                  editDraft: store.drawerMode() === 'edit' ? toEditDraft(order) : null,
+                  loading: false,
+                });
+              },
+              error: () => {
+                patchState(store, {
+                  loading: false,
+                  errorMessage: 'Không thể tải chi tiết đơn hàng.',
+                });
+              },
+            }),
+            catchError(() => EMPTY)
+          )
+        )
+      )
+    );
+
     const saveEditDraft = rxMethod<void>(
       pipe(
         switchMap(() => {
@@ -415,13 +441,15 @@ export const ManagementOrdersStore = signalStore(
       },
       openDetail(orderId: string): void {
         handleEvent({ type: ManagementOrderEventType.OrderSelected, orderId });
+        loadOrderDetail(orderId);
       },
       openEdit(order: ManagementOrder): void {
         handleEvent({
           type: ManagementOrderEventType.EditClicked,
           order,
-          draft: toEditDraft(order),
+          draft: null,
         });
+        loadOrderDetail(order.orderId);
       },
       updateEditDraft(patch: Partial<ManagementOrderEditDraft>): void {
         handleEvent({ type: ManagementOrderEventType.EditDraftChanged, patch });

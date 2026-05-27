@@ -1,8 +1,8 @@
-export type ManagementOrderStatus = 'PROCESSING' | 'DELIVERED' | 'CANCELLED' | 'PAYMENT_PENDING';
+export type ManagementOrderStatus = 'CREATED' | 'CONFIRMED' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
 
-export type ManagementPaymentStatus = 'PENDING' | 'PAID' | 'REFUNDED';
+export type ManagementPaymentStatus = 'PENDING' | 'SUCCESS' | 'REFUNDED';
 
-export type ManagementPaymentMethod = 'COD' | 'MOMO' | 'VNPAY';
+export type ManagementPaymentMethod = 'CASH' | 'VNPAY' | 'MOMO';
 
 export type ManagementOrderStatusFilter = 'all' | ManagementOrderStatus;
 

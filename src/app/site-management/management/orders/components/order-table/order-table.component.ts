@@ -48,20 +48,28 @@ export class OrderTableComponent {
 
   protected getStatusLabel(status: ManagementOrderStatus): string {
     switch (status) {
-      case 'DELIVERED':
-        return 'Đã giao';
+      case 'CREATED':
+        return 'Chờ thanh toán';
+      case 'CONFIRMED':
+        return 'Đang xử lý';
+      case 'SHIPPED':
+        return 'Đang giao';
+      case 'COMPLETED':
+        return 'Đã hoàn thành';
       case 'CANCELLED':
         return 'Đã hủy';
-      case 'PAYMENT_PENDING':
-        return 'Chờ thanh toán';
-      case 'PROCESSING':
       default:
-        return 'Đang xử lý';
+        return status;
     }
   }
 
   protected getPaymentMethodLabel(method: ManagementPaymentMethod): string {
-    return method === 'COD' ? 'COD' : method;
+    switch (method) {
+      case 'CASH':
+        return 'COD';
+      default:
+        return method;
+    }
   }
 
   protected getPageNumber(slot: number): number | null {

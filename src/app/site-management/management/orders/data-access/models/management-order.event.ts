@@ -43,7 +43,7 @@ export type ManagementOrderEvent =
   | { type: ManagementOrderEventType.FiltersReset; query: ManagementOrderQuery }
   | { type: ManagementOrderEventType.PageChanged; page: number }
   | { type: ManagementOrderEventType.OrderSelected; orderId: string }
-  | { type: ManagementOrderEventType.EditClicked; order: ManagementOrder; draft: ManagementOrderEditDraft }
+  | { type: ManagementOrderEventType.EditClicked; order: ManagementOrder; draft: ManagementOrderEditDraft | null }
   | { type: ManagementOrderEventType.DrawerClosed }
   | { type: ManagementOrderEventType.EditDraftChanged; patch: Partial<ManagementOrderEditDraft> }
   | { type: ManagementOrderEventType.EditQuantityChanged; orderItemId: string; quantity: number }

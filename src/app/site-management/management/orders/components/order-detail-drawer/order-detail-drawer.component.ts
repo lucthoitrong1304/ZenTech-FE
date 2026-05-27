@@ -24,21 +24,24 @@ export class OrderDetailDrawerComponent {
 
   protected getStatusLabel(status: ManagementOrderStatus): string {
     switch (status) {
-      case 'DELIVERED':
-        return 'Đã giao';
+      case 'CREATED':
+        return 'Chờ thanh toán';
+      case 'CONFIRMED':
+        return 'Đang xử lý';
+      case 'SHIPPED':
+        return 'Đang giao';
+      case 'COMPLETED':
+        return 'Đã hoàn thành';
       case 'CANCELLED':
         return 'Đã hủy';
-      case 'PAYMENT_PENDING':
-        return 'Chờ thanh toán';
-      case 'PROCESSING':
       default:
-        return 'Đang xử lý';
+        return status;
     }
   }
 
   protected getPaymentStatusLabel(status: ManagementPaymentStatus): string {
     switch (status) {
-      case 'PAID':
+      case 'SUCCESS':
         return 'Đã thanh toán';
       case 'REFUNDED':
         return 'Đã hoàn tiền';
