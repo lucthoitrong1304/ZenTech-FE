@@ -8,6 +8,8 @@ import {
   ManagementProductPage,
   ManagementProductQuery,
   ManagementProductStats,
+  ProductFormValue,
+  ProductManagementDetailResponse,
 } from './management-product.models';
 
 export enum ManagementProductEventType {
@@ -25,6 +27,17 @@ export enum ManagementProductEventType {
   ProductDeleted = 'PRODUCT_DELETED',
   ProductDeleteFailed = 'PRODUCT_DELETE_FAILED',
   MessagesCleared = 'MESSAGES_CLEARED',
+  CreateClicked = 'CREATE_CLICKED',
+  EditClicked = 'EDIT_CLICKED',
+  DetailLoadStarted = 'DETAIL_LOAD_STARTED',
+  DetailLoadSucceeded = 'DETAIL_LOAD_SUCCEEDED',
+  DetailLoadFailed = 'DETAIL_LOAD_FAILED',
+  DialogClosed = 'DIALOG_CLOSED',
+  FormValueChanged = 'FORM_VALUE_CHANGED',
+  SubmitClicked = 'SUBMIT_CLICKED',
+  CreateSucceeded = 'CREATE_SUCCEEDED',
+  UpdateSucceeded = 'UPDATE_SUCCEEDED',
+  SaveFailed = 'SAVE_FAILED',
 }
 
 export type ManagementProductEvent =
@@ -41,7 +54,18 @@ export type ManagementProductEvent =
   | { type: ManagementProductEventType.PageChanged; page: number }
   | { type: ManagementProductEventType.ProductDeleted; productId: string }
   | { type: ManagementProductEventType.ProductDeleteFailed }
-  | { type: ManagementProductEventType.MessagesCleared };
+  | { type: ManagementProductEventType.MessagesCleared }
+  | { type: ManagementProductEventType.CreateClicked }
+  | { type: ManagementProductEventType.EditClicked; productId: string }
+  | { type: ManagementProductEventType.DetailLoadStarted }
+  | { type: ManagementProductEventType.DetailLoadSucceeded; detail: ProductManagementDetailResponse }
+  | { type: ManagementProductEventType.DetailLoadFailed }
+  | { type: ManagementProductEventType.DialogClosed }
+  | { type: ManagementProductEventType.FormValueChanged; patch: Partial<ProductFormValue> }
+  | { type: ManagementProductEventType.SubmitClicked }
+  | { type: ManagementProductEventType.CreateSucceeded; detail: ProductManagementDetailResponse }
+  | { type: ManagementProductEventType.UpdateSucceeded; detail: ProductManagementDetailResponse }
+  | { type: ManagementProductEventType.SaveFailed; error: string };
 
 export enum ManagementProductGroupEventType {
   GroupsLoadStarted = 'GROUPS_LOAD_STARTED',

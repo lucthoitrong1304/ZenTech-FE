@@ -10,8 +10,17 @@ import {
   ManagementProductPage,
   ManagementProductQuery,
   ManagementProductStats,
+  ProductFormValue,
+  ProductCreateRequest,
+  ProductUpdateRequest,
+  ProductManagementDetailResponse,
+  ManagementProductFormErrors,
+  ProductVariantUpsertRequest,
+  MarkdownContentRequest,
+  MarkdownSectionRequest,
+  MarkdownBulletRequest,
 } from '../models/management-product.models';
-import { ManagementProductMockService } from '../services/management-product-mock.service';
+import { ManagementProductService } from '../services/management-product.service';
 
 const DEFAULT_QUERY: ManagementProductQuery = {
   page: 0,
@@ -37,6 +46,13 @@ interface ManagementProductsUiState {
   stats: ManagementProductStats;
   successMessage: string | null;
   errorMessage: string | null;
+  dialogVisible: boolean;
+  dialogMode: 'create' | 'edit';
+  editingProductId: string | null;
+  loadingDetail: boolean;
+  saving: boolean;
+  formValue: ProductFormValue | null;
+  formErrors: ManagementProductFormErrors;
 }
 
 const INITIAL_STATE: ManagementProductsUiState = {
@@ -54,7 +70,122 @@ const INITIAL_STATE: ManagementProductsUiState = {
   },
   successMessage: null,
   errorMessage: null,
+  dialogVisible: false,
+  dialogMode: 'create',
+  editingProductId: null,
+  loadingDetail: false,
+  saving: false,
+  formValue: null,
+  formErrors: {},
 };
+
+export function createEmptyProductFormValue(): ProductFormValue {
+  return {
+    productName: '',
+    productGroupId: null,
+    categoryIds: [],
+    representativeImageKey: null,
+    imageKeys: [],
+    descriptionRaw: '',
+    specificationsRaw: '',
+    compatibilityRaw: '',
+    boxContentsRaw: '',
+    supportInfoRaw: '',
+    variants: [],
+  };
+}
+
+export function mapDetailResponseToFormValue(detail: ProductManagementDetailResponse): ProductFormValue {
+  return {
+    productName: detail.productName,
+    productGroupId: detail.productGroup ? detail.productGroup.id : null,
+    categoryIds: detail.categories.map(c => c.id),
+    representativeImageKey: detail.representativeImageKey,
+    imageKeys: detail.imageKeys || [],
+    descriptionRaw: detail.description || '',
+    specificationsRaw: detail.specifications || '',
+    compatibilityRaw: detail.compatibility || '',
+    boxContentsRaw: detail.boxContents || '',
+    supportInfoRaw: detail.supportInfo || '',
+    variants: detail.variants.map(v => ({
+      id: v.id,
+      originalPrice: v.originalPrice,
+      salePrice: v.salePrice,
+      name: v.name || '',
+      nameColor: v.nameColor || '',
+      colorCode: v.colorCode || '',
+      saleStartAt: v.saleStartAt,
+      saleEndAt: v.saleEndAt,
+      stockQuantity: v.stockQuantity,
+    })),
+  };
+}
+
+export function parseMarkdownToRequest(markdown: string): MarkdownContentRequest {
+  if (!markdown || !markdown.trim()) {
+    return { sections: [] };
+  }
+
+  const sections: MarkdownSectionRequest[] = [];
+  const lines = markdown.split(/\r?\n/);
+  let currentSection: MarkdownSectionRequest | null = null;
+  let currentParagraphs: string[] = [];
+  let currentBullets: MarkdownBulletRequest[] = [];
+
+  const flushSection = (): void => {
+    if (currentSection) {
+      currentSection.paragraphs = currentParagraphs.length > 0 ? currentParagraphs : null;
+      currentSection.bullets = currentBullets.length > 0 ? currentBullets : null;
+      sections.push(currentSection);
+    }
+    currentSection = null;
+    currentParagraphs = [];
+    currentBullets = [];
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    if (trimmed.startsWith('#')) {
+      flushSection();
+      const heading = trimmed.replace(/^#+\s+/, '');
+      currentSection = {
+        heading,
+        paragraphs: null,
+        bullets: null,
+      };
+    } else if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
+      if (!currentSection) {
+        currentSection = { heading: null, paragraphs: null, bullets: null };
+      }
+      const bulletContent = trimmed.replace(/^[-*]\s+/, '');
+      const boldMatch = bulletContent.match(/^\*\*(.*?)\*\*[:\s]*(.*)$/);
+      if (boldMatch) {
+        currentBullets.push({
+          label: boldMatch[1].trim(),
+          value: boldMatch[2].trim(),
+        });
+      } else {
+        currentBullets.push({
+          label: null,
+          value: bulletContent,
+        });
+      }
+    } else {
+      if (!currentSection) {
+        currentSection = { heading: null, paragraphs: null, bullets: null };
+      }
+      currentParagraphs.push(trimmed);
+    }
+  }
+
+  flushSection();
+  return { sections };
+}
+
 
 export const ManagementProductsStore = signalStore(
   withState<ManagementProductsUiState>(INITIAL_STATE),
@@ -88,7 +219,7 @@ export const ManagementProductsStore = signalStore(
       return count;
     }),
   })),
-  withMethods((store, productService = inject(ManagementProductMockService)) => {
+  withMethods((store, productService = inject(ManagementProductService)) => {
     const applyProductsPage = (page: ManagementProductPage): void => {
       patchState(
         store,
@@ -207,6 +338,95 @@ export const ManagementProductsStore = signalStore(
         case ManagementProductEventType.MessagesCleared:
           patchState(store, { successMessage: null, errorMessage: null });
           break;
+
+        case ManagementProductEventType.CreateClicked:
+          patchState(store, {
+            dialogVisible: true,
+            dialogMode: 'create',
+            editingProductId: null,
+            formValue: createEmptyProductFormValue(),
+            formErrors: {},
+          });
+          break;
+
+        case ManagementProductEventType.EditClicked:
+          patchState(store, {
+            dialogVisible: true,
+            dialogMode: 'edit',
+            editingProductId: event.productId,
+            loadingDetail: true,
+            formValue: null,
+            formErrors: {},
+          });
+          break;
+
+        case ManagementProductEventType.DetailLoadStarted:
+          patchState(store, { loadingDetail: true });
+          break;
+
+        case ManagementProductEventType.DetailLoadSucceeded:
+          patchState(store, {
+            loadingDetail: false,
+            formValue: mapDetailResponseToFormValue(event.detail),
+          });
+          break;
+
+        case ManagementProductEventType.DetailLoadFailed:
+          patchState(store, {
+            loadingDetail: false,
+            dialogVisible: false,
+            errorMessage: 'Khong the tai chi tiet san pham.',
+          });
+          break;
+
+        case ManagementProductEventType.DialogClosed:
+          patchState(store, {
+            dialogVisible: false,
+            editingProductId: null,
+            formValue: null,
+            formErrors: {},
+          });
+          break;
+
+        case ManagementProductEventType.FormValueChanged: {
+          const current = store.formValue();
+          if (current) {
+            patchState(store, {
+              formValue: {
+                ...current,
+                ...event.patch,
+              },
+            });
+          }
+          break;
+        }
+
+        case ManagementProductEventType.SubmitClicked:
+          patchState(store, { saving: true, formErrors: {} });
+          break;
+
+        case ManagementProductEventType.CreateSucceeded:
+          patchState(store, {
+            saving: false,
+            dialogVisible: false,
+            successMessage: `Da them san pham ${event.detail.productName} thanh cong.`,
+          });
+          break;
+
+        case ManagementProductEventType.UpdateSucceeded:
+          patchState(store, {
+            saving: false,
+            dialogVisible: false,
+            successMessage: `Da cap nhat san pham ${event.detail.productName} thanh cong.`,
+          });
+          break;
+
+        case ManagementProductEventType.SaveFailed:
+          patchState(store, {
+            saving: false,
+            formErrors: { submit: event.error },
+          });
+          break;
       }
     };
 
@@ -254,6 +474,98 @@ export const ManagementProductsStore = signalStore(
       )
     );
 
+    const loadProductDetail = rxMethod<string>(
+      pipe(
+        tap(() => handleEvent({ type: ManagementProductEventType.DetailLoadStarted })),
+        switchMap(productId =>
+          productService.getProductDetail(productId).pipe(
+            tap({
+              next: detail =>
+                handleEvent({ type: ManagementProductEventType.DetailLoadSucceeded, detail }),
+              error: () =>
+                handleEvent({ type: ManagementProductEventType.DetailLoadFailed }),
+            }),
+            catchError(() => EMPTY)
+          )
+        )
+      )
+    );
+
+    const saveProduct = rxMethod<void>(
+      pipe(
+        tap(() => handleEvent({ type: ManagementProductEventType.SubmitClicked })),
+        switchMap(() => {
+          const form = store.formValue();
+          const mode = store.dialogMode();
+          const editingId = store.editingProductId();
+
+          if (!form) {
+            handleEvent({ type: ManagementProductEventType.SaveFailed, error: 'Thong tin form khong hop le.' });
+            return EMPTY;
+          }
+
+          const payload: ProductCreateRequest = {
+            productName: form.productName,
+            productGroupId: form.productGroupId,
+            categoryIds: form.categoryIds,
+            representativeImageKey: form.representativeImageKey,
+            imageKeys: form.imageKeys,
+            description: parseMarkdownToRequest(form.descriptionRaw),
+            specifications: parseMarkdownToRequest(form.specificationsRaw),
+            compatibility: parseMarkdownToRequest(form.compatibilityRaw),
+            boxContents: parseMarkdownToRequest(form.boxContentsRaw),
+            supportInfo: parseMarkdownToRequest(form.supportInfoRaw),
+            variants: form.variants,
+          };
+
+          if (mode === 'edit' && editingId) {
+            const updatePayload: ProductUpdateRequest = {
+              ...payload,
+              clearProductGroup: !payload.productGroupId,
+              clearRepresentativeImage: !payload.representativeImageKey,
+            };
+            return productService.updateProduct(editingId, updatePayload).pipe(
+              tap({
+                next: detail => {
+                  handleEvent({ type: ManagementProductEventType.UpdateSucceeded, detail });
+                },
+                error: (err: unknown) => {
+                  const errorResponse = err as { message?: string };
+                  const errMsg = errorResponse?.message || 'Khong the cap nhat san pham. Vui long thu lai.';
+                  handleEvent({ type: ManagementProductEventType.SaveFailed, error: errMsg });
+                },
+              }),
+              switchMap(() => productService.getProductStats()),
+              tap(stats => handleEvent({ type: ManagementProductEventType.StatsLoadSucceeded, stats })),
+              switchMap(() => productService.getProducts(store.query())),
+              tap(page => handleEvent({ type: ManagementProductEventType.ProductsLoadSucceeded, page })),
+              map(() => undefined),
+              catchError(() => EMPTY)
+            );
+          } else {
+            return productService.createProduct(payload).pipe(
+              tap({
+                next: detail => {
+                  handleEvent({ type: ManagementProductEventType.CreateSucceeded, detail });
+                },
+                error: (err: unknown) => {
+                  const errorResponse = err as { message?: string };
+                  const errMsg = errorResponse?.message || 'Khong the tao san pham. Vui long thu lai.';
+                  handleEvent({ type: ManagementProductEventType.SaveFailed, error: errMsg });
+                },
+              }),
+              switchMap(() => productService.getProductStats()),
+              tap(stats => handleEvent({ type: ManagementProductEventType.StatsLoadSucceeded, stats })),
+              switchMap(() => productService.getProducts(store.query())),
+              tap(page => handleEvent({ type: ManagementProductEventType.ProductsLoadSucceeded, page })),
+              map(() => undefined),
+              catchError(() => EMPTY)
+            );
+          }
+        })
+      )
+    );
+
     return {
       dispatch: handleEvent,
       loadProducts,
@@ -284,6 +596,22 @@ export const ManagementProductsStore = signalStore(
       },
       clearMessages(): void {
         handleEvent({ type: ManagementProductEventType.MessagesCleared });
+      },
+      openCreateDialog(): void {
+        handleEvent({ type: ManagementProductEventType.CreateClicked });
+      },
+      openEditDialog(productId: string): void {
+        handleEvent({ type: ManagementProductEventType.EditClicked, productId });
+        loadProductDetail(productId);
+      },
+      updateFormValue(patch: Partial<ProductFormValue>): void {
+        handleEvent({ type: ManagementProductEventType.FormValueChanged, patch });
+      },
+      closeDialog(): void {
+        handleEvent({ type: ManagementProductEventType.DialogClosed });
+      },
+      submitProductForm(): void {
+        saveProduct();
       },
     };
   })

@@ -15,7 +15,7 @@ import {
   ManagementProductGroupQuery,
   ManagementProductOption,
 } from '../models/management-product.models';
-import { ManagementProductMockService } from '../services/management-product-mock.service';
+import { ManagementProductService } from '../services/management-product.service';
 
 export type ManagementProductGroupDialogMode = 'create' | 'edit' | null;
 
@@ -102,7 +102,7 @@ export const ManagementProductGroupsStore = signalStore(
       return count;
     }),
   })),
-  withMethods((store, productService = inject(ManagementProductMockService)) => {
+  withMethods((store, productService = inject(ManagementProductService)) => {
     const applyGroupsPage = (page: ManagementProductGroupPage): void => {
       patchState(
         store,

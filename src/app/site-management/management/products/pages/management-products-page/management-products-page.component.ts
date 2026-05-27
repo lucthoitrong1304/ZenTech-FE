@@ -13,6 +13,7 @@ import { ConfirmService } from '../../../../../shared/components/confirm/confirm
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { ProductTableComponent } from '../../components/product-table/product-table.component';
 import { ProductToolbarComponent } from '../../components/product-toolbar/product-toolbar.component';
+import { ProductDialogComponent } from '../../components/product-dialog/product-dialog.component';
 import {
   ManagementProduct,
   ManagementProductQuery,
@@ -33,6 +34,7 @@ import { ManagementProductsStore } from '../../data-access/store/management-prod
     LucideWarehouse,
     ProductTableComponent,
     ProductToolbarComponent,
+    ProductDialogComponent,
   ],
   templateUrl: './management-products-page.component.html',
   styleUrl: './management-products-page.component.css',
@@ -78,11 +80,11 @@ export class ManagementProductsPageComponent {
   }
 
   protected addProduct(): void {
-    this.toastService.info('Form them san pham se duoc noi o phase API tiep theo.');
+    this.store.openCreateDialog();
   }
 
   protected editProduct(product: ManagementProduct): void {
-    this.toastService.info(`Dang mo mock editor cho ${product.sku}.`);
+    this.store.openEditDialog(product.productId);
   }
 
   protected confirmDeleteProduct(product: ManagementProduct): void {

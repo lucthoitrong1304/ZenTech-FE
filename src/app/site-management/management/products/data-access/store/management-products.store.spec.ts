@@ -7,7 +7,7 @@ import {
   ManagementProductPage,
   ManagementProductQuery,
 } from '../models/management-product.models';
-import { ManagementProductMockService } from '../services/management-product-mock.service';
+import { ManagementProductService } from '../services/management-product.service';
 import { ManagementProductsStore } from './management-products.store';
 
 describe('ManagementProductsStore', () => {
@@ -26,13 +26,13 @@ describe('ManagementProductsStore', () => {
   });
 
   function configureStore(
-    productService: Partial<ManagementProductMockService>
+    productService: Partial<ManagementProductService>
   ): InstanceType<typeof ManagementProductsStore> {
     TestBed.configureTestingModule({
       providers: [
         ManagementProductsStore,
         {
-          provide: ManagementProductMockService,
+          provide: ManagementProductService,
           useValue: productService,
         },
       ],
