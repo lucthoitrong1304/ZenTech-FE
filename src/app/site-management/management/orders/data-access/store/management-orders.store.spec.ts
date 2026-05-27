@@ -8,7 +8,7 @@ import {
   ManagementOrderPage,
   ManagementOrderQuery,
 } from '../models/management-order.models';
-import { ManagementOrderMockService } from '../services/management-order-mock.service';
+import { ManagementOrderService } from '../services/management-order.service';
 import { ManagementOrdersStore } from './management-orders.store';
 
 describe('ManagementOrdersStore', () => {
@@ -27,13 +27,13 @@ describe('ManagementOrdersStore', () => {
   });
 
   function configureStore(
-    orderService: Partial<ManagementOrderMockService>
+    orderService: Partial<ManagementOrderService>
   ): InstanceType<typeof ManagementOrdersStore> {
     TestBed.configureTestingModule({
       providers: [
         ManagementOrdersStore,
         {
-          provide: ManagementOrderMockService,
+          provide: ManagementOrderService,
           useValue: orderService,
         },
       ],
@@ -71,14 +71,14 @@ describe('ManagementOrdersStore', () => {
     store.loadOrders();
     store.goToPage(2);
     store.setKeyword('phong');
-    store.setStatusFilter('PROCESSING');
+    store.setStatusFilter('CONFIRMED');
 
     expect(store.query()).toEqual({
       page: 0,
       size: 4,
       sort: 'createdAt,desc',
       keyword: 'phong',
-      status: 'PROCESSING',
+      status: 'CONFIRMED',
       dateFilter: 'all',
     });
     expect(store.activeFilterCount()).toBe(2);
@@ -86,13 +86,16 @@ describe('ManagementOrdersStore', () => {
 
   it('opens detail and edit drawer with selected order state', () => {
     const order = createOrder();
+    const getOrderDetail = vi.fn(() => of(order));
     const store = configureStore({
       getOrders: query => of(createPage([order], query)),
+      getOrderDetail,
     });
 
     store.loadOrders();
     store.openDetail(order.orderId);
 
+    expect(getOrderDetail).toHaveBeenCalledWith(order.orderId);
     expect(store.selectedOrder()?.orderId).toBe(order.orderId);
     expect(store.detailDrawerOpen()).toBe(true);
 
@@ -127,6 +130,7 @@ describe('ManagementOrdersStore', () => {
     );
     const store = configureStore({
       getOrders: query => of(createPage([order], query)),
+      getOrderDetail: () => of(order),
       updateOrder,
     });
 
@@ -151,6 +155,7 @@ describe('ManagementOrdersStore', () => {
     const order = createOrder();
     const store = configureStore({
       getOrders: query => of(createPage([order], query)),
+      getOrderDetail: () => of(order),
     });
 
     store.loadOrders();
@@ -193,8 +198,8 @@ function createOrder(): ManagementOrder {
       shippingAddress: '123 Duong Le Loi, Quan 1, TP. Ho Chi Minh',
     },
     paymentMethod: 'MOMO',
-    paymentStatus: 'PAID',
-    orderStatus: 'PROCESSING',
+    paymentStatus: 'SUCCESS',
+    orderStatus: 'CONFIRMED',
     subtotal: 3500000,
     shippingFee: 30000,
     discountAmount: 0,

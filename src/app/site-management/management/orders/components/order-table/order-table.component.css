@@ -68,12 +68,13 @@
   text-transform: uppercase;
 }
 
-.orders-status--processing {
+.orders-status--confirmed,
+.orders-status--shipped {
   background: rgba(59, 130, 246, 0.12);
   color: #1d4ed8;
 }
 
-.orders-status--delivered {
+.orders-status--completed {
   background: rgba(22, 163, 74, 0.12);
   color: #15803d;
 }
@@ -83,7 +84,7 @@
   color: #dc2626;
 }
 
-.orders-status--payment_pending {
+.orders-status--created {
   background: rgba(245, 158, 11, 0.14);
   color: #b45309;
 }

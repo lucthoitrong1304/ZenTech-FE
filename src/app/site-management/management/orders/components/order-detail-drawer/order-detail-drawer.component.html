@@ -90,7 +90,7 @@
           <button
             type="button"
             class="order-drawer__primary"
-            [disabled]="selectedOrder.orderStatus === 'DELIVERED' || selectedOrder.orderStatus === 'CANCELLED'"
+            [disabled]="selectedOrder.orderStatus === 'COMPLETED' || selectedOrder.orderStatus === 'CANCELLED'"
             (click)="markDelivered.emit(selectedOrder.orderId)"
           >
             Đánh dấu đã giao
