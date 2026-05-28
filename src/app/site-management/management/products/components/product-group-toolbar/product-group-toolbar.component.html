@@ -4,7 +4,7 @@
     <input
       type="search"
       [value]="keyword()"
-      placeholder="Tim nhom san pham..."
+      placeholder="Tìm nhóm sản phẩm..."
       (input)="onKeywordInput($event)"
       (keydown.enter)="onKeywordEnter($event)"
     />
@@ -12,24 +12,24 @@
 
   <select
     class="product-group-toolbar__select"
-    aria-label="Loc trang thai nhom"
+    aria-label="Lọc trạng thái nhóm"
     [value]="activeFilter()"
     (change)="onActiveFilterChange($event)"
   >
-    <option value="all">Tat ca trang thai</option>
-    <option value="active">Dang hoat dong</option>
-    <option value="inactive">Ngung hoat dong</option>
+    <option value="all">Tất cả trạng thái</option>
+    <option value="active">Đang hoạt động</option>
+    <option value="inactive">Ngừng hoạt động</option>
   </select>
 
   <select
     class="product-group-toolbar__select product-group-toolbar__select--compact"
-    aria-label="Sap xep nhom"
+    aria-label="Sắp xếp nhóm"
     [value]="sort()"
     (change)="onSortChange($event)"
   >
-    <option value="name,asc">Ten A-Z</option>
-    <option value="productCount,desc">Nhieu san pham</option>
-    <option value="productCount,asc">It san pham</option>
+    <option value="name,asc">Tên A-Z</option>
+    <option value="productCount,desc">Nhiều sản phẩm</option>
+    <option value="productCount,asc">Ít sản phẩm</option>
   </select>
 
   <button
@@ -39,7 +39,7 @@
     (click)="applyFilters.emit()"
   >
     <svg lucideFilter [attr.stroke-width]="2"></svg>
-    <span>Loc</span>
+    <span>Lọc</span>
     @if (activeFilterCount() > 0) {
       <strong>{{ activeFilterCount() }}</strong>
     }
@@ -52,6 +52,6 @@
     (click)="resetFilters.emit()"
   >
     <svg lucideX [attr.stroke-width]="2"></svg>
-    <span>Xoa</span>
+    <span>Xóa</span>
   </button>
 </div>

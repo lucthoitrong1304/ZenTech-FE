@@ -38,13 +38,13 @@ export class ProductGroupDialogComponent {
   readonly productToggle = output<string>();
 
   protected readonly title = computed(() =>
-    this.mode() === 'edit' ? 'Chinh sua nhom san pham' : 'Them nhom san pham moi'
+    this.mode() === 'edit' ? 'Chỉnh sửa nhóm sản phẩm' : 'Thêm nhóm sản phẩm mới'
   );
 
   protected readonly description = computed(() =>
     this.mode() === 'edit'
-      ? 'Cap nhat ten nhom va danh sach san pham lien quan.'
-      : 'Tao phan loai moi cho danh muc san pham.'
+      ? 'Cập nhật tên nhóm và danh sách sản phẩm liên quan.'
+      : 'Tạo phân loại mới cho danh mục sản phẩm.'
   );
 
   protected readonly filteredProductOptions = computed(() => {

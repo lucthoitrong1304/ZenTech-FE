@@ -9,7 +9,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   LucideArrowRight,
   LucideLockKeyhole,
@@ -54,6 +54,7 @@ export class LoginComponent implements AfterViewInit {
 
   // Inject các store và service
   private readonly formBuilder = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly authSessionStore = inject(AuthSessionStore);
@@ -142,8 +143,25 @@ export class LoginComponent implements AfterViewInit {
   private getPostLoginRoute(): string {
     const roles = this.authSessionStore.currentUser()?.roles || [];
 
-    return (hasRole(roles, Role.OWNER) || hasRole(roles, Role.MANAGER) || hasRole(roles, Role.EMPLOYEE)) 
-      ? '/management/dashboard' 
-      : '/';
+    return resolvePostLoginRoute(roles, this.route.snapshot.queryParamMap.get('returnUrl'));
   }
+}
+
+export function resolvePostLoginRoute(roles: string[], returnUrl: string | null): string {
+  return hasRole(roles, Role.OWNER) || hasRole(roles, Role.MANAGER) || hasRole(roles, Role.EMPLOYEE)
+    ? '/management/dashboard'
+    : getSafeReturnUrl(returnUrl);
+}
+
+export function getSafeReturnUrl(returnUrl: string | null): string {
+  if (
+    !returnUrl ||
+    !returnUrl.startsWith('/') ||
+    returnUrl.startsWith('//') ||
+    returnUrl.includes('://')
+  ) {
+    return '/';
+  }
+
+  return returnUrl;
 }

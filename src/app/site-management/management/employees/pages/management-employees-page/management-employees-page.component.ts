@@ -1,4 +1,4 @@
-﻿import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, effect, inject, untracked } from '@angular/core';
 import {
   LucideChevronLeft,
@@ -125,11 +125,11 @@ export class ManagementEmployeesPageComponent {
   }
 
   protected getRoleLabel(role: ManagementEmployeeRole): string {
-    return role === 'MANAGER' ? 'Quan ly' : 'Nhan vien';
+    return role === 'MANAGER' ? 'Quản lý' : 'Nhân viên';
   }
 
   protected getStatusLabel(active: boolean): string {
-    return active ? 'Dang hoat dong' : 'Chua kich hoat / Da khoa';
+    return active ? 'Đang hoạt động' : 'Chưa kích hoạt / Đã khóa';
   }
 
   protected getEmployeeInitials(employee: ManagementEmployee): string {

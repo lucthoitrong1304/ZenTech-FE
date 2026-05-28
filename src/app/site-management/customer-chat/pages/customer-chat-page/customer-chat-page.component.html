@@ -21,7 +21,7 @@
 
         @if (store.loading()) {
           <div class="grid flex-1 place-items-center bg-[#fcf9f8] text-sm font-black text-[#4f4632]">
-            Dang tai cuoc tro chuyen...
+            Đang tải cuộc trò chuyện...
           </div>
         } @else if (store.session()) {
           <div class="flex min-h-0 flex-1 overflow-hidden">
@@ -126,21 +126,21 @@
                       <button
                         type="button"
                         class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
-                        title="Goi ho tro"
+                        title="Gọi hỗ trợ"
                       >
                         <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
                       </button>
                       <button
                         type="button"
                         class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
-                        title="Tim kiem"
+                        title="Tìm kiếm"
                       >
                         <svg lucideSearch class="h-5 w-5" [attr.stroke-width]="2"></svg>
                       </button>
                       <button
                         type="button"
                         class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
-                        title="Tuy chon"
+                        title="Tùy chọn"
                       >
                         <svg lucideMoreVertical class="h-5 w-5" [attr.stroke-width]="2"></svg>
                       </button>
@@ -304,9 +304,9 @@
               <p class="text-[11px] font-black uppercase tracking-[0.2em] text-[#4b41e1]">
                 ZenTech Support
               </p>
-              <h1 class="mt-3 text-2xl font-black">Chua the mo cuoc tro chuyen.</h1>
+              <h1 class="mt-3 text-2xl font-black">Chưa thể mở cuộc trò chuyện.</h1>
               <p class="mt-2 text-sm font-semibold text-[#4f4632]">
-                {{ store.errorMessage() || 'Vui long thu lai sau.' }}
+                {{ store.errorMessage() || 'Vui lòng thử lại sau.' }}
               </p>
             </div>
           </div>

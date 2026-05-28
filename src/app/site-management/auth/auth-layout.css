@@ -2,6 +2,7 @@
 
 .auth-page {
   width: min(100%, 32rem);
+  justify-self: center;
 }
 
 .auth-page--compact {
@@ -284,4 +285,8 @@
   .auth-page__title {
     font-size: 2rem;
   }
+}
+
+.auth-card .auth-page__subtitle {
+  margin-bottom: 1.5rem;
 }

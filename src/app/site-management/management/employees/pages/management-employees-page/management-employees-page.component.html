@@ -2,13 +2,13 @@
   <div class="employees-command">
     <div class="employees-command__copy">
       <span class="employees-kicker">Team Access Matrix</span>
-      <h2>Quan ly nhan vien</h2>
-      <p>Theo doi, loc va moi nhan su moi vao he thong ZenTech.</p>
+      <h2>Quản lý nhân viên</h2>
+      <p>Theo dõi, lọc và mời nhân sự mới vào hệ thống ZenTech.</p>
     </div>
 
     <button type="button" class="employees-primary-action" (click)="store.openCreateModal()">
       <svg lucidePlus [attr.stroke-width]="2.2"></svg>
-      <span>Them nhan vien moi</span>
+      <span>Thêm nhân viên mới</span>
     </button>
   </div>
 
@@ -18,7 +18,7 @@
       <input
         type="search"
         [value]="store.query().keyword"
-        placeholder="Tim theo ten hoac email..."
+        placeholder="Tìm theo tên hoặc email..."
         (input)="onKeywordInput($event)"
         (keydown.enter)="onKeywordEnter($event)"
       />
@@ -26,45 +26,45 @@
 
     <select
       class="employees-select"
-      aria-label="Loc trang thai"
+      aria-label="Lọc trạng thái"
       [value]="store.query().active === null ? 'all' : store.query().active ? 'active' : 'inactive'"
       (change)="onActiveFilterChange($event)"
     >
-      <option value="all">Tat ca trang thai</option>
-      <option value="active">Dang hoat dong</option>
-      <option value="inactive">Chua kich hoat / Da khoa</option>
+      <option value="all">Tất cả trạng thái</option>
+      <option value="active">Đang hoạt động</option>
+      <option value="inactive">Chưa kích hoạt / Đã khóa</option>
     </select>
 
     <select
       class="employees-select"
-      aria-label="Loc vai tro"
+      aria-label="Lọc vai trò"
       [value]="store.query().role ?? 'all'"
       (change)="onRoleFilterChange($event)"
     >
-      <option value="all">Tat ca vai tro</option>
-      <option value="MANAGER">Quan ly</option>
-      <option value="EMPLOYEE">Nhan vien</option>
+      <option value="all">Tất cả vai trò</option>
+      <option value="MANAGER">Quản lý</option>
+      <option value="EMPLOYEE">Nhân viên</option>
     </select>
 
     <select
       class="employees-select"
-      aria-label="Sap xep"
+      aria-label="Sắp xếp"
       [value]="store.query().sort"
       (change)="onSortChange($event)"
     >
-      <option value="createdAt,desc">Moi nhat</option>
-      <option value="createdAt,asc">Cu nhat</option>
-      <option value="fullName,asc">Ten A-Z</option>
+      <option value="createdAt,desc">Mới nhất</option>
+      <option value="createdAt,asc">Cũ nhất</option>
+      <option value="fullName,asc">Tên A-Z</option>
       <option value="email,asc">Email A-Z</option>
-      <option value="role,asc">Vai tro</option>
+      <option value="role,asc">Vai trò</option>
     </select>
 
     <button type="button" class="employees-filter-action" (click)="store.applyFilters()">
       <svg lucideFilter [attr.stroke-width]="2"></svg>
-      <span>Loc</span>
+      <span>Lọc</span>
     </button>
 
-    <button type="button" class="employees-icon-action" aria-label="Lam moi bo loc" (click)="store.resetFilters()">
+    <button type="button" class="employees-icon-action" aria-label="Làm mới bộ lọc" (click)="store.resetFilters()">
       <svg lucideRefreshCw [attr.stroke-width]="2"></svg>
     </button>
   </div>
@@ -73,13 +73,13 @@
     <div class="employees-panel__heading">
       <div>
         <p>Employee Directory</p>
-        <h3>{{ store.totalElements() }} nhan vien</h3>
+        <h3>{{ store.totalElements() }} nhân viên</h3>
       </div>
 
       @if (store.loading()) {
         <span class="employees-loading">
           <svg lucideLoader2 class="employees-spin" [attr.stroke-width]="2"></svg>
-          Dang tai
+          Đang tải
         </span>
       }
     </div>
@@ -89,11 +89,11 @@
         <thead>
           <tr>
             <th>STT</th>
-            <th>Ho va ten</th>
-            <th>Vai tro</th>
-            <th>Trang thai</th>
-            <th>Ngay tao loi moi</th>
-            <th>Thao tac</th>
+            <th>Họ và tên</th>
+            <th>Vai trò</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo lời mời</th>
+            <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -123,13 +123,13 @@
                   {{ getStatusLabel(employee.active) }}
                 </span>
               </td>
-              <td>{{ employee.createdAt ? (employee.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Chua co' }}</td>
+              <td>{{ employee.createdAt ? (employee.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Chưa có' }}</td>
               <td>
                 <div class="employees-actions">
                   <button
                     type="button"
                     class="employees-row-action"
-                    aria-label="Xem nhan vien"
+                    aria-label="Xem nhân viên"
                     (click)="store.openEmployeeDetail(employee)"
                   >
                     <svg lucideEye [attr.stroke-width]="2"></svg>
@@ -137,7 +137,7 @@
                   <button
                     type="button"
                     class="employees-row-action employees-row-action--muted"
-                    aria-label="Chinh sua nhan vien"
+                    aria-label="Chỉnh sửa nhân viên"
                     (click)="store.openEmployeeDetail(employee)"
                   >
                     <svg lucidePencil [attr.stroke-width]="2"></svg>
@@ -150,8 +150,8 @@
               <td colspan="6">
                 <div class="employees-empty">
                   <svg lucideUsers [attr.stroke-width]="1.8"></svg>
-                  <h3>Chua co nhan vien phu hop</h3>
-                  <p>Thu doi bo loc hoac moi nhan vien moi vao he thong.</p>
+                  <h3>Chưa có nhân viên phù hợp</h3>
+                  <p>Thử đổi bộ lọc hoặc mời nhân viên mới vào hệ thống.</p>
                 </div>
               </td>
             </tr>
@@ -162,7 +162,7 @@
 
     <footer class="employees-pagination">
       <p>
-        Hien thi {{ store.pageStart() }}-{{ store.pageEnd() }} tren {{ store.totalElements() }} nhan vien
+        Hiển thị {{ store.pageStart() }}-{{ store.pageEnd() }} trên {{ store.totalElements() }} nhân viên
       </p>
 
       <div class="employees-page-buttons">
@@ -171,7 +171,7 @@
           class="employees-page-button"
           [disabled]="!store.canGoPrevious() || store.loading()"
           (click)="store.goToPage(store.query().page - 1)"
-          aria-label="Trang truoc"
+          aria-label="Trang trước"
         >
           <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
         </button>
@@ -211,22 +211,22 @@
       <header class="employees-modal__header">
         <div>
           <p>Invite Access</p>
-          <h2>Them nhan vien moi</h2>
+          <h2>Thêm nhân viên mới</h2>
         </div>
-        <button type="button" class="employees-modal__close" aria-label="Dong form" (click)="store.closeCreateModal()">
+        <button type="button" class="employees-modal__close" aria-label="Đóng form" (click)="store.closeCreateModal()">
           <svg lucideX [attr.stroke-width]="2"></svg>
         </button>
       </header>
 
       <div class="employees-modal__body">
         <label class="employees-field">
-          <span>Ho va ten</span>
+          <span>Họ và tên</span>
           <div class="employees-input-shell">
             <svg lucideUserRound [attr.stroke-width]="1.8"></svg>
             <input
               type="text"
               [value]="store.createDraft().fullName"
-              placeholder="Nhap ho ten day du"
+              placeholder="Nhập họ tên đầy đủ"
               (input)="onCreateDraftInput('fullName', $event)"
               autocomplete="name"
             />
@@ -254,9 +254,9 @@
         </label>
 
         <label class="employees-field">
-          <span>Vai tro</span>
+          <span>Vai trò</span>
           <select [value]="store.createDraft().role" (change)="onCreateRoleChange($event)">
-            <option value="">Chon vai tro</option>
+            <option value="">Chọn vai trò</option>
             @for (role of employeeRoles; track role) {
               <option [value]="role">{{ getRoleLabel(role) }}</option>
             }
@@ -273,7 +273,7 @@
 
       <footer class="employees-modal__footer">
         <button type="button" class="employees-secondary-action" (click)="store.closeCreateModal()">
-          Huy
+          Hủy
         </button>
         <button type="submit" class="employees-primary-action" [disabled]="store.creating()">
           @if (store.creating()) {
@@ -281,7 +281,7 @@
           } @else {
             <svg lucidePlus [attr.stroke-width]="2.2"></svg>
           }
-          <span>{{ store.creating() ? 'Dang tao...' : 'Them nhan vien' }}</span>
+          <span>{{ store.creating() ? 'Đang tạo...' : 'Thêm nhân viên' }}</span>
         </button>
       </footer>
     </form>
@@ -295,9 +295,9 @@
         <header class="employees-modal__header">
           <div>
             <p>Employee Snapshot</p>
-            <h2>Thong tin nhan vien</h2>
+            <h2>Thông tin nhân viên</h2>
           </div>
-          <button type="button" class="employees-modal__close" aria-label="Dong thong tin" (click)="store.closeEmployeeDetail()">
+          <button type="button" class="employees-modal__close" aria-label="Đóng thông tin" (click)="store.closeEmployeeDetail()">
             <svg lucideX [attr.stroke-width]="2"></svg>
           </button>
         </header>
@@ -315,21 +315,21 @@
 
           <dl>
             <div>
-              <dt>Vai tro</dt>
+              <dt>Vai trò</dt>
               <dd>{{ getRoleLabel(employee.role) }}</dd>
             </div>
             <div>
-              <dt>Trang thai</dt>
+              <dt>Trạng thái</dt>
               <dd>{{ getStatusLabel(employee.active) }}</dd>
             </div>
             <div>
-              <dt>Ngay tao</dt>
-              <dd>{{ employee.createdAt ? (employee.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Chua co' }}</dd>
+              <dt>Ngày tạo</dt>
+              <dd>{{ employee.createdAt ? (employee.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Chưa có' }}</dd>
             </div>
           </dl>
 
           <p class="employees-detail__notice">
-            Chuc nang chinh sua se duoc mo khi backend bo sung endpoint cap nhat nhan vien.
+            Chức năng chỉnh sửa sẽ được mở khi backend bổ sung endpoint cập nhật nhân viên.
           </p>
         </div>
       </article>

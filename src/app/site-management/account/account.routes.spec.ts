@@ -1,6 +1,11 @@
 import { accountRoutes } from './account.routes';
+import { customerAuthGuard } from '../../core/guards/customer-auth.guard';
 
 describe('accountRoutes', () => {
+  it('protects the account layout with customerAuthGuard', () => {
+    expect(accountRoutes[0].canActivate).toContain(customerAuthGuard);
+  });
+
   it('redirects /account to the overview page', () => {
     const children = accountRoutes[0].children ?? [];
 

@@ -674,7 +674,7 @@ export const ManagementChatStore = signalStore(
                     },
                     UPLOAD_ENTITY_CONFIG
                   ),
-                  { errorMessage: 'Khong the tai tep len. Vui long thu lai.' }
+                  { errorMessage: 'Không thể tải tệp lên. Vui lòng thử lại.' }
                 );
               },
             }),

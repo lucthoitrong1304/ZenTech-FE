@@ -3,13 +3,13 @@
     <table class="product-table">
       <thead>
         <tr>
-          <th>Hinh anh</th>
-          <th>San pham & SKU</th>
-          <th>Danh muc</th>
-          <th>Gia niem yet</th>
+          <th>Hình ảnh</th>
+          <th>Sản phẩm & SKU</th>
+          <th>Danh mục</th>
+          <th>Giá niêm yết</th>
           <th class="product-table__center">Kho</th>
-          <th>Trang thai</th>
-          <th class="product-table__right">Thao tac</th>
+          <th>Trạng thái</th>
+          <th class="product-table__right">Thao tác</th>
         </tr>
       </thead>
       <tbody>
@@ -56,7 +56,7 @@
                   <button
                     type="button"
                     class="product-row-action product-row-action--edit"
-                    aria-label="Chinh sua san pham"
+                    aria-label="Chỉnh sửa sản phẩm"
                     (click)="editProduct.emit(product)"
                   >
                     <svg lucidePencil [attr.stroke-width]="2"></svg>
@@ -64,7 +64,7 @@
                   <button
                     type="button"
                     class="product-row-action product-row-action--delete"
-                    aria-label="Xoa san pham"
+                    aria-label="Xóa sản phẩm"
                     (click)="deleteProduct.emit(product)"
                   >
                     <svg lucideTrash2 [attr.stroke-width]="2"></svg>
@@ -77,8 +77,8 @@
               <td colspan="7">
                 <div class="product-empty">
                   <svg lucidePackage [attr.stroke-width]="1.8"></svg>
-                  <h3>Chua co san pham phu hop</h3>
-                  <p>Thu doi bo loc hoac xoa tu khoa tim kiem.</p>
+                  <h3>Chưa có sản phẩm phù hợp</h3>
+                  <p>Thử đổi bộ lọc hoặc xóa từ khóa tìm kiếm.</p>
                 </div>
               </td>
             </tr>
@@ -89,7 +89,7 @@
   </div>
 
   <footer class="product-pagination">
-    <p>Hien thi {{ pageStart() }}-{{ pageEnd() }} tren {{ totalElements() }} san pham</p>
+    <p>Hiển thị {{ pageStart() }}-{{ pageEnd() }} trên {{ totalElements() }} sản phẩm</p>
 
     <div class="product-page-buttons">
       <button
@@ -97,7 +97,7 @@
         class="product-page-button"
         [disabled]="!canGoPrevious() || loading()"
         (click)="pageChange.emit(page() - 1)"
-        aria-label="Trang truoc"
+        aria-label="Trang trước"
       >
         <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
       </button>

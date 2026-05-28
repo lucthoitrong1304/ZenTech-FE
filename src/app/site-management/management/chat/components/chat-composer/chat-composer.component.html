@@ -21,11 +21,11 @@
             <small class="block truncate text-[11px] font-semibold text-[#4f4632]">
               {{ upload.sizeLabel }} -
               @if (upload.status === 'PENDING') {
-                Cho gui
+                Chờ gửi
               } @else if (upload.status === 'UPLOADING') {
-                Dang tai len
+                Đang tải lên
               } @else {
-                Loi tai len
+                Lỗi tải lên
               }
             </small>
           </span>
@@ -34,7 +34,7 @@
             class="grid h-8 w-8 place-items-center rounded-[5px] text-[#4f4632] transition hover:bg-white hover:text-[#1c1b1b] disabled:cursor-not-allowed disabled:opacity-50"
             [disabled]="disabled() || upload.status === 'UPLOADING'"
             (click)="uploadRemoved.emit(upload.id)"
-            title="Xoa tep"
+            title="Xóa tệp"
           >
             <svg lucideX class="h-4 w-4" [attr.stroke-width]="2"></svg>
           </button>
@@ -58,7 +58,7 @@
     <button
       type="button"
       class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] text-[#4f4632] transition hover:bg-white hover:text-[#1c1b1b] disabled:cursor-not-allowed disabled:opacity-50"
-      title="Dinh kem"
+      title="Đính kèm"
       [disabled]="disabled()"
       (click)="openFilePicker()"
     >
@@ -69,7 +69,7 @@
       class="max-h-32 min-h-10 flex-1 resize-none border-0 bg-transparent py-2 text-sm text-[#1c1b1b] outline-none placeholder:text-[#4f4632]/70 focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
       rows="1"
       name="chatDraft"
-      [placeholder]="disabled() ? 'Cuoc hoi thoai da dong' : 'Nhap tin nhan...'"
+      [placeholder]="disabled() ? 'Cuộc hội thoại đã đóng' : 'Nhập tin nhắn...'"
       [ngModel]="draft()"
       (ngModelChange)="draft.set($event)"
       (keydown.enter)="onEnter($event)"
@@ -80,7 +80,7 @@
       type="submit"
       class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] text-[#765b00] transition hover:bg-[#ffc700]/15 disabled:cursor-not-allowed disabled:opacity-50"
       [disabled]="disabled() || (!draft().trim() && !hasPendingAttachments())"
-      title="Gui"
+      title="Gửi"
     >
       <svg lucideSend class="h-5 w-5" [attr.stroke-width]="2"></svg>
     </button>

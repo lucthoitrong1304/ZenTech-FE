@@ -1,4 +1,4 @@
-﻿import { computed, inject } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { removeAllEntities, setAllEntities, withEntities } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
@@ -144,7 +144,7 @@ export const ManagementEmployeesStore = signalStore(
               totalPages: 0,
               last: true,
               loading: false,
-              errorMessage: 'Khong the tai danh sach nhan vien. Vui long thu lai.',
+              errorMessage: 'Không thể tải danh sách nhân viên. Vui lòng thử lại.',
             }
           );
           break;
@@ -261,7 +261,7 @@ export const ManagementEmployeesStore = signalStore(
             createModalOpen: false,
             createDraft: { ...event.draft },
             createErrors: {},
-            successMessage: 'Da tao nhan vien moi va gui email thiet lap mat khau.',
+            successMessage: 'Đã tạo nhân viên mới và gửi email thiết lập mật khẩu.',
           });
           break;
 
@@ -269,9 +269,9 @@ export const ManagementEmployeesStore = signalStore(
           patchState(store, {
             creating: false,
             createErrors: {
-              submit: 'Khong the tao nhan vien. Vui long kiem tra email hoac thu lai.',
+              submit: 'Không thể tạo nhân viên. Vui lòng kiểm tra email hoặc thử lại.',
             },
-            errorMessage: 'Khong the tao nhan vien. Vui long thu lai.',
+            errorMessage: 'Không thể tạo nhân viên. Vui lòng thử lại.',
           });
           break;
 
@@ -422,17 +422,17 @@ function validateCreateDraft(draft: ManagementEmployeeCreateDraft): ManagementEm
   const errors: ManagementEmployeeFormErrors = {};
 
   if (!draft.fullName.trim()) {
-    errors.fullName = 'Vui long nhap ho ten nhan vien.';
+    errors.fullName = 'Vui lòng nhập họ tên nhân viên.';
   }
 
   if (!draft.email.trim()) {
-    errors.email = 'Vui long nhap email nhan vien.';
+    errors.email = 'Vui lòng nhập email nhân viên.';
   } else if (!isValidEmail(draft.email)) {
-    errors.email = 'Email khong dung dinh dang.';
+    errors.email = 'Email không đúng định dạng.';
   }
 
   if (!isEmployeeRole(draft.role)) {
-    errors.role = 'Vui long chon vai tro nhan vien.';
+    errors.role = 'Vui lòng chọn vai trò nhân viên.';
   }
 
   return errors;

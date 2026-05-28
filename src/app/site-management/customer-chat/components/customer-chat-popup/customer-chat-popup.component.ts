@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { LucideLogIn, LucideMessageCircle } from '@lucide/angular';
 import { MediaPreviewDialogComponent } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import { CustomerChatComposerComponent } from '../customer-chat-composer/customer-chat-composer.component';
@@ -15,6 +17,7 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     CustomerChatComposerComponent,
     CustomerChatHeaderComponent,
     CustomerChatLauncherComponent,
@@ -22,14 +25,18 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
     CustomerSharedContentSidebarComponent,
     CustomerUploadQueueComponent,
     MediaPreviewDialogComponent,
+    LucideLogIn,
+    LucideMessageCircle,
   ],
   templateUrl: './customer-chat-popup.component.html',
   styleUrl: './customer-chat-popup.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerChatPopupComponent implements OnInit {
+  private readonly router = inject(Router);
   protected readonly store = inject(CustomerChatStore);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
+  protected readonly loginQueryParams = computed(() => ({ returnUrl: this.router.url || '/' }));
 
   ngOnInit(): void {
     if (!this.store.session()) {

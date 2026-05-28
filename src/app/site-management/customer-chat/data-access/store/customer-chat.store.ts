@@ -45,6 +45,7 @@ interface CustomerChatUiState {
   fullSidebarMode: CustomerChatFullSidebarMode;
   popupOpen: boolean;
   sharedSidebarOpen: boolean;
+  requiresLogin: boolean;
   loading: boolean;
   sending: boolean;
   errorMessage: string | null;
@@ -74,6 +75,7 @@ const INITIAL_STATE: CustomerChatUiState = {
   fullSidebarMode: 'DETAILS',
   popupOpen: false,
   sharedSidebarOpen: false,
+  requiresLogin: false,
   loading: false,
   sending: false,
   errorMessage: null,
@@ -175,10 +177,23 @@ export const CustomerChatStore = signalStore(
       let messageSub: Subscription | null = null;
       let conversationSub: Subscription | null = null;
 
+      const isStaffSession = (): boolean => {
+        const session = authStorageService.getSession();
+
+        return (
+          session?.roles.some((role) =>
+            ['OWNER', 'MANAGER', 'EMPLOYEE', 'ADMIN'].includes(role)
+          ) ?? false
+        );
+      };
+
+      const hasCustomerSession = (): boolean =>
+        !!authStorageService.getSession() && authStorageService.isAuthenticated();
+
       const handleEvent = (event: CustomerChatEvent): void => {
         switch (event.type) {
           case CustomerChatEventType.SessionLoadStarted:
-            patchState(store, { loading: true, errorMessage: null });
+            patchState(store, { loading: true, errorMessage: null, requiresLogin: false });
             break;
 
           case CustomerChatEventType.SessionLoadSucceeded:
@@ -190,6 +205,7 @@ export const CustomerChatStore = signalStore(
                 session: event.session,
                 lastActivityLabel: event.session.lastActivityLabel,
                 loading: false,
+                requiresLogin: false,
                 errorMessage: null,
               }
             );
@@ -267,6 +283,7 @@ export const CustomerChatStore = signalStore(
               activeSharedTab: 'MEDIA',
               popupOpen: true,
               sharedSidebarOpen: false,
+              requiresLogin: false,
             });
             break;
 
@@ -486,11 +503,21 @@ export const CustomerChatStore = signalStore(
           tap(() => patchState(store, { loading: true, errorMessage: null })),
           switchMap(() => {
             const session = authStorageService.getSession();
-            const isStaff = session?.roles.some(role => ['OWNER', 'MANAGER', 'EMPLOYEE', 'ADMIN'].includes(role)) ?? false;
-            if (isStaff) {
-              patchState(store, { loading: false });
+            if (!session || !authStorageService.isAuthenticated()) {
+              patchState(store, {
+                session: null,
+                loading: false,
+                requiresLogin: false,
+                errorMessage: null,
+              });
               return EMPTY;
             }
+
+            if (isStaffSession()) {
+              patchState(store, { loading: false, requiresLogin: false });
+              return EMPTY;
+            }
+
             return customerChatService.getMyConversations(0, 100).pipe(
               switchMap((pageResponse) => {
                 const list = pageResponse.content || [];
@@ -732,7 +759,22 @@ export const CustomerChatStore = signalStore(
         requestAgent,
         closeConversation,
         openPopup(): void {
+          if (!hasCustomerSession()) {
+            patchState(store, {
+              popupOpen: true,
+              sharedSidebarOpen: false,
+              loading: false,
+              requiresLogin: true,
+              errorMessage: null,
+            });
+            return;
+          }
+
           handleEvent({ type: CustomerChatEventType.PopupOpened });
+
+          if (!store.session() && !isStaffSession()) {
+            loadSession();
+          }
         },
         closePopup(): void {
           handleEvent({ type: CustomerChatEventType.PopupClosed });

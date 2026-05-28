@@ -2,17 +2,17 @@
   <div class="product-command">
     <div>
       <nav class="product-eyebrow" aria-label="Product breadcrumb">
-        <span>He thong</span>
+        <span>Hệ thống</span>
         <span>/</span>
-        <strong>Quan ly San pham</strong>
+        <strong>Quản lý Sản phẩm</strong>
       </nav>
-      <h1>Quan ly San pham</h1>
-      <p>Quan ly danh muc, ton kho, SKU va trang thai hien thi san pham.</p>
+      <h1>Quản lý Sản phẩm</h1>
+      <p>Quản lý danh mục, tồn kho, SKU và trạng thái hiển thị sản phẩm.</p>
     </div>
 
     <button type="button" class="product-primary-action" (click)="addProduct()">
       <svg lucidePackagePlus [attr.stroke-width]="2.2"></svg>
-      <span>Them san pham moi</span>
+      <span>Thêm sản phẩm mới</span>
     </button>
   </div>
 
@@ -53,11 +53,11 @@
         <svg lucideWarehouse [attr.stroke-width]="2"></svg>
       </span>
       <div>
-        <p>Tong san pham</p>
+        <p>Tổng sản phẩm</p>
         <strong>{{ store.stats().totalProducts }}</strong>
         <small>
           <svg lucideTrendingUp [attr.stroke-width]="2"></svg>
-          +12% thang nay
+          +12% tháng này
         </small>
       </div>
     </article>
@@ -67,9 +67,9 @@
         <svg lucideTriangleAlert [attr.stroke-width]="2"></svg>
       </span>
       <div>
-        <p>Het hang</p>
+        <p>Hết hàng</p>
         <strong>{{ store.stats().outOfStock }}</strong>
-        <small class="product-stat-alert">Can nhap them</small>
+        <small class="product-stat-alert">Cần nhập thêm</small>
       </div>
     </article>
 
@@ -78,9 +78,9 @@
         <svg lucideWallet [attr.stroke-width]="2"></svg>
       </span>
       <div>
-        <p>Gia tri kho</p>
+        <p>Giá trị kho</p>
         <strong>{{ store.stats().inventoryValue | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-        <small>Uoc tinh theo ton kho</small>
+        <small>Ước tính theo tồn kho</small>
       </div>
     </article>
 
@@ -89,9 +89,9 @@
         <svg lucideSparkles [attr.stroke-width]="2"></svg>
       </span>
       <div>
-        <p>AI du bao xu huong</p>
-        <strong>Nhu cau Gaming tang 25%</strong>
-        <small>{{ store.stats().lowStock }} SKU dang sap het hang</small>
+        <p>AI dự báo xu hướng</p>
+        <strong>Nhu cầu Gaming tăng 25%</strong>
+        <small>{{ store.stats().lowStock }} SKU đang sắp hết hàng</small>
       </div>
     </article>
   </div>
@@ -108,4 +108,3 @@
     (draftChange)="store.updateFormValue($event)"
   />
 </section>
-
