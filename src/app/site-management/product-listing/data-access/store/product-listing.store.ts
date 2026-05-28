@@ -32,6 +32,7 @@ interface ProductListingUiState {
   hasPrevious: boolean;
   loading: boolean;
   loadingMore: boolean;
+  sorting: boolean;
   addingToCartProductId: string | null;
   cartSuccessMessage: string | null;
   cartErrorMessage: string | null;
@@ -56,6 +57,7 @@ const INITIAL_STATE: ProductListingUiState = {
   hasPrevious: false,
   loading: false,
   loadingMore: false,
+  sorting: false,
   addingToCartProductId: null,
   cartSuccessMessage: null,
   cartErrorMessage: null,
@@ -92,6 +94,7 @@ export const ProductListingStore = signalStore(
       hasPrevious: listing.hasPrevious,
       loading: false,
       loadingMore: false,
+      sorting: false,
       addingToCartProductId: store.addingToCartProductId(),
       cartSuccessMessage: store.cartSuccessMessage(),
       cartErrorMessage: store.cartErrorMessage(),
@@ -115,6 +118,7 @@ export const ProductListingStore = signalStore(
               hasPrevious: false,
               loading: true,
               loadingMore: false,
+              sorting: false,
               error: null,
               isInvalidCategory: false,
             }
@@ -145,6 +149,7 @@ export const ProductListingStore = signalStore(
               hasPrevious: false,
               loading: false,
               loadingMore: false,
+              sorting: false,
               error: event.isInvalidCategory
                 ? 'Danh mục này không tồn tại.'
                 : 'Không thể tải danh sách sản phẩm lúc này.',
@@ -177,6 +182,34 @@ export const ProductListingStore = signalStore(
 
         case ProductListingEventType.SortChanged:
           patchState(store, { sortBy: event.sortBy });
+          break;
+
+        case ProductListingEventType.SortRefreshStarted:
+          patchState(store, {
+            sortBy: event.sortBy,
+            page: 0,
+            sorting: true,
+            error: null,
+            isInvalidCategory: false,
+          });
+          break;
+
+        case ProductListingEventType.SortRefreshSucceeded:
+          patchState(
+            store,
+            setAllEntities(
+              event.listing.products.map(product => ({ ...product })),
+              PRODUCT_ENTITY_CONFIG
+            ),
+            applyListingMetadata(event.listing)
+          );
+          break;
+
+        case ProductListingEventType.SortRefreshFailed:
+          patchState(store, {
+            sorting: false,
+            error: 'Không thể sắp xếp danh sách sản phẩm lúc này.',
+          });
           break;
 
         case ProductListingEventType.ProductAddToCartStarted:
@@ -277,10 +310,42 @@ export const ProductListingStore = signalStore(
       )
     );
 
+    const changeSort = rxMethod<ProductSortOptionValue>(
+      pipe(
+        switchMap(sortBy => {
+          const slug = store.categorySlug();
+          const category = slug ? categoryNavigationStore.findCategoryBySlug(slug) : null;
+
+          handleEvent({ type: ProductListingEventType.SortRefreshStarted, sortBy });
+
+          if (!category) {
+            handleEvent({ type: ProductListingEventType.SortRefreshFailed });
+            return EMPTY;
+          }
+
+          return productCatalogService
+            .getCategoryListing(category, {
+              page: 0,
+              size: store.size(),
+              sort: toApiSort(sortBy),
+            })
+            .pipe(
+              tap({
+                next: listing =>
+                  handleEvent({ type: ProductListingEventType.SortRefreshSucceeded, listing }),
+                error: () => handleEvent({ type: ProductListingEventType.SortRefreshFailed }),
+              }),
+              catchError(() => EMPTY)
+            );
+        })
+      )
+    );
+
     return {
       dispatch: handleEvent,
       loadCategory,
       loadMore,
+      changeSort,
       addProductToCart: rxMethod<ProductListItem>(
         pipe(
           tap(product =>

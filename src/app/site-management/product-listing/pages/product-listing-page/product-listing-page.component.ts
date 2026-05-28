@@ -58,10 +58,14 @@ export class ProductListingPageComponent {
   constructor() {
     effect(() => {
       const slug = this.categorySlug();
-      const sortBy = this.productListingStore.sortBy();
 
       if (slug) {
-        this.productListingStore.loadCategory({ slug, sortBy });
+        untracked(() => {
+          this.productListingStore.loadCategory({
+            slug,
+            sortBy: this.productListingStore.sortBy(),
+          });
+        });
       }
     });
 
@@ -113,7 +117,7 @@ export class ProductListingPageComponent {
   }
 
   onSortChange(sortBy: ProductSortOptionValue): void {
-    this.productListingStore.setSort(sortBy);
+    this.productListingStore.changeSort(sortBy);
   }
 
   onLoadMore(): void {

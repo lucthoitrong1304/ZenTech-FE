@@ -9,6 +9,9 @@ export enum ProductListingEventType {
   MoreProductsLoadSucceeded = 'More Products Load Succeeded',
   MoreProductsLoadFailed = 'More Products Load Failed',
   SortChanged = 'Sort Changed',
+  SortRefreshStarted = 'Sort Refresh Started',
+  SortRefreshSucceeded = 'Sort Refresh Succeeded',
+  SortRefreshFailed = 'Sort Refresh Failed',
   ProductAddToCartStarted = 'Product Add To Cart Started',
   ProductAddToCartSucceeded = 'Product Add To Cart Succeeded',
   ProductAddToCartFailed = 'Product Add To Cart Failed',
@@ -29,6 +32,12 @@ export type ProductListingEvent =
     }
   | { type: ProductListingEventType.MoreProductsLoadFailed }
   | { type: ProductListingEventType.SortChanged; sortBy: ProductSortOptionValue }
+  | { type: ProductListingEventType.SortRefreshStarted; sortBy: ProductSortOptionValue }
+  | {
+      type: ProductListingEventType.SortRefreshSucceeded;
+      listing: ProductCategoryListing;
+    }
+  | { type: ProductListingEventType.SortRefreshFailed }
   | { type: ProductListingEventType.ProductAddToCartStarted; productId: string }
   | { type: ProductListingEventType.ProductAddToCartSucceeded; productName: string }
   | { type: ProductListingEventType.ProductAddToCartFailed; error: string }
