@@ -66,21 +66,23 @@
       <span class="chat-header-action__short" aria-hidden="true">Chuyển</span>
     </button>
 
-    <button
-      type="button"
-      class="chat-header-action chat-header-action--accept min-h-10 rounded-[8px] bg-[#ffc700] px-4 text-sm font-black text-[#1c1b1b] shadow-sm transition hover:bg-[#f5bf00]"
-      (click)="acceptClicked.emit()"
-      aria-label="Tiếp nhận tư vấn"
-      title="Tiếp nhận tư vấn"
-    >
-      <svg
-        lucideUserRoundCheck
-        class="chat-header-action__icon h-5 w-5"
-        [attr.stroke-width]="2.1"
-      ></svg>
-      <span class="chat-header-action__label">Tiếp nhận tư vấn</span>
-      <span class="chat-header-action__short" aria-hidden="true">Tiếp nhận</span>
-    </button>
+    @if (conversation().status !== 'STAFF_HANDLING' && conversation().status !== 'CLOSED') {
+      <button
+        type="button"
+        class="chat-header-action chat-header-action--accept min-h-10 rounded-[8px] bg-[#ffc700] px-4 text-sm font-black text-[#1c1b1b] shadow-sm transition hover:bg-[#f5bf00]"
+        (click)="acceptClicked.emit()"
+        aria-label="Tiếp nhận tư vấn"
+        title="Tiếp nhận tư vấn"
+      >
+        <svg
+          lucideUserRoundCheck
+          class="chat-header-action__icon h-5 w-5"
+          [attr.stroke-width]="2.1"
+        ></svg>
+        <span class="chat-header-action__label">Tiếp nhận tư vấn</span>
+        <span class="chat-header-action__short" aria-hidden="true">Tiếp nhận</span>
+      </button>
+    }
 
     <span class="h-6 w-px bg-[#d2c5ab]/40" aria-hidden="true"></span>
 

@@ -55,7 +55,7 @@ export const CategoryNavigationStore = signalStore(
               categories: [],
               loading: false,
               loaded: false,
-              error: 'Khong the tai danh muc luc nay.',
+              error: 'Không thể tải danh mục lúc này.',
             });
 
             return throwError(() => error);

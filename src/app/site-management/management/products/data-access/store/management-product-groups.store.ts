@@ -138,7 +138,7 @@ export const ManagementProductGroupsStore = signalStore(
             totalElements: 0,
             totalPages: 0,
             last: true,
-            errorMessage: 'Khong the tai danh sach nhom san pham. Vui long thu lai.',
+            errorMessage: 'Không thể tải danh sách nhóm sản phẩm. Vui lòng thử lại.',
           });
           break;
 
@@ -283,7 +283,7 @@ export const ManagementProductGroupsStore = signalStore(
               dialogMode: null,
               draft: null,
               formErrors: {},
-              successMessage: 'Da tao nhom san pham mock.',
+              successMessage: 'Đã tạo nhóm sản phẩm mock.',
             }
           );
           break;
@@ -303,7 +303,7 @@ export const ManagementProductGroupsStore = signalStore(
               dialogMode: null,
               draft: null,
               formErrors: {},
-              successMessage: 'Da luu thay doi nhom san pham.',
+              successMessage: 'Đã lưu thay đổi nhóm sản phẩm.',
             }
           );
           break;
@@ -311,8 +311,8 @@ export const ManagementProductGroupsStore = signalStore(
         case ManagementProductGroupEventType.SaveFailed:
           patchState(store, {
             saving: false,
-            formErrors: { submit: 'Khong the luu nhom san pham luc nay.' },
-            errorMessage: 'Khong the luu nhom san pham luc nay.',
+            formErrors: { submit: 'Không thể lưu nhóm sản phẩm lúc này.' },
+            errorMessage: 'Không thể lưu nhóm sản phẩm lúc này.',
           });
           break;
 
@@ -322,13 +322,13 @@ export const ManagementProductGroupsStore = signalStore(
             removeEntity(event.groupId, GROUP_ENTITY_CONFIG),
             {
               totalElements: Math.max(0, store.totalElements() - 1),
-              successMessage: 'Da xoa nhom san pham mock.',
+              successMessage: 'Đã xóa nhóm sản phẩm mock.',
             }
           );
           break;
 
         case ManagementProductGroupEventType.DeleteFailed:
-          patchState(store, { errorMessage: 'Khong the xoa nhom san pham luc nay.' });
+          patchState(store, { errorMessage: 'Không thể xóa nhóm sản phẩm lúc này.' });
           break;
 
         case ManagementProductGroupEventType.MessagesCleared:
@@ -483,11 +483,11 @@ function validateDraft(draft: ManagementProductGroupDraft): ManagementProductGro
   const errors: ManagementProductGroupFormErrors = {};
 
   if (!draft.name.trim()) {
-    errors.name = 'Vui long nhap ten nhom.';
+    errors.name = 'Vui lòng nhập tên nhóm.';
   }
 
   if (draft.productIds.length === 0) {
-    errors.productIds = 'Chon it nhat mot san pham cho nhom.';
+    errors.productIds = 'Chọn ít nhất một sản phẩm cho nhóm.';
   }
 
   return errors;

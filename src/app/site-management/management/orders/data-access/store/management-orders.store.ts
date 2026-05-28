@@ -149,7 +149,7 @@ export const ManagementOrdersStore = signalStore(
             totalElements: 0,
             totalPages: 0,
             last: true,
-            errorMessage: 'Khong the tai danh sach don hang. Vui long thu lai.',
+            errorMessage: 'Không thể tải danh sách đơn hàng. Vui lòng thử lại.',
           });
           break;
 
@@ -300,8 +300,8 @@ export const ManagementOrdersStore = signalStore(
               editErrors: {},
               successMessage:
                 event.type === ManagementOrderEventType.DeliveryMarked
-                  ? 'Da danh dau don hang la da giao.'
-                  : 'Da luu thay doi don hang.',
+                  ? 'Đã đánh dấu đơn hàng là đã giao.'
+                  : 'Đã lưu thay đổi đơn hàng.',
             }
           );
           break;
@@ -309,8 +309,8 @@ export const ManagementOrdersStore = signalStore(
         case ManagementOrderEventType.EditFailed:
           patchState(store, {
             saving: false,
-            editErrors: { submit: 'Khong the luu thay doi don hang luc nay.' },
-            errorMessage: 'Khong the luu thay doi don hang luc nay.',
+            editErrors: { submit: 'Không thể lưu thay đổi đơn hàng lúc này.' },
+            errorMessage: 'Không thể lưu thay đổi đơn hàng lúc này.',
           });
           break;
 
@@ -487,15 +487,15 @@ function validateEditDraft(draft: ManagementOrderEditDraft): ManagementOrderForm
   const errors: ManagementOrderFormErrors = {};
 
   if (!draft.customerName.trim()) {
-    errors.customerName = 'Vui long nhap ten khach hang.';
+    errors.customerName = 'Vui lòng nhập tên khách hàng.';
   }
 
   if (!draft.shippingAddress.trim()) {
-    errors.shippingAddress = 'Vui long nhap dia chi giao hang.';
+    errors.shippingAddress = 'Vui lòng nhập địa chỉ giao hàng.';
   }
 
   if (draft.items.some(item => item.quantity < 1)) {
-    errors.items = 'So luong san pham phai lon hon 0.';
+    errors.items = 'Số lượng sản phẩm phải lớn hơn 0.';
   }
 
   return errors;

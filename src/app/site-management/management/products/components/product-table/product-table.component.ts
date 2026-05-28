@@ -47,12 +47,12 @@ export class ProductTableComponent {
   protected getStatusLabel(status: ManagementProductStockStatus): string {
     switch (status) {
       case 'OUT_OF_STOCK':
-        return 'Het hang';
+        return 'Hết hàng';
       case 'LOW_STOCK':
-        return 'Sap het hang';
+        return 'Sắp hết hàng';
       case 'IN_STOCK':
       default:
-        return 'Con hang';
+        return 'Còn hàng';
     }
   }
 

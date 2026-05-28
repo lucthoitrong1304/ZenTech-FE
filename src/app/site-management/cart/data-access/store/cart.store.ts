@@ -60,7 +60,7 @@ export const CartStore = signalStore(
       } catch {
         handleEvent({
           type: CartEventType.CartPersistFailed,
-          error: 'Khong the luu gio hang tren trinh duyet nay.',
+          error: 'Không thể lưu giỏ hàng trên trình duyệt này.',
         });
       }
     };

@@ -136,9 +136,9 @@
         />
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-xs font-black uppercase tracking-[0.16em] text-[#81765f] mb-2">Phường / Xã</label>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="min-w-0">
+          <label class="flex min-h-8 items-end whitespace-nowrap text-[10px] font-black uppercase leading-4 tracking-[0.12em] text-[#81765f] mb-2">Phường / Xã</label>
           <input
             type="text"
             [(ngModel)]="ward"
@@ -146,8 +146,8 @@
             placeholder="Ví dụ: Bến Nghé"
           />
         </div>
-        <div>
-          <label class="block text-xs font-black uppercase tracking-[0.16em] text-[#81765f] mb-2">Quận / Tỉnh / Thành phố</label>
+        <div class="min-w-0">
+          <label class="flex min-h-8 items-end whitespace-nowrap text-[10px] font-black uppercase leading-4 tracking-[0.12em] text-[#81765f] mb-2">Quận / Tỉnh / Thành phố</label>
           <input
             type="text"
             [(ngModel)]="province"

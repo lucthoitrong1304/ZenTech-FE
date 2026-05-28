@@ -1,6 +1,8 @@
+import { HttpContext } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { ApiService } from '../../../../core/api/api.service';
+import { SKIP_AUTH_TOKEN } from '../../../../core/tokens/api-context.token';
 import { environment } from '../../../../../environments/environment';
 import {
   ProductCategory,
@@ -28,7 +30,7 @@ export class ProductCatalogService {
 
   getCategoryTree(): Observable<ProductCategory[]> {
     return this.apiService
-      .get<ProductCategoryTreeItemResponseDto[]>(this.categoriesBaseUrl)
+      .get<ProductCategoryTreeItemResponseDto[]>(this.categoriesBaseUrl, publicCatalogOptions())
       .pipe(map(categories => categories.map(toProductCategory)));
   }
 
@@ -49,6 +51,7 @@ export class ProductCatalogService {
             size: query.size,
             sort: query.sort,
           },
+          context: publicCatalogContext(),
         }
       )
       .pipe(
@@ -67,7 +70,7 @@ export class ProductCatalogService {
 
   getProductDetail(productId: string): Observable<ProductDetail> {
     return this.apiService
-      .get<ProductDetailResponseDto>(`${this.productsBaseUrl}/${productId}`)
+      .get<ProductDetailResponseDto>(`${this.productsBaseUrl}/${productId}`, publicCatalogOptions())
       .pipe(
         map(toProductDetail),
         catchError(error =>
@@ -90,6 +93,7 @@ export class ProductCatalogService {
             page: query.page,
             size: query.size,
           },
+          context: publicCatalogContext(),
         }
       )
       .pipe(map(response => response.items.map(toProductReview)));
@@ -367,4 +371,12 @@ function normalizeCategorySlug(value: string): string {
 
 function isNotFoundResponse(error: unknown): boolean {
   return typeof error === 'object' && error !== null && 'status' in error && error.status === 404;
+}
+
+function publicCatalogOptions(): { context: HttpContext } {
+  return { context: publicCatalogContext() };
+}
+
+function publicCatalogContext(): HttpContext {
+  return new HttpContext().set(SKIP_AUTH_TOKEN, true);
 }

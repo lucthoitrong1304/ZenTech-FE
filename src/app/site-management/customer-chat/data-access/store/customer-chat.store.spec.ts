@@ -32,10 +32,22 @@ describe('CustomerChatStore', () => {
     TestBed.resetTestingModule();
   });
 
-  function configureStore(options: { uploadFails?: boolean; conversations?: ConversationResponse[] } = {}) {
+  function configureStore(
+    options: {
+      uploadFails?: boolean;
+      conversations?: ConversationResponse[];
+      session?: { accountId: string; roles: string[] } | null;
+      isAuthenticated?: boolean;
+    } = {}
+  ) {
     const conversation = options.conversations?.[0] ?? createConversation();
     const conversations = options.conversations ?? [conversation];
     const messages = createMessages();
+    const session =
+      options.session === undefined
+        ? { accountId: 'customer-1', roles: ['CUSTOMER'] }
+        : options.session;
+    const isAuthenticated = options.isAuthenticated ?? session !== null;
     const chatService = {
       getMyConversations: vi.fn(() => of(createPage(conversations))),
       getMessages: vi.fn(() => of(createPage(messages))),
@@ -76,7 +88,8 @@ describe('CustomerChatStore', () => {
         {
           provide: AuthStorageService,
           useValue: {
-            getSession: vi.fn(() => ({ accountId: 'customer-1' })),
+            getSession: vi.fn(() => session),
+            isAuthenticated: vi.fn(() => isAuthenticated),
           },
         },
       ],
@@ -100,6 +113,52 @@ describe('CustomerChatStore', () => {
     expect(store.session()?.id).toBe('conversation-1');
     expect(store.staffJoined()).toBe(true);
     expect(store.messages().length).toBe(3);
+  });
+
+  it('does not load chat APIs for guests without a session', () => {
+    const { store, chatService, websocketService } = configureStore({
+      session: null,
+      isAuthenticated: false,
+    });
+
+    store.loadSession();
+
+    expect(chatService.getMyConversations).not.toHaveBeenCalled();
+    expect(chatService.createOrGetConversation).not.toHaveBeenCalled();
+    expect(chatService.getMessages).not.toHaveBeenCalled();
+    expect(websocketService.connect).not.toHaveBeenCalled();
+    expect(store.loading()).toBe(false);
+    expect(store.session()).toBeNull();
+  });
+
+  it('opens a login prompt instead of loading chat APIs for guests', () => {
+    const { store, chatService, websocketService } = configureStore({
+      session: null,
+      isAuthenticated: false,
+    });
+
+    store.openPopup();
+
+    expect(store.popupOpen()).toBe(true);
+    expect(store.requiresLogin()).toBe(true);
+    expect(chatService.getMyConversations).not.toHaveBeenCalled();
+    expect(chatService.createOrGetConversation).not.toHaveBeenCalled();
+    expect(chatService.getMessages).not.toHaveBeenCalled();
+    expect(websocketService.connect).not.toHaveBeenCalled();
+  });
+
+  it('skips customer chat loading for staff sessions', () => {
+    const { store, chatService, websocketService } = configureStore({
+      session: { accountId: 'staff-1', roles: ['EMPLOYEE'] },
+    });
+
+    store.loadSession();
+
+    expect(chatService.getMyConversations).not.toHaveBeenCalled();
+    expect(chatService.createOrGetConversation).not.toHaveBeenCalled();
+    expect(chatService.getMessages).not.toHaveBeenCalled();
+    expect(websocketService.connect).not.toHaveBeenCalled();
+    expect(store.loading()).toBe(false);
   });
 
   it('controls popup visibility', () => {

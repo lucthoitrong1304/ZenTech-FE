@@ -4,7 +4,7 @@
     <input
       type="search"
       [value]="keyword()"
-      placeholder="Tim ten san pham hoac SKU..."
+      placeholder="Tìm tên sản phẩm hoặc SKU..."
       (input)="onKeywordInput($event)"
       (keydown.enter)="onKeywordEnter($event)"
     />
@@ -12,11 +12,11 @@
 
   <select
     class="product-toolbar__select"
-    aria-label="Loc danh muc san pham"
+    aria-label="Lọc danh mục sản phẩm"
     [value]="categoryId()"
     (change)="onCategoryChange($event)"
   >
-    <option value="all">Tat ca danh muc</option>
+    <option value="all">Tất cả danh mục</option>
     @for (category of categories(); track category.categoryId) {
       <option [value]="category.categoryId">{{ category.name }}</option>
     }
@@ -24,31 +24,31 @@
 
   <select
     class="product-toolbar__select"
-    aria-label="Loc trang thai kho"
+    aria-label="Lọc trạng thái kho"
     [value]="stockStatus()"
     (change)="onStockStatusChange($event)"
   >
-    <option value="all">Tat ca trang thai</option>
-    <option value="IN_STOCK">Con hang</option>
-    <option value="LOW_STOCK">Sap het hang</option>
-    <option value="OUT_OF_STOCK">Het hang</option>
+    <option value="all">Tất cả trạng thái</option>
+    <option value="IN_STOCK">Còn hàng</option>
+    <option value="LOW_STOCK">Sắp hết hàng</option>
+    <option value="OUT_OF_STOCK">Hết hàng</option>
   </select>
 
   <select
     class="product-toolbar__select product-toolbar__select--compact"
-    aria-label="Sap xep san pham"
+    aria-label="Sắp xếp sản phẩm"
     [value]="sort()"
     (change)="onSortChange($event)"
   >
-    <option value="name,asc">Ten A-Z</option>
-    <option value="price,desc">Gia cao</option>
-    <option value="price,asc">Gia thap</option>
-    <option value="stock,asc">Ton kho thap</option>
+    <option value="name,asc">Tên A-Z</option>
+    <option value="price,desc">Giá cao</option>
+    <option value="price,asc">Giá thấp</option>
+    <option value="stock,asc">Tồn kho thấp</option>
   </select>
 
   <button type="button" class="product-toolbar__filter" [disabled]="loading()" (click)="applyFilters.emit()">
     <svg lucideFilter [attr.stroke-width]="2"></svg>
-    <span>Loc</span>
+    <span>Lọc</span>
     @if (activeFilterCount() > 0) {
       <strong>{{ activeFilterCount() }}</strong>
     }
@@ -56,6 +56,6 @@
 
   <button type="button" class="product-toolbar__reset" [disabled]="loading()" (click)="resetFilters.emit()">
     <svg lucideX [attr.stroke-width]="2"></svg>
-    <span>Xoa</span>
+    <span>Xóa</span>
   </button>
 </div>

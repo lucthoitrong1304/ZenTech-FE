@@ -90,8 +90,8 @@ export class ManagementProductsPageComponent {
   protected confirmDeleteProduct(product: ManagementProduct): void {
     this.confirmService
       .open({
-        title: 'Xoa san pham',
-        content: `Ban co chac muon xoa ${product.name} khoi danh sach mock khong?`,
+        title: 'Xóa sản phẩm',
+        content: `Bạn có chắc muốn xóa ${product.name} khỏi danh sách mock không?`,
       })
       .pipe(
         take(1),

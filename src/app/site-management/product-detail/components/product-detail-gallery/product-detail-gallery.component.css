@@ -5,24 +5,5 @@
 }
 
 .product-detail-gallery__thumbs {
-  scrollbar-width: thin;
-  scrollbar-color: rgb(16 16 16 / 0.18) transparent;
-}
-
-.product-detail-gallery__thumbs::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-
-.product-detail-gallery__thumbs::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.product-detail-gallery__thumbs::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgb(16 16 16 / 0.18);
-}
-
-.product-detail-gallery__thumbs:hover::-webkit-scrollbar-thumb {
-  background: rgb(16 16 16 / 0.28);
+  --zt-scrollbar-size: 4px;
 }

@@ -75,8 +75,8 @@ export class ManagementProductGroupsPageComponent {
   protected confirmDeleteGroup(group: ManagementProductGroup): void {
     this.confirmService
       .open({
-        title: 'Xoa nhom san pham',
-        content: `Ban co chac muon xoa nhom ${group.name} khoi danh sach mock khong?`,
+        title: 'Xóa nhóm sản phẩm',
+        content: `Bạn có chắc muốn xóa nhóm ${group.name} khỏi danh sách mock không?`,
       })
       .pipe(
         take(1),

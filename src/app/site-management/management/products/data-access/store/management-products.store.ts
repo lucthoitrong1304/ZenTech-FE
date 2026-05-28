@@ -255,7 +255,7 @@ export const ManagementProductsStore = signalStore(
             totalElements: 0,
             totalPages: 0,
             last: true,
-            errorMessage: 'Khong the tai danh sach san pham. Vui long thu lai.',
+            errorMessage: 'Không thể tải danh sách sản phẩm. Vui lòng thử lại.',
           });
           break;
 
@@ -326,13 +326,13 @@ export const ManagementProductsStore = signalStore(
             removeEntity(event.productId, PRODUCT_ENTITY_CONFIG),
             {
               totalElements: Math.max(0, store.totalElements() - 1),
-              successMessage: 'Da xoa san pham mock khoi danh sach.',
+              successMessage: 'Đã xóa sản phẩm mock khỏi danh sách.',
             }
           );
           break;
 
         case ManagementProductEventType.ProductDeleteFailed:
-          patchState(store, { errorMessage: 'Khong the xoa san pham luc nay.' });
+          patchState(store, { errorMessage: 'Không thể xóa sản phẩm lúc này.' });
           break;
 
         case ManagementProductEventType.MessagesCleared:
@@ -375,7 +375,7 @@ export const ManagementProductsStore = signalStore(
           patchState(store, {
             loadingDetail: false,
             dialogVisible: false,
-            errorMessage: 'Khong the tai chi tiet san pham.',
+            errorMessage: 'Không thể tải chi tiết sản phẩm.',
           });
           break;
 
@@ -409,7 +409,7 @@ export const ManagementProductsStore = signalStore(
           patchState(store, {
             saving: false,
             dialogVisible: false,
-            successMessage: `Da them san pham ${event.detail.productName} thanh cong.`,
+            successMessage: `Đã thêm sản phẩm ${event.detail.productName} thành công.`,
           });
           break;
 
@@ -417,7 +417,7 @@ export const ManagementProductsStore = signalStore(
           patchState(store, {
             saving: false,
             dialogVisible: false,
-            successMessage: `Da cap nhat san pham ${event.detail.productName} thanh cong.`,
+            successMessage: `Đã cập nhật sản phẩm ${event.detail.productName} thành công.`,
           });
           break;
 
@@ -500,7 +500,7 @@ export const ManagementProductsStore = signalStore(
           const editingId = store.editingProductId();
 
           if (!form) {
-            handleEvent({ type: ManagementProductEventType.SaveFailed, error: 'Thong tin form khong hop le.' });
+            handleEvent({ type: ManagementProductEventType.SaveFailed, error: 'Thông tin form không hợp lệ.' });
             return EMPTY;
           }
 
@@ -531,7 +531,7 @@ export const ManagementProductsStore = signalStore(
                 },
                 error: (err: unknown) => {
                   const errorResponse = err as { message?: string };
-                  const errMsg = errorResponse?.message || 'Khong the cap nhat san pham. Vui long thu lai.';
+                  const errMsg = errorResponse?.message || 'Không thể cập nhật sản phẩm. Vui lòng thử lại.';
                   handleEvent({ type: ManagementProductEventType.SaveFailed, error: errMsg });
                 },
               }),
@@ -550,7 +550,7 @@ export const ManagementProductsStore = signalStore(
                 },
                 error: (err: unknown) => {
                   const errorResponse = err as { message?: string };
-                  const errMsg = errorResponse?.message || 'Khong the tao san pham. Vui long thu lai.';
+                  const errMsg = errorResponse?.message || 'Không thể tạo sản phẩm. Vui lòng thử lại.';
                   handleEvent({ type: ManagementProductEventType.SaveFailed, error: errMsg });
                 },
               }),

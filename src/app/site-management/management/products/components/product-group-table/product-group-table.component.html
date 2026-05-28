@@ -4,10 +4,10 @@
       <thead>
         <tr>
           <th class="product-group-table__index">STT</th>
-          <th>Ten nhom</th>
-          <th>So luong san pham</th>
-          <th>Trang thai</th>
-          <th class="product-group-table__right">Thao tac</th>
+          <th>Tên nhóm</th>
+          <th>Số lượng sản phẩm</th>
+          <th>Trạng thái</th>
+          <th class="product-group-table__right">Thao tác</th>
         </tr>
       </thead>
       <tbody>
@@ -47,11 +47,11 @@
                   <strong>{{ group.name }}</strong>
                 </span>
               </td>
-              <td>{{ group.productCount }} san pham</td>
+              <td>{{ group.productCount }} sản phẩm</td>
               <td>
                 <span class="product-group-status" [class.product-group-status--inactive]="!group.active">
                   <span></span>
-                  {{ group.active ? 'Dang hoat dong' : 'Ngung hoat dong' }}
+                  {{ group.active ? 'Đang hoạt động' : 'Ngừng hoạt động' }}
                 </span>
               </td>
               <td>
@@ -59,7 +59,7 @@
                   <button
                     type="button"
                     class="product-group-row-action product-group-row-action--edit"
-                    aria-label="Chinh sua nhom"
+                    aria-label="Chỉnh sửa nhóm"
                     (click)="editGroup.emit(group)"
                   >
                     <svg lucidePencil [attr.stroke-width]="2"></svg>
@@ -67,7 +67,7 @@
                   <button
                     type="button"
                     class="product-group-row-action product-group-row-action--delete"
-                    aria-label="Xoa nhom"
+                    aria-label="Xóa nhóm"
                     (click)="deleteGroup.emit(group)"
                   >
                     <svg lucideTrash2 [attr.stroke-width]="2"></svg>
@@ -80,8 +80,8 @@
               <td colspan="5">
                 <div class="product-group-empty">
                   <svg lucidePackage [attr.stroke-width]="1.8"></svg>
-                  <h3>Chua co nhom san pham phu hop</h3>
-                  <p>Thu doi bo loc hoac tao nhom moi.</p>
+                  <h3>Chưa có nhóm sản phẩm phù hợp</h3>
+                  <p>Thử đổi bộ lọc hoặc tạo nhóm mới.</p>
                 </div>
               </td>
             </tr>
@@ -92,7 +92,7 @@
   </div>
 
   <footer class="product-group-pagination">
-    <p>Hien thi {{ pageStart() }}-{{ pageEnd() }} tren {{ totalElements() }} nhom</p>
+    <p>Hiển thị {{ pageStart() }}-{{ pageEnd() }} trên {{ totalElements() }} nhóm</p>
 
     <div class="product-group-page-buttons">
       <button
@@ -100,7 +100,7 @@
         class="product-group-page-button"
         [disabled]="!canGoPrevious() || loading()"
         (click)="pageChange.emit(page() - 1)"
-        aria-label="Trang truoc"
+        aria-label="Trang trước"
       >
         <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
       </button>

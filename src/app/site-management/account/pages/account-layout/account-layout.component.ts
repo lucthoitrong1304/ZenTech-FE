@@ -46,9 +46,9 @@ export class AccountLayoutComponent {
   protected readonly currentUser = this.authSessionStore.currentUser;
   protected readonly navItems = this.categoryNavigationStore.navItems;
   protected readonly accountNavItems: AccountNavItem[] = [
-    { label: 'Tong quan', link: '/account/overview', icon: 'overview' },
-    { label: 'Lich su don hang', link: '/account/orders', icon: 'orders' },
-    { label: 'So dia chi', link: '/account/addresses', icon: 'addresses' },
+    { label: 'Tổng quan', link: '/account/overview', icon: 'overview' },
+    { label: 'Lịch sử đơn hàng', link: '/account/orders', icon: 'orders' },
+    { label: 'Sổ địa chỉ', link: '/account/addresses', icon: 'addresses' },
     { label: 'Kho voucher', link: '/account/vouchers', icon: 'vouchers' },
   ];
 

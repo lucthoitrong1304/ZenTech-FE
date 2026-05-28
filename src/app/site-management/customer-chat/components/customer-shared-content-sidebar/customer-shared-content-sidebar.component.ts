@@ -59,7 +59,7 @@ export class CustomerSharedContentSidebarComponent {
   protected tabs(): SharedTabOption[] {
     const compactTabs: SharedTabOption[] = [
       { value: 'MEDIA', label: 'Media', count: this.mediaCount() },
-      { value: 'FILES', label: 'Tep', count: this.fileCount() },
+      { value: 'FILES', label: 'Tệp', count: this.fileCount() },
       { value: 'LINKS', label: 'Links', count: this.linkCount() },
     ];
 

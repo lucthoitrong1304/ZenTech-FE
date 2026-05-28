@@ -20,11 +20,11 @@
   @if (draft(); as currentDraft) {
     <div class="product-group-dialog__body">
       <label class="product-group-field">
-        <span>Ten nhom</span>
+        <span>Tên nhóm</span>
         <input
           type="text"
           [value]="currentDraft.name"
-          placeholder="Nhap ten nhom..."
+          placeholder="Nhập tên nhóm..."
           [class.product-group-field__input--invalid]="errors().name"
           (input)="onNameInput($event)"
         />
@@ -36,13 +36,13 @@
       <label class="product-group-switch">
         <input type="checkbox" [checked]="currentDraft.active" (change)="onActiveChange($event)" />
         <span></span>
-        <strong>{{ currentDraft.active ? 'Dang hoat dong' : 'Ngung hoat dong' }}</strong>
+        <strong>{{ currentDraft.active ? 'Đang hoạt động' : 'Ngừng hoạt động' }}</strong>
       </label>
 
       <section class="product-picker">
         <header>
-          <span>Them san pham vao nhom</span>
-          <strong>{{ currentDraft.productIds.length }} da chon</strong>
+          <span>Thêm sản phẩm vào nhóm</span>
+          <strong>{{ currentDraft.productIds.length }} đã chọn</strong>
         </header>
 
         <label class="product-picker__search">
@@ -50,7 +50,7 @@
           <input
             type="search"
             [value]="productSearch()"
-            placeholder="Tim kiem san pham..."
+            placeholder="Tìm kiếm sản phẩm..."
             (input)="onProductSearchInput($event)"
           />
         </label>
@@ -75,12 +75,12 @@
               }
             </button>
           } @empty {
-            <p class="product-picker__empty">Khong tim thay san pham phu hop.</p>
+            <p class="product-picker__empty">Không tìm thấy sản phẩm phù hợp.</p>
           }
         </div>
 
         <div class="product-picker__selected">
-          <span>San pham da chon</span>
+          <span>Sản phẩm đã chọn</span>
 
           @if (selectedProductOptions().length > 0) {
             <div>
@@ -92,7 +92,7 @@
               }
             </div>
           } @else {
-            <p>Chua chon san pham.</p>
+            <p>Chưa chọn sản phẩm.</p>
           }
         </div>
 
@@ -110,10 +110,10 @@
   <ng-template pTemplate="footer">
     <div class="product-group-dialog__footer">
       <button type="button" class="product-group-dialog__ghost" [disabled]="saving()" (click)="close.emit()">
-        Huy
+        Hủy
       </button>
       <button type="button" class="product-group-dialog__primary" [disabled]="saving()" (click)="save.emit()">
-        {{ mode() === 'edit' ? 'Luu thay doi' : 'Tao nhom' }}
+        {{ mode() === 'edit' ? 'Lưu thay đổi' : 'Tạo nhóm' }}
       </button>
     </div>
   </ng-template>

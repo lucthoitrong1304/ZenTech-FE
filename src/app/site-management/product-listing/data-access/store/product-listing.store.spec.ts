@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { CartStore } from '../../../cart/data-access/store/cart.store';
 import { ProductDetail } from '../../../product-catalog/data-access/models/product-catalog.models';
@@ -70,9 +70,33 @@ describe('ProductListingStore', () => {
       sort: 'NEWEST',
     });
     expect(store.loading()).toBe(false);
+    expect(store.sorting()).toBe(false);
     expect(store.category()?.id).toBe('category-1');
     expect(store.sortedProducts().map(product => product.slug)).toEqual(['a']);
     expect(store.hasNext()).toBe(true);
+  });
+
+  it('clears products and shows full loading state while category load is pending', () => {
+    const pendingListing = new Subject<ReturnType<typeof createListing>>();
+    const getCategoryListing = vi
+      .fn()
+      .mockReturnValueOnce(of(createListing({ products: firstPageProducts, page: 0, hasNext: true })))
+      .mockReturnValueOnce(pendingListing.asObservable());
+    const store = configureStore({
+      productCatalogService: { getCategoryListing },
+      categoryNavigationStore: {
+        resolveCategoryBySlug: () => of(category),
+        findCategoryBySlug: () => category,
+      },
+    });
+
+    store.loadCategory({ slug: 'keyboards', sortBy: 'featured' });
+    store.loadCategory({ slug: 'keyboards', sortBy: 'featured' });
+
+    expect(store.loading()).toBe(true);
+    expect(store.sorting()).toBe(false);
+    expect(store.category()).toBeNull();
+    expect(store.sortedProducts()).toEqual([]);
   });
 
   it('marks invalid categories without loading products', () => {
@@ -141,17 +165,50 @@ describe('ProductListingStore', () => {
     });
 
     store.loadCategory({ slug: 'keyboards', sortBy: 'featured' });
-    store.setSort('price-desc');
-    store.loadCategory({ slug: 'keyboards', sortBy: 'price-desc' });
+    store.changeSort('price-desc');
 
     expect(getCategoryListing).toHaveBeenLastCalledWith(category, {
       page: 0,
       size: 10,
       sort: 'PRICE_DESC',
     });
+    expect(store.sortBy()).toBe('price-desc');
     expect(store.sortedProducts().map(product => product.slug)).toEqual(['b']);
     expect(store.page()).toBe(0);
     expect(store.hasNext()).toBe(false);
+    expect(store.sorting()).toBe(false);
+  });
+
+  it('keeps the current category and products while sort refresh is pending', () => {
+    const pendingListing = new Subject<ReturnType<typeof createListing>>();
+    const getCategoryListing = vi
+      .fn()
+      .mockReturnValueOnce(of(createListing({ products: firstPageProducts, page: 1, hasNext: true })))
+      .mockReturnValueOnce(pendingListing.asObservable());
+    const findCategoryBySlug = vi.fn(() => category);
+    const store = configureStore({
+      productCatalogService: { getCategoryListing },
+      categoryNavigationStore: {
+        resolveCategoryBySlug: () => of(category),
+        findCategoryBySlug,
+      },
+    });
+
+    store.loadCategory({ slug: 'keyboards', sortBy: 'featured' });
+    store.changeSort('price-asc');
+
+    expect(findCategoryBySlug).toHaveBeenCalledWith('keyboards');
+    expect(getCategoryListing).toHaveBeenLastCalledWith(category, {
+      page: 0,
+      size: 10,
+      sort: 'PRICE_ASC',
+    });
+    expect(store.sortBy()).toBe('price-asc');
+    expect(store.page()).toBe(0);
+    expect(store.loading()).toBe(false);
+    expect(store.sorting()).toBe(true);
+    expect(store.category()?.id).toBe('category-1');
+    expect(store.sortedProducts().map(product => product.slug)).toEqual(['a']);
   });
 
   it('adds the first in-stock product detail variant to cart from listing cards', () => {

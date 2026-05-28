@@ -84,10 +84,10 @@ export class ManagementOrdersPageComponent {
   }
 
   protected exportReport(): void {
-    this.toastService.success('Bao cao don hang mock da san sang de noi API xuat file.');
+    this.toastService.success('Báo cáo đơn hàng mock đã sẵn sàng để nối API xuất file.');
   }
 
   protected printInvoice(orderId: string): void {
-    this.toastService.success(`Da gui lenh in hoa don cho ${orderId}.`);
+    this.toastService.success(`Đã gửi lệnh in hóa đơn cho ${orderId}.`);
   }
 }

@@ -1,11 +1,13 @@
 import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { getTestBed } from '@angular/core/testing';
+import { HttpContext } from '@angular/common/http';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { firstValueFrom, of } from 'rxjs';
 import { vi } from 'vitest';
 import { environment } from '../../../../../environments/environment';
 import { ApiService } from '../../../../core/api/api.service';
+import { SKIP_AUTH_TOKEN } from '../../../../core/tokens/api-context.token';
 import { ProductCategory } from '../models/product-catalog.models';
 import { PRODUCT_CATEGORY_NOT_FOUND, ProductCatalogService } from './product-catalog.service';
 
@@ -65,7 +67,10 @@ describe('ProductCatalogService', () => {
 
     const categories = await firstValueFrom(service.getCategoryTree());
 
-    expect(get).toHaveBeenCalledWith(categoriesUrl);
+    expect(get).toHaveBeenCalledWith(categoriesUrl, {
+      context: expect.any(HttpContext),
+    });
+    expectPublicCatalogContext(getCallOptions(get));
     expect(categories).toEqual([
       {
         id: 'root-1',
@@ -94,6 +99,7 @@ describe('ProductCatalogService', () => {
             originalPrice: 120,
             salePrice: 99,
             averageRating: 4.5,
+            stockQuantity: 7,
           },
         ],
         page: 0,
@@ -121,7 +127,9 @@ describe('ProductCatalogService', () => {
         size: 10,
         sort: 'PRICE_ASC',
       },
+      context: expect.any(HttpContext),
     });
+    expectPublicCatalogContext(getCallOptions(get));
     expect(listing.products[0]).toEqual({
       id: 'product-1',
       categorySlug: 'mice',
@@ -141,7 +149,10 @@ describe('ProductCatalogService', () => {
 
     const product = await firstValueFrom(service.getProductDetail('product-1'));
 
-    expect(get).toHaveBeenCalledWith(`${productsUrl}/product-1`);
+    expect(get).toHaveBeenCalledWith(`${productsUrl}/product-1`, {
+      context: expect.any(HttpContext),
+    });
+    expectPublicCatalogContext(getCallOptions(get));
     expect(product).toMatchObject({
       id: 'product-1',
       slug: 'product-1',
@@ -213,7 +224,9 @@ describe('ProductCatalogService', () => {
 
     expect(get).toHaveBeenCalledWith(`${productsUrl}/product-1/reviews`, {
       params: { page: 0, size: 5 },
+      context: expect.any(HttpContext),
     });
+    expectPublicCatalogContext(getCallOptions(get));
     expect(reviews[0]).toEqual({
       id: 'review-1',
       reviewerName: 'Alex',
@@ -324,4 +337,17 @@ function createProductDetailResponse() {
     averageRating: 4.8,
     totalReviews: 154,
   };
+}
+
+function expectPublicCatalogContext(options: unknown): void {
+  expect(options).toEqual(
+    expect.objectContaining({
+      context: expect.any(HttpContext),
+    })
+  );
+  expect((options as { context: HttpContext }).context.get(SKIP_AUTH_TOKEN)).toBe(true);
+}
+
+function getCallOptions(mock: { mock: { calls: unknown[][] } }): unknown {
+  return mock.mock.calls[0][1];
 }
