@@ -19,30 +19,251 @@
 
 @layer utilities {}
 
-body:has(.owner-shell) {
-  scrollbar-color: rgba(79, 70, 50, 0.28) transparent;
+:root {
+  --zt-scrollbar-size: 8px;
+  --zt-scrollbar-button-size: 12px;
+  --zt-scrollbar-thumb: rgba(174, 169, 160, 0.78);
+  --zt-scrollbar-thumb-hover: rgba(136, 130, 120, 0.86);
+  --zt-scrollbar-arrow: rgba(174, 169, 160, 0.78);
+  --zt-scrollbar-track: transparent;
+}
+
+:where(
+  html,
+  body,
+  .zt-scrollbar,
+  .chat-scrollbar,
+  .owner-sidebar,
+  .management-sidebar,
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-popover-content,
+  .p-select-list-container,
+  .p-select-list,
+  .p-dropdown-items-wrapper,
+  .p-overlaypanel-content
+) {
+  scrollbar-color: var(--zt-scrollbar-thumb) var(--zt-scrollbar-track);
   scrollbar-width: thin;
 }
 
-body:has(.owner-shell)::-webkit-scrollbar,
-.owner-sidebar::-webkit-scrollbar {
-  width: 8px;
+:where(
+  html,
+  body,
+  .zt-scrollbar,
+  .chat-scrollbar,
+  .owner-sidebar,
+  .management-sidebar,
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-popover-content,
+  .p-select-list-container,
+  .p-select-list,
+  .p-dropdown-items-wrapper,
+  .p-overlaypanel-content
+)::-webkit-scrollbar {
+  width: var(--zt-scrollbar-size);
+  height: var(--zt-scrollbar-size);
 }
 
-body:has(.owner-shell)::-webkit-scrollbar-track,
-.owner-sidebar::-webkit-scrollbar-track {
-  background: transparent;
+:where(
+  html,
+  body,
+  .zt-scrollbar,
+  .chat-scrollbar,
+  .owner-sidebar,
+  .management-sidebar,
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-popover-content,
+  .p-select-list-container,
+  .p-select-list,
+  .p-dropdown-items-wrapper,
+  .p-overlaypanel-content
+)::-webkit-scrollbar-track {
+  background: var(--zt-scrollbar-track);
 }
 
-body:has(.owner-shell)::-webkit-scrollbar-thumb,
-.owner-sidebar::-webkit-scrollbar-thumb {
+:where(
+  html,
+  body,
+  .zt-scrollbar,
+  .chat-scrollbar,
+  .owner-sidebar,
+  .management-sidebar,
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-popover-content,
+  .p-select-list-container,
+  .p-select-list,
+  .p-dropdown-items-wrapper,
+  .p-overlaypanel-content
+)::-webkit-scrollbar-thumb {
+  border: 1px solid var(--zt-scrollbar-track);
   border-radius: 999px;
-  background: rgba(79, 70, 50, 0.28);
+  background: var(--zt-scrollbar-thumb);
+  background-clip: padding-box;
 }
 
-body:has(.owner-shell)::-webkit-scrollbar-thumb:hover,
-.owner-sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(79, 70, 50, 0.46);
+:where(
+  html,
+  body,
+  .zt-scrollbar,
+  .chat-scrollbar,
+  .owner-sidebar,
+  .management-sidebar,
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-popover-content,
+  .p-select-list-container,
+  .p-select-list,
+  .p-dropdown-items-wrapper,
+  .p-overlaypanel-content
+)::-webkit-scrollbar-thumb:hover {
+  background: var(--zt-scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+
+:where(
+  html,
+  body,
+  .zt-scrollbar,
+  .chat-scrollbar,
+  .owner-sidebar,
+  .management-sidebar,
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-popover-content,
+  .p-select-list-container,
+  .p-select-list,
+  .p-dropdown-items-wrapper,
+  .p-overlaypanel-content
+)::-webkit-scrollbar-button {
+  width: var(--zt-scrollbar-button-size);
+  height: var(--zt-scrollbar-button-size);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 7px 7px;
+}
+
+:where(
+  html,
+  body,
+  .zt-scrollbar,
+  .chat-scrollbar,
+  .owner-sidebar,
+  .management-sidebar,
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-popover-content,
+  .p-select-list-container,
+  .p-select-list,
+  .p-dropdown-items-wrapper,
+  .p-overlaypanel-content
+)::-webkit-scrollbar-button:vertical:start:decrement {
+  background-image: linear-gradient(45deg, transparent 50%, var(--zt-scrollbar-arrow) 50%),
+    linear-gradient(135deg, var(--zt-scrollbar-arrow) 50%, transparent 50%);
+  background-position:
+    calc(50% - 3px) 55%,
+    calc(50% + 3px) 55%;
+  background-size:
+    6px 6px,
+    6px 6px;
+}
+
+:where(
+  html,
+  body,
+  .zt-scrollbar,
+  .chat-scrollbar,
+  .owner-sidebar,
+  .management-sidebar,
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-popover-content,
+  .p-select-list-container,
+  .p-select-list,
+  .p-dropdown-items-wrapper,
+  .p-overlaypanel-content
+)::-webkit-scrollbar-button:vertical:end:increment {
+  background-image: linear-gradient(225deg, transparent 50%, var(--zt-scrollbar-arrow) 50%),
+    linear-gradient(315deg, var(--zt-scrollbar-arrow) 50%, transparent 50%);
+  background-position:
+    calc(50% - 3px) 45%,
+    calc(50% + 3px) 45%;
+  background-size:
+    6px 6px,
+    6px 6px;
+}
+
+:where(
+  html,
+  body,
+  .zt-scrollbar,
+  .chat-scrollbar,
+  .owner-sidebar,
+  .management-sidebar,
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-popover-content,
+  .p-select-list-container,
+  .p-select-list,
+  .p-dropdown-items-wrapper,
+  .p-overlaypanel-content
+)::-webkit-scrollbar-button:horizontal:start:decrement {
+  background-image: linear-gradient(135deg, transparent 50%, var(--zt-scrollbar-arrow) 50%),
+    linear-gradient(45deg, var(--zt-scrollbar-arrow) 50%, transparent 50%);
+  background-position:
+    56% calc(50% - 3px),
+    56% calc(50% + 3px);
+  background-size:
+    6px 6px,
+    6px 6px;
+}
+
+:where(
+  html,
+  body,
+  .zt-scrollbar,
+  .chat-scrollbar,
+  .owner-sidebar,
+  .management-sidebar,
+  [class*="overflow-y-auto"],
+  [class*="overflow-x-auto"],
+  .p-dialog-content,
+  .p-drawer-content,
+  .p-popover-content,
+  .p-select-list-container,
+  .p-select-list,
+  .p-dropdown-items-wrapper,
+  .p-overlaypanel-content
+)::-webkit-scrollbar-button:horizontal:end:increment {
+  background-image: linear-gradient(315deg, transparent 50%, var(--zt-scrollbar-arrow) 50%),
+    linear-gradient(225deg, var(--zt-scrollbar-arrow) 50%, transparent 50%);
+  background-position:
+    44% calc(50% - 3px),
+    44% calc(50% + 3px);
+  background-size:
+    6px 6px,
+    6px 6px;
 }
 
 app-site-header {

@@ -41,28 +41,6 @@
   background: #fcf9f8;
 }
 
-:host ::ng-deep .chat-scrollbar {
-  scrollbar-color: rgba(79, 70, 50, 0.28) transparent;
-  scrollbar-width: thin;
-}
-
-:host ::ng-deep .chat-scrollbar::-webkit-scrollbar,
-:host ::ng-deep .chat-filter-sidebar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-:host ::ng-deep .chat-scrollbar::-webkit-scrollbar-track,
-:host ::ng-deep .chat-filter-sidebar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-:host ::ng-deep .chat-scrollbar::-webkit-scrollbar-thumb,
-:host ::ng-deep .chat-filter-sidebar::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(79, 70, 50, 0.28);
-}
-
 @media (max-width: 1220px) {
   .management-chat-shell {
     height: calc(100vh - 144px);

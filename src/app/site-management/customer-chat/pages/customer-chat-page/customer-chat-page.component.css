@@ -31,39 +31,6 @@
   box-shadow: -24px 0 64px -56px rgba(16, 16, 16, 0.72);
 }
 
-:host ::ng-deep .chat-scrollbar {
-  scrollbar-color: rgba(79, 70, 50, 0.28) transparent;
-  scrollbar-width: thin;
-}
-
-:host ::ng-deep .chat-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-:host ::ng-deep .chat-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-:host ::ng-deep .chat-scrollbar {
-  scrollbar-color: rgba(79, 70, 50, 0.28) transparent;
-  scrollbar-width: thin;
-}
-
-:host ::ng-deep .chat-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-:host ::ng-deep .chat-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-:host ::ng-deep .chat-scrollbar::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(79, 70, 50, 0.28);
-}
-
 @media (max-width: 1024px) {
   .customer-chat-full {
     height: 100%;
