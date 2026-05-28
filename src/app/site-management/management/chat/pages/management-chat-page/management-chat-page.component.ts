@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { CallSignalingService } from '../../../../../core/services/call-signaling.service';
 import { MediaPreviewDialogComponent } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import { ChatComposerComponent } from '../../components/chat-composer/chat-composer.component';
@@ -32,6 +33,7 @@ import { ManagementShellUiState } from '../../../data-access/state/management-sh
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManagementChatPageComponent implements OnInit {
+  private readonly callSignalingService = inject(CallSignalingService);
   protected readonly store = inject(ManagementChatStore);
   protected readonly managementShellUi = inject(ManagementShellUiState);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
@@ -46,6 +48,14 @@ export class ManagementChatPageComponent implements OnInit {
 
   protected openPreview(item: MediaPreviewItem): void {
     this.previewItem.set(item);
+  }
+
+  protected startCustomerCall(targetEmail: string | null): void {
+    if (!targetEmail) {
+      return;
+    }
+
+    this.callSignalingService.initiateCall(targetEmail);
   }
 
   protected closePreview(): void {

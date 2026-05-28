@@ -12,6 +12,7 @@ export type CustomerChatUploadStatus = 'PENDING' | 'UPLOADING' | 'COMPLETE' | 'F
 
 export interface CustomerChatParticipant {
   id: string;
+  email: string | null;
   name: string;
   roleLabel: string;
   avatarUrl: string | null;
@@ -132,6 +133,10 @@ export interface ParticipantResponse {
   id: string;
   userType: ParticipantType;
   referenceId: string;
+  email?: string | null;
+  accountEmail?: string | null;
+  userEmail?: string | null;
+  participantEmail?: string | null;
   status: ParticipantStatus;
   joinedAt: string;
   leftAt: string | null;
@@ -228,6 +233,16 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+export function resolveParticipantEmail(participant: ParticipantResponse | undefined): string | null {
+  return (
+    participant?.email ||
+    participant?.accountEmail ||
+    participant?.userEmail ||
+    participant?.participantEmail ||
+    null
+  );
+}
+
 export function mapToCustomerChatSession(
   conv: ConversationResponse,
   messages: ChatMessageResponse[],
@@ -245,6 +260,7 @@ export function mapToCustomerChatSession(
 
   const customer: CustomerChatParticipant = {
     id: customerPart?.referenceId || conv.customerId || '',
+    email: resolveParticipantEmail(customerPart) || conv.customerEmail || null,
     name: customerPart?.displayName || conv.customerName || 'Bạn',
     roleLabel: 'Khách hàng',
     avatarUrl: customerPart?.avatarUrl || null,
@@ -254,6 +270,7 @@ export function mapToCustomerChatSession(
 
   const assistant: CustomerChatParticipant = {
     id: botPart?.referenceId || 'zentech-ai',
+    email: resolveParticipantEmail(botPart),
     name: botPart?.displayName || 'ZenTech AI',
     roleLabel: 'Trợ lý AI',
     avatarUrl: null,
@@ -264,6 +281,7 @@ export function mapToCustomerChatSession(
   const staff: CustomerChatParticipant | null = staffPart
     ? {
         id: staffPart.referenceId,
+        email: resolveParticipantEmail(staffPart),
         name: staffPart.displayName || 'Nhân viên hỗ trợ',
         roleLabel: 'Tư vấn viên',
         avatarUrl: staffPart.avatarUrl || null,

@@ -16,6 +16,7 @@ export type ManagementChatUploadStatus = 'PENDING' | 'UPLOADING' | 'FAILED';
 
 export interface ManagementChatCustomer {
   id: string;
+  email: string | null;
   fullName: string;
   avatarUrl: string | null;
   initials: string;

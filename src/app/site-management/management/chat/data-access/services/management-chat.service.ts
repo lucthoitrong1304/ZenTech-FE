@@ -10,6 +10,7 @@ import {
   ParticipantType,
   getInitials,
   formatTime,
+  resolveParticipantEmail,
 } from '../../../../customer-chat/data-access/models/customer-chat.models';
 import {
   ManagementChatConversation,
@@ -62,6 +63,7 @@ export class ManagementChatService {
 
     const customer: ManagementChatCustomer = {
       id: customerParticipant?.referenceId || conv.customerId || '',
+      email: resolveParticipantEmail(customerParticipant) || conv.customerEmail || null,
       fullName: customerParticipant?.displayName || conv.customerName || 'Khách hàng',
       avatarUrl: customerParticipant?.avatarUrl || null,
       initials: getInitials(customerParticipant?.displayName || conv.customerName || 'Khách hàng'),
