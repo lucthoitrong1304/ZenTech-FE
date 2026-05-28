@@ -68,10 +68,10 @@ export class SiteHeaderComponent {
 
   readonly accountTriggerLabel = computed(() => {
     if (!this.isAuthenticated()) {
-      return 'Tai khoan';
+      return 'Tài khoản';
     }
 
-    return this.currentUser()?.fullName || 'Quan ly tai khoan';
+    return this.currentUser()?.fullName || 'Quản lý tài khoản';
   });
 
   isActive(item: HeaderNavItem): boolean {

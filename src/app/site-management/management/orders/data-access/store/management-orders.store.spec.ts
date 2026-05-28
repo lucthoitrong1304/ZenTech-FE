@@ -148,7 +148,7 @@ describe('ManagementOrdersStore', () => {
     });
     expect(store.orders()[0].customer.fullName).toBe('Le Hong Phong Updated');
     expect(store.editDrawerOpen()).toBe(false);
-    expect(store.successMessage()).toBe('Da luu thay doi don hang.');
+    expect(store.successMessage()).toBe('Đã lưu thay đổi đơn hàng.');
   });
 
   it('cancels edit without mutating the selected order', () => {
@@ -176,7 +176,7 @@ describe('ManagementOrdersStore', () => {
     store.loadOrders();
 
     expect(store.loading()).toBe(false);
-    expect(store.errorMessage()).toBe('Khong the tai danh sach don hang. Vui long thu lai.');
+    expect(store.errorMessage()).toBe('Không thể tải danh sách đơn hàng. Vui lòng thử lại.');
   });
 });
 
@@ -195,7 +195,7 @@ function createOrder(): ManagementOrder {
     customer: {
       fullName: 'Le Hong Phong',
       email: 'phong.le@example.com',
-      shippingAddress: '123 Duong Le Loi, Quan 1, TP. Ho Chi Minh',
+      shippingAddress: '123 Đường Lê Lợi, Quận 1, TP. Hồ Chí Minh',
     },
     paymentMethod: 'MOMO',
     paymentStatus: 'SUCCESS',
@@ -207,7 +207,7 @@ function createOrder(): ManagementOrder {
     items: [
       {
         orderItemId: 'item-1',
-        productName: 'Ban phim V60 Pro HE',
+        productName: 'Bàn phím V60 Pro HE',
         variantName: 'Limited',
         productImage: null,
         quantity: 1,

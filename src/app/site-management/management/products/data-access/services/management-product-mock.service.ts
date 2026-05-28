@@ -14,20 +14,20 @@ import {
 } from '../models/management-product.models';
 
 const PRODUCT_CATEGORIES: ManagementProductCategory[] = [
-  { categoryId: 'keyboards', name: 'Ban phim' },
-  { categoryId: 'mice', name: 'Chuot' },
+  { categoryId: 'keyboards', name: 'Bàn phím' },
+  { categoryId: 'mice', name: 'Chuột' },
   { categoryId: 'headsets', name: 'Tai nghe' },
-  { categoryId: 'monitors', name: 'Man hinh' },
-  { categoryId: 'accessories', name: 'Phu kien' },
+  { categoryId: 'monitors', name: 'Màn hình' },
+  { categoryId: 'accessories', name: 'Phụ kiện' },
 ];
 
 const MOCK_PRODUCTS: ManagementProduct[] = [
   {
     productId: 'product-k1',
-    name: 'Ban phim co ZenTech Pro K1',
+    name: 'Bàn phím cơ ZenTech Pro K1',
     sku: 'ZT-K1-RGB',
     categoryId: 'keyboards',
-    categoryName: 'Ban phim',
+    categoryName: 'Bàn phím',
     price: 2490000,
     stock: 45,
     imageUrl:
@@ -36,10 +36,10 @@ const MOCK_PRODUCTS: ManagementProduct[] = [
   },
   {
     productId: 'product-m2',
-    name: 'Chuot khong day ZenTech Flow',
+    name: 'Chuột không dây ZenTech Flow',
     sku: 'ZT-M2-FLOW',
     categoryId: 'mice',
-    categoryName: 'Chuot',
+    categoryName: 'Chuột',
     price: 890000,
     stock: 0,
     imageUrl:
@@ -48,7 +48,7 @@ const MOCK_PRODUCTS: ManagementProduct[] = [
   },
   {
     productId: 'product-h4',
-    name: 'Tai nghe chong on ZenQuiet Gen 2',
+    name: 'Tai nghe chống ồn ZenQuiet Gen 2',
     sku: 'ZT-H4-QUIET',
     categoryId: 'headsets',
     categoryName: 'Tai nghe',
@@ -63,7 +63,7 @@ const MOCK_PRODUCTS: ManagementProduct[] = [
     name: 'V60 Pro Keyboard',
     sku: 'ZT-V60-HE',
     categoryId: 'keyboards',
-    categoryName: 'Ban phim',
+    categoryName: 'Bàn phím',
     price: 3500000,
     stock: 18,
     imageUrl: null,
@@ -74,7 +74,7 @@ const MOCK_PRODUCTS: ManagementProduct[] = [
     name: 'ZenDisplay Ultra',
     sku: 'ZT-D27-ULTRA',
     categoryId: 'monitors',
-    categoryName: 'Man hinh',
+    categoryName: 'Màn hình',
     price: 6250000,
     stock: 24,
     imageUrl: null,
@@ -82,10 +82,10 @@ const MOCK_PRODUCTS: ManagementProduct[] = [
   },
   {
     productId: 'product-cable',
-    name: 'Cap sac USB-C 100W',
+    name: 'Cáp sạc USB-C 100W',
     sku: 'ZT-C100W',
     categoryId: 'accessories',
-    categoryName: 'Phu kien',
+    categoryName: 'Phụ kiện',
     price: 120000,
     stock: 8,
     imageUrl: null,
@@ -96,7 +96,7 @@ const MOCK_PRODUCTS: ManagementProduct[] = [
 const MOCK_GROUPS: ManagementProductGroup[] = [
   {
     groupId: 'group-keyboards',
-    name: 'Ban phim co',
+    name: 'Bàn phím cơ',
     iconName: 'keyboard',
     productIds: ['product-k1', 'product-v60'],
     productCount: 142,
@@ -104,7 +104,7 @@ const MOCK_GROUPS: ManagementProductGroup[] = [
   },
   {
     groupId: 'group-mice',
-    name: 'Chuot Gaming',
+    name: 'Chuột Gaming',
     iconName: 'mouse',
     productIds: ['product-m2'],
     productCount: 89,
@@ -120,7 +120,7 @@ const MOCK_GROUPS: ManagementProductGroup[] = [
   },
   {
     groupId: 'group-monitors',
-    name: 'Man hinh',
+    name: 'Màn hình',
     iconName: 'monitor',
     productIds: ['product-display'],
     productCount: 24,

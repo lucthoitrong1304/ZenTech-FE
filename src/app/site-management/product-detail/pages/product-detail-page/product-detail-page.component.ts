@@ -198,7 +198,7 @@ export class ProductDetailPageComponent {
     const draft = this.createSelectedCartItemDraft();
 
     if (!draft) {
-      this.toastService.warning('Vui long chon variant con hang truoc khi them vao gio.');
+      this.toastService.warning('Vui lòng chọn variant còn hàng trước khi thêm vào giỏ.');
       return;
     }
 
@@ -208,14 +208,14 @@ export class ProductDetailPageComponent {
     }
 
     this.cartStore.addItem(draft);
-    this.toastService.success(`${draft.productName} da duoc them vao gio hang.`);
+    this.toastService.success(`${draft.productName} đã được thêm vào giỏ hàng.`);
   }
 
   buySelectedProductNow(): void {
     const draft = this.createSelectedCartItemDraft();
 
     if (!draft) {
-      this.toastService.warning('Vui long chon variant con hang truoc khi mua.');
+      this.toastService.warning('Vui lòng chọn variant còn hàng trước khi mua.');
       return;
     }
 

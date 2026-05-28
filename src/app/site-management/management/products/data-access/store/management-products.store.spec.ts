@@ -53,7 +53,7 @@ describe('ManagementProductsStore', () => {
           inventoryValue: 2490000,
           lowStock: 0,
         }),
-      getCategories: () => of([{ categoryId: 'keyboards', name: 'Ban phim' }]),
+      getCategories: () => of([{ categoryId: 'keyboards', name: 'Bàn phím' }]),
     });
 
     store.loadProducts();
@@ -119,7 +119,7 @@ describe('ManagementProductsStore', () => {
     store.deleteProduct(product.productId);
 
     expect(store.products()).toEqual([]);
-    expect(store.successMessage()).toBe('Da xoa san pham mock khoi danh sach.');
+    expect(store.successMessage()).toBe('Đã xóa sản phẩm mock khỏi danh sách.');
   });
 
   it('stores load failures', () => {
@@ -139,7 +139,7 @@ describe('ManagementProductsStore', () => {
 
     expect(store.loading()).toBe(false);
     expect(store.errorMessage()).toBe(
-      'Khong the tai danh sach san pham. Vui long thu lai.'
+      'Không thể tải danh sách sản phẩm. Vui lòng thử lại.'
     );
   });
 });
@@ -154,10 +154,10 @@ function isTestEnvironmentAlreadyInitialized(error: Error): boolean {
 function createProduct(): ManagementProduct {
   return {
     productId: 'product-k1',
-    name: 'Ban phim co ZenTech Pro K1',
+    name: 'Bàn phím cơ ZenTech Pro K1',
     sku: 'ZT-K1-RGB',
     categoryId: 'keyboards',
-    categoryName: 'Ban phim',
+    categoryName: 'Bàn phím',
     price: 2490000,
     stock: 45,
     imageUrl: null,

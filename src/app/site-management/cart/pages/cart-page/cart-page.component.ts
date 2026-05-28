@@ -65,7 +65,7 @@ export class CartPageComponent {
   }
 
   protected onCheckout(): void {
-    this.toastService.warning('Checkout se duoc ket noi trong phase tiep theo.');
+    this.toastService.warning('Checkout sẽ được kết nối trong phase tiếp theo.');
   }
 
   protected onLogout(): void {

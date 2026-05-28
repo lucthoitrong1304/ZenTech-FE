@@ -146,8 +146,8 @@ export const ProductListingStore = signalStore(
               loading: false,
               loadingMore: false,
               error: event.isInvalidCategory
-                ? 'Danh muc nay khong ton tai.'
-                : 'Khong the tai danh sach san pham luc nay.',
+                ? 'Danh mục này không tồn tại.'
+                : 'Không thể tải danh sách sản phẩm lúc này.',
               isInvalidCategory: event.isInvalidCategory,
             }
           );
@@ -171,7 +171,7 @@ export const ProductListingStore = signalStore(
         case ProductListingEventType.MoreProductsLoadFailed:
           patchState(store, {
             loadingMore: false,
-            error: 'Khong the tai them san pham luc nay.',
+            error: 'Không thể tải thêm sản phẩm lúc này.',
           });
           break;
 
@@ -190,7 +190,7 @@ export const ProductListingStore = signalStore(
         case ProductListingEventType.ProductAddToCartSucceeded:
           patchState(store, {
             addingToCartProductId: null,
-            cartSuccessMessage: `${event.productName} da duoc them vao gio hang.`,
+            cartSuccessMessage: `${event.productName} đã được thêm vào giỏ hàng.`,
             cartErrorMessage: null,
           });
           break;
@@ -298,7 +298,7 @@ export const ProductListingStore = signalStore(
                   if (!variant) {
                     handleEvent({
                       type: ProductListingEventType.ProductAddToCartFailed,
-                      error: 'San pham nay hien khong con variant kha dung.',
+                      error: 'Sản phẩm này hiện không còn variant khả dụng.',
                     });
                     return;
                   }
@@ -312,7 +312,7 @@ export const ProductListingStore = signalStore(
                 error: () =>
                   handleEvent({
                     type: ProductListingEventType.ProductAddToCartFailed,
-                    error: 'Khong the them san pham vao gio hang luc nay.',
+                    error: 'Không thể thêm sản phẩm vào giỏ hàng lúc này.',
                   }),
               }),
               catchError(() => EMPTY)

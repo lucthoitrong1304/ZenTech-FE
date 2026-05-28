@@ -54,7 +54,7 @@ describe('ManagementProductGroupsStore', () => {
 
     store.loadGroups();
     store.goToPage(2);
-    store.setKeyword('ban phim');
+    store.setKeyword('bàn phím');
     store.setActiveFilter('active');
 
     expect(store.groups()[0].groupId).toBe(group.groupId);
@@ -62,7 +62,7 @@ describe('ManagementProductGroupsStore', () => {
       page: 0,
       size: 4,
       sort: 'name,asc',
-      keyword: 'ban phim',
+      keyword: 'bàn phím',
       activeFilter: 'active',
     });
     expect(store.activeFilterCount()).toBe(2);
@@ -118,7 +118,7 @@ describe('ManagementProductGroupsStore', () => {
     store.openCreateDialog();
     store.saveDraft();
 
-    expect(store.formErrors().name).toBe('Vui long nhap ten nhom.');
+    expect(store.formErrors().name).toBe('Vui lòng nhập tên nhóm.');
 
     store.updateDraft({ name: 'Premium Setup' });
     store.toggleProduct('product-k1');
@@ -171,7 +171,7 @@ describe('ManagementProductGroupsStore', () => {
 
     expect(store.loading()).toBe(false);
     expect(store.errorMessage()).toBe(
-      'Khong the tai danh sach nhom san pham. Vui long thu lai.'
+      'Không thể tải danh sách nhóm sản phẩm. Vui lòng thử lại.'
     );
   });
 });
@@ -186,7 +186,7 @@ function isTestEnvironmentAlreadyInitialized(error: Error): boolean {
 function createGroup(patch: Partial<ManagementProductGroup> = {}): ManagementProductGroup {
   return {
     groupId: 'group-keyboards',
-    name: 'Ban phim co',
+    name: 'Bàn phím cơ',
     iconName: 'keyboard',
     productIds: ['product-k1'],
     productCount: 1,
