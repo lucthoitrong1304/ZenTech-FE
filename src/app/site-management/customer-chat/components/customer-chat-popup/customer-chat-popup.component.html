@@ -43,6 +43,42 @@
             </a>
           </div>
         </div>
+      } @else if (!store.session()) {
+        <div class="grid flex-1 place-items-center bg-[#fcf9f8] p-6 text-center">
+          <div class="w-full max-w-[240px]">
+            <p class="text-[11px] font-black uppercase tracking-[0.2em] text-[#4b41e1]">
+              ZenTech Support
+            </p>
+            <h2 class="mt-3 text-xl font-black text-[#111827]">Xin chào!</h2>
+            <p class="mt-2 text-sm font-semibold text-[#4f4632]">
+              Chúng tôi có thể giúp gì cho bạn?
+            </p>
+            
+            @if (store.conversations().length > 0) {
+              <div class="mt-6 grid gap-2.5">
+                <button 
+                  class="w-full rounded-full bg-[#ffc700] px-5 py-3 text-sm font-bold text-[#111827] hover:bg-[#ffd633] transition" 
+                  (click)="store.switchConversation(store.conversations()[0].id)"
+                >
+                  Tiếp tục trò chuyện
+                </button>
+                <button 
+                  class="w-full rounded-full px-5 py-3 text-sm font-bold text-[#111827] ring-1 ring-inset ring-[#e5e7eb] hover:bg-[#f6f3f2] transition" 
+                  (click)="store.createNewConversation()"
+                >
+                  Tạo hội thoại mới
+                </button>
+              </div>
+            } @else {
+              <button 
+                class="mt-6 w-full rounded-full bg-[#ffc700] px-5 py-3 text-sm font-bold text-[#111827] hover:bg-[#ffd633] transition" 
+                (click)="store.createNewConversation()"
+              >
+                Bắt đầu trò chuyện mới
+              </button>
+            }
+          </div>
+        </div>
       } @else {
         <app-customer-message-timeline
           [messages]="store.messages()"

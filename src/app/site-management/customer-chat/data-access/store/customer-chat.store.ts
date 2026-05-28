@@ -498,6 +498,30 @@ export const CustomerChatStore = signalStore(
         )
       );
 
+      const createNewConversation = rxMethod<void>(
+        pipe(
+          tap(() => patchState(store, { loading: true, errorMessage: null })),
+          switchMap(() =>
+            customerChatService.createNewConversation().pipe(
+              tap({
+                next: (newConv) => {
+                  const currentList = store.conversations();
+                  patchState(store, { conversations: [newConv, ...currentList] });
+                  switchConversation(newConv.id);
+                },
+                error: () => {
+                  patchState(store, {
+                    loading: false,
+                    errorMessage: 'Không thể tạo cuộc trò chuyện mới.',
+                  });
+                },
+              }),
+              catchError(() => EMPTY)
+            )
+          )
+        )
+      );
+
       const loadSession = rxMethod<void>(
         pipe(
           tap(() => patchState(store, { loading: true, errorMessage: null })),
@@ -523,18 +547,12 @@ export const CustomerChatStore = signalStore(
                 const list = pageResponse.content || [];
                 patchState(store, { conversations: list });
 
-                if (list.length > 0) {
-                  const activeConv =
-                    list.find((c) => c.status !== ConversationStatus.CLOSED) || list[0];
-                  switchConversation(activeConv.id);
+                if (list.length === 0) {
+                  createNewConversation();
                   return EMPTY;
                 } else {
-                  return customerChatService.createOrGetConversation().pipe(
-                    tap((newConv) => {
-                      patchState(store, { conversations: [newConv] });
-                      switchConversation(newConv.id);
-                    })
-                  );
+                  patchState(store, { loading: false, session: null, errorMessage: null });
+                  return EMPTY;
                 }
               }),
               catchError(() => {
@@ -546,30 +564,6 @@ export const CustomerChatStore = signalStore(
               })
             );
           })
-        )
-      );
-
-      const createNewConversation = rxMethod<void>(
-        pipe(
-          tap(() => patchState(store, { loading: true, errorMessage: null })),
-          switchMap(() =>
-            customerChatService.createNewConversation().pipe(
-              tap({
-                next: (newConv) => {
-                  const currentList = store.conversations();
-                  patchState(store, { conversations: [newConv, ...currentList] });
-                  switchConversation(newConv.id);
-                },
-                error: () => {
-                  patchState(store, {
-                    loading: false,
-                    errorMessage: 'Không thể tạo cuộc trò chuyện mới.',
-                  });
-                },
-              }),
-              catchError(() => EMPTY)
-            )
-          )
         )
       );
 
