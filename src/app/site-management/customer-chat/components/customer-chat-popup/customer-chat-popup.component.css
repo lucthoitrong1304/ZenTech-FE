@@ -3,21 +3,30 @@
 }
 
 .customer-chat-popup {
-  --chat-popup-edge: 1.25rem;
-  --chat-popup-top-clearance: 8.75rem;
+  --chat-popup-edge: 20px;
+  --chat-popup-top-clearance: 140px;
+  --chat-popup-width: min(640px, calc(100vw - (var(--chat-popup-edge) * 2)));
+  --chat-popup-shared-width: min(960px, calc(100vw - (var(--chat-popup-edge) * 2)));
+  --chat-popup-height: min(544px, calc(100dvh - var(--chat-popup-top-clearance) - var(--chat-popup-edge)));
+  --chat-popup-sidebar-width: 320px;
 
   right: var(--chat-popup-edge);
   bottom: var(--chat-popup-edge);
   z-index: 60;
-  height: min(34rem, calc(100dvh - var(--chat-popup-top-clearance) - var(--chat-popup-edge)));
-  width: min(40rem, calc(100vw - 2.5rem));
+  height: var(--chat-popup-height);
+  width: var(--chat-popup-width);
+  max-width: calc(100vw - (var(--chat-popup-edge) * 2));
   transition:
     width 220ms ease,
     transform 220ms ease;
 }
 
 .customer-chat-popup--shared {
-  width: min(58rem, calc(100vw - 2.5rem));
+  width: var(--chat-popup-shared-width);
+}
+
+.customer-chat-popup__scrim {
+  display: none;
 }
 
 .customer-chat-popup__sidebar {
@@ -34,7 +43,7 @@
 }
 
 .customer-chat-popup__sidebar--open {
-  width: 18rem;
+  width: var(--chat-popup-sidebar-width);
   opacity: 1;
   pointer-events: auto;
   transform: translateX(0);
@@ -42,18 +51,46 @@
 
 @media (max-width: 640px) {
   .customer-chat-popup {
-    inset: 0.75rem;
+    --chat-popup-edge: 12px;
+    --chat-popup-top-clearance: 0px;
+
+    inset: var(--chat-popup-edge);
     height: auto;
     width: auto;
+    max-width: none;
   }
 }
 
 @media (max-width: 1024px) {
   .customer-chat-popup--shared {
-    width: min(40rem, calc(100vw - 2.5rem));
+    width: var(--chat-popup-width);
+  }
+
+  .customer-chat-popup__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: block;
+    border: 0;
+    background: rgba(16, 16, 16, 0.28);
+    padding: 0;
   }
 
   .customer-chat-popup__sidebar {
-    display: none;
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    z-index: 30;
+    width: min(var(--chat-popup-sidebar-width), 86vw);
+    max-width: calc(100% - 40px);
+    opacity: 0;
+    transform: translateX(100%);
+    box-shadow: -26px 0 70px -42px rgba(16, 16, 16, 0.72);
+  }
+
+  .customer-chat-popup__sidebar--open {
+    width: min(var(--chat-popup-sidebar-width), 86vw);
+    opacity: 1;
+    transform: translateX(0);
   }
 }

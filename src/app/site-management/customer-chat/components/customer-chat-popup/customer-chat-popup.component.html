@@ -65,6 +65,15 @@
       }
     </div>
 
+    @if (store.sharedSidebarOpen()) {
+      <button
+        type="button"
+        class="customer-chat-popup__scrim"
+        (click)="store.closeSharedSidebar()"
+        aria-label="Đóng nội dung đã chia sẻ"
+      ></button>
+    }
+
     <div
       class="customer-chat-popup__sidebar border-l border-[#d2c5ab]/25"
       [class.customer-chat-popup__sidebar--open]="store.sharedSidebarOpen()"

@@ -145,9 +145,9 @@
       </div>
     </aside>
   } @else {
-    <aside class="customer-shared-sidebar chat-scrollbar flex h-full w-full shrink-0 flex-col overflow-y-auto bg-white text-[#101010] lg:w-80">
+    <aside class="customer-shared-sidebar chat-scrollbar flex h-full w-full min-w-0 shrink-0 flex-col overflow-y-auto bg-white text-[#101010]">
       <header class="flex shrink-0 items-center justify-between gap-3 px-4 py-4">
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
           <h2 class="truncate text-base font-black">Nội dung đã chia sẻ</h2>
           <p class="mt-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#4f4632]">
             Media - Tệp - Links
@@ -163,24 +163,26 @@
         </button>
       </header>
 
-      <nav class="grid grid-cols-3 gap-2 p-3">
+      <nav class="grid grid-cols-3 gap-2 px-3 pb-2">
         @for (tab of tabs(); track tab.value) {
           <button
             type="button"
-            class="rounded-[8px] px-2 py-2 text-xs font-black transition"
+            class="min-w-0 rounded-[8px] px-2 py-2 text-xs font-black transition"
             [class.bg-[#101010]]="activeTab() === tab.value"
             [class.text-white]="activeTab() === tab.value"
             [class.bg-[#f6f3f2]]="activeTab() !== tab.value"
             [class.text-[#4f4632]]="activeTab() !== tab.value"
             (click)="tabSelected.emit(tab.value)"
           >
-            {{ tab.label }}
-            <span class="ml-1 opacity-65">{{ tab.count }}</span>
+            <span class="inline-flex min-w-0 max-w-full items-center justify-center gap-1">
+              <span class="truncate">{{ tab.label }}</span>
+              <span class="shrink-0 opacity-65">{{ tab.count }}</span>
+            </span>
           </button>
         }
       </nav>
 
-      <div class="grid flex-1 content-start gap-3 p-4">
+      <div class="grid min-h-0 flex-1 content-start gap-3 p-4 pt-3">
         @if (items().length > 0) {
           @for (item of items(); track item.id) {
             @if (isMedia(item)) {
@@ -253,7 +255,7 @@
             }
           }
         } @else {
-          <div class="grid min-h-52 place-items-center rounded-[8px] bg-[#f6f3f2] p-6 text-center">
+          <div class="grid min-h-40 place-items-center rounded-[8px] bg-[#f6f3f2] p-5 text-center">
             <p class="text-sm font-bold text-[#4f4632]">Chưa có nội dung trong mục này.</p>
           </div>
         }
