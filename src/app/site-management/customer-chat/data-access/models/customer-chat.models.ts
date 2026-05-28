@@ -129,6 +129,10 @@ export enum ChatAttachmentType {
   FILE = 'FILE',
 }
 
+export interface ParticipantEmailOwner {
+  email?: string | null;
+}
+
 export interface ParticipantResponse {
   id: string;
   userType: ParticipantType;
@@ -137,6 +141,11 @@ export interface ParticipantResponse {
   accountEmail?: string | null;
   userEmail?: string | null;
   participantEmail?: string | null;
+  account?: ParticipantEmailOwner | null;
+  user?: ParticipantEmailOwner | null;
+  employee?: ParticipantEmailOwner | null;
+  expert?: ParticipantEmailOwner | null;
+  profile?: ParticipantEmailOwner | null;
   status: ParticipantStatus;
   joinedAt: string;
   leftAt: string | null;
@@ -233,14 +242,25 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+function normalizeEmail(email: string | null | undefined): string | null {
+  const normalized = email?.trim();
+  return normalized || null;
+}
+
 export function resolveParticipantEmail(participant: ParticipantResponse | undefined): string | null {
-  return (
-    participant?.email ||
-    participant?.accountEmail ||
-    participant?.userEmail ||
-    participant?.participantEmail ||
-    null
-  );
+  const candidateEmails = [
+    participant?.email,
+    participant?.accountEmail,
+    participant?.userEmail,
+    participant?.participantEmail,
+    participant?.account?.email,
+    participant?.user?.email,
+    participant?.employee?.email,
+    participant?.expert?.email,
+    participant?.profile?.email,
+  ];
+
+  return candidateEmails.map(normalizeEmail).find((email) => email !== null) ?? null;
 }
 
 export function mapToCustomerChatSession(

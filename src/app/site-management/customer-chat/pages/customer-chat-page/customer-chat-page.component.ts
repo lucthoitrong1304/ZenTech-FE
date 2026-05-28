@@ -107,9 +107,18 @@ export class CustomerChatPageComponent implements OnInit {
   }
 
   protected startStaffCall(): void {
-    const staffEmail = this.store.staff()?.email;
+    const staffEmail = this.store.staff()?.email?.trim();
+    const sessionStatus = this.store.session()?.status;
 
-    if (!staffEmail || this.store.session()?.status !== 'AGENT_HANDLING') {
+    if (sessionStatus !== 'AGENT_HANDLING') {
+      console.warn(
+        '[WebRTC] Cannot call staff because the active conversation is not handled by staff.',
+        sessionStatus
+      );
+      return;
+    }
+
+    if (!staffEmail) {
       console.warn('[WebRTC] Cannot call staff because the active staff email is missing.');
       return;
     }

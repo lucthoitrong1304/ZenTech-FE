@@ -12,6 +12,7 @@ import {
   PageResponse,
   ParticipantStatus,
   ParticipantType,
+  mapToCustomerChatSession,
 } from '../models/customer-chat.models';
 import { CustomerChatService } from '../services/customer-chat.service';
 import { CustomerChatWebsocketService } from '../services/customer-chat-websocket.service';
@@ -113,6 +114,63 @@ describe('CustomerChatStore', () => {
     expect(store.session()?.id).toBe('conversation-1');
     expect(store.staffJoined()).toBe(true);
     expect(store.messages().length).toBe(3);
+  });
+
+  it('allows customer calls when an active handled conversation has a staff email', () => {
+    const { store } = configureStore({
+      conversations: [
+        createConversation('conversation-1', {
+          staffEmail: 'staff@zentech.test',
+        }),
+      ],
+    });
+
+    store.loadSession();
+
+    expect(store.staff()?.email).toBe('staff@zentech.test');
+    expect(store.canCallStaff()).toBe(true);
+  });
+
+  it('keeps customer calls unavailable when active staff email is missing', () => {
+    const { store } = configureStore();
+
+    store.loadSession();
+
+    expect(store.staff()).not.toBeNull();
+    expect(store.staff()?.email).toBeNull();
+    expect(store.canCallStaff()).toBe(false);
+  });
+
+  it('maps active staff email from backend participant email fields', () => {
+    const session = mapToCustomerChatSession(
+      createConversation('conversation-1', {
+        staffEmail: 'minh.anh@zentech.test',
+        staffEmailField: 'accountEmail',
+      }),
+      [],
+      'customer-1'
+    );
+
+    expect(session.staff?.email).toBe('minh.anh@zentech.test');
+  });
+
+  it('maps active staff email from nested backend participant account fields', () => {
+    const session = mapToCustomerChatSession(
+      createConversation('conversation-1', {
+        nestedStaffAccountEmail: 'staff.account@zentech.test',
+      }),
+      [],
+      'customer-1'
+    );
+
+    expect(session.staff?.email).toBe('staff.account@zentech.test');
+  });
+
+  it('does not fall back to staff reference id when staff email is missing', () => {
+    const session = mapToCustomerChatSession(createConversation(), [], 'customer-1');
+
+    expect(session.staff?.id).toBe('staff-1');
+    expect(session.staff?.email).toBeNull();
   });
 
   it('does not load chat APIs for guests without a session', () => {
@@ -343,7 +401,22 @@ function createPage<T>(content: T[]): PageResponse<T> {
   };
 }
 
-function createConversation(id = 'conversation-1'): ConversationResponse {
+function createConversation(
+  id = 'conversation-1',
+  options: {
+    staffEmail?: string | null;
+    staffEmailField?: 'email' | 'accountEmail' | 'userEmail' | 'participantEmail';
+    nestedStaffAccountEmail?: string | null;
+  } = {}
+): ConversationResponse {
+  const staffEmailField = options.staffEmailField ?? 'email';
+  const staffEmailPatch =
+    options.staffEmail === undefined ? {} : { [staffEmailField]: options.staffEmail };
+  const nestedStaffAccountPatch =
+    options.nestedStaffAccountEmail === undefined
+      ? {}
+      : { account: { email: options.nestedStaffAccountEmail } };
+
   return {
     id,
     customerId: 'customer-1',
@@ -379,6 +452,8 @@ function createConversation(id = 'conversation-1'): ConversationResponse {
         id: 'participant-staff',
         userType: ParticipantType.EMPLOYEE,
         referenceId: 'staff-1',
+        ...staffEmailPatch,
+        ...nestedStaffAccountPatch,
         status: ParticipantStatus.ACTIVE,
         joinedAt: '2026-05-24T02:01:00.000Z',
         leftAt: null,

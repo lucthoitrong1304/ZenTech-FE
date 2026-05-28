@@ -9,6 +9,7 @@ export interface CallPeer {
 })
 export class WebRTCService {
   private peerConnection: RTCPeerConnection | null = null;
+  private readonly pendingIceCandidates: RTCIceCandidateInit[] = [];
   public localStream = signal<MediaStream | null>(null);
   public remoteStream = signal<MediaStream | null>(null);
 
@@ -72,6 +73,7 @@ export class WebRTCService {
   async createAnswer(offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit> {
     if (!this.peerConnection) throw new Error('Peer connection not initialized');
     await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+    await this.flushPendingIceCandidates();
     const answer = await this.peerConnection.createAnswer();
     await this.peerConnection.setLocalDescription(answer);
     return answer;
@@ -80,11 +82,29 @@ export class WebRTCService {
   async handleAnswer(answer: RTCSessionDescriptionInit): Promise<void> {
     if (!this.peerConnection) throw new Error('Peer connection not initialized');
     await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    await this.flushPendingIceCandidates();
   }
 
   async handleIceCandidate(candidate: RTCIceCandidateInit): Promise<void> {
-    if (!this.peerConnection) throw new Error('Peer connection not initialized');
+    if (!this.peerConnection || !this.peerConnection.remoteDescription) {
+      this.pendingIceCandidates.push(candidate);
+      return;
+    }
+
     await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+  }
+
+  private async flushPendingIceCandidates(): Promise<void> {
+    if (!this.peerConnection?.remoteDescription) {
+      return;
+    }
+
+    while (this.pendingIceCandidates.length > 0) {
+      const candidate = this.pendingIceCandidates.shift();
+      if (candidate) {
+        await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      }
+    }
   }
 
   closeConnection() {
@@ -92,6 +112,7 @@ export class WebRTCService {
       this.peerConnection.close();
       this.peerConnection = null;
     }
+    this.pendingIceCandidates.length = 0;
     
     // Stop all local tracks
     const stream = this.localStream();

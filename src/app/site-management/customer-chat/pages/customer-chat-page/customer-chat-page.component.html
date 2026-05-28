@@ -15,7 +15,7 @@
           [product]="store.product()"
           [status]="store.session()?.status || null"
           [sharedSidebarOpen]="store.fullSidebarMode() === 'SHARED'"
-          [canCall]="store.session()?.status === 'AGENT_HANDLING' && !!store.staff()"
+          [canCall]="store.canCallStaff()"
           (closeClicked)="store.requestConversationDetails()"
           (sharedClicked)="store.requestSharedContent()"
           (callClicked)="startStaffCall()"
@@ -164,7 +164,7 @@
                         <p class="mt-1 text-sm font-semibold text-[#4f4632]">{{ currentContact.roleLabel }}</p>
                       </div>
                       <div class="flex gap-2">
-                        @if (store.session()?.status === 'AGENT_HANDLING' && store.staff()) {
+                        @if (store.canCallStaff()) {
                           <button
                             type="button"
                             class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"

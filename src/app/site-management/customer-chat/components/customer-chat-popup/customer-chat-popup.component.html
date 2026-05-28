@@ -10,7 +10,7 @@
         [status]="store.session()?.status || null"
         [compact]="true"
         [sharedSidebarOpen]="store.sharedSidebarOpen()"
-        [canCall]="store.session()?.status === 'AGENT_HANDLING' && !!store.staff()"
+        [canCall]="store.canCallStaff()"
         (closeClicked)="store.closePopup()"
         (sharedClicked)="store.toggleSharedSidebar()"
         (callClicked)="startStaffCall()"
