@@ -3,7 +3,13 @@
 }
 
 .customer-chat-popup {
-  height: min(38rem, calc(100vh - 2.5rem));
+  --chat-popup-edge: 1.25rem;
+  --chat-popup-top-clearance: 8.75rem;
+
+  right: var(--chat-popup-edge);
+  bottom: var(--chat-popup-edge);
+  z-index: 60;
+  height: min(34rem, calc(100dvh - var(--chat-popup-top-clearance) - var(--chat-popup-edge)));
   width: min(40rem, calc(100vw - 2.5rem));
   transition:
     width 220ms ease,
