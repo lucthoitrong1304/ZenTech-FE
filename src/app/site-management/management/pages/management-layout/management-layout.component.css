@@ -371,10 +371,10 @@
    ========================================================================== */
 ::ng-deep .management-account-menu.p-popover {
   min-width: 240px;
-  background: #18181b !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
   border-radius: 16px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
   margin-top: 8px;
 }
 
@@ -394,20 +394,20 @@
 
 .management-dropdown__header {
   padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #E5E7EB;
 }
 
 .management-dropdown__name {
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff;
+  color: #111827;
 }
 
 .management-dropdown__email {
   display: block;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.42);
+  color: #6B7280;
   margin-top: 4px;
   word-break: break-all;
 }
@@ -427,7 +427,7 @@
   padding: 10px 12px;
   border: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.82);
+  color: #374151;
   font-size: 13px;
   font-weight: 500;
   border-radius: 8px;
@@ -437,38 +437,38 @@
 }
 
 .management-dropdown__item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+  background: #F9FAFB;
+  color: #111827;
 }
 
 .management-dropdown__item svg {
   width: 16px;
   height: 16px;
-  color: rgba(255, 255, 255, 0.42);
+  color: #6B7280;
   transition: color 0.2s ease;
 }
 
 .management-dropdown__item:hover svg {
-  color: #ffffff;
+  color: #111827;
 }
 
 .management-dropdown__item--logout {
-  color: #f43f5e;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #E11D48;
+  border-top: 1px solid #E5E7EB;
   margin-top: 4px;
   padding-top: 12px;
   border-radius: 0 0 8px 8px;
 }
 
 .management-dropdown__item--logout:hover {
-  background: rgba(244, 63, 94, 0.08);
-  color: #fb7185;
+  background: #FFF1F2;
+  color: #BE123C;
 }
 
 .management-dropdown__item--logout svg {
-  color: #f43f5e;
+  color: #E11D48;
 }
 
 .management-dropdown__item--logout:hover svg {
-  color: #fb7185;
+  color: #BE123C;
 }

@@ -49,6 +49,14 @@ export class ApiService {
     return this.http.put<TResponse>(url, body, options);
   }
 
+  putText<TRequest>(
+    url: string,
+    body: TRequest,
+    options?: ApiRequestOptions
+  ): Observable<string> {
+    return this.http.put(url, body, { ...options, responseType: 'text' });
+  }
+
   patch<TRequest, TResponse>(
     url: string,
     body: TRequest,

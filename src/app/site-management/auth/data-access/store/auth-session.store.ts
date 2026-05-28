@@ -18,6 +18,7 @@ import { AuthService } from '../services/auth.service';
 import { Role } from '../models/auth.enums';
 import { hasRole } from '../utils/auth-role.utils';
 import { AccountService } from '../../../account/data-access/services/account.service';
+import { ProfileService } from '../../../management/data-access/services/profile.service';
 
 interface AuthSessionState {
   currentUser: CurrentAuthUser | null;
@@ -46,7 +47,8 @@ export const AuthSessionStore = signalStore(
       store,
       authService = inject(AuthService),
       authStorageService = inject(AuthStorageService),
-      accountService = inject(AccountService)
+      accountService = inject(AccountService),
+      profileService = inject(ProfileService)
     ) => {
       const completeLogout = (
         successMessage: string | null,
@@ -64,31 +66,32 @@ export const AuthSessionStore = signalStore(
         pipe(
           switchMap(() => {
             const roles = authStorageService.getCurrentUser()?.roles || [];
-            if (!hasRole(roles, Role.CUSTOMER)) {
-              return EMPTY;
-            }
-            return accountService.getProfile().pipe(
-              tap(res => {
-                if (res.success && res.data) {
-                  const fullName = res.data.fullName || '';
-                  const avatarUrl = res.data.imageUrl || null;
-                  if (typeof authStorageService.updateProfileInfo === 'function') {
-                    authStorageService.updateProfileInfo(fullName, avatarUrl);
-                  }
-                  const currentUser = store.currentUser();
-                  if (currentUser) {
-                    patchState(store, {
-                      currentUser: {
-                        ...currentUser,
-                        fullName,
-                        avatarUrl,
-                      },
-                    });
-                  }
+            
+            const handleResponse = tap((res: any) => {
+              if (res.success && res.data) {
+                const fullName = res.data.fullName || '';
+                const avatarUrl = res.data.imageUrl || null;
+                if (typeof authStorageService.updateProfileInfo === 'function') {
+                  authStorageService.updateProfileInfo(fullName, avatarUrl);
                 }
-              }),
-              catchError(() => EMPTY)
-            );
+                const currentUser = store.currentUser();
+                if (currentUser) {
+                  patchState(store, {
+                    currentUser: {
+                      ...currentUser,
+                      fullName,
+                      avatarUrl,
+                    },
+                  });
+                }
+              }
+            });
+
+            if (hasRole(roles, Role.CUSTOMER)) {
+              return accountService.getProfile().pipe(handleResponse, catchError(() => EMPTY));
+            } else {
+              return profileService.getMyProfile().pipe(handleResponse, catchError(() => EMPTY));
+            }
           })
         )
       );
@@ -110,6 +113,20 @@ export const AuthSessionStore = signalStore(
             });
           }
         },
+        updatePasswordStatus(isPasswordSet: boolean): void {
+          if (typeof authStorageService.updatePasswordStatus === 'function') {
+            authStorageService.updatePasswordStatus(isPasswordSet);
+          }
+          const currentUser = store.currentUser();
+          if (currentUser) {
+            patchState(store, {
+              currentUser: {
+                ...currentUser,
+                isPasswordSet,
+              },
+            });
+          }
+        },
         setSession(response: AuthSessionSource): void {
           authStorageService.setSession(response);
           patchState(store, {
@@ -117,10 +134,7 @@ export const AuthSessionStore = signalStore(
             logoutSuccessMessage: null,
             logoutWarningMessage: null,
           });
-          const roles = response.roles || [];
-          if (hasRole(roles, Role.CUSTOMER)) {
-            loadProfile();
-          }
+          loadProfile();
         },
         clearLogoutMessages(): void {
           patchState(store, {

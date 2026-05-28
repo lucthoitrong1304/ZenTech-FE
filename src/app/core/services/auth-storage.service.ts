@@ -15,6 +15,8 @@ export interface AuthSessionSource {
   roles: string[];
   expiresIn?: number;
   avatarUrl?: string | null;
+  imageUrl?: string | null;
+  isPasswordSet?: boolean;
 }
 
 export interface StoredAuthSession {
@@ -27,7 +29,8 @@ export interface StoredAuthSession {
   fullName: string;
   roles: string[];
   expiresIn?: number;
-  avatarUrl?: string | null;
+  avatarUrl: string | null;
+  isPasswordSet: boolean;
 }
 
 export interface CurrentAuthUser {
@@ -35,6 +38,7 @@ export interface CurrentAuthUser {
   fullName?: string;
   avatarUrl?: string | null;
   roles: string[];
+  isPasswordSet: boolean;
 }
 
 @Injectable({
@@ -72,7 +76,8 @@ export class AuthStorageService {
       fullName: response.fullName,
       roles: response.roles,
       expiresIn: response.expiresIn,
-      avatarUrl: response.avatarUrl || null,
+      avatarUrl: response.avatarUrl || response.imageUrl || null,
+      isPasswordSet: response.isPasswordSet ?? true,
     };
 
     this.setAccessToken(session.accessToken);
@@ -107,6 +112,7 @@ export class AuthStorageService {
       fullName: session?.fullName || session?.email,
       avatarUrl: session?.avatarUrl || null,
       roles: session?.roles || [],
+      isPasswordSet: session?.isPasswordSet ?? true,
     };
   }
 
@@ -115,6 +121,14 @@ export class AuthStorageService {
     if (session) {
       session.fullName = fullName;
       session.avatarUrl = avatarUrl;
+      localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+    }
+  }
+
+  updatePasswordStatus(isPasswordSet: boolean): void {
+    const session = this.getSession();
+    if (session) {
+      session.isPasswordSet = isPasswordSet;
       localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
     }
   }
