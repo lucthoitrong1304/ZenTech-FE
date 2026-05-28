@@ -24,6 +24,7 @@ export interface AuthResponse {
   type: string;
   accountId: string;
   profileId: string;
+  imageUrl: string | null;
   email: string;
   fullName: string;
   roles: string[];
@@ -58,3 +59,10 @@ export interface ResetPasswordRequest {
   token: string;
   newPassword: string;
 }
+
+// Payload đổi mật khẩu hoặc đặt mật khẩu lần đầu
+export interface ChangePasswordRequest {
+  currentPassword?: string;
+  newPassword: string;
+}
+

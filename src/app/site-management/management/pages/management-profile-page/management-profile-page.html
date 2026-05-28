@@ -1,0 +1,124 @@
+<div class="max-w-4xl mx-auto space-y-6 pb-12">
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+    <!-- Header/Cover Area -->
+    <div class="h-32 bg-gray-900 w-full relative rounded-t-2xl"></div>
+
+    <div class="px-8 relative mb-8">
+      <!-- Avatar -->
+      <div class="absolute -top-12 left-8 group z-10">
+        <div class="w-24 h-24 rounded-full border-4 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-md">
+          <ng-container *ngIf="profileStore.profile()?.imageUrl || currentUser()?.avatarUrl; else noAvatar">
+            <img [src]="profileStore.profile()?.imageUrl || currentUser()?.avatarUrl" alt="Avatar" referrerpolicy="no-referrer" class="w-full h-full object-cover">
+          </ng-container>
+          <ng-template #noAvatar>
+            <span class="text-3xl font-bold text-gray-400">{{ accountInitials() }}</span>
+          </ng-template>
+        </div>
+        <!-- Upload Overlay -->
+        <button type="button" (click)="triggerFileInput(fileInput)" class="absolute inset-0 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+          <svg lucideCamera [attr.stroke-width]="2"></svg>
+        </button>
+        <input type="file" #fileInput class="hidden" accept="image/*" (change)="onFileSelected($event)">
+      </div>
+      
+      <!-- Info Text -->
+      <div class="pt-16 sm:pt-4 sm:pl-32 pb-2">
+        <h1 class="text-2xl font-bold text-gray-900">{{ displayName() }}</h1>
+        <div class="flex items-center text-gray-600 mt-1 space-x-2">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary-dark">
+            {{ accountRole() }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="p-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- Left Column: Personal Info -->
+        <div class="space-y-6">
+          <h2 class="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center">
+            <svg lucideUser class="mr-2 text-primary w-5 h-5" [attr.stroke-width]="2"></svg>
+            Thông tin cá nhân
+          </h2>
+          
+          <!-- Full Name -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên <span class="text-red-500">*</span></label>
+            <input type="text" formControlName="fullName"
+              class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
+              placeholder="Nhập họ và tên">
+          </div>
+
+          <!-- Phone Number -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg lucidePhone class="text-gray-400 w-4 h-4" [attr.stroke-width]="2"></svg>
+              </div>
+              <input type="text" formControlName="phoneNumber"
+                class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
+                placeholder="Nhập số điện thoại">
+            </div>
+          </div>
+          
+          <!-- Date of Birth -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ngày sinh</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg lucideCalendar class="text-gray-400 w-4 h-4" [attr.stroke-width]="2"></svg>
+              </div>
+              <input type="date" formControlName="dateOfBirth"
+                class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors">
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Account Info & Address -->
+        <div class="space-y-6">
+          <h2 class="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center">
+            <svg lucideShield class="mr-2 text-primary w-5 h-5" [attr.stroke-width]="2"></svg>
+            Thông tin tài khoản
+          </h2>
+          
+          <!-- Email (Read-only) -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email đăng nhập</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg lucideMail class="text-gray-400 w-4 h-4" [attr.stroke-width]="2"></svg>
+              </div>
+              <input type="email" [value]="currentUserEmail()" readonly
+                class="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 text-gray-500 rounded-lg cursor-not-allowed outline-none">
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ liên hệ</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 pt-2.5 pointer-events-none">
+                <svg lucideMapPin class="text-gray-400 w-4 h-4" [attr.stroke-width]="2"></svg>
+              </div>
+              <textarea formControlName="address" rows="4"
+                class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors resize-none"
+                placeholder="Nhập địa chỉ của bạn"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="mt-8 pt-6 border-t border-gray-100 flex items-center justify-end">
+        <button type="submit" 
+          [disabled]="profileForm.invalid || profileStore.isSaving()"
+          class="px-6 py-2 bg-primary hover:bg-primary-hover text-gray-900 font-medium rounded-full shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center">
+          <svg *ngIf="profileStore.isSaving()" lucideLoader2 class="animate-spin mr-2 w-4 h-4"></svg>
+          Lưu thay đổi
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

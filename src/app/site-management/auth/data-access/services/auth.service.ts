@@ -13,6 +13,7 @@ import {
   RegisterRequest,
   ResetPasswordRequest,
   TokenRefreshRequest,
+  ChangePasswordRequest,
 } from '../models/auth.models';
 
 @Injectable({
@@ -74,6 +75,13 @@ export class AuthService {
       {
         context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
       }
+    );
+  }
+
+  changePassword(payload: ChangePasswordRequest): Observable<string> {
+    return this.apiService.putText<ChangePasswordRequest>(
+      `${this.authBaseUrl}/password`,
+      payload
     );
   }
 }

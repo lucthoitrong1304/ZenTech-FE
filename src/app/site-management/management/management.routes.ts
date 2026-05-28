@@ -1,4 +1,4 @@
-﻿import { Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { managementGuard } from '../../core/guards/management.guard';
 
 export const managementRoutes: Routes = [
@@ -174,8 +174,8 @@ export const managementRoutes: Routes = [
           description: 'Quản lý thông tin cá nhân và chi tiết tài khoản của bạn.',
         },
         loadComponent: () =>
-          import('./pages/management-placeholder/management-placeholder.component').then(
-            m => m.ManagementPlaceholderComponent
+          import('./pages/management-profile-page/management-profile-page').then(
+            m => m.ManagementProfilePage
           ),
       },
       {
@@ -186,8 +186,8 @@ export const managementRoutes: Routes = [
           description: 'Cập nhật mật khẩu mới để bảo mật tài khoản của bạn.',
         },
         loadComponent: () =>
-          import('./pages/management-placeholder/management-placeholder.component').then(
-            m => m.ManagementPlaceholderComponent
+          import('./pages/management-change-password-page/management-change-password-page').then(
+            m => m.ManagementChangePasswordPage
           ),
       },
       {
@@ -198,8 +198,8 @@ export const managementRoutes: Routes = [
           description: 'Cấu hình các cài đặt hệ thống và tùy chọn hiển thị.',
         },
         loadComponent: () =>
-          import('./pages/management-placeholder/management-placeholder.component').then(
-            m => m.ManagementPlaceholderComponent
+          import('./pages/management-settings-page/management-settings-page').then(
+            m => m.ManagementSettingsPage
           ),
       },
     ],

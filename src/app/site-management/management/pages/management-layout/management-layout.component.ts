@@ -1,5 +1,5 @@
-﻿import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, DestroyRef, computed, inject, signal, effect } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
@@ -26,6 +26,7 @@ import {
   LucideWarehouse,
 } from '@lucide/angular';
 import { PopoverModule } from 'primeng/popover';
+import { DialogModule } from 'primeng/dialog';
 import { filter } from 'rxjs';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
@@ -70,6 +71,7 @@ const DEFAULT_HEADER: ManagementHeaderState = {
     RouterLinkActive,
     RouterOutlet,
     PopoverModule,
+    DialogModule,
     LucideBell,
     LucideBot,
     LucideChartBar,
@@ -111,17 +113,30 @@ export class ManagementLayoutComponent {
   protected readonly showAdminSidebar = computed(() => !this.chatSidebarActive());
   protected readonly currentUser = this.authSessionStore.currentUser;
   protected readonly accountInitials = computed(() => {
-    const fullName = this.currentUser()?.fullName?.trim();
-
-    if (!fullName) {
-      return 'ZT';
-    }
-
-    return fullName
+    let name = this.currentUser()?.fullName?.trim();
+    if (!name) return 'ZT';
+    if (name.includes('@')) name = name.split('@')[0];
+    
+    return name
       .split(/\s+/)
       .slice(0, 2)
       .map(part => part.charAt(0).toUpperCase())
       .join('');
+  });
+
+  protected readonly displayName = computed(() => {
+    const fullName = this.currentUser()?.fullName?.trim();
+    if (!fullName) return 'Management User';
+    if (fullName.includes('@')) return fullName.split('@')[0];
+    return fullName;
+  });
+
+  protected readonly accountRole = computed(() => {
+    const roles = this.currentUser()?.roles || [];
+    if (roles.includes('ROLE_OWNER')) return 'OWNER';
+    if (roles.includes('ROLE_MANAGER')) return 'MANAGER';
+    if (roles.includes('ROLE_EMPLOYEE')) return 'EMPLOYEE';
+    return 'MANAGEMENT';
   });
 
   protected readonly currentUserEmail = computed(() => {
@@ -131,6 +146,8 @@ export class ManagementLayoutComponent {
     }
     return this.authStorageService.getSession()?.email || '';
   });
+
+
 
   protected readonly navSections: ManagementNavSection[] = [
     {
@@ -172,6 +189,8 @@ export class ManagementLayoutComponent {
   constructor() {
     this.syncHeader();
     this.syncSidebarMode();
+
+
 
     this.router.events
       .pipe(
@@ -250,6 +269,8 @@ export class ManagementLayoutComponent {
         break;
     }
   }
+
+
 
   private syncSidebarMode(): void {
     if (this.isChatRoute(this.router.url)) {

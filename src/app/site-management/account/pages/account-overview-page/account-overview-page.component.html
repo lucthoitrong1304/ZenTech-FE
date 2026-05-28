@@ -25,7 +25,7 @@
           <div class="flex items-center gap-5">
             <div class="relative group cursor-pointer">
               @if (profile.imageUrl) {
-                <img [src]="profile.imageUrl" alt="Avatar" class="h-20 w-20 rounded-full object-cover border-2 border-[#ffc700] shadow-sm" />
+                <img [src]="profile.imageUrl" alt="Avatar" referrerpolicy="no-referrer" class="h-20 w-20 rounded-full object-cover border-2 border-[#ffc700] shadow-sm" />
               } @else {
                 <div class="h-20 w-20 rounded-full bg-[#f6f3f2] flex items-center justify-center border-2 border-[#d2c5ab] text-2xl font-black text-[#81765f]">
                   {{ profile.fullName.charAt(0).toUpperCase() }}
