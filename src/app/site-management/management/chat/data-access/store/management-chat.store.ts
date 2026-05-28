@@ -238,6 +238,11 @@ export const ManagementChatStore = signalStore(
           conversationEntities().find(conversation => conversation.id === selectedConversationId()) ??
           null
       ),
+      canReplyToSelectedConversation: computed(
+        () =>
+          conversationEntities().find(conversation => conversation.id === selectedConversationId())
+            ?.status === 'STAFF_HANDLING'
+      ),
       selectedMessages: computed(() =>
         messageEntities().filter(message => message.conversationId === selectedConversationId())
       ),
@@ -600,7 +605,7 @@ export const ManagementChatStore = signalStore(
         map((body) => body.trim()),
         switchMap((body) => {
           const conversationId = store.selectedConversationId();
-          if (!conversationId) {
+          if (!conversationId || !store.canReplyToSelectedConversation()) {
             return EMPTY;
           }
 
@@ -688,7 +693,11 @@ export const ManagementChatStore = signalStore(
       pipe(
         tap(files => {
           const conversationId = store.selectedConversationId();
-          if (!conversationId || files.length === 0) {
+          if (
+            !conversationId ||
+            !store.canReplyToSelectedConversation() ||
+            files.length === 0
+          ) {
             return;
           }
 

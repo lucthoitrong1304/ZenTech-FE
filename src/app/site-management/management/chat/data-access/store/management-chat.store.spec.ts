@@ -190,13 +190,37 @@ describe('ManagementChatStore', () => {
     expect(store.selectedMedia().some((item) => item.id === 'attachment-realtime-image')).toBe(true);
   });
 
-  it('publishes staff text messages into the selected conversation', () => {
+  it('does not publish staff text messages before an AI assisting conversation is accepted', () => {
     const { store, websocketService } = configureStore();
 
     store.loadWorkspace();
     store.selectConversation('conv-1');
     store.sendStaffMessage('Hang mau den con san.');
 
+    expect(store.canReplyToSelectedConversation()).toBe(false);
+    expect(websocketService.publish).not.toHaveBeenCalled();
+  });
+
+  it('does not publish staff text messages before a waiting conversation is accepted', () => {
+    const { store, websocketService } = configureStore();
+
+    store.loadWorkspace();
+    store.selectConversation('conv-2');
+    store.sendStaffMessage('Hang mau den con san.');
+
+    expect(store.canReplyToSelectedConversation()).toBe(false);
+    expect(websocketService.publish).not.toHaveBeenCalled();
+  });
+
+  it('publishes staff text messages after the selected conversation is accepted', () => {
+    const { store, websocketService } = configureStore();
+
+    store.loadWorkspace();
+    store.selectConversation('conv-1');
+    store.acceptConversation();
+    store.sendStaffMessage('Hang mau den con san.');
+
+    expect(store.canReplyToSelectedConversation()).toBe(true);
     expect(websocketService.publish).toHaveBeenCalledWith('/app/chat/conv-1/send', {
       messageType: ChatMessageType.TEXT,
       content: 'Hang mau den con san.',
@@ -210,6 +234,7 @@ describe('ManagementChatStore', () => {
 
     store.loadWorkspace();
     store.selectConversation('conv-1');
+    store.acceptConversation();
     store.selectStaffFiles([file]);
 
     expect(customerChatService.uploadFile).not.toHaveBeenCalled();
@@ -245,6 +270,7 @@ describe('ManagementChatStore', () => {
 
     store.loadWorkspace();
     store.selectConversation('conv-1');
+    store.acceptConversation();
     store.selectStaffFiles([file]);
     store.sendStaffMessage('');
 
@@ -261,6 +287,21 @@ describe('ManagementChatStore', () => {
         },
       ],
     });
+  });
+
+  it('does not queue staff files before the selected conversation is accepted', () => {
+    const { store, customerChatService, websocketService } = configureStore();
+    const file = new File(['demo'], 'staff-layout.png', { type: 'image/png' });
+
+    store.loadWorkspace();
+    store.selectConversation('conv-1');
+    store.selectStaffFiles([file]);
+    store.sendStaffMessage('Gui anh cho khach');
+
+    expect(store.canReplyToSelectedConversation()).toBe(false);
+    expect(store.uploads()).toEqual([]);
+    expect(customerChatService.uploadFile).not.toHaveBeenCalled();
+    expect(websocketService.publish).not.toHaveBeenCalled();
   });
 
   it('accepts a conversation by moving it to staff handling', () => {
