@@ -29,7 +29,9 @@
         <app-chat-header
           [conversation]="conversation"
           [mediaDrawerOpen]="store.mediaDrawerOpen()"
+          [canCall]="conversation.status !== 'CLOSED' && !!conversation.customer.email"
           (mediaClicked)="store.toggleMediaDrawer()"
+          (callClicked)="startCustomerCall(conversation.customer.email)"
           (acceptClicked)="store.acceptConversation()"
           (transferClicked)="store.acceptConversation()"
           (closeClicked)="store.closeConversation()"

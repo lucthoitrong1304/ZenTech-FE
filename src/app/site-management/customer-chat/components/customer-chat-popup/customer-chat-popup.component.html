@@ -7,10 +7,13 @@
       <app-customer-chat-header
         [staff]="store.staff()"
         [product]="store.product()"
+        [status]="store.session()?.status || null"
         [compact]="true"
         [sharedSidebarOpen]="store.sharedSidebarOpen()"
+        [canCall]="store.canCallStaff()"
         (closeClicked)="store.closePopup()"
         (sharedClicked)="store.toggleSharedSidebar()"
+        (callClicked)="startStaffCall()"
       />
 
       @if (store.loading()) {

@@ -135,6 +135,11 @@ export const CustomerChatStore = signalStore(
           session()?.status === ('AGENT_HANDLING' as unknown as CustomerChatSessionStatus) &&
           session()?.staff !== null
       ),
+      canCallStaff: computed(
+        () =>
+          session()?.status === ('AGENT_HANDLING' as unknown as CustomerChatSessionStatus) &&
+          !!session()?.staff?.email?.trim()
+      ),
       selectedSharedItems: computed(() =>
         sharedItemEntities().filter((item) => {
           switch (activeSharedTab()) {
@@ -550,10 +555,10 @@ export const CustomerChatStore = signalStore(
                 if (list.length === 0) {
                   createNewConversation();
                   return EMPTY;
-                } else {
-                  patchState(store, { loading: false, session: null, errorMessage: null });
-                  return EMPTY;
                 }
+
+                switchConversation(list[0].id);
+                return EMPTY;
               }),
               catchError(() => {
                 patchState(store, {

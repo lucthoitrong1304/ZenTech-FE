@@ -329,6 +329,7 @@ function createWorkspace(): ManagementChatWorkspace {
       id: 'conv-1',
       customer: {
         id: 'customer-1',
+        email: 'nguyen@example.com',
         fullName: 'Nguyen Van A',
         avatarUrl: null,
         initials: 'NA',
@@ -345,6 +346,7 @@ function createWorkspace(): ManagementChatWorkspace {
       id: 'conv-2',
       customer: {
         id: 'customer-2',
+        email: 'tran@example.com',
         fullName: 'Tran Thi B',
         avatarUrl: null,
         initials: 'TB',
@@ -398,6 +400,7 @@ function mapConversationResponse(conv: ConversationResponse): ManagementChatConv
     id: conv.id,
     customer: {
       id: conv.customerId,
+      email: conv.customerEmail,
       fullName: conv.customerName,
       avatarUrl: null,
       initials: 'NA',

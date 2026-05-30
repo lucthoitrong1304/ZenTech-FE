@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { LucideLogIn, LucideMessageCircle } from '@lucide/angular';
 import { MediaPreviewDialogComponent } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
+import { CallSignalingService } from '../../../../core/services/call-signaling.service';
 import { CustomerChatComposerComponent } from '../customer-chat-composer/customer-chat-composer.component';
 import { CustomerChatHeaderComponent } from '../customer-chat-header/customer-chat-header.component';
 import { CustomerChatLauncherComponent } from '../customer-chat-launcher/customer-chat-launcher.component';
@@ -34,6 +35,7 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
 })
 export class CustomerChatPopupComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly callSignalingService = inject(CallSignalingService);
   protected readonly store = inject(CustomerChatStore);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
   protected readonly loginQueryParams = computed(() => ({ returnUrl: this.router.url || '/' }));
@@ -50,5 +52,25 @@ export class CustomerChatPopupComponent implements OnInit {
 
   protected closePreview(): void {
     this.previewItem.set(null);
+  }
+
+  protected startStaffCall(): void {
+    const staffEmail = this.store.staff()?.email?.trim();
+    const sessionStatus = this.store.session()?.status;
+
+    if (sessionStatus !== 'AGENT_HANDLING') {
+      console.warn(
+        '[WebRTC] Cannot call staff because the active conversation is not handled by staff.',
+        sessionStatus
+      );
+      return;
+    }
+
+    if (!staffEmail) {
+      console.warn('[WebRTC] Cannot call staff because the active staff email is missing.');
+      return;
+    }
+
+    this.callSignalingService.initiateCall(staffEmail);
   }
 }

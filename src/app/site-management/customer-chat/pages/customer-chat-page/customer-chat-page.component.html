@@ -15,8 +15,10 @@
           [product]="store.product()"
           [status]="store.session()?.status || null"
           [sharedSidebarOpen]="store.fullSidebarMode() === 'SHARED'"
+          [canCall]="store.canCallStaff()"
           (closeClicked)="store.requestConversationDetails()"
           (sharedClicked)="store.requestSharedContent()"
+          (callClicked)="startStaffCall()"
         />
 
         @if (store.loading()) {
@@ -162,13 +164,16 @@
                         <p class="mt-1 text-sm font-semibold text-[#4f4632]">{{ currentContact.roleLabel }}</p>
                       </div>
                       <div class="flex gap-2">
-                        <button
-                          type="button"
-                          class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
-                          title="Gọi hỗ trợ"
-                        >
-                          <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
-                        </button>
+                        @if (store.canCallStaff()) {
+                          <button
+                            type="button"
+                            class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
+                            (click)="startStaffCall()"
+                            title="Gọi hỗ trợ"
+                          >
+                            <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                          </button>
+                        }
                         <button
                           type="button"
                           class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"

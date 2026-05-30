@@ -12,6 +12,7 @@ export type CustomerChatUploadStatus = 'PENDING' | 'UPLOADING' | 'COMPLETE' | 'F
 
 export interface CustomerChatParticipant {
   id: string;
+  email: string | null;
   name: string;
   roleLabel: string;
   avatarUrl: string | null;
@@ -128,10 +129,23 @@ export enum ChatAttachmentType {
   FILE = 'FILE',
 }
 
+export interface ParticipantEmailOwner {
+  email?: string | null;
+}
+
 export interface ParticipantResponse {
   id: string;
   userType: ParticipantType;
   referenceId: string;
+  email?: string | null;
+  accountEmail?: string | null;
+  userEmail?: string | null;
+  participantEmail?: string | null;
+  account?: ParticipantEmailOwner | null;
+  user?: ParticipantEmailOwner | null;
+  employee?: ParticipantEmailOwner | null;
+  expert?: ParticipantEmailOwner | null;
+  profile?: ParticipantEmailOwner | null;
   status: ParticipantStatus;
   joinedAt: string;
   leftAt: string | null;
@@ -228,6 +242,27 @@ export function formatBytes(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+function normalizeEmail(email: string | null | undefined): string | null {
+  const normalized = email?.trim();
+  return normalized || null;
+}
+
+export function resolveParticipantEmail(participant: ParticipantResponse | undefined): string | null {
+  const candidateEmails = [
+    participant?.email,
+    participant?.accountEmail,
+    participant?.userEmail,
+    participant?.participantEmail,
+    participant?.account?.email,
+    participant?.user?.email,
+    participant?.employee?.email,
+    participant?.expert?.email,
+    participant?.profile?.email,
+  ];
+
+  return candidateEmails.map(normalizeEmail).find((email) => email !== null) ?? null;
+}
+
 export function mapToCustomerChatSession(
   conv: ConversationResponse,
   messages: ChatMessageResponse[],
@@ -245,6 +280,7 @@ export function mapToCustomerChatSession(
 
   const customer: CustomerChatParticipant = {
     id: customerPart?.referenceId || conv.customerId || '',
+    email: resolveParticipantEmail(customerPart) || conv.customerEmail || null,
     name: customerPart?.displayName || conv.customerName || 'Bạn',
     roleLabel: 'Khách hàng',
     avatarUrl: customerPart?.avatarUrl || null,
@@ -254,6 +290,7 @@ export function mapToCustomerChatSession(
 
   const assistant: CustomerChatParticipant = {
     id: botPart?.referenceId || 'zentech-ai',
+    email: resolveParticipantEmail(botPart),
     name: botPart?.displayName || 'ZenTech AI',
     roleLabel: 'Trợ lý AI',
     avatarUrl: null,
@@ -264,6 +301,7 @@ export function mapToCustomerChatSession(
   const staff: CustomerChatParticipant | null = staffPart
     ? {
         id: staffPart.referenceId,
+        email: resolveParticipantEmail(staffPart),
         name: staffPart.displayName || 'Nhân viên hỗ trợ',
         roleLabel: 'Tư vấn viên',
         avatarUrl: staffPart.avatarUrl || null,
