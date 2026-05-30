@@ -1,0 +1,228 @@
+<section class="marketing-page">
+  <!-- Page Header -->
+  <div class="marketing-header">
+    <div>
+      <nav class="marketing-eyebrow" aria-label="Marketing breadcrumb">
+        <span>Điều hành kinh doanh</span>
+        <span>/</span>
+        <strong>Marketing</strong>
+      </nav>
+      <h1>Marketing & Ưu đãi</h1>
+      <p>Lập chiến dịch, phát hành mã ưu đãi và theo dõi hiệu suất chuyển đổi của toàn bộ cửa hàng.</p>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="btn-issue-header" (click)="store.openIssueDialog()">
+        <svg lucideUserCheck [size]="16"></svg>
+        <span>Phát hành Voucher</span>
+      </button>
+
+      <button type="button" class="btn-create-header" (click)="onCreateCoupon()">
+        <svg lucidePlus [size]="16"></svg>
+        <span>Tạo mã giảm giá</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- KPIs Grid -->
+  <div class="kpi-grid">
+    <article class="kpi-card bg-white">
+      <span class="kpi-icon kpi-icon--indigo">
+        <svg lucideTicket></svg>
+      </span>
+      <div>
+        <p>Tổng số mã ưu đãi</p>
+        <strong>{{ store.stats().totalCoupons }}</strong>
+        <small>Tất cả các chiến dịch đã tạo</small>
+      </div>
+    </article>
+
+    <article class="kpi-card bg-white">
+      <span class="kpi-icon kpi-icon--emerald">
+        <svg lucideSparkles></svg>
+      </span>
+      <div>
+        <p>Mã đang hoạt động</p>
+        <strong>{{ store.stats().activeCoupons }}</strong>
+        <small class="text-green-600">Đang tiếp cận khách hàng</small>
+      </div>
+    </article>
+
+    <article class="kpi-card bg-white">
+      <span class="kpi-icon kpi-icon--amber">
+        <svg lucideWallet></svg>
+      </span>
+      <div>
+        <p>Tổng doanh thu ưu đãi</p>
+        <strong>{{ store.stats().totalDiscountGiven | currency: 'VND' : '' : '1.0-0' }} đ</strong>
+        <small>Số tiền thực tế đã giảm giá</small>
+      </div>
+    </article>
+
+    <article class="kpi-card kpi-card--highlighted">
+      <span class="kpi-icon">
+        <svg lucideTrendingUp></svg>
+      </span>
+      <div>
+        <p>Tỷ lệ sử dụng (Redemption)</p>
+        <strong>{{ store.stats().redemptionRate | number: '1.0-2' }}%</strong>
+        <small>Hiệu quả quy đổi voucher</small>
+      </div>
+    </article>
+  </div>
+
+  <!-- Custom Navigation Tabs -->
+  <div class="tabs-container">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active-tab]="store.activeTab() === 0"
+      (click)="store.setTab(0)"
+    >
+      <svg lucideTicket [size]="16" class="tab-icon"></svg>
+      <span>Danh sách mã giảm giá (Coupons)</span>
+    </button>
+    <button
+      type="button"
+      class="tab-btn"
+      [class.active-tab]="store.activeTab() === 1"
+      (click)="store.setTab(1)"
+    >
+      <svg lucideUserCheck [size]="16" class="tab-icon"></svg>
+      <span>Lịch sử phát hành (Customer Vouchers)</span>
+    </button>
+  </div>
+
+  <!-- Tab 1: Coupons -->
+  @if (store.activeTab() === 0) {
+    <div class="tab-content animate-fade-in">
+      <app-coupon-toolbar
+        [keyword]="store.couponsQuery().keyword"
+        [couponType]="store.couponsQuery().type"
+        [activeStatus]="store.couponsQuery().active"
+        [activeFilterCount]="store.activeCouponsFiltersCount()"
+        [loading]="store.couponsLoading()"
+        (keywordChange)="store.setKeyword($event)"
+        (typeChange)="store.setTypeFilter($event)"
+        (activeChange)="store.setActiveFilter($event)"
+        (applyFilters)="store.applyFilters()"
+        (resetFilters)="store.resetFilters()"
+      ></app-coupon-toolbar>
+
+      <app-coupon-table
+        [coupons]="store.coupons()"
+        [loading]="store.couponsLoading()"
+        [page]="store.couponsQuery().page"
+        [totalPages]="store.totalCouponsPages()"
+        [totalElements]="store.totalCoupons()"
+        [pageStart]="store.pageCouponsStart()"
+        [pageEnd]="store.pageCouponsEnd()"
+        [canGoPrevious]="store.canCouponsPrevious()"
+        [canGoNext]="store.canCouponsNext()"
+        (editCoupon)="onEditCoupon($event)"
+        (deleteCoupon)="onDeleteCoupon($event)"
+        (toggleActive)="onToggleActive($event)"
+        (issueCoupon)="onIssueCoupon($event)"
+        (pageChange)="store.goToPage($event)"
+      ></app-coupon-table>
+    </div>
+  }
+
+  <!-- Tab 2: Customer Vouchers Distribution -->
+  @if (store.activeTab() === 1) {
+    <div class="tab-content animate-fade-in">
+      <!-- Search toolbar specifically for Vouchers distribution history -->
+      <div class="voucher-search-bar">
+        <div class="v-search-box">
+          <svg lucideSearch class="v-search-icon"></svg>
+          <input
+            type="text"
+            placeholder="Tìm kiếm khách hàng (Tên hoặc Email)..."
+            [ngModel]="store.vouchersQuery().keyword"
+            (ngModelChange)="store.setVoucherKeyword($event)"
+            (keyup.enter)="store.applyVoucherFilters()"
+            class="v-search-input"
+          />
+        </div>
+
+        <div class="v-filters">
+          <div class="v-filter-item">
+            <input
+              type="text"
+              placeholder="Mã giảm giá..."
+              [ngModel]="store.vouchersQuery().couponCode"
+              (ngModelChange)="store.setVoucherCouponCode($event)"
+              (keyup.enter)="store.applyVoucherFilters()"
+              class="v-filter-input font-mono font-bold"
+            />
+          </div>
+
+          <div class="v-filter-item">
+            <select
+              [ngModel]="store.vouchersQuery().status"
+              (ngModelChange)="store.setVoucherStatus($event)"
+              class="v-filter-select"
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="AVAILABLE">Sẵn có (Chưa sử dụng)</option>
+              <option value="USED">Đã sử dụng</option>
+              <option value="EXPIRED">Đã hết hạn</option>
+            </select>
+          </div>
+
+          <div class="v-buttons">
+            <button type="button" class="v-btn-apply" (click)="store.applyVoucherFilters()">
+              <span>Lọc</span>
+            </button>
+            @if (store.activeVouchersFiltersCount() > 0) {
+              <button type="button" class="v-btn-reset" (click)="store.resetVoucherFilters()">
+                <svg lucideX [size]="14"></svg>
+                <span>Xóa lọc</span>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <app-customer-voucher-table
+        [vouchers]="store.vouchers()"
+        [loading]="store.vouchersLoading()"
+        [page]="store.vouchersQuery().page"
+        [totalPages]="store.totalVouchersPages()"
+        [totalElements]="store.totalVouchers()"
+        [pageStart]="store.pageVouchersStart()"
+        [pageEnd]="store.pageVouchersEnd()"
+        [canGoPrevious]="store.canVouchersPrevious()"
+        [canGoNext]="store.canVouchersNext()"
+        (pageChange)="store.goToVoucherPage($event)"
+        (revoke)="onRevokeVoucher($event)"
+      ></app-customer-voucher-table>
+    </div>
+  }
+
+  <!-- Stepper Dialog to Create/Edit Coupon -->
+  <app-coupon-dialog
+    [visible]="store.dialogVisible()"
+    [mode]="store.dialogMode()"
+    [draft]="store.formValue()"
+    [saving]="store.saving()"
+    [loadingDetail]="store.loadingDetail()"
+    [errors]="{ submit: store.errorMessage() || '' }"
+    (close)="store.closeDialog()"
+    (save)="store.submitForm()"
+    (draftChange)="store.updateFormValue($event)"
+  ></app-coupon-dialog>
+
+  <!-- Dialog to Issue Voucher to Customers -->
+  <app-issue-voucher-dialog
+    [visible]="store.issueDialogVisible()"
+    [coupons]="store.coupons()"
+    [customers]="store.customers()"
+    [formValue]="store.issueFormValue()"
+    [saving]="store.issueSaving()"
+    [errors]="{ submit: store.errorMessage() || '' }"
+    (close)="store.closeIssueDialog()"
+    (save)="store.submitIssueForm()"
+    (formValueChange)="store.updateIssueFormValue($event)"
+  ></app-issue-voucher-dialog>
+</section>

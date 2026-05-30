@@ -1,0 +1,178 @@
+<div class="table-container">
+  @if (loading()) {
+    <div class="table-loading">
+      <div class="spinner"></div>
+      <p>Đang tải danh sách mã giảm giá...</p>
+    </div>
+  } @else if (coupons().length === 0) {
+    <div class="table-empty">
+      <svg lucideTicket class="empty-icon" [attr.stroke-width]="1.5"></svg>
+      <h3>Chưa có mã giảm giá nào</h3>
+      <p>Nhấp vào nút "Thêm mới" để tạo mã giảm giá đầu tiên của bạn.</p>
+    </div>
+  } @else {
+    <div class="table-responsive">
+      <table class="coupon-grid-table">
+        <thead>
+          <tr>
+            <th>Mã ưu đãi</th>
+            <th>Loại ưu đãi</th>
+            <th>Mức giảm giá</th>
+            <th>Đơn hàng tối thiểu</th>
+            <th>Đã dùng / Giới hạn</th>
+            <th>Thời gian hiệu lực</th>
+            <th>Trạng thái</th>
+            <th class="text-right">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of coupons(); track c.id) {
+            <tr [class.expired-row]="isExpired(c)">
+              <td>
+                <div class="code-badge">
+                  <span>{{ c.code }}</span>
+                </div>
+              </td>
+              <td>
+                @switch (c.type) {
+                  @case (CouponType.PERCENTAGE) {
+                    <span class="type-badge percentage-badge">Phần trăm</span>
+                  }
+                  @case (CouponType.FIXED_AMOUNT) {
+                    <span class="type-badge fixed-badge">Tiền cố định</span>
+                  }
+                  @case (CouponType.FREE_SHIPPING) {
+                    <span class="type-badge shipping-badge">Free Ship</span>
+                  }
+                }
+              </td>
+              <td>
+                <div class="discount-value">
+                  @if (c.type === CouponType.PERCENTAGE) {
+                    <strong>{{ c.discountValue }}%</strong>
+                    @if (c.maxDiscount > 0) {
+                      <small>(Tối đa {{ c.maxDiscount | currency: 'VND' : '' : '1.0-0' }} đ)</small>
+                    }
+                  } @else if (c.type === CouponType.FIXED_AMOUNT) {
+                    <strong>{{ c.discountValue | currency: 'VND' : '' : '1.0-0' }} đ</strong>
+                  } @else {
+                    <strong>Miễn phí vận chuyển</strong>
+                  }
+                </div>
+              </td>
+              <td>
+                <span class="min-amount">
+                  {{ c.minOrderAmount > 0 ? (c.minOrderAmount | currency: 'VND' : '' : '1.0-0') + ' đ' : 'Không có' }}
+                </span>
+              </td>
+              <td>
+                <div class="usage-count">
+                  <div class="usage-progress-container">
+                    <div
+                      class="usage-progress-bar"
+                      [style.width.%]="(c.usedCount / c.usageLimit) * 100"
+                    ></div>
+                  </div>
+                  <span>{{ c.usedCount }} / {{ c.usageLimit }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="date-range">
+                  @if (c.startAt) {
+                    <span>{{ c.startAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  } @else {
+                    <span>Vô hạn</span>
+                  }
+                  <span class="separator">→</span>
+                  @if (c.endAt) {
+                    <span>{{ c.endAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  } @else {
+                    <span>Vô hạn</span>
+                  }
+                </div>
+              </td>
+              <td>
+                @if (isExpired(c)) {
+                  <span class="status-badge status-expired">Hết hạn</span>
+                } @else if (isUpcoming(c)) {
+                  <span class="status-badge status-upcoming">Sắp ra mắt</span>
+                } @else if (c.active) {
+                  <span class="status-badge status-active">Hoạt động</span>
+                } @else {
+                  <span class="status-badge status-inactive">Tạm dừng</span>
+                }
+              </td>
+              <td>
+                <div class="actions-group">
+                  <button
+                    type="button"
+                    class="action-btn toggle-active-btn"
+                    [class.active-toggle]="c.active"
+                    (click)="toggleActive.emit(c)"
+                    title="Bật / Tắt hoạt động"
+                  >
+                    <span class="toggle-switch"></span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="action-btn btn-issue"
+                    (click)="issueCoupon.emit(c)"
+                    [disabled]="!c.active || isExpired(c)"
+                    title="Phát hành cho khách"
+                  >
+                    <svg lucidePlus class="action-icon" [attr.stroke-width]="2.5"></svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="action-btn btn-edit"
+                    (click)="editCoupon.emit(c)"
+                    title="Chỉnh sửa"
+                  >
+                    <svg lucideEdit class="action-icon" [attr.stroke-width]="2"></svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="action-btn btn-delete"
+                    (click)="deleteCoupon.emit(c)"
+                    title="Xóa mã"
+                  >
+                    <svg lucideTrash2 class="action-icon" [attr.stroke-width]="2"></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Phân trang -->
+    <div class="table-pagination">
+      <span class="pagination-info">
+        Hiển thị <strong>{{ pageStart() }}</strong> - <strong>{{ pageEnd() }}</strong> trong tổng số <strong>{{ totalElements() }}</strong> kết quả
+      </span>
+      <div class="pagination-buttons">
+        <button
+          type="button"
+          class="btn-page"
+          [disabled]="!canGoPrevious()"
+          (click)="pageChange.emit(page() - 1)"
+        >
+          Trang trước
+        </button>
+        <span class="page-current">Trang {{ page() + 1 }} / {{ totalPages() }}</span>
+        <button
+          type="button"
+          class="btn-page"
+          [disabled]="!canGoNext()"
+          (click)="pageChange.emit(page() + 1)"
+        >
+          Trang sau
+        </button>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,204 @@
+@import "tailwindcss" reference;
+
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.table-container {
+  @apply w-full bg-white rounded-2xl shadow-sm border border-[#E5E7EB] overflow-hidden;
+}
+
+.table-loading {
+  @apply flex flex-col items-center justify-center py-16 gap-3 text-sm text-[#6B7280];
+}
+
+.spinner {
+  @apply w-8 h-8 border-4 border-[#E5E7EB] border-t-[#4F46E5] rounded-full animate-spin;
+}
+
+.table-empty {
+  @apply flex flex-col items-center justify-center py-16 px-4 text-center;
+}
+
+.empty-icon {
+  @apply w-12 h-12 text-[#9CA3AF] mb-3;
+}
+
+.table-empty h3 {
+  @apply text-base font-semibold text-[#111827] mb-1;
+}
+
+.table-empty p {
+  @apply text-sm text-[#6B7280];
+}
+
+.table-responsive {
+  @apply w-full overflow-x-auto;
+  display: block;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.coupon-grid-table {
+  @apply w-full border-collapse text-left text-sm;
+}
+
+.coupon-grid-table th {
+  @apply bg-[#F9FAFB] border-b border-[#E5E7EB] px-6 py-4 text-xs font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap;
+}
+
+.coupon-grid-table td {
+  @apply px-6 py-4 border-b border-[#E5E7EB] align-middle whitespace-nowrap;
+}
+
+.coupon-grid-table tr {
+  @apply hover:bg-[#F9FAFB] transition-colors;
+}
+
+.expired-row {
+  @apply bg-red-50/20 opacity-80;
+}
+
+.code-badge {
+  @apply inline-flex px-3 py-1 rounded-md bg-[#F3F4F6] text-sm font-mono font-bold text-[#111827] border border-[#E5E7EB];
+}
+
+.type-badge {
+  @apply inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold;
+}
+
+.percentage-badge {
+  @apply bg-indigo-50 text-indigo-700;
+}
+
+.fixed-badge {
+  @apply bg-emerald-50 text-emerald-700;
+}
+
+.shipping-badge {
+  @apply bg-amber-50 text-amber-700;
+}
+
+.discount-value {
+  @apply flex flex-col;
+}
+
+.discount-value strong {
+  @apply text-[#111827] font-semibold;
+}
+
+.discount-value small {
+  @apply text-xs text-[#6B7280];
+}
+
+.min-amount {
+  @apply text-[#374151];
+}
+
+.usage-count {
+  @apply flex flex-col gap-1.5;
+}
+
+.usage-progress-container {
+  @apply w-24 h-1.5 bg-[#F3F4F6] rounded-full overflow-hidden;
+}
+
+.usage-progress-bar {
+  @apply h-full bg-[#4F46E5] rounded-full;
+}
+
+.usage-count span {
+  @apply text-xs text-[#6B7280];
+}
+
+.date-range {
+  @apply flex flex-col text-xs text-[#6B7280];
+}
+
+.separator {
+  @apply text-[#9CA3AF] my-0.5;
+}
+
+.status-badge {
+  @apply inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold;
+}
+
+.status-active {
+  @apply bg-green-50 text-green-700;
+}
+
+.status-expired {
+  @apply bg-red-50 text-red-700;
+}
+
+.status-upcoming {
+  @apply bg-blue-50 text-blue-700;
+}
+
+.status-inactive {
+  @apply bg-gray-50 text-gray-500;
+}
+
+.actions-group {
+  @apply flex items-center justify-end gap-2;
+  min-width: 140px;
+}
+
+.action-btn {
+  @apply p-2 rounded-full text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827] transition-all disabled:opacity-30 disabled:cursor-not-allowed;
+}
+
+.btn-issue {
+  @apply hover:bg-emerald-50 hover:text-emerald-700;
+}
+
+.btn-edit {
+  @apply hover:bg-indigo-50 hover:text-indigo-700;
+}
+
+.btn-delete {
+  @apply hover:bg-rose-50 hover:text-rose-700;
+}
+
+.action-icon {
+  @apply w-4 h-4;
+}
+
+.toggle-active-btn {
+  @apply relative w-9 h-5 bg-[#E5E7EB] rounded-full cursor-pointer transition-colors p-0 border-0 flex items-center;
+}
+
+.active-toggle {
+  @apply bg-[#10B981];
+}
+
+.toggle-switch {
+  @apply absolute left-[2px] w-4 h-4 bg-white rounded-full transition-transform;
+}
+
+.active-toggle .toggle-switch {
+  @apply translate-x-4;
+}
+
+.table-pagination {
+  @apply flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-[#E5E7EB] bg-[#F9FAFB];
+}
+
+.pagination-info {
+  @apply text-xs text-[#6B7280];
+}
+
+.pagination-buttons {
+  @apply flex items-center gap-2;
+}
+
+.btn-page {
+  @apply px-4 py-2 rounded-full border border-[#E5E7EB] bg-white text-xs font-semibold text-[#374151] hover:bg-[#F9FAFB] disabled:opacity-50 disabled:cursor-not-allowed transition-all;
+}
+
+.page-current {
+  @apply text-xs font-semibold text-[#111827];
+}

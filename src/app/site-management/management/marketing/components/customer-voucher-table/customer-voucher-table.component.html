@@ -1,0 +1,135 @@
+<div class="table-container">
+  @if (loading()) {
+    <div class="table-loading">
+      <div class="spinner"></div>
+      <p>Đang tải lịch sử phát hành...</p>
+    </div>
+  } @else if (vouchers().length === 0) {
+    <div class="table-empty">
+      <svg lucideUserCheck class="empty-icon"></svg>
+      <h3>Chưa có voucher nào được phát hành</h3>
+      <p>Bạn có thể phát hành voucher mới bằng cách nhấp vào nút "Phát hành voucher".</p>
+    </div>
+  } @else {
+    <div class="table-responsive">
+      <table class="voucher-grid-table">
+        <thead>
+          <tr>
+            <th>Khách hàng</th>
+            <th>Mã ưu đãi</th>
+            <th>Loại ưu đãi</th>
+            <th>Mức giảm giá</th>
+            <th>Ngày phát hành</th>
+            <th>Ngày sử dụng</th>
+            <th class="text-right">Trạng thái</th>
+            <th class="text-center w-[80px]">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (v of vouchers(); track v.id) {
+            <tr>
+              <td>
+                <div class="customer-info">
+                  <strong>{{ v.customerName }}</strong>
+                  <small>{{ v.customerEmail }}</small>
+                </div>
+              </td>
+              <td>
+                <div class="code-badge">
+                  <span>{{ v.couponCode }}</span>
+                </div>
+              </td>
+              <td>
+                @switch (v.couponType) {
+                  @case (CouponType.PERCENTAGE) {
+                    <span class="type-badge percentage-badge">Phần trăm</span>
+                  }
+                  @case (CouponType.FIXED_AMOUNT) {
+                    <span class="type-badge fixed-badge">Tiền cố định</span>
+                  }
+                  @case (CouponType.FREE_SHIPPING) {
+                    <span class="type-badge shipping-badge">Free Ship</span>
+                  }
+                }
+              </td>
+              <td>
+                <strong class="discount-val">
+                  @if (v.couponType === CouponType.PERCENTAGE) {
+                    {{ v.discountValue }}%
+                  } @else if (v.couponType === CouponType.FIXED_AMOUNT) {
+                    {{ v.discountValue | currency: 'VND' : '' : '1.0-0' }} đ
+                  } @else {
+                    Miễn phí vận chuyển
+                  }
+                </strong>
+              </td>
+              <td>
+                <span class="date-val">{{ v.issuedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+              </td>
+              <td>
+                @if (v.usedAt) {
+                  <span class="date-val used-date">{{ v.usedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                } @else {
+                  <span class="not-used">-</span>
+                }
+              </td>
+              <td class="text-right">
+                @switch (v.status) {
+                  @case (CustomerVoucherStatus.AVAILABLE) {
+                    <span class="status-badge status-available">Sẵn có</span>
+                  }
+                  @case (CustomerVoucherStatus.USED) {
+                    <span class="status-badge status-used">Đã dùng</span>
+                  }
+                  @case (CustomerVoucherStatus.EXPIRED) {
+                    <span class="status-badge status-expired">Hết hạn</span>
+                  }
+                }
+              </td>
+              <td class="text-center">
+                @if (v.status === CustomerVoucherStatus.AVAILABLE) {
+                  <button
+                    type="button"
+                    class="btn-action-revoke"
+                    (click)="onRevoke(v.id)"
+                    title="Thu hồi voucher"
+                  >
+                    <svg lucideTrash2 class="btn-icon"></svg>
+                  </button>
+                } @else {
+                  <span class="no-action">-</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Phân trang -->
+    <div class="table-pagination">
+      <span class="pagination-info">
+        Hiển thị <strong>{{ pageStart() }}</strong> - <strong>{{ pageEnd() }}</strong> trong tổng số <strong>{{ totalElements() }}</strong> kết quả
+      </span>
+      <div class="pagination-buttons">
+        <button
+          type="button"
+          class="btn-page"
+          [disabled]="!canGoPrevious()"
+          (click)="pageChange.emit(page() - 1)"
+        >
+          Trang trước
+        </button>
+        <span class="page-current">Trang {{ page() + 1 }} / {{ totalPages() }}</span>
+        <button
+          type="button"
+          class="btn-page"
+          [disabled]="!canGoNext()"
+          (click)="pageChange.emit(page() + 1)"
+        >
+          Trang sau
+        </button>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,148 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="close.emit()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [showHeader]="false"
+  styleClass="issue-p-dialog"
+>
+  <div class="dialog-wrapper">
+    <!-- Header -->
+    <header class="dialog-header">
+      <div>
+        <h2>Phát hành voucher cho khách hàng</h2>
+        <p>Phát hành thủ công hoặc hàng loạt mã ưu đãi tới khách hàng.</p>
+      </div>
+      <button type="button" class="close-btn" (click)="close.emit()">
+        <svg lucideX class="close-icon"></svg>
+      </button>
+    </header>
+
+    @if (formValue()) {
+      <form (submit)="$event.preventDefault()" class="dialog-form">
+        <!-- ERROR MESSAGE -->
+        @if (errors()['submit']) {
+          <div class="submit-error">
+            <svg lucideTriangleAlert class="alert-icon"></svg>
+            <span>{{ errors()['submit'] }}</span>
+          </div>
+        }
+
+        <!-- 1. CHỌN MÃ ƯU ĐÃI -->
+        <div class="form-group">
+          <label for="selectCoupon" class="form-label">Chọn mã giảm giá <strong class="text-rose-500">*</strong></label>
+          <select
+            id="selectCoupon"
+            [ngModel]="formValue()!.couponId"
+            (ngModelChange)="updateCoupon($event)"
+            name="couponId"
+            class="form-select text-mono font-bold"
+          >
+            <option value="" disabled>-- Chọn mã giảm giá đang hoạt động --</option>
+            @for (c of coupons(); track c.id) {
+              @if (c.active) {
+                <option [value]="c.id">{{ c.code }} (Giảm {{ c.discountValue }}{{ c.type === 'PERCENTAGE' ? '%' : 'đ' }})</option>
+              }
+            }
+          </select>
+        </div>
+
+        <!-- 2. PHƯƠNG THỨC PHÁT HÀNH -->
+        <div class="form-group">
+          <label class="form-label">Đối tượng khách hàng nhận mã <strong class="text-rose-500">*</strong></label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input
+                type="radio"
+                [checked]="issueToAll()"
+                (change)="toggleIssueToAll(true)"
+                name="issueTarget"
+              />
+              <span class="radio-checkmark"></span>
+              <span class="radio-text">Tất cả khách hàng (Gửi hàng loạt)</span>
+            </label>
+
+            <label class="radio-label">
+              <input
+                type="radio"
+                [checked]="!issueToAll()"
+                (change)="toggleIssueToAll(false)"
+                name="issueTarget"
+              />
+              <span class="radio-checkmark"></span>
+              <span class="radio-text">Gửi cho một khách hàng cụ thể</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. CHỌN KHÁCH HÀNG CỤ THỂ -->
+        @if (!issueToAll()) {
+          <div class="form-group customer-inline-selector">
+            <label class="form-label">Chọn khách hàng nhận mã <strong class="text-rose-500">*</strong></label>
+            
+            <!-- Hộp Tìm kiếm Tích hợp -->
+            <div class="inline-search-box">
+              <svg lucideSearch class="inline-search-icon"></svg>
+              <input
+                type="text"
+                class="inline-search-input"
+                placeholder="Tìm theo tên hoặc email..."
+                [ngModel]="searchTerm()"
+                (ngModelChange)="searchTerm.set($event)"
+                name="customerSearch"
+                autocomplete="off"
+              />
+            </div>
+
+            <!-- Danh sách Khách hàng Cuộn dọc Tích hợp -->
+            <div class="inline-customer-list">
+              @for (cust of filteredCustomers(); track cust.customerId) {
+                <div
+                  class="inline-customer-item"
+                  [class.selected]="formValue()!.customerId === cust.customerId"
+                  (click)="updateCustomer(cust.customerId)"
+                >
+                  <div class="customer-info-left">
+                    <span class="cust-avatar" [style.background-color]="getAvatarColor(cust.fullName)">
+                      {{ getInitials(cust.fullName) }}
+                    </span>
+                    <div class="cust-details">
+                      <span class="cust-name">{{ cust.fullName }}</span>
+                      <span class="cust-email">{{ cust.email }}</span>
+                    </div>
+                  </div>
+                  @if (formValue()!.customerId === cust.customerId) {
+                    <span class="selected-badge">
+                      <svg lucideCheck class="check-icon"></svg>
+                    </span>
+                  }
+                </div>
+              } @empty {
+                <div class="inline-empty-item">Không tìm thấy khách hàng nào</div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Warning Alert for Bulk Issue -->
+        @if (issueToAll()) {
+          <div class="bulk-warning-alert">
+            <svg lucideSparkles class="warning-icon"></svg>
+            <p><strong>Lưu ý:</strong> Hành động này sẽ tạo voucher cho <strong>toàn bộ</strong> tài khoản khách hàng trên hệ thống.</p>
+          </div>
+        }
+
+        <!-- Footer Buttons -->
+        <footer class="dialog-footer">
+          <button type="button" class="btn-cancel" (click)="close.emit()" [disabled]="saving()">
+            <span>Hủy</span>
+          </button>
+          <button type="button" class="btn-save" (click)="onSubmit()" [disabled]="saving() || !formValue()!.couponId">
+            <span>{{ saving() ? 'Đang phát hành...' : 'Phát hành ngay' }}</span>
+          </button>
+        </footer>
+      </form>
+    }
+  </div>
+</p-dialog>
