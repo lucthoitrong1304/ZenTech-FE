@@ -10,193 +10,215 @@
 >
   <ng-template pTemplate="header">
     <div class="customer-dialog__header">
-      <span>Hồ sơ khách hàng</span>
-      <strong>{{ customer()?.fullName || 'Đang tải dữ liệu' }}</strong>
+      <span class="customer-dialog__eyebrow">Hồ sơ khách hàng</span>
+      <h2 class="customer-dialog__title">{{ customer()?.fullName || 'Đang tải dữ liệu' }}</h2>
     </div>
   </ng-template>
 
   @if (loading()) {
-    <div class="customer-dialog__loading">Đang tải hồ sơ khách hàng...</div>
+    <div class="customer-dialog__loading">
+      <svg lucideLoader2 class="customer-spin" [attr.stroke-width]="2"></svg>
+      <span>Đang tải hồ sơ khách hàng...</span>
+    </div>
   } @else if (error()) {
-    <div class="customer-dialog__error">{{ error() }}</div>
+    <div class="customer-dialog__error">
+      <strong>Lỗi hệ thống</strong>
+      <span>{{ error() }}</span>
+    </div>
   } @else if (customer(); as selectedCustomer) {
-    <section class="customer-dialog__grid">
-      <article class="customer-profile">
-        <div class="customer-profile__avatar">
-          {{ selectedCustomer.fullName.charAt(0).toUpperCase() }}
-        </div>
-        <div>
-          <h2>{{ selectedCustomer.fullName }}</h2>
-          <p>{{ selectedCustomer.email }}</p>
-        </div>
-        <span [class.customer-profile__status--inactive]="!selectedCustomer.active">
-          {{ selectedCustomer.active ? 'Đang hoạt động' : 'Đã khóa' }}
-        </span>
-      </article>
-
-      <div class="customer-dialog__metrics">
-        <article>
-          <span>Tổng đơn</span>
-          <strong>{{ selectedCustomer.totalOrders }}</strong>
-        </article>
-        <article>
-          <span>Tổng chi tiêu</span>
-          <strong>{{ selectedCustomer.totalSpent | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-        </article>
-        <article>
-          <span>Lần mua cuối</span>
-          <strong>
-            @if (selectedCustomer.lastOrderAt) {
-              {{ selectedCustomer.lastOrderAt | date: 'dd/MM/yyyy' }}
+    <div class="customer-dialog__body">
+      <section class="customer-dialog__grid">
+        <article class="customer-profile">
+          <div class="customer-profile__avatar-wrap">
+            @if (selectedCustomer.imageUrl) {
+              <img [src]="selectedCustomer.imageUrl" [alt]="selectedCustomer.fullName" />
             } @else {
-              Chưa có
+              <span class="customer-profile__avatar-fallback">{{ selectedCustomer.fullName.charAt(0).toUpperCase() }}</span>
             }
-          </strong>
+          </div>
+          <div class="customer-profile__details">
+            <h3>{{ selectedCustomer.fullName }}</h3>
+            <p>{{ selectedCustomer.email }}</p>
+          </div>
+          <span class="customer-profile__status" [class.customer-profile__status--inactive]="!selectedCustomer.active">
+            {{ selectedCustomer.active ? 'Đang hoạt động' : 'Đã khóa' }}
+          </span>
         </article>
-      </div>
-    </section>
 
-    <section class="customer-dialog__actions">
-      <button
-        type="button"
-        (click)="
-          statusChange.emit({
-            customerId: selectedCustomer.customerId,
-            active: !selectedCustomer.active,
-          })
-        "
-      >
-        @if (selectedCustomer.active) {
-          <svg lucideLock [attr.stroke-width]="2"></svg>
-          <span>Khóa tài khoản</span>
-        } @else {
-          <svg lucideUnlock [attr.stroke-width]="2"></svg>
-          <span>Mở khóa tài khoản</span>
-        }
-      </button>
-    </section>
-
-    <section class="customer-dialog__section">
-      <header>
-        <h3>Địa chỉ</h3>
-        <span>{{ selectedCustomer.addressList.length }} địa chỉ</span>
-      </header>
-
-      @if (selectedCustomer.addressList.length === 0) {
-        <p class="customer-dialog__muted">Khách hàng chưa lưu địa chỉ giao hàng.</p>
-      } @else {
-        <div class="customer-address-grid">
-          @for (address of selectedCustomer.addressList; track address.addressId) {
-            <article>
-              <strong>
-                {{ address.street || 'Chưa có đường' }}
-                @if (address.isDefault) {
-                  <span>Mặc định</span>
-                }
-              </strong>
-              <p>
-                {{ address.ward || 'Chưa có phường/xã' }}, {{ address.province || 'Chưa có tỉnh' }}
-              </p>
-              <small>{{ address.phoneNumber || 'Chưa có số điện thoại' }}</small>
-            </article>
-          }
+        <div class="customer-dialog__metrics">
+          <article>
+            <span>Tổng đơn hàng</span>
+            <strong>{{ selectedCustomer.totalOrders }}</strong>
+          </article>
+          <article>
+            <span>Tổng chi tiêu</span>
+            <strong>{{ selectedCustomer.totalSpent | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+          </article>
+          <article>
+            <span>Lần mua cuối</span>
+            <strong>
+              @if (selectedCustomer.lastOrderAt) {
+                {{ selectedCustomer.lastOrderAt | date: 'dd/MM/yyyy' }}
+              } @else {
+                Chưa có
+              }
+            </strong>
+          </article>
         </div>
-      }
-    </section>
+      </section>
 
-    <section class="customer-dialog__section">
-      <header>
-        <h3>Lịch sử đơn hàng</h3>
-        <span>{{ ordersTotalElements() }} đơn</span>
-      </header>
+      <section class="customer-dialog__actions">
+        <button
+          type="button"
+          class="customer-action-button"
+          [class.customer-action-button--lock]="selectedCustomer.active"
+          [class.customer-action-button--unlock]="!selectedCustomer.active"
+          (click)="
+            statusChange.emit({
+              customerId: selectedCustomer.customerId,
+              active: !selectedCustomer.active,
+            })
+          "
+        >
+          @if (selectedCustomer.active) {
+            <svg lucideLock [attr.stroke-width]="2"></svg>
+            <span>Khóa tài khoản</span>
+          } @else {
+            <svg lucideUnlock [attr.stroke-width]="2"></svg>
+            <span>Mở khóa tài khoản</span>
+          }
+        </button>
+      </section>
 
-      @if (ordersLoading()) {
-        <p class="customer-dialog__muted">Đang tải đơn hàng...</p>
-      } @else if (orders().length === 0) {
-        <p class="customer-dialog__muted">Chưa có đơn hàng nào.</p>
-      } @else {
-        <div class="customer-order-list">
-          @for (order of orders(); track order.orderId) {
-            <article class="customer-order-card">
-              <button
-                type="button"
-                class="customer-order-summary"
-                [attr.aria-expanded]="isOrderExpanded(order.orderId)"
-                (click)="toggleOrder(order.orderId)"
-              >
-                <div>
-                  <strong>#{{ order.orderId.slice(0, 8).toUpperCase() }}</strong>
-                  <span>{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
-                </div>
-                <div>
-                  <span class="customer-order-status">{{ order.orderStatus }}</span>
-                  <span class="customer-payment-status"
-                    >{{ order.paymentStatus }} / {{ order.paymentMethod }}</span
-                  >
-                </div>
-                <strong>{{ order.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-                <small>{{ order.items.length }} sản phẩm</small>
-                @if (isOrderExpanded(order.orderId)) {
-                  <svg lucideChevronUp [attr.stroke-width]="2"></svg>
-                } @else {
-                  <svg lucideChevronDown [attr.stroke-width]="2"></svg>
-                }
-              </button>
+      <section class="customer-dialog__section">
+        <header>
+          <h3>Địa chỉ giao hàng</h3>
+          <span class="customer-section-badge">{{ selectedCustomer.addressList.length }} địa chỉ</span>
+        </header>
 
-              @if (isOrderExpanded(order.orderId)) {
-                <div class="customer-order-items">
-                  @if (order.items.length === 0) {
-                    <p class="customer-dialog__muted">Không có sản phẩm trong đơn hàng này.</p>
-                  } @else {
-                    @for (item of order.items; track item.orderItemId) {
-                      <div class="customer-order-item">
-                        @if (item.productImage) {
-                          <img [src]="item.productImage" [alt]="item.productName" loading="lazy" />
-                        } @else {
-                          <div class="customer-order-item__image" aria-hidden="true">
-                            {{ item.productName.charAt(0).toUpperCase() }}
-                          </div>
-                        }
-
-                        <div class="customer-order-item__product">
-                          <strong>{{ item.productName }}</strong>
-                          @if (item.variantName || item.sku) {
-                            <span>{{ item.variantName || item.sku }}</span>
-                          }
-                        </div>
-
-                        <span>x{{ item.quantity }}</span>
-                        <span>{{ item.unitPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
-                        <strong>{{ item.lineTotal | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-                      </div>
-                    }
+        @if (selectedCustomer.addressList.length === 0) {
+          <p class="customer-dialog__muted">Khách hàng chưa lưu địa chỉ giao hàng.</p>
+        } @else {
+          <div class="customer-address-grid">
+            @for (address of selectedCustomer.addressList; track address.addressId) {
+              <article class="customer-address-card" [class.customer-address-card--default]="address.isDefault">
+                <div class="customer-address-card__header">
+                  <strong>{{ address.street || 'Chưa có đường' }}</strong>
+                  @if (address.isDefault) {
+                    <span class="default-badge">Mặc định</span>
                   }
                 </div>
-              }
-            </article>
-          }
-        </div>
+                <p>
+                  {{ address.ward || 'Chưa có phường/xã' }}, {{ address.province || 'Chưa có tỉnh' }}
+                </p>
+                <small>{{ address.phoneNumber || 'Chưa có số điện thoại' }}</small>
+              </article>
+            }
+          </div>
+        }
+      </section>
 
-        <footer class="customer-dialog__pager">
-          <button
-            type="button"
-            [disabled]="ordersPage() <= 0 || ordersLoading()"
-            (click)="previousOrdersPage()"
-          >
-            <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
-          </button>
-          <span>
-            Trang {{ ordersTotalPages() === 0 ? 0 : ordersPage() + 1 }} / {{ ordersTotalPages() }}
-          </span>
-          <button
-            type="button"
-            [disabled]="ordersPage() + 1 >= ordersTotalPages() || ordersLoading()"
-            (click)="nextOrdersPage()"
-          >
-            <svg lucideChevronRight [attr.stroke-width]="2"></svg>
-          </button>
-        </footer>
-      }
-    </section>
+      <section class="customer-dialog__section">
+        <header>
+          <h3>Lịch sử đơn hàng</h3>
+          <span class="customer-section-badge">{{ ordersTotalElements() }} đơn</span>
+        </header>
+
+        @if (ordersLoading()) {
+          <div class="customer-dialog__loading-inline">
+            <svg lucideLoader2 class="customer-spin" [attr.stroke-width]="2"></svg>
+            <span>Đang tải đơn hàng...</span>
+          </div>
+        } @else if (orders().length === 0) {
+          <p class="customer-dialog__muted">Chưa có đơn hàng nào.</p>
+        } @else {
+          <div class="customer-order-list">
+            @for (order of orders(); track order.orderId) {
+              <article class="customer-order-card">
+                <button
+                  type="button"
+                  class="customer-order-summary"
+                  [attr.aria-expanded]="isOrderExpanded(order.orderId)"
+                  (click)="toggleOrder(order.orderId)"
+                >
+                  <div class="customer-order-summary__id">
+                    <strong>#{{ order.orderId.slice(0, 8).toUpperCase() }}</strong>
+                    <span>{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                  <div class="customer-order-summary__status">
+                    <span class="status-badge status-badge--order">{{ order.orderStatus }}</span>
+                    <span class="status-badge status-badge--payment"
+                      >{{ order.paymentStatus }} / {{ order.paymentMethod }}</span
+                    >
+                  </div>
+                  <strong class="customer-order-summary__price">{{ order.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                  <span class="customer-order-summary__count">{{ order.items.length }} sản phẩm</span>
+                  @if (isOrderExpanded(order.orderId)) {
+                    <svg lucideChevronUp [attr.stroke-width]="2" class="chevron-icon"></svg>
+                  } @else {
+                    <svg lucideChevronDown [attr.stroke-width]="2" class="chevron-icon"></svg>
+                  }
+                </button>
+
+                @if (isOrderExpanded(order.orderId)) {
+                  <div class="customer-order-items">
+                    @if (order.items.length === 0) {
+                      <p class="customer-dialog__muted">Không có sản phẩm trong đơn hàng này.</p>
+                    } @else {
+                      @for (item of order.items; track item.orderItemId) {
+                        <div class="customer-order-item">
+                          @if (item.productImage) {
+                            <img [src]="item.productImage" [alt]="item.productName" loading="lazy" />
+                          } @else {
+                            <div class="customer-order-item__image" aria-hidden="true">
+                              {{ item.productName.charAt(0).toUpperCase() }}
+                            </div>
+                          }
+
+                          <div class="customer-order-item__product">
+                            <strong>{{ item.productName }}</strong>
+                            @if (item.variantName || item.sku) {
+                              <span>{{ item.variantName || item.sku }}</span>
+                            }
+                          </div>
+
+                          <span class="customer-order-item__qty">x{{ item.quantity }}</span>
+                          <span class="customer-order-item__unit">{{ item.unitPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+                          <strong class="customer-order-item__total">{{ item.lineTotal | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                        </div>
+                      }
+                    }
+                  </div>
+                }
+              </article>
+            }
+          </div>
+
+          <footer class="customer-dialog__pager">
+            <button
+              type="button"
+              class="customer-dialog-page-btn"
+              [disabled]="ordersPage() <= 0 || ordersLoading()"
+              (click)="previousOrdersPage()"
+              aria-label="Trang trước đơn hàng"
+            >
+              <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
+            </button>
+            <span class="customer-dialog-page-info">
+              Trang {{ ordersTotalPages() === 0 ? 0 : ordersPage() + 1 }} / {{ ordersTotalPages() }}
+            </span>
+            <button
+              type="button"
+              class="customer-dialog-page-btn"
+              [disabled]="ordersPage() + 1 >= ordersTotalPages() || ordersLoading()"
+              (click)="nextOrdersPage()"
+              aria-label="Trang sau đơn hàng"
+            >
+              <svg lucideChevronRight [attr.stroke-width]="2"></svg>
+            </button>
+          </footer>
+        }
+      </section>
+    </div>
   }
 </p-dialog>

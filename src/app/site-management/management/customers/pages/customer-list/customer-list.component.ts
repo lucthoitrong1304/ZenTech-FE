@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, computed, effect, inject, untracked } from '@angular/core';
 import { filter, take } from 'rxjs';
 import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
@@ -26,6 +26,32 @@ export class CustomerListComponent {
   private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
   protected readonly store = inject(CustomerStore);
+
+  protected readonly activeFilterLabel = computed(() => {
+    const filterValue = this.store.query().activeFilter;
+    switch (filterValue) {
+      case 'active':
+        return 'Đang hoạt động';
+      case 'inactive':
+        return 'Đã khóa';
+      default:
+        return 'Tất cả tài khoản';
+    }
+  });
+
+  protected readonly sortLabel = computed(() => {
+    const sortValue = this.store.query().sort;
+    switch (sortValue) {
+      case 'registeredAt,asc':
+        return 'Đăng ký cũ nhất';
+      case 'fullName,asc':
+        return 'Tên A - Z';
+      case 'email,asc':
+        return 'Email A - Z';
+      default:
+        return 'Đăng ký mới nhất';
+    }
+  });
 
   constructor() {
     this.store.loadCustomers();

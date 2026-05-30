@@ -101,6 +101,7 @@ interface CustomerSummaryResponseDto {
   totalOrders: number;
   totalSpent: number;
   lastOrderAt: string | null;
+  imageUrl: string | null;
 }
 
 interface CustomerDetailResponseDto extends CustomerSummaryResponseDto {
@@ -173,6 +174,7 @@ function toCustomerSummary(customer: CustomerSummaryResponseDto): CustomerSummar
     totalOrders: customer.totalOrders,
     totalSpent: customer.totalSpent,
     lastOrderAt: customer.lastOrderAt,
+    imageUrl: customer.imageUrl?.trim() || null,
   };
 }
 
