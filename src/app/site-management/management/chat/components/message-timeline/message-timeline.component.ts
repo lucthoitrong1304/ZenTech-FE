@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { LucideBot, LucideFileText, LucideImage } from '@lucide/angular';
+import { LucideBot, LucideFileText, LucideImage, LucidePhone } from '@lucide/angular';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import {
   ManagementChatConversation,
@@ -11,7 +11,7 @@ import {
 @Component({
   selector: 'app-message-timeline',
   standalone: true,
-  imports: [CommonModule, LucideBot, LucideFileText, LucideImage],
+  imports: [CommonModule, LucideBot, LucideFileText, LucideImage, LucidePhone],
   templateUrl: './message-timeline.component.html',
   host: {
     class: 'flex min-h-0 flex-1 flex-col',

@@ -40,6 +40,14 @@ export class ManagementChatPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.store.loadWorkspace();
+
+    this.callSignalingService.callEnded.subscribe(
+      ({ durationStr, status, isCaller }) => {
+        if (isCaller) {
+          this.store.sendCallMessage({ duration: durationStr, status });
+        }
+      }
+    );
   }
 
   protected showAdminSidebar(): void {

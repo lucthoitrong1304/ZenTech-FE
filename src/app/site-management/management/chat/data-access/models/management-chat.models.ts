@@ -1,4 +1,6 @@
-﻿export type ManagementChatConversationStatus = 'AI_ASSISTING' | 'WAITING_STAFF' | 'STAFF_HANDLING' | 'CLOSED';
+import { CallHistoryData, ChatMessageType } from '../../../../customer-chat/data-access/models/customer-chat.models';
+
+export type ManagementChatConversationStatus = 'AI_ASSISTING' | 'WAITING_STAFF' | 'STAFF_HANDLING' | 'CLOSED';
 
 export type ManagementChatExpertRequestStatus = 'WAITING' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED';
 
@@ -47,7 +49,9 @@ export interface ManagementChatMessage {
   conversationId: string;
   sender: ManagementChatMessageSender;
   senderName: string;
+  messageType?: ChatMessageType;
   body: string;
+  callData?: CallHistoryData;
   sentAtLabel: string;
   attachments: ManagementChatMessageAttachment[];
 }

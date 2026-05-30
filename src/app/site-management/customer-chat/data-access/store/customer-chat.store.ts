@@ -433,7 +433,18 @@ export const CustomerChatStore = signalStore(
                             id: msg.id,
                             sender,
                             senderName,
+                            messageType: msg.messageType as unknown as ChatMessageType,
                             body: msg.content || '',
+                            callData:
+                              msg.messageType === ChatMessageType.CALL && msg.content
+                                ? (() => {
+                                    try {
+                                      return JSON.parse(msg.content);
+                                    } catch {
+                                      return undefined;
+                                    }
+                                  })()
+                                : undefined,
                             sentAtLabel: formatTime(msg.createdAt),
                             attachments: (msg.attachments || []).map((att) => ({
                               id: att.id,
@@ -672,6 +683,23 @@ export const CustomerChatStore = signalStore(
         )
       );
 
+      const sendCallMessage = rxMethod<{ duration: string; status: 'ENDED' | 'MISSED' | 'BUSY' }>(
+        pipe(
+          tap(({ duration, status }) => {
+            const conversationId = store.activeConversationId();
+            if (!conversationId) return;
+
+            const messageRequest = {
+              messageType: ChatMessageType.CALL,
+              content: JSON.stringify({ duration, status }),
+              attachments: [],
+            };
+
+            websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
+          })
+        )
+      );
+
       const selectFiles = rxMethod<File[]>(
         pipe(
           filter((files) => files.length > 0),
@@ -754,6 +782,7 @@ export const CustomerChatStore = signalStore(
         switchConversation,
         createNewConversation,
         sendMessage,
+        sendCallMessage,
         selectFiles,
         requestAgent,
         closeConversation,

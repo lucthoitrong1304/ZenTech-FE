@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Client, IMessage } from '@stomp/stompjs';
+import { Subject } from 'rxjs';
 import { AuthStorageService } from './auth-storage.service';
 import { WebRTCService } from './webrtc.service';
 
@@ -25,6 +26,8 @@ export class CallSignalingService {
   // Global Call State Signals
   public incomingCall = signal<{ senderEmail: string } | null>(null);
   public activeCall = signal<{ targetEmail: string; isCaller: boolean } | null>(null);
+  private callStartTime: number | null = null;
+  public callEnded = new Subject<{ durationStr: string; status: 'ENDED' | 'MISSED' | 'BUSY'; targetEmail: string; isCaller: boolean }>();
 
   constructor() {}
 
@@ -80,6 +83,7 @@ export class CallSignalingService {
       case 'CALL_ACCEPTED':
         // The other person accepted the call. We can now create an offer and send it.
         this.activeCall.set({ targetEmail: message.senderEmail, isCaller: true });
+        this.callStartTime = Date.now();
         
         // Ensure local stream is ready before creating peer connection
         if (!this.webrtcService.localStream()) {
@@ -112,9 +116,13 @@ export class CallSignalingService {
         break;
 
       case 'CALL_REJECTED':
+        this.endCall('MISSED');
+        break;
       case 'BUSY':
+        this.endCall('BUSY');
+        break;
       case 'HANG_UP':
-        this.endCall();
+        this.endCall('ENDED');
         break;
 
       case 'OFFER':
@@ -218,6 +226,7 @@ export class CallSignalingService {
   public async acceptCall(targetEmail: string) {
     this.incomingCall.set(null);
     this.activeCall.set({ targetEmail, isCaller: false });
+    this.callStartTime = Date.now();
     
     await this.webrtcService.initializeLocalStream(true, true);
     
@@ -229,12 +238,12 @@ export class CallSignalingService {
   }
 
   public rejectCall(targetEmail: string) {
-    this.incomingCall.set(null);
     this.sendSignal({
       type: 'CALL_REJECTED',
       senderEmail: '',
       targetEmail: targetEmail
     });
+    this.endCall('MISSED');
   }
 
   public hangUpCall() {
@@ -246,12 +255,30 @@ export class CallSignalingService {
         targetEmail: call.targetEmail
       });
     }
-    this.endCall();
+    this.endCall('ENDED');
   }
 
-  private endCall() {
+  private endCall(status: 'ENDED' | 'MISSED' | 'BUSY' = 'ENDED') {
+    const call = this.activeCall();
+    const incoming = this.incomingCall();
+    const targetEmail = call?.targetEmail || incoming?.senderEmail;
+    const isCaller = call?.isCaller ?? true;
+    
+    if (targetEmail) {
+      let durationStr = '00:00';
+      if (this.callStartTime && status === 'ENDED') {
+        const diffInSeconds = Math.floor((Date.now() - this.callStartTime) / 1000);
+        const mins = Math.floor(diffInSeconds / 60);
+        const secs = diffInSeconds % 60;
+        durationStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }
+      
+      this.callEnded.next({ durationStr, status, targetEmail, isCaller });
+    }
+
     this.incomingCall.set(null);
     this.activeCall.set(null);
+    this.callStartTime = null;
     this.peerConnectionInitialized = false;
     this.webrtcService.closeConnection();
   }
