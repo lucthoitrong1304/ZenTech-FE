@@ -20,6 +20,7 @@ export class CallSignalingService {
   private pendingCallTargetEmail: string | null = null;
   private authStorageService = inject(AuthStorageService);
   private webrtcService = inject(WebRTCService);
+  private peerConnectionInitialized = false;
 
   // Global Call State Signals
   public incomingCall = signal<{ senderEmail: string } | null>(null);
@@ -85,10 +86,21 @@ export class CallSignalingService {
           await this.webrtcService.initializeLocalStream(true, true);
         }
 
-        this.webrtcService.createPeerConnection(
-          (candidate) => this.sendIceCandidate(message.senderEmail, candidate),
-          (stream) => console.log('Remote stream received', stream)
-        );
+        if (!this.peerConnectionInitialized) {
+          this.webrtcService.createPeerConnection(
+            (candidate) => this.sendIceCandidate(message.senderEmail, candidate),
+            (stream) => console.log('Remote stream received', stream),
+            (offer) => {
+              this.sendSignal({
+                type: 'OFFER',
+                senderEmail: '',
+                targetEmail: message.senderEmail,
+                sdp: JSON.stringify(offer)
+              });
+            }
+          );
+          this.peerConnectionInitialized = true;
+        }
 
         const offer = await this.webrtcService.createOffer();
         this.sendSignal({
@@ -106,11 +118,23 @@ export class CallSignalingService {
         break;
 
       case 'OFFER':
-        // We received an offer (we are the callee who accepted)
-        this.webrtcService.createPeerConnection(
-          (candidate) => this.sendIceCandidate(message.senderEmail, candidate),
-          (stream) => console.log('Remote stream received', stream)
-        );
+        // We received an offer (we are the callee who accepted) or it's a renegotiation offer
+        if (!this.peerConnectionInitialized) {
+          this.webrtcService.createPeerConnection(
+            (candidate) => this.sendIceCandidate(message.senderEmail, candidate),
+            (stream) => console.log('Remote stream received', stream),
+            (offer) => {
+              this.sendSignal({
+                type: 'OFFER',
+                senderEmail: '',
+                targetEmail: message.senderEmail,
+                sdp: JSON.stringify(offer)
+              });
+            }
+          );
+          this.peerConnectionInitialized = true;
+        }
+        
         const answer = await this.webrtcService.createAnswer(JSON.parse(message.sdp!));
         this.sendSignal({
           type: 'ANSWER',
@@ -228,6 +252,7 @@ export class CallSignalingService {
   private endCall() {
     this.incomingCall.set(null);
     this.activeCall.set(null);
+    this.peerConnectionInitialized = false;
     this.webrtcService.closeConnection();
   }
 
