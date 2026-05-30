@@ -10,8 +10,15 @@ export interface CallPeer {
 export class WebRTCService {
   private peerConnection: RTCPeerConnection | null = null;
   private readonly pendingIceCandidates: RTCIceCandidateInit[] = [];
+  
   public localStream = signal<MediaStream | null>(null);
   public remoteStream = signal<MediaStream | null>(null);
+  
+  public localScreenStream = signal<MediaStream | null>(null);
+  public remoteScreenStream = signal<MediaStream | null>(null);
+
+  private senders: Map<string, RTCRtpSender> = new Map();
+  private onNegotiationCallback: ((offer: RTCSessionDescriptionInit) => void) | null = null;
 
   private readonly iceServers = {
     iceServers: [
@@ -35,22 +42,40 @@ export class WebRTCService {
 
   createPeerConnection(
     onIceCandidate: (candidate: RTCIceCandidate) => void,
-    onTrack: (stream: MediaStream) => void
+    onTrack: (stream: MediaStream) => void,
+    onNegotiationNeeded?: (offer: RTCSessionDescriptionInit) => void
   ): RTCPeerConnection {
     this.peerConnection = new RTCPeerConnection(this.iceServers);
+    this.onNegotiationCallback = onNegotiationNeeded || null;
 
     // Add local stream tracks to peer connection
     const currentLocalStream = this.localStream();
     if (currentLocalStream) {
       currentLocalStream.getTracks().forEach(track => {
-        this.peerConnection?.addTrack(track, currentLocalStream);
+        const sender = this.peerConnection?.addTrack(track, currentLocalStream);
+        if (sender) this.senders.set(track.id, sender);
       });
     }
 
     // Listen for remote tracks
     this.peerConnection.ontrack = (event) => {
-      this.remoteStream.set(event.streams[0]);
-      onTrack(event.streams[0]);
+      const stream = event.streams[0];
+      const currentRemote = this.remoteStream();
+      
+      // If we don't have a remote stream yet, it's the main camera/audio stream
+      if (!currentRemote || currentRemote.id === stream.id) {
+        if (!currentRemote) this.remoteStream.set(stream);
+      } else {
+        // Different stream id -> screen share stream
+        this.remoteScreenStream.set(stream);
+        
+        stream.onremovetrack = () => {
+          if (stream.getTracks().length === 0) {
+            this.remoteScreenStream.set(null);
+          }
+        };
+      }
+      onTrack(stream);
     };
 
     // Listen for ICE candidates
@@ -61,6 +86,54 @@ export class WebRTCService {
     };
 
     return this.peerConnection;
+  }
+
+  async startScreenShare(): Promise<void> {
+    if (!this.peerConnection) return;
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      this.localScreenStream.set(screenStream);
+      
+      screenStream.getTracks().forEach(track => {
+        const sender = this.peerConnection?.addTrack(track, screenStream);
+        if (sender) this.senders.set(track.id, sender);
+        
+        // Stop sharing when native browser UI 'Stop sharing' is clicked
+        track.onended = () => {
+          this.stopScreenShare();
+        };
+      });
+      
+      // Manually trigger renegotiation for new tracks
+      if (this.onNegotiationCallback) {
+        const offer = await this.createOffer();
+        this.onNegotiationCallback(offer);
+      }
+    } catch (err) {
+      console.error('Error starting screen share', err);
+    }
+  }
+
+  async stopScreenShare(): Promise<void> {
+    const screenStream = this.localScreenStream();
+    if (screenStream) {
+      let needsRenegotiation = false;
+      screenStream.getTracks().forEach(track => {
+        track.stop();
+        const sender = this.senders.get(track.id);
+        if (sender && this.peerConnection) {
+          this.peerConnection.removeTrack(sender);
+          needsRenegotiation = true;
+        }
+        this.senders.delete(track.id);
+      });
+      this.localScreenStream.set(null);
+      
+      if (needsRenegotiation && this.onNegotiationCallback) {
+        const offer = await this.createOffer();
+        this.onNegotiationCallback(offer);
+      }
+    }
   }
 
   async createOffer(): Promise<RTCSessionDescriptionInit> {
@@ -90,15 +163,11 @@ export class WebRTCService {
       this.pendingIceCandidates.push(candidate);
       return;
     }
-
     await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
   }
 
   private async flushPendingIceCandidates(): Promise<void> {
-    if (!this.peerConnection?.remoteDescription) {
-      return;
-    }
-
+    if (!this.peerConnection?.remoteDescription) return;
     while (this.pendingIceCandidates.length > 0) {
       const candidate = this.pendingIceCandidates.shift();
       if (candidate) {
@@ -108,11 +177,14 @@ export class WebRTCService {
   }
 
   closeConnection() {
+    this.stopScreenShare();
     if (this.peerConnection) {
       this.peerConnection.close();
       this.peerConnection = null;
     }
     this.pendingIceCandidates.length = 0;
+    this.senders.clear();
+    this.onNegotiationCallback = null;
     
     // Stop all local tracks
     const stream = this.localStream();
@@ -121,5 +193,6 @@ export class WebRTCService {
     }
     this.localStream.set(null);
     this.remoteStream.set(null);
+    this.remoteScreenStream.set(null);
   }
 }

@@ -100,6 +100,14 @@ export class CustomerChatPageComponent implements OnInit {
     if (!this.store.session()) {
       this.store.loadSession();
     }
+
+    this.callSignalingService.callEnded.subscribe(
+      ({ durationStr, status, isCaller }) => {
+        if (isCaller) {
+          this.store.sendCallMessage({ duration: durationStr, status });
+        }
+      }
+    );
   }
 
   protected onLogout(): void {

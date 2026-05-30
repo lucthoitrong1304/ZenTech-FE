@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { CallSignalingService } from '../../../../../core/services/call-signaling.service';
 import { MediaPreviewDialogComponent } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
@@ -36,10 +37,26 @@ export class ManagementChatPageComponent implements OnInit {
   private readonly callSignalingService = inject(CallSignalingService);
   protected readonly store = inject(ManagementChatStore);
   protected readonly managementShellUi = inject(ManagementShellUiState);
+  private readonly route = inject(ActivatedRoute);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
 
   ngOnInit(): void {
     this.store.loadWorkspace();
+
+    this.route.queryParams.subscribe(params => {
+      const conversationId = params['conversationId'];
+      if (conversationId) {
+        this.store.selectConversation(conversationId);
+      }
+    });
+
+    this.callSignalingService.callEnded.subscribe(
+      ({ durationStr, status, isCaller }) => {
+        if (isCaller) {
+          this.store.sendCallMessage({ duration: durationStr, status });
+        }
+      }
+    );
   }
 
   protected showAdminSidebar(): void {

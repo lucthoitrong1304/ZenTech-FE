@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { LucideBot, LucideFileText, LucideImage, LucideUserRound } from '@lucide/angular';
+import { LucideBot, LucideFileText, LucideImage, LucideUserRound, LucidePhone } from '@lucide/angular';
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import {
   CustomerChatMessageAttachment,
@@ -11,7 +11,7 @@ import {
 @Component({
   selector: 'app-customer-message-timeline',
   standalone: true,
-  imports: [CommonModule, LucideBot, LucideFileText, LucideImage, LucideUserRound],
+  imports: [CommonModule, LucideBot, LucideFileText, LucideImage, LucideUserRound, LucidePhone],
   templateUrl: './customer-message-timeline.component.html',
   host: {
     class: 'flex min-h-0 flex-1 flex-col',

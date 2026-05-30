@@ -1,0 +1,63 @@
+<div class="relative cursor-pointer" (click)="op.toggle($event)">
+  <svg lucideBell class="w-6 h-6 text-gray-700 hover:text-primary transition-colors"></svg>
+  
+  <span *ngIf="store.hasUnread()" 
+        class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center">
+    {{ store.unreadCount() > 99 ? '99+' : store.unreadCount() }}
+  </span>
+</div>
+
+<p-popover #op styleClass="notification-popover">
+  <div class="flex flex-col w-[350px]">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+      <h3 class="font-semibold text-gray-800">Thông báo</h3>
+      <button *ngIf="store.hasUnread()" 
+              (click)="markAllAsRead()" 
+              class="text-xs text-primary hover:text-primary-hover font-medium">
+        Đánh dấu đã đọc tất cả
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="max-h-[400px] overflow-y-auto">
+      <div *ngIf="store.loading()" class="p-4 text-center text-sm text-gray-500">
+        Đang tải...
+      </div>
+      
+      <div *ngIf="!store.loading() && store.notifications().length === 0" class="p-8 text-center text-gray-500 flex flex-col items-center">
+        <svg lucideBellOff class="w-10 h-10 text-gray-300 mb-3"></svg>
+        <span class="text-sm">Bạn chưa có thông báo nào.</span>
+      </div>
+
+      <div *ngFor="let notification of store.notifications()" 
+           (click)="onNotificationClick(notification, op)"
+           class="p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors relative"
+           [ngClass]="{'bg-blue-50/50': !notification.isRead}">
+        
+        <div class="flex items-start gap-3">
+          <div class="mt-1">
+            <svg *ngIf="notification.type === 'CHAT_MESSAGE'" lucideMessageCircle class="w-5 h-5 text-blue-500"></svg>
+            <svg *ngIf="notification.type === 'ORDER_STATUS'" lucidePackage class="w-5 h-5 text-green-500"></svg>
+            <svg *ngIf="notification.type === 'PROMOTION'" lucideTag class="w-5 h-5 text-primary"></svg>
+            <svg *ngIf="notification.type === 'SYSTEM'" lucideInfo class="w-5 h-5 text-gray-500"></svg>
+          </div>
+          
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate" [ngClass]="{'font-semibold': !notification.isRead}">
+              {{ notification.title }}
+            </p>
+            <p class="text-xs text-gray-600 line-clamp-2 mt-0.5">
+              {{ notification.content }}
+            </p>
+            <p class="text-[11px] text-gray-400 mt-1">
+              {{ notification.createdAt | date:'HH:mm dd/MM/yyyy' }}
+            </p>
+          </div>
+          
+          <div *ngIf="!notification.isRead" class="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</p-popover>

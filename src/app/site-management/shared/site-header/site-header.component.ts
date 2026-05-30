@@ -14,6 +14,7 @@ import {
 } from '@lucide/angular';
 import { PopoverModule } from 'primeng/popover';
 import { HeaderNavItem } from '../site-navigation.models';
+import { NotificationBellComponent } from '../../../shared/components/notification-bell/notification-bell.component';
 
 export interface HeaderUser {
   isAuthenticated: boolean;
@@ -36,7 +37,8 @@ export interface HeaderUser {
     LucideLogIn,
     LucideUserPlus,
     LucideSettings,
-    LucideLogOut
+    LucideLogOut,
+    NotificationBellComponent
   ],
   templateUrl: './site-header.component.html',
   styleUrl: './site-header.component.css'

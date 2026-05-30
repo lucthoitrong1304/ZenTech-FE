@@ -118,7 +118,9 @@ function mapToManagementChatMessage(
     conversationId: m.conversationId,
     sender,
     senderName,
+    messageType: m.messageType,
     body: m.content || '',
+    callData: m.messageType === ChatMessageType.CALL && m.content ? (() => { try { return JSON.parse(m.content); } catch { return undefined; } })() : undefined,
     sentAtLabel: formatTime(m.createdAt),
     attachments: (m.attachments || []).map((attachment) => ({
       id: attachment.id,
@@ -311,7 +313,6 @@ export const ManagementChatStore = signalStore(
             setAllEntities(event.workspace.messages, MESSAGE_ENTITY_CONFIG),
             setAllEntities(event.workspace.mediaItems, MEDIA_ENTITY_CONFIG),
             {
-              selectedConversationId: null,
               loading: false,
               errorMessage: null,
             }
@@ -600,6 +601,23 @@ export const ManagementChatStore = signalStore(
       )
     );
 
+    const sendCallMessage = rxMethod<{ duration: string; status: 'ENDED' | 'MISSED' | 'BUSY' }>(
+      pipe(
+        tap(({ duration, status }) => {
+          const conversationId = store.selectedConversationId();
+          if (!conversationId) return;
+
+          const messageRequest = {
+            messageType: ChatMessageType.CALL,
+            content: JSON.stringify({ duration, status }),
+            attachments: [],
+          };
+
+          websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
+        })
+      )
+    );
+
     const sendStaffMessage = rxMethod<string>(
       pipe(
         map((body) => body.trim()),
@@ -761,6 +779,7 @@ export const ManagementChatStore = signalStore(
       acceptConversation,
       closeConversation,
       sendStaffMessage,
+      sendCallMessage,
       selectStaffFiles,
       removeStaffUpload(uploadId: string): void {
         patchState(store, removeEntity(uploadId, UPLOAD_ENTITY_CONFIG));

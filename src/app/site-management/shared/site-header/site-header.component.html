@@ -78,6 +78,10 @@
         </span>
       </button>
 
+      @if (isAuthenticated()) {
+        <app-notification-bell class="flex items-center justify-center mr-2"></app-notification-bell>
+      }
+
       <button
         #accountTrigger
         type="button"
