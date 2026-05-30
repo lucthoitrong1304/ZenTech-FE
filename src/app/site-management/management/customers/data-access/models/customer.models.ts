@@ -23,6 +23,7 @@ export interface CustomerSummary {
   totalOrders: number;
   totalSpent: number;
   lastOrderAt: string | null;
+  imageUrl: string | null;
 }
 
 export interface CustomerAddress {

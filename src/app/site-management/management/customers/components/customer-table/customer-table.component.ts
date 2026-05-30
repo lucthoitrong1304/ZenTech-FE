@@ -40,6 +40,10 @@ export class CustomerTableComponent {
 
   protected readonly skeletonRows = Array.from({ length: 5 });
 
+  protected getDisplayIndex(index: number): number {
+    return this.page() * this.size() + index + 1;
+  }
+
   protected get firstItemIndex(): number {
     if (this.totalElements() === 0) {
       return 0;

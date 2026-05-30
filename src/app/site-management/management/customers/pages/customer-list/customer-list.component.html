@@ -1,11 +1,11 @@
 <section class="customer-page">
-  <header class="customer-page__header">
-    <div>
-      <p>Điều hành kinh doanh</p>
-      <h1>Khách hàng</h1>
-      <span>Quản lý hồ sơ khách hàng, trạng thái tài khoản và lịch sử mua hàng.</span>
+  <div class="customer-command">
+    <div class="customer-command__copy">
+      <span class="customer-kicker">Customer Registry Matrix</span>
+      <h2>Quản lý khách hàng</h2>
+      <p>Quản lý hồ sơ khách hàng, kiểm soát quyền truy cập và phân tích lịch sử giao dịch.</p>
     </div>
-  </header>
+  </div>
 
   <app-customer-toolbar
     [keyword]="store.query().keyword"
@@ -21,16 +21,16 @@
 
   <div class="customer-page__stats">
     <article>
-      <span>Tổng khách hàng</span>
+      <span>Tổng số khách hàng</span>
       <strong>{{ store.totalElements() }}</strong>
     </article>
     <article>
-      <span>Trang hiện tại</span>
-      <strong>{{ store.totalPages() === 0 ? 0 : store.query().page + 1 }}</strong>
+      <span>Trạng thái lọc</span>
+      <strong>{{ activeFilterLabel() }}</strong>
     </article>
     <article>
-      <span>Đang hiển thị</span>
-      <strong>{{ store.customers().length }}</strong>
+      <span>Tiêu chí sắp xếp</span>
+      <strong>{{ sortLabel() }}</strong>
     </article>
   </div>
 
