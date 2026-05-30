@@ -136,8 +136,8 @@ export const managementRoutes: Routes = [
           primaryAction: 'Tạo chiến dịch',
         },
         loadComponent: () =>
-          import('./pages/management-placeholder/management-placeholder.component').then(
-            m => m.ManagementPlaceholderComponent
+          import('./marketing/pages/marketing-page/marketing-page.component').then(
+            m => m.MarketingPageComponent
           ),
       },
       {

@@ -1,0 +1,56 @@
+<div class="coupon-toolbar">
+  <div class="search-box">
+    <svg lucideSearch class="search-icon" [attr.stroke-width]="2"></svg>
+    <input
+      type="text"
+      placeholder="Tìm kiếm mã ưu đãi (Ví dụ: SUMMER2026)..."
+      [ngModel]="keyword()"
+      (input)="onKeywordInput($event)"
+      (keyup.enter)="applyFilters.emit()"
+      class="search-input"
+    />
+  </div>
+
+  <div class="filters-container">
+    <div class="filter-select-group">
+      <label for="typeFilter" class="filter-label">Loại ưu đãi</label>
+      <select
+        id="typeFilter"
+        [ngModel]="couponType()"
+        (ngModelChange)="onTypeChange($event)"
+        class="filter-select"
+      >
+        @for (opt of couponTypes; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-select-group">
+      <label for="activeFilter" class="filter-label">Trạng thái</label>
+      <select
+        id="activeFilter"
+        [ngModel]="activeStatus()"
+        (ngModelChange)="onActiveChange($event)"
+        class="filter-select"
+      >
+        @for (opt of activeOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="button-group">
+      <button type="button" class="btn-apply" (click)="applyFilters.emit()" [disabled]="loading()">
+        <span>Lọc kết quả</span>
+      </button>
+
+      @if (activeFilterCount() > 0) {
+        <button type="button" class="btn-reset" (click)="resetFilters.emit()">
+          <svg lucideX class="reset-icon" [attr.stroke-width]="2.2"></svg>
+          <span>Xóa bộ lọc ({{ activeFilterCount() }})</span>
+        </button>
+      }
+    </div>
+  </div>
+</div>

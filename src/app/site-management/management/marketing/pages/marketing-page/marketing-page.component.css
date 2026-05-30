@@ -1,0 +1,187 @@
+@import "tailwindcss" reference;
+
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.marketing-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 4px;
+}
+
+.marketing-header {
+  @apply flex flex-col md:flex-row md:items-end justify-between gap-6;
+}
+
+.marketing-eyebrow {
+  @apply flex items-center gap-2 mb-2.5 text-[#6B7280] text-[10px] font-extrabold uppercase tracking-widest;
+}
+
+.marketing-eyebrow strong {
+  @apply text-[#4F46E5];
+}
+
+.marketing-header h1 {
+  @apply text-3xl md:text-4xl font-extrabold text-[#111827] tracking-tight m-0;
+}
+
+.marketing-header p {
+  @apply text-sm text-[#6B7280] mt-1.5 max-w-[680px] m-0;
+}
+
+.header-actions {
+  @apply flex items-center gap-2 flex-wrap;
+}
+
+.btn-create-header {
+  @apply flex items-center gap-2 px-5 py-3 rounded-full bg-[#FFC700] text-[#111827] font-black text-xs uppercase tracking-wider hover:bg-[#FFD633] transition-all shadow-md shadow-[#FFC700]/10;
+}
+
+.btn-issue-header {
+  @apply flex items-center gap-2 px-5 py-3 rounded-full bg-[#4F46E5] text-white font-bold text-xs uppercase tracking-wider hover:bg-[#4338CA] transition-all shadow-md shadow-[#4F46E5]/10;
+}
+
+.kpi-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4;
+}
+
+.kpi-card {
+  @apply flex items-start gap-4 p-5 rounded-2xl border border-[#E5E7EB] shadow-sm min-h-[120px] transition-all;
+}
+
+.kpi-card--highlighted {
+  @apply bg-[#FFC700] border-[#FFC700] text-[#111827];
+}
+
+.kpi-card p {
+  @apply text-xs font-bold text-[#6B7280] uppercase tracking-wider m-0;
+}
+
+.kpi-card--highlighted p {
+  @apply text-[#765b00];
+}
+
+.kpi-card strong {
+  @apply text-2xl font-black text-[#111827] mt-1 block;
+}
+
+.kpi-card small {
+  @apply text-xs text-[#6B7280] mt-1 block;
+}
+
+.kpi-card--highlighted small {
+  @apply text-[#765b00];
+}
+
+.kpi-icon {
+  @apply flex items-center justify-center w-11 h-11 rounded-full bg-[#F3F4F6] text-[#111827] flex-shrink-0;
+}
+
+.kpi-card--highlighted .kpi-icon {
+  @apply bg-white/20 text-[#111827];
+}
+
+.kpi-icon--indigo {
+  @apply bg-indigo-50 text-indigo-700;
+}
+
+.kpi-icon--emerald {
+  @apply bg-emerald-50 text-emerald-700;
+}
+
+.kpi-icon--amber {
+  @apply bg-amber-50 text-amber-700;
+}
+
+.tabs-container {
+  @apply flex border-b border-[#E5E7EB] gap-2 overflow-x-auto whitespace-nowrap;
+  scrollbar-width: none;
+}
+
+.tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  @apply flex items-center gap-2 px-6 py-3.5 text-sm font-semibold text-[#6B7280] border-b-2 border-transparent transition-all;
+}
+
+.tab-icon {
+  @apply text-[#9CA3AF];
+}
+
+.active-tab {
+  @apply text-[#4F46E5] border-[#4F46E5];
+}
+
+.active-tab .tab-icon {
+  @apply text-[#4F46E5];
+}
+
+.tab-content {
+  @apply flex flex-col gap-6 w-full overflow-hidden;
+  min-width: 0;
+}
+
+.voucher-search-bar {
+  @apply flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-[#F9FAFB] p-4 rounded-xl border border-[#E5E7EB];
+}
+
+.v-search-box {
+  @apply relative flex-1 min-w-[280px];
+}
+
+.v-search-icon {
+  @apply absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B7280];
+}
+
+.v-search-input {
+  @apply w-full pl-11 pr-4 py-2.5 rounded-full border border-[#E5E7EB] bg-white text-sm text-[#111827] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition-all;
+}
+
+.v-filters {
+  @apply flex flex-wrap items-center gap-3;
+}
+
+.v-filter-input {
+  @apply px-4 py-2.5 rounded-full border border-[#E5E7EB] bg-white text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] w-40 transition-all;
+}
+
+.v-filter-select {
+  @apply px-4 py-2.5 rounded-full border border-[#E5E7EB] bg-white text-sm text-[#111827] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] cursor-pointer transition-all;
+}
+
+.v-buttons {
+  @apply flex items-center gap-2;
+}
+
+.v-btn-apply {
+  @apply px-5 py-2.5 rounded-full bg-[#4F46E5] text-white text-sm font-semibold hover:bg-[#4338CA] transition-all;
+}
+
+.v-btn-reset {
+  @apply flex items-center gap-1 px-4 py-2.5 rounded-full border border-[#E5E7EB] hover:bg-red-50 hover:text-red-600 text-sm font-semibold transition-all;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

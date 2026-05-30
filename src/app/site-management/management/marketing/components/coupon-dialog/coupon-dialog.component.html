@@ -1,0 +1,230 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="close.emit()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [showHeader]="false"
+  styleClass="coupon-p-dialog"
+>
+  <div class="dialog-wrapper">
+    <!-- Header -->
+    <header class="dialog-header">
+      <div>
+        <h2>{{ mode() === 'create' ? 'Tạo mã ưu đãi mới' : 'Chỉnh sửa mã ưu đãi' }}</h2>
+        <p>Thiết lập chiến dịch marketing thông minh cho cửa hàng.</p>
+      </div>
+      <button type="button" class="close-btn" (click)="close.emit()">
+        <svg lucideX class="close-icon"></svg>
+      </button>
+    </header>
+
+    @if (loadingDetail()) {
+      <div class="dialog-loading">
+        <div class="spinner"></div>
+        <p>Đang tải thông tin chi tiết...</p>
+      </div>
+    } @else if (draft()) {
+      <!-- Stepper Progress -->
+      <nav class="stepper-nav">
+        @for (s of steps; track s.step) {
+          <div class="step-item" [class.active-step]="currentStep() === s.step" [class.completed-step]="currentStep() > s.step">
+            <span class="step-number">{{ s.step }}</span>
+            <span class="step-label">{{ s.label }}</span>
+          </div>
+        }
+      </nav>
+
+      <!-- Form Content -->
+      <form (submit)="$event.preventDefault()" class="dialog-form">
+        <!-- ERROR MESSAGE -->
+        @if (errors()['submit']) {
+          <div class="submit-error">
+            <svg lucideTriangleAlert class="alert-icon"></svg>
+            <span>{{ errors()['submit'] }}</span>
+          </div>
+        }
+
+        <!-- STEP 1: THÔNG TIN CHUNG -->
+        @if (currentStep() === 1) {
+          <div class="form-step-content">
+            <div class="form-group">
+              <label for="couponCode" class="form-label">Mã giảm giá <strong class="text-rose-500">*</strong></label>
+              <input
+                id="couponCode"
+                type="text"
+                [ngModel]="draft()!.code"
+                (ngModelChange)="updateValue('code', $event)"
+                name="code"
+                placeholder="Ví dụ: GAMINGGEAR30"
+                class="form-input text-mono font-bold"
+              />
+              <small class="form-tip">Viết hoa, viết liền, không dấu, tối đa 50 ký tự.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="couponType" class="form-label">Loại giảm giá <strong class="text-rose-500">*</strong></label>
+              <select
+                id="couponType"
+                [ngModel]="draft()!.type"
+                (ngModelChange)="updateValue('type', $event)"
+                name="type"
+                class="form-select"
+              >
+                <option [value]="CouponType.PERCENTAGE">Phần trăm (%)</option>
+                <option [value]="CouponType.FIXED_AMOUNT">Số tiền cố định (VND)</option>
+                <option [value]="CouponType.FREE_SHIPPING">Miễn phí vận chuyển (Free Ship)</option>
+              </select>
+            </div>
+
+            @if (draft()!.type !== CouponType.FREE_SHIPPING) {
+              <div class="form-group">
+                <label for="discountValue" class="form-label">
+                  Mức giảm giá <strong class="text-rose-500">*</strong>
+                  ({{ draft()!.type === CouponType.PERCENTAGE ? '%' : 'VND' }})
+                </label>
+                <input
+                  id="discountValue"
+                  type="number"
+                  [ngModel]="draft()!.discountValue"
+                  (ngModelChange)="updateValue('discountValue', $event)"
+                  name="discountValue"
+                  placeholder="Ví dụ: 10 hoặc 50000"
+                  class="form-input"
+                  min="0"
+                />
+              </div>
+            }
+          </div>
+        }
+
+        <!-- STEP 2: ĐIỀU KIỆN ÁP DỤNG -->
+        @if (currentStep() === 2) {
+          <div class="form-step-content">
+            <div class="form-group">
+              <label for="minOrderAmount" class="form-label">Giá trị đơn hàng tối thiểu (VND)</label>
+              <input
+                id="minOrderAmount"
+                type="number"
+                [ngModel]="draft()!.minOrderAmount"
+                (ngModelChange)="updateValue('minOrderAmount', $event)"
+                name="minOrderAmount"
+                placeholder="Ví dụ: 150000 (0 nghĩa là không giới hạn)"
+                class="form-input"
+                min="0"
+              />
+              <small class="form-tip">Đơn hàng cần đạt mức tối thiểu này để được áp dụng mã.</small>
+            </div>
+
+            @if (draft()!.type === CouponType.PERCENTAGE) {
+              <div class="form-group">
+                <label for="maxDiscount" class="form-label">Mức giảm tối đa (VND)</label>
+                <input
+                  id="maxDiscount"
+                  type="number"
+                  [ngModel]="draft()!.maxDiscount"
+                  (ngModelChange)="updateValue('maxDiscount', $event)"
+                  name="maxDiscount"
+                  placeholder="Ví dụ: 50000 (0 nghĩa là không giới hạn)"
+                  class="form-input"
+                  min="0"
+                />
+                <small class="form-tip">Số tiền tối đa khách hàng được giảm đối với mã giảm giá theo %.</small>
+              </div>
+            } @else {
+              <div class="form-empty-condition">
+                <svg lucideSparkles class="condition-icon"></svg>
+                <p>Không có điều kiện phụ cho loại mã này.</p>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- STEP 3: GIỚI HẠN & THỜI GIAN -->
+        @if (currentStep() === 3) {
+          <div class="form-step-content">
+            <div class="form-row-grid">
+              <div class="form-group">
+                <label for="startAt" class="form-label">Thời gian bắt đầu</label>
+                <input
+                  id="startAt"
+                  type="datetime-local"
+                  [ngModel]="draft()!.startAt"
+                  (ngModelChange)="updateValue('startAt', $event)"
+                  name="startAt"
+                  class="form-input"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="endAt" class="form-label">Thời gian kết thúc</label>
+                <input
+                  id="endAt"
+                  type="datetime-local"
+                  [ngModel]="draft()!.endAt"
+                  (ngModelChange)="updateValue('endAt', $event)"
+                  name="endAt"
+                  class="form-input"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="usageLimit" class="form-label">Tổng lượt sử dụng toàn hệ thống</label>
+              <input
+                id="usageLimit"
+                type="number"
+                [ngModel]="draft()!.usageLimit"
+                (ngModelChange)="updateValue('usageLimit', $event)"
+                name="usageLimit"
+                placeholder="Ví dụ: 100"
+                class="form-input"
+                min="1"
+              />
+              <small class="form-tip">Tổng số lần mã này được sử dụng trên toàn hệ thống trước khi hết hiệu lực.</small>
+            </div>
+
+            <div class="form-group-checkbox">
+              <label class="checkbox-container">
+                <input
+                  type="checkbox"
+                  [ngModel]="draft()!.active"
+                  (ngModelChange)="updateValue('active', $event)"
+                  name="active"
+                />
+                <span class="checkmark"></span>
+                <span class="checkbox-label">Bật kích hoạt hoạt động ngay lập tức</span>
+              </label>
+            </div>
+          </div>
+        }
+
+        <!-- Footer Buttons -->
+        <footer class="dialog-footer">
+          <div class="footer-left">
+            @if (currentStep() > 1) {
+              <button type="button" class="btn-prev" (click)="prevStep()">
+                <span>Quay lại</span>
+              </button>
+            }
+          </div>
+          <div class="footer-right">
+            <button type="button" class="btn-cancel" (click)="close.emit()" [disabled]="saving()">
+              <span>Hủy</span>
+            </button>
+
+            @if (currentStep() < 3) {
+              <button type="button" class="btn-next" (click)="nextStep()">
+                <span>Tiếp theo</span>
+              </button>
+            } @else {
+              <button type="button" class="btn-save" (click)="onSubmit()" [disabled]="saving()">
+                <span>{{ saving() ? 'Đang lưu...' : (mode() === 'create' ? 'Tạo mã mới' : 'Lưu thay đổi') }}</span>
+              </button>
+            }
+          </div>
+        </footer>
+      </form>
+    }
+  </div>
+</p-dialog>
