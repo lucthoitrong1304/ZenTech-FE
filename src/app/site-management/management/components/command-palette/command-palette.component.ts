@@ -14,7 +14,7 @@ import {
   LucideUsers,
   LucideMessageCircle,
 } from '@lucide/angular';
-import { CommandPaletteService, CommandPaletteItem } from '../../../core/services/command-palette.service';
+import { CommandPaletteService, CommandPaletteItem } from '../../data-access/services/command-palette.service';
 
 @Component({
   selector: 'app-command-palette',

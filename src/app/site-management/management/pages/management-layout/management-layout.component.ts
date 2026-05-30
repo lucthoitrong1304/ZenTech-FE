@@ -31,8 +31,8 @@ import { filter } from 'rxjs';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { ManagementShellUiState } from '../../data-access/state/management-shell-ui.state';
-import { CommandPaletteComponent } from '../../../../shared/components/command-palette/command-palette.component';
-import { CommandPaletteService } from '../../../../core/services/command-palette.service';
+import { CommandPaletteComponent } from '../../components/command-palette/command-palette.component';
+import { CommandPaletteService } from '../../data-access/services/command-palette.service';
 
 export enum ProfileMenuOption {
   Profile = 'PROFILE',

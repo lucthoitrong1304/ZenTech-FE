@@ -1,11 +1,11 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
-import { ApiService } from '../api/api.service';
-import { environment } from '../../../environments/environment';
-import { CommandPaletteGroup, ApiResponseDto, GlobalSearchResponse } from './command-palette.models';
+import { ApiService } from '../../../../core/api/api.service';
+import { environment } from '../../../../../environments/environment';
+import { CommandPaletteGroup, ApiResponseDto, GlobalSearchResponse } from '../models/command-palette.models';
 
-export type { CommandPaletteItem, CommandPaletteGroup } from './command-palette.models';
+export type { CommandPaletteItem, CommandPaletteGroup } from '../models/command-palette.models';
 
 @Injectable({
   providedIn: 'root'
