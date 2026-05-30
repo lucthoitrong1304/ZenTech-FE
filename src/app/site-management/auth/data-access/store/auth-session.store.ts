@@ -81,6 +81,7 @@ export const AuthSessionStore = signalStore(
                       ...currentUser,
                       fullName,
                       avatarUrl,
+                      hasRegisteredFace: res.data.hasRegisteredFace,
                     },
                   });
                 }
@@ -125,6 +126,22 @@ export const AuthSessionStore = signalStore(
                 isPasswordSet,
               },
             });
+          }
+        },
+        updateFaceRegistrationStatus(hasRegisteredFace: boolean): void {
+          const currentUser = store.currentUser();
+          if (currentUser) {
+            const updatedUser = { ...currentUser, hasRegisteredFace };
+            
+            patchState(store, {
+              currentUser: updatedUser,
+            });
+            
+            const session = authStorageService.getSession();
+            if (session) {
+              session.hasRegisteredFace = hasRegisteredFace;
+              localStorage.setItem('auth_session', JSON.stringify(session));
+            }
           }
         },
         setSession(response: AuthSessionSource): void {

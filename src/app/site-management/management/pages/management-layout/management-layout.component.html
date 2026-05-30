@@ -9,6 +9,18 @@
     </nav>
 
     <div class="management-topbar__actions">
+      @if (canUseCheckin()) {
+        <button
+          type="button"
+          class="management-icon-button"
+          aria-label="Check-in"
+          title="Check-in"
+          [disabled]="checkinSubmitting()"
+          (click)="openCheckinDialog()"
+        >
+          <svg lucideScanFace [attr.stroke-width]="2"></svg>
+        </button>
+      }
       <button type="button" class="management-icon-button" aria-label="Tìm kiếm" (click)="commandPaletteService.open()">
         <svg lucideSearch [attr.stroke-width]="2"></svg>
       </button>
@@ -184,5 +196,17 @@
     </div>
   </div>
 </p-popover>
+
+<app-face-checkin-dialog
+  [visible]="checkinDialogVisible()"
+  (onClose)="closeCheckinDialog()"
+  (onSuccess)="handleCheckinSuccess($event)"
+/>
+
+<app-face-register-dialog
+  [visible]="registerDialogVisible()"
+  (onClose)="closeRegisterDialog()"
+  (onSuccess)="handleRegisterSuccess($event)"
+/>
 
 <app-command-palette />

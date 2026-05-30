@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, computed, inject, signal, effect } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
@@ -17,6 +18,7 @@ import {
   LucideMessageCircle,
   LucidePackage,
   LucidePlus,
+  LucideScanFace,
   LucideSearch,
   LucideSettings,
   LucideShoppingBag,
@@ -27,13 +29,20 @@ import {
 } from '@lucide/angular';
 import { PopoverModule } from 'primeng/popover';
 import { DialogModule } from 'primeng/dialog';
-import { filter } from 'rxjs';
+import { filter, finalize } from 'rxjs';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
+import { FaceCheckinData, FaceCheckinDialogComponent } from '../../../../shared/components/face-checkin-dialog/face-checkin-dialog.component';
+import { FaceRegisterData, FaceRegisterDialogComponent } from '../../../../shared/components/face-register-dialog/face-register-dialog.component';
+import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { Role } from '../../../auth/data-access/models/auth.enums';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
+import { hasRole } from '../../../auth/data-access/utils/auth-role.utils';
 import { ManagementShellUiState } from '../../data-access/state/management-shell-ui.state';
 import { CommandPaletteComponent } from '../../components/command-palette/command-palette.component';
 import { CommandPaletteService } from '../../data-access/services/command-palette.service';
 import { NotificationBellComponent } from '../../../../shared/components/notification-bell/notification-bell.component';
+import { AttendanceService } from '../../data-access/services/attendance.service';
+import { ProfileService } from '../../data-access/services/profile.service';
 
 export enum ProfileMenuOption {
   Profile = 'PROFILE',
@@ -75,7 +84,6 @@ const DEFAULT_HEADER: ManagementHeaderState = {
     RouterOutlet,
     PopoverModule,
     DialogModule,
-    LucideBell,
     LucideBot,
     LucideChartBar,
     LucideChartNoAxesCombined,
@@ -86,6 +94,7 @@ const DEFAULT_HEADER: ManagementHeaderState = {
     LucideMegaphone,
     LucideMessageCircle,
     LucidePackage,
+    LucideScanFace,
     LucideSearch,
     LucideSettings,
     LucideShoppingBag,
@@ -93,6 +102,8 @@ const DEFAULT_HEADER: ManagementHeaderState = {
     LucideUsers,
     LucideWarehouse,
     CommandPaletteComponent,
+    FaceCheckinDialogComponent,
+    FaceRegisterDialogComponent,
     NotificationBellComponent,
   ],
   providers: [ManagementShellUiState],
@@ -105,19 +116,33 @@ export class ManagementLayoutComponent {
   private readonly destroyRef = inject(DestroyRef);
   private readonly authSessionStore = inject(AuthSessionStore);
   private readonly authStorageService = inject(AuthStorageService);
+  private readonly attendanceService = inject(AttendanceService);
+  private readonly profileService = inject(ProfileService);
+  private readonly toastService = inject(ToastService);
   protected readonly managementShellUi = inject(ManagementShellUiState);
   protected readonly commandPaletteService = inject(CommandPaletteService);
   protected readonly ProfileMenuOption = ProfileMenuOption;
 
-
   protected readonly header = signal<ManagementHeaderState>(DEFAULT_HEADER);
   protected readonly currentUrl = signal(this.router.url);
+  protected readonly checkinDialogVisible = signal(false);
+  protected readonly registerDialogVisible = signal(false);
+  protected readonly checkinSubmitting = signal(false);
   protected readonly expandedNavKeys = signal<ReadonlySet<string>>(new Set(['products']));
   protected readonly chatSidebarActive = computed(
     () => this.isChatRoute(this.currentUrl()) && this.managementShellUi.sidebarMode() === 'chatFilters'
   );
   protected readonly showAdminSidebar = computed(() => !this.chatSidebarActive());
   protected readonly currentUser = this.authSessionStore.currentUser;
+  protected readonly canUseCheckin = computed(() => {
+    const roles = this.currentUser()?.roles ?? [];
+
+    return (
+      hasRole(roles, Role.OWNER) ||
+      hasRole(roles, Role.MANAGER) ||
+      hasRole(roles, Role.EMPLOYEE)
+    );
+  });
   protected readonly accountInitials = computed(() => {
     let name = this.currentUser()?.fullName?.trim();
     if (!name) return 'ZT';
@@ -276,6 +301,86 @@ export class ManagementLayoutComponent {
     }
   }
 
+  protected openCheckinDialog(): void {
+    if (!this.canUseCheckin() || this.checkinSubmitting()) {
+      return;
+    }
+
+    const user = this.currentUser();
+    if (user && !user.hasRegisteredFace) {
+      this.registerDialogVisible.set(true);
+    } else {
+      this.checkinDialogVisible.set(true);
+    }
+  }
+
+  protected closeCheckinDialog(): void {
+    this.checkinDialogVisible.set(false);
+  }
+
+  protected handleCheckinSuccess(data: FaceCheckinData): void {
+    if (this.checkinSubmitting()) {
+      return;
+    }
+
+    this.checkinDialogVisible.set(false);
+    this.checkinSubmitting.set(true);
+
+    this.attendanceService
+      .checkIn({ faceDescriptor: Array.from(data.descriptor) })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.checkinSubmitting.set(false))
+      )
+      .subscribe({
+        next: response => {
+          if (response.success) {
+            this.toastService.success(response.message || 'Check-in thành công');
+            return;
+          }
+
+          this.toastService.error(response.message || 'Check-in thất bại. Vui lòng thử lại.');
+        },
+        error: error => {
+          this.toastService.error(readCheckinError(error));
+        },
+      });
+  }
+
+  protected closeRegisterDialog(): void {
+    this.registerDialogVisible.set(false);
+  }
+
+  protected handleRegisterSuccess(data: FaceRegisterData): void {
+    if (this.checkinSubmitting()) {
+      return;
+    }
+
+    this.registerDialogVisible.set(false);
+    this.checkinSubmitting.set(true);
+
+    this.profileService
+      .registerFace([Array.from(data.descriptor)])
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.checkinSubmitting.set(false))
+      )
+      .subscribe({
+        next: response => {
+          if (response.success) {
+            this.authSessionStore.updateFaceRegistrationStatus(true);
+            this.toastService.success(response.message || 'Đăng ký khuôn mặt thành công');
+            return;
+          }
+
+          this.toastService.error(response.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+        },
+        error: error => {
+          this.toastService.error(readCheckinError(error));
+        },
+      });
+  }
+
 
 
   private syncSidebarMode(): void {
@@ -311,4 +416,25 @@ export class ManagementLayoutComponent {
 
     return activeRoute?.snapshot?.data ?? {};
   }
+}
+
+function readCheckinError(error: unknown): string {
+  if (error instanceof HttpErrorResponse && hasApiMessage(error.error)) {
+    const message = error.error.message.trim();
+
+    if (message) {
+      return message;
+    }
+  }
+
+  return 'Check-in thất bại. Vui lòng thử lại.';
+}
+
+function hasApiMessage(value: unknown): value is { message: string } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'message' in value &&
+    typeof value.message === 'string'
+  );
 }

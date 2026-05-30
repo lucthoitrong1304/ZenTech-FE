@@ -17,6 +17,7 @@ export interface EmployeeProfileResponse {
   address: string | null;
   dateOfBirth: string | null;
   isActive: boolean;
+  hasRegisteredFace: boolean;
 }
 
 export interface EmployeeProfileUpdateRequest {
