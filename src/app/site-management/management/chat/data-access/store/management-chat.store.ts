@@ -313,7 +313,6 @@ export const ManagementChatStore = signalStore(
             setAllEntities(event.workspace.messages, MESSAGE_ENTITY_CONFIG),
             setAllEntities(event.workspace.mediaItems, MEDIA_ENTITY_CONFIG),
             {
-              selectedConversationId: null,
               loading: false,
               errorMessage: null,
             }

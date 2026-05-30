@@ -12,9 +12,9 @@
       <button type="button" class="management-icon-button" aria-label="Tìm kiếm" (click)="commandPaletteService.open()">
         <svg lucideSearch [attr.stroke-width]="2"></svg>
       </button>
-      <button type="button" class="management-icon-button" aria-label="Thông báo">
-        <svg lucideBell [attr.stroke-width]="2"></svg>
-      </button>
+      <div class="management-icon-button flex items-center justify-center">
+        <app-notification-bell></app-notification-bell>
+      </div>
       <button
         type="button"
         class="management-account-trigger"

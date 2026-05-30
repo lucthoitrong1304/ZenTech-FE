@@ -33,6 +33,7 @@ import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.s
 import { ManagementShellUiState } from '../../data-access/state/management-shell-ui.state';
 import { CommandPaletteComponent } from '../../components/command-palette/command-palette.component';
 import { CommandPaletteService } from '../../data-access/services/command-palette.service';
+import { NotificationBellComponent } from '../../../../shared/components/notification-bell/notification-bell.component';
 
 export enum ProfileMenuOption {
   Profile = 'PROFILE',
@@ -92,6 +93,7 @@ const DEFAULT_HEADER: ManagementHeaderState = {
     LucideUsers,
     LucideWarehouse,
     CommandPaletteComponent,
+    NotificationBellComponent,
   ],
   providers: [ManagementShellUiState],
   templateUrl: './management-layout.component.html',
