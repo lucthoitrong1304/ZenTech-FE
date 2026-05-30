@@ -9,7 +9,7 @@
     </nav>
 
     <div class="management-topbar__actions">
-      <button type="button" class="management-icon-button" aria-label="Tìm kiếm">
+      <button type="button" class="management-icon-button" aria-label="Tìm kiếm" (click)="commandPaletteService.open()">
         <svg lucideSearch [attr.stroke-width]="2"></svg>
       </button>
       <button type="button" class="management-icon-button" aria-label="Thông báo">
@@ -184,3 +184,5 @@
     </div>
   </div>
 </p-popover>
+
+<app-command-palette />

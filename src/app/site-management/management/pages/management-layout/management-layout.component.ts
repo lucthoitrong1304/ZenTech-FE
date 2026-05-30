@@ -31,6 +31,8 @@ import { filter } from 'rxjs';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { ManagementShellUiState } from '../../data-access/state/management-shell-ui.state';
+import { CommandPaletteComponent } from '../../components/command-palette/command-palette.component';
+import { CommandPaletteService } from '../../data-access/services/command-palette.service';
 
 export enum ProfileMenuOption {
   Profile = 'PROFILE',
@@ -89,6 +91,7 @@ const DEFAULT_HEADER: ManagementHeaderState = {
     LucideUser,
     LucideUsers,
     LucideWarehouse,
+    CommandPaletteComponent,
   ],
   providers: [ManagementShellUiState],
   templateUrl: './management-layout.component.html',
@@ -101,6 +104,7 @@ export class ManagementLayoutComponent {
   private readonly authSessionStore = inject(AuthSessionStore);
   private readonly authStorageService = inject(AuthStorageService);
   protected readonly managementShellUi = inject(ManagementShellUiState);
+  protected readonly commandPaletteService = inject(CommandPaletteService);
   protected readonly ProfileMenuOption = ProfileMenuOption;
 
 
@@ -116,7 +120,7 @@ export class ManagementLayoutComponent {
     let name = this.currentUser()?.fullName?.trim();
     if (!name) return 'ZT';
     if (name.includes('@')) name = name.split('@')[0];
-    
+
     return name
       .split(/\s+/)
       .slice(0, 2)
