@@ -97,6 +97,7 @@
                   [hasPendingAttachments]="store.hasPendingAttachments()"
                   (messageSubmitted)="store.sendMessage($event)"
                   (filesSelected)="store.selectFiles($event)"
+                  (reopenClicked)="store.reopenConversation()"
                 />
               } @else {
                 <div class="grid flex-1 place-items-center p-8 text-center">

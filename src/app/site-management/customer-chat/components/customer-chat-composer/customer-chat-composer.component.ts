@@ -23,6 +23,7 @@ export class CustomerChatComposerComponent {
   readonly hasPendingAttachments = input(false);
   readonly messageSubmitted = output<string>();
   readonly filesSelected = output<File[]>();
+  readonly reopenClicked = output<void>();
   protected readonly draft = signal('');
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 

@@ -824,6 +824,32 @@ export const CustomerChatStore = signalStore(
         )
       );
 
+      const reopenConversation = rxMethod<void>(
+        pipe(
+          switchMap(() => {
+            const id = store.activeConversationId();
+            if (!id) return EMPTY;
+            return customerChatService.reopenConversation(id).pipe(
+              tap((updatedConv) => {
+                const updatedList = store
+                  .conversations()
+                  .map((c) => (c.id === updatedConv.id ? updatedConv : c));
+                patchState(store, { conversations: updatedList });
+
+                const currentSession = store.session();
+                if (currentSession && currentSession.id === updatedConv.id) {
+                  const newSession = {
+                    ...currentSession,
+                    status: updatedConv.status as unknown as CustomerChatSessionStatus,
+                  };
+                  patchState(store, { session: newSession });
+                }
+              })
+            );
+          })
+        )
+      );
+
       const searchMessages = rxMethod<string>(
         pipe(
           tap((keyword) => {
@@ -838,7 +864,7 @@ export const CustomerChatStore = signalStore(
           switchMap((keyword) => {
             const conversationId = store.activeConversationId();
             if (!conversationId) return EMPTY;
-            
+
             return customerChatService.searchMessages(conversationId, keyword, 0, 50).pipe(
               tap({
                 next: (results) => {
@@ -922,6 +948,7 @@ export const CustomerChatStore = signalStore(
         selectFiles,
         requestAgent,
         closeConversation,
+        reopenConversation,
         searchMessages,
         jumpToMessage,
         clearHighlightedMessage,
