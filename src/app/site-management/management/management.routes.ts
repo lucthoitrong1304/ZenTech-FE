@@ -47,6 +47,32 @@ export const managementRoutes: Routes = [
           ),
       },
       {
+        path: 'attendance-report',
+        data: {
+          eyebrow: 'Điều hành kinh doanh',
+          title: 'Báo cáo chấm công',
+          description: 'Theo dõi thống kê và chi tiết lịch sử chấm công.',
+          primaryAction: 'Lọc dữ liệu',
+        },
+        loadComponent: () =>
+          import('./employees/pages/attendance-report/attendance-report-page.component').then(
+            m => m.AttendanceReportPageComponent
+          ),
+      },
+      {
+        path: 'work-schedules',
+        data: {
+          eyebrow: 'Dieu hanh kinh doanh',
+          title: 'Lich lam viec',
+          description: 'Phan ca theo tuan, gan lich hang loat va quan ly gio ca lam viec.',
+          primaryAction: 'Gan ca',
+        },
+        loadComponent: () =>
+          import('./work-schedules/pages/work-schedules-page/work-schedules-page.component').then(
+            m => m.WorkSchedulesPageComponent
+          ),
+      },
+      {
         path: 'chat',
         data: {
           eyebrow: 'Điều hành kinh doanh',

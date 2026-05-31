@@ -17,6 +17,7 @@ export interface AuthSessionSource {
   avatarUrl?: string | null;
   imageUrl?: string | null;
   isPasswordSet?: boolean;
+  hasRegisteredFace?: boolean;
 }
 
 export interface StoredAuthSession {
@@ -31,6 +32,7 @@ export interface StoredAuthSession {
   expiresIn?: number;
   avatarUrl: string | null;
   isPasswordSet: boolean;
+  hasRegisteredFace?: boolean;
 }
 
 export interface CurrentAuthUser {
@@ -39,6 +41,7 @@ export interface CurrentAuthUser {
   avatarUrl?: string | null;
   roles: string[];
   isPasswordSet: boolean;
+  hasRegisteredFace?: boolean;
 }
 
 @Injectable({
@@ -78,6 +81,7 @@ export class AuthStorageService {
       expiresIn: response.expiresIn,
       avatarUrl: response.avatarUrl || response.imageUrl || null,
       isPasswordSet: response.isPasswordSet ?? true,
+      hasRegisteredFace: response.hasRegisteredFace,
     };
 
     this.setAccessToken(session.accessToken);
@@ -113,6 +117,7 @@ export class AuthStorageService {
       avatarUrl: session?.avatarUrl || null,
       roles: session?.roles || [],
       isPasswordSet: session?.isPasswordSet ?? true,
+      hasRegisteredFace: session?.hasRegisteredFace,
     };
   }
 

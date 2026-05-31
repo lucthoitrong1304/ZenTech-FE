@@ -1,0 +1,461 @@
+<section class="work-schedules-page">
+  <div class="work-schedules-command">
+    <div class="work-schedules-command__copy">
+      <span class="work-schedules-kicker">Weekly Workforce Planner</span>
+      <h2>Lịch làm việc</h2>
+      <p>Phân ca theo tuần, gán nhanh cho nhân viên và quản lý giờ ca hiện có.</p>
+    </div>
+
+    <div class="work-schedules-command__actions">
+      <button type="button" class="work-schedules-secondary-action" (click)="store.openCopyModal()">
+        <svg lucideCopy [attr.stroke-width]="2"></svg>
+        <span>Sao chép tuần</span>
+      </button>
+      <button type="button" class="work-schedules-secondary-action" (click)="store.openSettingsModal()">
+        <svg lucideSettings [attr.stroke-width]="2"></svg>
+        <span>Cấu hình ca</span>
+      </button>
+      <button type="button" class="work-schedules-primary-action" (click)="store.openBulkModal()">
+        <svg lucideUsers [attr.stroke-width]="2"></svg>
+        <span>Gán hàng loạt</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="work-schedules-toolbar">
+    <div class="work-schedules-week">
+      <button type="button" class="work-schedules-icon-action" aria-label="Tuần trước" (click)="store.goToWeek(-1)">
+        <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
+      </button>
+      <div class="work-schedules-week__range">
+        <svg lucideCalendarDays [attr.stroke-width]="2"></svg>
+        <span>{{ store.query().weekStartDate | date: 'dd/MM/yyyy' }} - {{ store.query().weekEndDate | date: 'dd/MM/yyyy' }}</span>
+      </div>
+      <button type="button" class="work-schedules-icon-action" aria-label="Tuần sau" (click)="store.goToWeek(1)">
+        <svg lucideChevronRight [attr.stroke-width]="2"></svg>
+      </button>
+      <button type="button" class="work-schedules-filter-action" (click)="store.goToCurrentWeek()">Tuần hiện tại</button>
+    </div>
+
+    <label class="work-schedules-search">
+      <svg lucideSearch [attr.stroke-width]="2"></svg>
+      <input
+        type="search"
+        [value]="store.query().keyword"
+        placeholder="Tìm nhân viên..."
+        (input)="onKeywordInput($event)"
+        (keydown.enter)="onKeywordEnter($event)"
+      />
+    </label>
+
+    <button type="button" class="work-schedules-filter-action" (click)="store.applyFilters()">Lọc</button>
+    <button type="button" class="work-schedules-icon-action" aria-label="Làm mới" (click)="store.refresh()">
+      <svg lucideRefreshCw [attr.stroke-width]="2"></svg>
+    </button>
+  </div>
+
+  <div class="work-schedules-legend">
+    @for (shift of store.shifts(); track shift.id) {
+      <article class="work-schedules-shift-card">
+        <span class="work-schedules-shift-card__swatch" [style.background]="shift.colorCode || '#4f46e5'"></span>
+        <div>
+          <strong>{{ shift.name }}</strong>
+          <small>{{ getShiftTimeRange(shift) }} · {{ getShiftTypeLabel(shift.type) }}</small>
+        </div>
+      </article>
+    } @empty {
+      <article class="work-schedules-shift-card work-schedules-shift-card--empty">
+        <span class="work-schedules-shift-card__swatch"></span>
+        <div>
+          <strong>Chưa có ca</strong>
+          <small>Hệ thống chưa có danh sách ca làm việc.</small>
+        </div>
+      </article>
+    }
+  </div>
+
+  <article class="work-schedules-panel">
+    <div class="work-schedules-panel__heading">
+      <div>
+        <p>Schedule Matrix</p>
+        <h3>{{ store.totalElements() }} nhân viên</h3>
+      </div>
+
+      @if (store.loading()) {
+        <span class="work-schedules-loading">
+          <svg lucideLoader2 class="work-schedules-spin" [attr.stroke-width]="2"></svg>
+          Đang tải
+        </span>
+      }
+    </div>
+
+    <div class="work-schedules-grid-wrap">
+      <table class="work-schedules-grid">
+        <thead>
+          <tr>
+            <th class="work-schedules-grid__select">
+              <input
+                type="checkbox"
+                [checked]="store.allVisibleSelected()"
+                [disabled]="!store.hasEmployees()"
+                (change)="store.toggleAllVisible()"
+                aria-label="Chọn tất cả nhân viên hiển thị"
+              />
+            </th>
+            <th class="work-schedules-grid__employee">Nhân viên</th>
+            @for (date of store.weekDates(); track date) {
+              <th>
+                <span>{{ getDayLabel(date) }}</span>
+                <small>{{ date | date: 'dd/MM' }}</small>
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (employee of store.employees(); track employee.employeeId) {
+            <tr>
+              <td class="work-schedules-grid__select">
+                <input
+                  type="checkbox"
+                  [checked]="isEmployeeSelected(employee.employeeId)"
+                  (change)="store.toggleEmployee(employee.employeeId)"
+                  [attr.aria-label]="'Chọn ' + employee.employeeName"
+                />
+              </td>
+              <td class="work-schedules-grid__employee">
+                <div class="work-schedules-employee">
+                  <span>{{ getEmployeeInitials(employee.employeeName) }}</span>
+                  <strong>{{ employee.employeeName }}</strong>
+                </div>
+              </td>
+              @for (date of store.weekDates(); track date) {
+                @let shift = getShiftForDate(employee, date);
+                <td>
+                  <button
+                    type="button"
+                    class="work-schedules-cell"
+                    [class.work-schedules-cell--empty]="!shift"
+                    [style.border-left-color]="shift?.colorCode || null"
+                    (click)="store.openAssignModal(employee, date, shift)"
+                  >
+                    @if (shift) {
+                      <strong>{{ shift.shiftName }}</strong>
+                      <small>{{ getShiftTimeRange(shift) }}</small>
+                    } @else {
+                      <strong>Gán ca</strong>
+                      <small>Chưa xếp lịch</small>
+                    }
+                  </button>
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="9">
+                <div class="work-schedules-empty">
+                  <svg lucideUsers [attr.stroke-width]="1.8"></svg>
+                  <h3>Chưa có nhân viên phù hợp</h3>
+                  <p>Thử đổi từ khóa tìm kiếm hoặc kiểm tra lại dữ liệu nhân viên.</p>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <footer class="work-schedules-pagination">
+      <p>Hiển thị {{ store.pageStart() }}-{{ store.pageEnd() }} trên {{ store.totalElements() }} nhân viên</p>
+
+      <div class="work-schedules-page-buttons">
+        <button
+          type="button"
+          class="work-schedules-page-button"
+          [disabled]="!store.canGoPrevious() || store.loading()"
+          (click)="store.goToPage(store.query().page - 1)"
+          aria-label="Trang trước"
+        >
+          <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
+        </button>
+
+        @for (slot of pageSlots; track slot) {
+          @let pageNumber = getPageNumber(slot);
+          @if (pageNumber !== null) {
+            <button
+              type="button"
+              class="work-schedules-page-button"
+              [class.work-schedules-page-button--active]="pageNumber === store.query().page"
+              [disabled]="store.loading()"
+              (click)="store.goToPage(pageNumber)"
+            >
+              {{ pageNumber + 1 }}
+            </button>
+          }
+        }
+
+        <button
+          type="button"
+          class="work-schedules-page-button"
+          [disabled]="!store.canGoNext() || store.loading()"
+          (click)="store.goToPage(store.query().page + 1)"
+          aria-label="Trang sau"
+        >
+          <svg lucideChevronRight [attr.stroke-width]="2"></svg>
+        </button>
+      </div>
+    </footer>
+  </article>
+</section>
+
+@if (store.assignModalOpen()) {
+  @if (store.selectedCell(); as cell) {
+    <div class="work-schedules-modal-backdrop" role="presentation">
+      <form class="work-schedules-modal" (submit)="$event.preventDefault(); store.assignShift()">
+        <header class="work-schedules-modal__header">
+          <div>
+            <p>Assign Shift</p>
+            <h2>{{ cell.employeeName }}</h2>
+          </div>
+          <button type="button" class="work-schedules-modal__close" aria-label="Đóng" (click)="store.closeAssignModal()">
+            <svg lucideX [attr.stroke-width]="2"></svg>
+          </button>
+        </header>
+
+        <div class="work-schedules-modal__body">
+          <div class="work-schedules-summary-line">
+            <span>Ngày</span>
+            <strong>{{ cell.workDate | date: 'dd/MM/yyyy' }}</strong>
+          </div>
+          @if (cell.shift) {
+            <div class="work-schedules-summary-line">
+              <span>Ca hiện tại</span>
+              <strong>{{ cell.shift.shiftName }} · {{ getShiftTimeRange(cell.shift) }}</strong>
+            </div>
+          }
+
+          <label class="work-schedules-field">
+            <span>Chọn ca</span>
+            <select [value]="store.assignShiftId()" (change)="onAssignShiftChange($event)">
+              @for (shift of store.shifts(); track shift.id) {
+                <option [value]="shift.id">{{ shift.name }} · {{ getShiftTimeRange(shift) }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <footer class="work-schedules-modal__footer">
+          <button type="button" class="work-schedules-secondary-action" (click)="store.closeAssignModal()">Hủy</button>
+          <button type="submit" class="work-schedules-primary-action" [disabled]="!store.canSubmitAssign()">
+            @if (store.saving()) {
+              <svg lucideLoader2 class="work-schedules-spin" [attr.stroke-width]="2"></svg>
+            } @else {
+              <svg lucideCheck [attr.stroke-width]="2"></svg>
+            }
+            <span>Lưu ca</span>
+          </button>
+        </footer>
+      </form>
+    </div>
+  }
+}
+
+@if (store.bulkModalOpen()) {
+  <div class="work-schedules-modal-backdrop" role="presentation">
+    <form class="work-schedules-modal" (submit)="$event.preventDefault(); store.bulkAssign()">
+      <header class="work-schedules-modal__header">
+        <div>
+          <p>Bulk Assign</p>
+          <h2>Gán ca hàng loạt</h2>
+        </div>
+        <button type="button" class="work-schedules-modal__close" aria-label="Đóng" (click)="store.closeBulkModal()">
+          <svg lucideX [attr.stroke-width]="2"></svg>
+        </button>
+      </header>
+
+      <div class="work-schedules-modal__body">
+        <label class="work-schedules-check">
+          <input type="checkbox" [checked]="store.bulkDraft().selectAll" (change)="onBulkSelectAllChange($event)" />
+          <span>Áp dụng cho tất cả nhân viên theo bộ lọc hiện tại</span>
+        </label>
+
+        @if (!store.bulkDraft().selectAll) {
+          <p class="work-schedules-helper">Đang chọn {{ store.selectedCount() }} nhân viên trên bảng.</p>
+        }
+
+        <label class="work-schedules-field">
+          <span>Ca làm việc</span>
+          <select [value]="store.bulkDraft().shiftId" (change)="onBulkShiftChange($event)">
+            @for (shift of store.shifts(); track shift.id) {
+              <option [value]="shift.id">{{ shift.name }} · {{ getShiftTimeRange(shift) }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="work-schedules-field-grid">
+          <label class="work-schedules-field">
+            <span>Từ ngày</span>
+            <input type="date" [value]="store.bulkDraft().startDate" (input)="onBulkDateInput('startDate', $event)" />
+          </label>
+          <label class="work-schedules-field">
+            <span>Đến ngày</span>
+            <input type="date" [value]="store.bulkDraft().endDate" (input)="onBulkDateInput('endDate', $event)" />
+          </label>
+        </div>
+      </div>
+
+      <footer class="work-schedules-modal__footer">
+        <button type="button" class="work-schedules-secondary-action" (click)="store.closeBulkModal()">Hủy</button>
+        <button type="submit" class="work-schedules-primary-action" [disabled]="!store.canSubmitBulk()">
+          @if (store.saving()) {
+            <svg lucideLoader2 class="work-schedules-spin" [attr.stroke-width]="2"></svg>
+          } @else {
+            <svg lucideUsers [attr.stroke-width]="2"></svg>
+          }
+          <span>Gán ca</span>
+        </button>
+      </footer>
+    </form>
+  </div>
+}
+
+@if (store.copyModalOpen()) {
+  <div class="work-schedules-modal-backdrop" role="presentation">
+    <form class="work-schedules-modal" (submit)="$event.preventDefault(); store.copyWeek()">
+      <header class="work-schedules-modal__header">
+        <div>
+          <p>Copy Week</p>
+          <h2>Sao chép lịch tuần</h2>
+        </div>
+        <button type="button" class="work-schedules-modal__close" aria-label="Đóng" (click)="store.closeCopyModal()">
+          <svg lucideX [attr.stroke-width]="2"></svg>
+        </button>
+      </header>
+
+      <div class="work-schedules-modal__body">
+        <div class="work-schedules-field-grid">
+          <label class="work-schedules-field">
+            <span>Tuần nguồn</span>
+            <input type="date" [value]="store.copyDraft().fromWeekStartDate" (input)="onCopyWeekStartInput('fromWeekStartDate', $event)" />
+          </label>
+          <label class="work-schedules-field">
+            <span>Đến ngày</span>
+            <input type="date" [value]="store.copyDraft().fromWeekEndDate" readonly />
+          </label>
+        </div>
+
+        <div class="work-schedules-field-grid">
+          <label class="work-schedules-field">
+            <span>Tuần đích</span>
+            <input type="date" [value]="store.copyDraft().toWeekStartDate" (input)="onCopyWeekStartInput('toWeekStartDate', $event)" />
+          </label>
+          <label class="work-schedules-field">
+            <span>Đến ngày</span>
+            <input type="date" [value]="store.copyDraft().toWeekEndDate" readonly />
+          </label>
+        </div>
+      </div>
+
+      <footer class="work-schedules-modal__footer">
+        <button type="button" class="work-schedules-secondary-action" (click)="store.closeCopyModal()">Hủy</button>
+        <button type="submit" class="work-schedules-primary-action" [disabled]="store.saving()">
+          @if (store.saving()) {
+            <svg lucideLoader2 class="work-schedules-spin" [attr.stroke-width]="2"></svg>
+          } @else {
+            <svg lucideCopy [attr.stroke-width]="2"></svg>
+          }
+          <span>Sao chép</span>
+        </button>
+      </footer>
+    </form>
+  </div>
+}
+
+@if (store.settingsModalOpen()) {
+  <div class="work-schedules-modal-backdrop" role="presentation">
+    <form class="work-schedules-modal work-schedules-modal--wide" (submit)="$event.preventDefault(); store.saveShiftSettings()">
+      <header class="work-schedules-modal__header">
+        <div>
+          <p>Shift Settings</p>
+          <h2>Cấu hình giờ ca</h2>
+        </div>
+        <button type="button" class="work-schedules-modal__close" aria-label="Đóng" (click)="store.closeSettingsModal()">
+          <svg lucideX [attr.stroke-width]="2"></svg>
+        </button>
+      </header>
+
+      <div class="work-schedules-modal__body">
+        <div class="work-schedules-settings-list">
+          @for (shift of store.settingsDraft().shifts; track shift.id) {
+            <article class="work-schedules-settings-row">
+              <span class="work-schedules-shift-card__swatch" [style.background]="shift.colorCode || '#4f46e5'"></span>
+              <div class="work-schedules-settings-row__name">
+                <strong>{{ shift.name }}</strong>
+                <small>{{ getShiftTypeLabel(shift.type) }}</small>
+              </div>
+              <label>
+                <span>Bắt đầu</span>
+                <input type="time" [value]="shift.startTime?.slice(0, 5) || ''" (input)="onShiftTimeInput(shift.id, 'startTime', $event)" />
+              </label>
+              <label>
+                <span>Kết thúc</span>
+                <input type="time" [value]="shift.endTime?.slice(0, 5) || ''" (input)="onShiftTimeInput(shift.id, 'endTime', $event)" />
+              </label>
+            </article>
+          }
+
+          @if (store.settingsDraft().newShift; as newShift) {
+            <article class="work-schedules-settings-row work-schedules-settings-row--new">
+              <div class="work-schedules-settings-row__color">
+                <input type="color" [value]="newShift.colorCode" (input)="onNewShiftInput('colorCode', $event)" />
+              </div>
+              <label>
+                <span>Tên ca</span>
+                <input type="text" placeholder="Tên ca mới..." [value]="newShift.name" (input)="onNewShiftInput('name', $event)" required />
+              </label>
+              <label>
+                <span>Phân loại</span>
+                <select [value]="newShift.type" (change)="onNewShiftInput('type', $event)">
+                  <option value="NORMAL">Làm việc</option>
+                  <option value="OFF">Nghỉ</option>
+                </select>
+              </label>
+              <label>
+                <span>Bắt đầu</span>
+                <input type="time" [value]="newShift.startTime?.slice(0, 5) || ''" (input)="onNewShiftTimeInput('startTime', $event)" />
+              </label>
+              <label>
+                <span>Kết thúc</span>
+                <input type="time" [value]="newShift.endTime?.slice(0, 5) || ''" (input)="onNewShiftTimeInput('endTime', $event)" />
+              </label>
+              <div class="work-schedules-settings-row__actions">
+                <button type="button" class="work-schedules-icon-action" aria-label="Hủy tạo" (click)="store.removeNewShiftDraft()">
+                  <svg lucideX [attr.stroke-width]="2"></svg>
+                </button>
+                <button type="button" class="work-schedules-primary-action work-schedules-primary-action--sm" [disabled]="!newShift.name || store.saving()" (click)="store.createShift()">
+                  <svg lucideCheck [attr.stroke-width]="2"></svg>
+                  Tạo
+                </button>
+              </div>
+            </article>
+          } @else {
+            <button type="button" class="work-schedules-add-shift-btn" (click)="store.addNewShiftDraft()">
+              + Thêm ca mới
+            </button>
+          }
+        </div>
+      </div>
+
+      <footer class="work-schedules-modal__footer">
+        <button type="button" class="work-schedules-secondary-action" (click)="store.closeSettingsModal()">Hủy</button>
+        <button type="submit" class="work-schedules-primary-action" [disabled]="store.saving()">
+          @if (store.saving()) {
+            <svg lucideLoader2 class="work-schedules-spin" [attr.stroke-width]="2"></svg>
+          } @else {
+            <svg lucideClock3 [attr.stroke-width]="2"></svg>
+          }
+          <span>Lưu cấu hình</span>
+        </button>
+      </footer>
+    </form>
+  </div>
+}

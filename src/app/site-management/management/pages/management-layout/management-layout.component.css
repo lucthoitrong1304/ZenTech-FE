@@ -83,6 +83,11 @@
   color: #4f4632;
 }
 
+.management-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 :is(.management-icon-button, .management-nav__link) svg {
   width: 18px;
   height: 18px;

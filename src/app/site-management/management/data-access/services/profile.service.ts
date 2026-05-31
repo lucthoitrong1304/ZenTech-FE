@@ -21,6 +21,12 @@ export class ProfileService {
     return this.apiService.put<EmployeeProfileUpdateRequest, ApiResponseDto<EmployeeProfileResponse>>(this.baseUrl, payload);
   }
 
+  registerFace(faceDescriptors: number[][]): Observable<ApiResponseDto<void>> {
+    return this.apiService.post<{ faceDescriptors: number[][] }, ApiResponseDto<void>>(`${environment.apiBaseUrl}/employees/me/face`, {
+      faceDescriptors,
+    });
+  }
+
   requestAvatarUploadPresign(file: File): Observable<any> {
     const payload = {
       originalFilename: file.name,
