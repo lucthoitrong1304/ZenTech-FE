@@ -85,6 +85,7 @@ const DEFAULT_HEADER: ManagementHeaderState = {
     PopoverModule,
     DialogModule,
     LucideBot,
+    LucideCalendar,
     LucideChartBar,
     LucideChartNoAxesCombined,
     LucideChevronDown,
@@ -192,6 +193,7 @@ export class ManagementLayoutComponent {
       title: 'Điều hành kinh doanh',
       items: [
         { label: 'Nhân viên', path: '/management/employees', icon: 'employees' },
+        { label: 'Lich lam viec', path: '/management/work-schedules', icon: 'schedule' },
         { label: 'Báo cáo chấm công', path: '/management/attendance-report', icon: 'reports' },
         { label: 'Tư vấn khách hàng', path: '/management/chat', icon: 'chat' },
         { label: 'Đơn hàng', path: '/management/orders', icon: 'orders' },

@@ -60,6 +60,19 @@ export const managementRoutes: Routes = [
           ),
       },
       {
+        path: 'work-schedules',
+        data: {
+          eyebrow: 'Dieu hanh kinh doanh',
+          title: 'Lich lam viec',
+          description: 'Phan ca theo tuan, gan lich hang loat va quan ly gio ca lam viec.',
+          primaryAction: 'Gan ca',
+        },
+        loadComponent: () =>
+          import('./work-schedules/pages/work-schedules-page/work-schedules-page.component').then(
+            m => m.WorkSchedulesPageComponent
+          ),
+      },
+      {
         path: 'chat',
         data: {
           eyebrow: 'Điều hành kinh doanh',
