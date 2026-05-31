@@ -6,6 +6,7 @@
   <div class="relative z-10 grid gap-6">
     @for (message of messages(); track message.id) {
       <article
+        [id]="'msg-' + message.id"
         class="flex max-w-[80%] gap-3"
         [class.ml-auto]="message.sender === 'STAFF'"
         [class.flex-row-reverse]="message.sender === 'STAFF'"

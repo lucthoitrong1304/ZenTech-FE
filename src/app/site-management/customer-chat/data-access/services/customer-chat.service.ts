@@ -55,6 +55,36 @@ export class CustomerChatService {
       .pipe(map((res) => res.data));
   }
 
+  searchMessages(
+    conversationId: string,
+    keyword: string,
+    page = 0,
+    size = 20
+  ): Observable<PageResponse<ChatMessageResponse>> {
+    return this.apiService
+      .get<ApiResponse<PageResponse<ChatMessageResponse>>>(
+        `${this.baseUrl}/${conversationId}/messages/search`,
+        {
+          params: { keyword, page, size },
+        }
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  getMessageContext(
+    conversationId: string,
+    messageId: string
+  ): Observable<ChatMessageResponse[]> {
+    return this.apiService
+      .get<ApiResponse<ChatMessageResponse[]>>(
+        `${this.baseUrl}/${conversationId}/messages/context`,
+        {
+          params: { messageId },
+        }
+      )
+      .pipe(map((res) => res.data));
+  }
+
   requestAgent(conversationId: string): Observable<ConversationResponse> {
     return this.apiService
       .post<unknown, ApiResponse<ConversationResponse>>(

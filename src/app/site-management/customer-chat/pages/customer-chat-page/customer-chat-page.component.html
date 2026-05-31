@@ -81,7 +81,9 @@
                   [messages]="store.messages()"
                   [customer]="store.customer()"
                   [staff]="store.staff()"
+                  [highlightedMessageId]="store.highlightedMessageId()"
                   (previewRequested)="openPreview($event)"
+                  (highlightCleared)="store.clearHighlightedMessage()"
                 />
 
                 <app-customer-upload-queue
@@ -149,6 +151,15 @@
                   (closed)="store.requestConversationDetails()"
                   (previewRequested)="openPreview($event)"
                 />
+              } @else if (store.fullSidebarMode() === 'SEARCH') {
+                <app-customer-chat-search-sidebar
+                  [open]="true"
+                  [isSearching]="store.isSearching()"
+                  [results]="store.searchResults()"
+                  (closed)="store.requestConversationDetails()"
+                  (searchKeywordChanged)="store.searchMessages($event)"
+                  (resultSelected)="store.jumpToMessage($event)"
+                />
               } @else {
                 <aside class="customer-chat-details chat-scrollbar hidden w-80 shrink-0 overflow-y-auto bg-white lg:flex lg:flex-col">
                   @if (store.staff() || store.assistant(); as currentContact) {
@@ -178,6 +189,7 @@
                           type="button"
                           class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
                           title="Tìm kiếm"
+                          (click)="openSearch()"
                         >
                           <svg lucideSearch class="h-5 w-5" [attr.stroke-width]="2"></svg>
                         </button>

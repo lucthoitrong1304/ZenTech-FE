@@ -15,6 +15,7 @@
 
     @for (message of messages(); track message.id) {
       <article
+        [id]="'msg-' + message.id"
         class="message-bubble flex max-w-[86%] gap-3"
         [class.ml-auto]="message.sender === 'CUSTOMER'"
         [class.flex-row-reverse]="message.sender === 'CUSTOMER'"

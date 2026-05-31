@@ -6,7 +6,7 @@ export type CustomerChatSharedItemType = 'IMAGE' | 'VIDEO' | 'FILE' | 'LINK';
 
 export type CustomerChatSharedTab = 'ALL' | 'MEDIA' | 'FILES' | 'LINKS';
 
-export type CustomerChatFullSidebarMode = 'DETAILS' | 'SHARED';
+export type CustomerChatFullSidebarMode = 'DETAILS' | 'SHARED' | 'SEARCH';
 
 export type CustomerChatUploadStatus = 'PENDING' | 'UPLOADING' | 'COMPLETE' | 'FAILED';
 

@@ -9,6 +9,7 @@ import { ChatEmptyStateComponent } from '../../components/chat-empty-state/chat-
 import { ChatFilterSidebarComponent } from '../../components/chat-filter-sidebar/chat-filter-sidebar.component';
 import { ChatHeaderComponent } from '../../components/chat-header/chat-header.component';
 import { ChatMediaDrawerComponent } from '../../components/chat-media-drawer/chat-media-drawer.component';
+import { ChatSearchSidebarComponent } from '../../components/chat-search-sidebar/chat-search-sidebar.component';
 import { ConversationListComponent } from '../../components/conversation-list/conversation-list.component';
 import { MessageTimelineComponent } from '../../components/message-timeline/message-timeline.component';
 import { ManagementChatStore } from '../../data-access/store/management-chat.store';
@@ -24,6 +25,7 @@ import { ManagementShellUiState } from '../../../data-access/state/management-sh
     ChatFilterSidebarComponent,
     ChatHeaderComponent,
     ChatMediaDrawerComponent,
+    ChatSearchSidebarComponent,
     ConversationListComponent,
     MediaPreviewDialogComponent,
     MessageTimelineComponent,

@@ -1,12 +1,12 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { LucideImage, LucidePhone, LucideUserRoundCheck, LucideUserRoundCog, LucideX } from '@lucide/angular';
+import { LucideImage, LucidePhone, LucideUserRoundCheck, LucideUserRoundCog, LucideX, LucideSearch } from '@lucide/angular';
 import { ManagementChatConversation } from '../../data-access/models/management-chat.models';
 
 @Component({
   selector: 'app-chat-header',
   standalone: true,
-  imports: [CommonModule, LucideImage, LucidePhone, LucideUserRoundCheck, LucideUserRoundCog, LucideX],
+  imports: [CommonModule, LucideImage, LucidePhone, LucideUserRoundCheck, LucideUserRoundCog, LucideX, LucideSearch],
   templateUrl: './chat-header.component.html',
   styleUrl: './chat-header.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,6 +17,7 @@ export class ChatHeaderComponent {
   readonly canCall = input(false);
 
   readonly mediaClicked = output<void>();
+  readonly searchClicked = output<void>();
   readonly callClicked = output<void>();
   readonly acceptClicked = output<void>();
   readonly transferClicked = output<void>();

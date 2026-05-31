@@ -49,6 +49,10 @@ interface ManagementChatUiState {
   mediaDrawerOpen: boolean;
   loading: boolean;
   errorMessage: string | null;
+  searchSidebarOpen: boolean;
+  isSearching: boolean;
+  searchResults: ChatMessageResponse[];
+  highlightedMessageId: string | null;
 }
 
 const CONVERSATION_ENTITY_CONFIG = {
@@ -80,6 +84,10 @@ const INITIAL_STATE: ManagementChatUiState = {
   mediaDrawerOpen: false,
   loading: false,
   errorMessage: null,
+  searchSidebarOpen: false,
+  isSearching: false,
+  searchResults: [],
+  highlightedMessageId: null,
 };
 
 const STATUS_LABELS: Record<ManagementChatConversationStatus, string> = {
@@ -420,6 +428,28 @@ export const ManagementChatStore = signalStore(
             )
           );
           break;
+        case ManagementChatEventType.SearchRequested:
+          patchState(store, {
+            searchSidebarOpen: true,
+            mediaDrawerOpen: false,
+          });
+          break;
+
+        case ManagementChatEventType.SearchSidebarToggled:
+          patchState(store, { searchSidebarOpen: event.searchSidebarOpen });
+          break;
+
+        case ManagementChatEventType.SearchMessagesStarted:
+          patchState(store, { isSearching: true, searchResults: [] });
+          break;
+
+        case ManagementChatEventType.SearchMessagesSucceeded:
+          patchState(store, { isSearching: false, searchResults: event.results });
+          break;
+
+        case ManagementChatEventType.SearchMessagesFailed:
+          patchState(store, { isSearching: false, searchResults: [] });
+          break;
       }
     };
 
@@ -734,6 +764,85 @@ export const ManagementChatStore = signalStore(
       )
     );
 
+    const searchMessages = rxMethod<string>(
+      pipe(
+        tap(() => handleEvent({ type: ManagementChatEventType.SearchMessagesStarted })),
+        switchMap((keyword) => {
+          const conversationId = store.selectedConversationId();
+          if (!conversationId || !keyword.trim()) {
+            handleEvent({ type: ManagementChatEventType.SearchMessagesSucceeded, results: [] });
+            return EMPTY;
+          }
+          return customerChatService.searchMessages(conversationId, keyword).pipe(
+            tap({
+              next: (results) => {
+                handleEvent({ type: ManagementChatEventType.SearchMessagesSucceeded, results: results.content || [] });
+              },
+              error: () => {
+                handleEvent({ type: ManagementChatEventType.SearchMessagesFailed });
+              }
+            }),
+            catchError(() => EMPTY)
+          );
+        })
+      )
+    );
+
+    const jumpToMessage = rxMethod<string>(
+      pipe(
+        tap(() => {
+          patchState(store, { loading: true, searchSidebarOpen: false });
+        }),
+        switchMap((messageId) => {
+          const conversationId = store.selectedConversationId();
+          if (!conversationId) return EMPTY;
+
+          const exists = store.messages().some((m) => m.id === messageId);
+          if (exists) {
+            patchState(store, { loading: false, highlightedMessageId: messageId });
+            return of(messageId);
+          }
+
+          return customerChatService.getMessageContext(conversationId, messageId).pipe(
+            tap({
+              next: (messages) => {
+                const conv = store.selectedConversation();
+                if (conv) {
+                  const customerName = conv.customer.fullName || 'Khách hàng';
+                  const mappedMessages = messages.map((m) =>
+                    mapToManagementChatMessage(m, customerName)
+                  );
+                  const mediaItems = messages.flatMap((m) =>
+                    mapToManagementChatMediaItems(m)
+                  );
+                  patchState(
+                    store,
+                    setAllEntities(mappedMessages, MESSAGE_ENTITY_CONFIG),
+                    setAllEntities(mediaItems, MEDIA_ENTITY_CONFIG),
+                    {
+                      loading: false,
+                      highlightedMessageId: messageId,
+                    }
+                  );
+                }
+              },
+              error: () => patchState(store, { loading: false }),
+            }),
+            catchError(() => {
+              patchState(store, { loading: false });
+              return EMPTY;
+            })
+          );
+        })
+      )
+    );
+
+    const clearHighlightedMessage = rxMethod<void>(
+      pipe(
+        tap(() => patchState(store, { highlightedMessageId: null }))
+      )
+    );
+
     return {
       dispatch: handleEvent,
       loadWorkspace,
@@ -773,6 +882,18 @@ export const ManagementChatStore = signalStore(
       closeMediaDrawer(): void {
         handleEvent({ type: ManagementChatEventType.MediaDrawerClosed });
       },
+      toggleSearchSidebar(): void {
+        handleEvent({
+          type: ManagementChatEventType.SearchSidebarToggled,
+          searchSidebarOpen: !store.searchSidebarOpen(),
+        });
+      },
+      closeSearchSidebar(): void {
+        handleEvent({
+          type: ManagementChatEventType.SearchSidebarToggled,
+          searchSidebarOpen: false,
+        });
+      },
       setMediaTab(activeMediaTab: ManagementChatMediaTab): void {
         handleEvent({ type: ManagementChatEventType.MediaTabChanged, activeMediaTab });
       },
@@ -781,6 +902,9 @@ export const ManagementChatStore = signalStore(
       sendStaffMessage,
       sendCallMessage,
       selectStaffFiles,
+      searchMessages,
+      jumpToMessage,
+      clearHighlightedMessage,
       removeStaffUpload(uploadId: string): void {
         patchState(store, removeEntity(uploadId, UPLOAD_ENTITY_CONFIG));
       },
