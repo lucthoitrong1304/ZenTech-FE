@@ -25,6 +25,7 @@ import {
   ManagementChatStatusFilter,
   ManagementChatUpload,
   ManagementChatWorkspace,
+  ChatStaffResponse,
 } from '../models/management-chat.models';
 import { ManagementChatService } from '../services/management-chat.service';
 import { CustomerChatService } from '../../../../customer-chat/data-access/services/customer-chat.service';
@@ -49,6 +50,7 @@ interface ManagementChatUiState {
   mediaDrawerOpen: boolean;
   loading: boolean;
   errorMessage: string | null;
+  activeStaffList: ChatStaffResponse[];
 }
 
 const CONVERSATION_ENTITY_CONFIG = {
@@ -80,6 +82,7 @@ const INITIAL_STATE: ManagementChatUiState = {
   mediaDrawerOpen: false,
   loading: false,
   errorMessage: null,
+  activeStaffList: [],
 };
 
 const STATUS_LABELS: Record<ManagementChatConversationStatus, string> = {
@@ -601,6 +604,49 @@ export const ManagementChatStore = signalStore(
       )
     );
 
+    const loadActiveStaffList = rxMethod<void>(
+      pipe(
+        switchMap(() =>
+          managementChatService.getActiveStaffList().pipe(
+            tap((activeStaffList) => {
+              patchState(store, { activeStaffList });
+            }),
+            catchError(() => EMPTY)
+          )
+        )
+      )
+    );
+
+    const transferConversation = rxMethod<string | null>(
+      pipe(
+        switchMap((toAccountId) => {
+          const conversationId = store.selectedConversationId();
+          if (!conversationId) return EMPTY;
+          
+          patchState(store, { loading: true });
+
+          return managementChatService.transferConversation(conversationId, toAccountId).pipe(
+            tap((updatedConv) => {
+              const mapped = managementChatService.mapToManagementChatConversation(updatedConv);
+              patchState(
+                store,
+                updateEntity(
+                  { id: conversationId, changes: mapped },
+                  CONVERSATION_ENTITY_CONFIG
+                ),
+                { loading: false, selectedConversationId: null }
+              );
+              handleEvent({ type: ManagementChatEventType.SelectionCleared });
+            }),
+            catchError(() => {
+              patchState(store, { loading: false, errorMessage: 'Không thể chuyển tiếp hội thoại.' });
+              return EMPTY;
+            })
+          );
+        })
+      )
+    );
+
     const sendCallMessage = rxMethod<{ duration: string; status: 'ENDED' | 'MISSED' | 'BUSY' }>(
       pipe(
         tap(({ duration, status }) => {
@@ -778,6 +824,8 @@ export const ManagementChatStore = signalStore(
       },
       acceptConversation,
       closeConversation,
+      loadActiveStaffList,
+      transferConversation,
       sendStaffMessage,
       sendCallMessage,
       selectStaffFiles,

@@ -14,11 +14,16 @@ import { MessageTimelineComponent } from '../../components/message-timeline/mess
 import { ManagementChatStore } from '../../data-access/store/management-chat.store';
 import { ManagementShellUiState } from '../../../data-access/state/management-shell-ui.state';
 
+import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
+
 @Component({
   selector: 'app-management-chat-page',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
+    DialogModule,
     ChatComposerComponent,
     ChatEmptyStateComponent,
     ChatFilterSidebarComponent,
@@ -39,6 +44,8 @@ export class ManagementChatPageComponent implements OnInit {
   protected readonly managementShellUi = inject(ManagementShellUiState);
   private readonly route = inject(ActivatedRoute);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
+  protected readonly transferDialogOpen = signal(false);
+  protected readonly selectedStaffId = signal<string | null>(null);
 
   ngOnInit(): void {
     this.store.loadWorkspace();
@@ -77,5 +84,18 @@ export class ManagementChatPageComponent implements OnInit {
 
   protected closePreview(): void {
     this.previewItem.set(null);
+  }
+
+  protected openTransferDialog(): void {
+    this.store.loadActiveStaffList();
+    this.transferDialogOpen.set(true);
+    this.selectedStaffId.set(null);
+  }
+
+  protected submitTransfer(): void {
+    if (this.selectedStaffId()) {
+      this.store.transferConversation(this.selectedStaffId());
+      this.transferDialogOpen.set(false);
+    }
   }
 }
