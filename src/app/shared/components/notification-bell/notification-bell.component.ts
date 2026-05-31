@@ -7,7 +7,9 @@ import {
   LucideMessageCircle, 
   LucidePackage, 
   LucideTag, 
-  LucideInfo 
+  LucideInfo,
+  LucideUser,
+  LucideArrowRightLeft
 } from '@lucide/angular';
 import { PopoverModule } from 'primeng/popover';
 import { NotificationStore } from '../../../core/store/notification.store';
@@ -25,6 +27,8 @@ import { INotification, NotificationType } from '../../../core/models/notificati
     LucidePackage,
     LucideTag,
     LucideInfo,
+    LucideUser,
+    LucideArrowRightLeft,
     DatePipe
   ],
   templateUrl: './notification-bell.component.html',
@@ -52,6 +56,8 @@ export class NotificationBellComponent {
       } else {
         this.router.navigate(['/chat']);
       }
+    } else if (notification.type === NotificationType.AGENT_REQUEST || notification.type === NotificationType.CONVERSATION_TRANSFER) {
+      this.router.navigate(['/management/chat'], { queryParams: { conversationId: notification.referenceId } });
     }
   }
 
