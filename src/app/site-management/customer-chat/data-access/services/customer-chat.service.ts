@@ -73,6 +73,15 @@ export class CustomerChatService {
       .pipe(map((res) => res.data));
   }
 
+  reopenConversation(conversationId: string): Observable<ConversationResponse> {
+    return this.apiService
+      .post<unknown, ApiResponse<ConversationResponse>>(
+        `${this.baseUrl}/${conversationId}/reopen`,
+        {}
+      )
+      .pipe(map((res) => res.data));
+  }
+
   // Quy trình upload file qua presigned URL:
   // 1. Lấy url presigned từ backend
   // 2. PUT file trực tiếp lên R2/S3
