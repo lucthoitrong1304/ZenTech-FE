@@ -3,7 +3,6 @@ import { Component, DestroyRef, computed, inject, signal, effect } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
-  LucideBell,
   LucideBot,
   LucideCalendar,
   LucideChartBar,
@@ -75,7 +74,6 @@ const DEFAULT_HEADER: ManagementHeaderState = {
     RouterOutlet,
     PopoverModule,
     DialogModule,
-    LucideBell,
     LucideBot,
     LucideChartBar,
     LucideChartNoAxesCombined,

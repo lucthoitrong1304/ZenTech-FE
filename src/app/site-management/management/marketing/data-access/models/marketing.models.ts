@@ -49,6 +49,7 @@ export interface CustomerSummary {
   customerId: string;
   fullName: string;
   email: string;
+  imageUrl: string | null;
 }
 
 export interface CouponRequest {
