@@ -19,6 +19,9 @@ import { Role } from '../models/auth.enums';
 import { hasRole } from '../utils/auth-role.utils';
 import { AccountService } from '../../../account/data-access/services/account.service';
 import { ProfileService } from '../../../management/data-access/services/profile.service';
+import { AuthRefreshService } from '../../../../core/services/auth-refresh.service';
+import { decodeJwt } from '../../../../shared/utils/jwt.util';
+import { of, timer } from 'rxjs';
 
 interface AuthSessionState {
   currentUser: CurrentAuthUser | null;
@@ -48,7 +51,8 @@ export const AuthSessionStore = signalStore(
       authService = inject(AuthService),
       authStorageService = inject(AuthStorageService),
       accountService = inject(AccountService),
-      profileService = inject(ProfileService)
+      profileService = inject(ProfileService),
+      authRefreshService = inject(AuthRefreshService)
     ) => {
       const completeLogout = (
         successMessage: string | null,
@@ -60,6 +64,7 @@ export const AuthSessionStore = signalStore(
           logoutSuccessMessage: successMessage,
           logoutWarningMessage: warningMessage,
         });
+        startTokenRefreshTimer('');
       };
 
       const loadProfile = rxMethod<void>(
@@ -97,8 +102,65 @@ export const AuthSessionStore = signalStore(
         )
       );
 
+      const startTokenRefreshTimer = rxMethod<string>(
+        pipe(
+          switchMap((accessToken) => {
+            if (!accessToken) return EMPTY;
+
+            const decoded = decodeJwt(accessToken);
+            if (!decoded || !decoded.exp) return EMPTY;
+
+            const expMs = decoded.exp * 1000;
+            const nowMs = Date.now();
+            const delayMs = expMs - nowMs - 60000; // Refresh 1 phút trước khi hết hạn
+
+            if (delayMs <= 0) {
+              const refreshToken = authStorageService.getRefreshToken();
+              if (refreshToken) {
+                return authRefreshService.refresh(refreshToken).pipe(
+                  tap((res) => _setSession(res)),
+                  catchError(() => {
+                    completeLogout(null, LOGOUT_WARNING_MESSAGE);
+                    return EMPTY;
+                  })
+                );
+              }
+              return EMPTY;
+            }
+
+            return timer(delayMs).pipe(
+              switchMap(() => {
+                const refreshToken = authStorageService.getRefreshToken();
+                if (refreshToken) {
+                  return authRefreshService.refresh(refreshToken).pipe(
+                    tap((res) => _setSession(res)),
+                    catchError(() => {
+                      completeLogout(null, LOGOUT_WARNING_MESSAGE);
+                      return EMPTY;
+                    })
+                  );
+                }
+                return EMPTY;
+              })
+            );
+          })
+        )
+      );
+
+      const _setSession = (response: AuthSessionSource): void => {
+        authStorageService.setSession(response);
+        patchState(store, {
+          currentUser: authStorageService.getCurrentUser(),
+          logoutSuccessMessage: null,
+          logoutWarningMessage: null,
+        });
+        loadProfile();
+        startTokenRefreshTimer(response.accessToken);
+      };
+
       return {
         loadProfile,
+        startTokenRefreshTimer,
         updateCurrentUserProfile(fullName: string, avatarUrl: string | null): void {
           if (typeof authStorageService.updateProfileInfo === 'function') {
             authStorageService.updateProfileInfo(fullName, avatarUrl);
@@ -144,21 +206,13 @@ export const AuthSessionStore = signalStore(
             }
           }
         },
-        setSession(response: AuthSessionSource): void {
-          authStorageService.setSession(response);
-          patchState(store, {
-            currentUser: authStorageService.getCurrentUser(),
-            logoutSuccessMessage: null,
-            logoutWarningMessage: null,
-          });
-          loadProfile();
-        },
         clearLogoutMessages(): void {
           patchState(store, {
             logoutSuccessMessage: null,
             logoutWarningMessage: null,
           });
         },
+        setSession: _setSession,
         logout: rxMethod<void>(
           pipe(
             tap(() =>
@@ -195,6 +249,11 @@ export const AuthSessionStore = signalStore(
       patchState(store, { currentUser: authStorageService.getCurrentUser() });
       if (typeof authStorageService.isAuthenticated === 'function' && authStorageService.isAuthenticated()) {
         store.loadProfile();
+
+        const token = authStorageService.getAccessToken();
+        if (token) {
+          store.startTokenRefreshTimer(token);
+        }
       }
     },
   })
