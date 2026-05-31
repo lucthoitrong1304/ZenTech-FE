@@ -31,6 +31,7 @@
           [mediaDrawerOpen]="store.mediaDrawerOpen()"
           [canCall]="conversation.status !== 'CLOSED' && !!conversation.customer.email"
           (mediaClicked)="store.toggleMediaDrawer()"
+          (searchClicked)="store.toggleSearchSidebar()"
           (callClicked)="startCustomerCall(conversation.customer.email)"
           (acceptClicked)="store.acceptConversation()"
           (transferClicked)="openTransferDialog()"
@@ -40,7 +41,9 @@
         <app-message-timeline
           [conversation]="conversation"
           [messages]="store.selectedMessages()"
+          [highlightedMessageId]="store.highlightedMessageId()"
           (previewRequested)="openPreview($event)"
+          (highlightCleared)="store.clearHighlightedMessage()"
         />
 
         @if (store.canReplyToSelectedConversation()) {
@@ -56,6 +59,15 @@
         <app-chat-empty-state />
       }
     </section>
+
+    <app-chat-search-sidebar
+      [open]="store.searchSidebarOpen()"
+      [isSearching]="store.isSearching()"
+      [results]="store.searchResults()"
+      (closed)="store.closeSearchSidebar()"
+      (searchKeywordChanged)="store.searchMessages($event)"
+      (resultSelected)="store.jumpToMessage($event)"
+    />
   </main>
 
   <app-chat-media-drawer

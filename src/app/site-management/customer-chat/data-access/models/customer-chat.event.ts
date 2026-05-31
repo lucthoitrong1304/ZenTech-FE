@@ -4,6 +4,7 @@ import {
   CustomerChatSharedItem,
   CustomerChatSharedTab,
   CustomerChatUpload,
+  ChatMessageResponse,
 } from './customer-chat.models';
 
 export enum CustomerChatEventType {
@@ -26,6 +27,11 @@ export enum CustomerChatEventType {
   SharedContentTabChanged = 'Shared Content Tab Changed',
   SharedSidebarToggled = 'Shared Sidebar Toggled',
   SharedSidebarClosed = 'Shared Sidebar Closed',
+  SearchRequested = 'Search Requested',
+  SearchSidebarToggled = 'Search Sidebar Toggled',
+  SearchMessagesStarted = 'Search Messages Started',
+  SearchMessagesSucceeded = 'Search Messages Succeeded',
+  SearchMessagesFailed = 'Search Messages Failed',
 }
 
 export type CustomerChatEvent =
@@ -52,4 +58,9 @@ export type CustomerChatEvent =
   | { type: CustomerChatEventType.UploadRemoved; uploadId: string }
   | { type: CustomerChatEventType.SharedContentTabChanged; activeSharedTab: CustomerChatSharedTab }
   | { type: CustomerChatEventType.SharedSidebarToggled; sharedSidebarOpen: boolean }
-  | { type: CustomerChatEventType.SharedSidebarClosed };
+  | { type: CustomerChatEventType.SharedSidebarClosed }
+  | { type: CustomerChatEventType.SearchRequested }
+  | { type: CustomerChatEventType.SearchSidebarToggled; searchSidebarOpen: boolean }
+  | { type: CustomerChatEventType.SearchMessagesStarted }
+  | { type: CustomerChatEventType.SearchMessagesSucceeded; results: ChatMessageResponse[] }
+  | { type: CustomerChatEventType.SearchMessagesFailed };

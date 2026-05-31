@@ -1,4 +1,4 @@
-﻿import {
+import {
   ManagementChatConversation,
   ManagementChatExpertRequestFilter,
   ManagementChatMediaTab,
@@ -6,6 +6,7 @@
   ManagementChatStatusFilter,
   ManagementChatWorkspace,
 } from './management-chat.models';
+import { ChatMessageResponse } from '../../../../customer-chat/data-access/models/customer-chat.models';
 
 export enum ManagementChatEventType {
   WorkspaceLoadStarted = 'Workspace Load Started',
@@ -20,6 +21,11 @@ export enum ManagementChatEventType {
   MediaDrawerOpened = 'Media Drawer Opened',
   MediaDrawerClosed = 'Media Drawer Closed',
   MediaTabChanged = 'Media Tab Changed',
+  SearchRequested = 'Search Requested',
+  SearchSidebarToggled = 'Search Sidebar Toggled',
+  SearchMessagesStarted = 'Search Messages Started',
+  SearchMessagesSucceeded = 'Search Messages Succeeded',
+  SearchMessagesFailed = 'Search Messages Failed',
   ConversationAccepted = 'Conversation Accepted',
   ConversationClosed = 'Conversation Closed',
   StaffMessageSubmitted = 'Staff Message Submitted',
@@ -41,6 +47,11 @@ export type ManagementChatEvent =
   | { type: ManagementChatEventType.MediaDrawerOpened }
   | { type: ManagementChatEventType.MediaDrawerClosed }
   | { type: ManagementChatEventType.MediaTabChanged; activeMediaTab: ManagementChatMediaTab }
+  | { type: ManagementChatEventType.SearchRequested }
+  | { type: ManagementChatEventType.SearchSidebarToggled; searchSidebarOpen: boolean }
+  | { type: ManagementChatEventType.SearchMessagesStarted }
+  | { type: ManagementChatEventType.SearchMessagesSucceeded; results: ChatMessageResponse[] }
+  | { type: ManagementChatEventType.SearchMessagesFailed }
   | { type: ManagementChatEventType.ConversationAccepted; conversationId: string }
   | { type: ManagementChatEventType.ConversationClosed; conversationId: string }
   | {

@@ -2,7 +2,7 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 import { addEntity, setAllEntities, updateEntity, withEntities } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { catchError, EMPTY, pipe, Subscription, switchMap, tap } from 'rxjs';
+import { catchError, EMPTY, pipe, Subscription, mergeMap, tap, switchMap } from 'rxjs';
 import { INotification } from '../models/notification.model';
 import { NotificationService } from '../services/notification.service';
 import { NotificationWebsocketService } from '../services/notification-websocket.service';
@@ -80,16 +80,19 @@ export const NotificationStore = signalStore(
 
     const markAsRead = rxMethod<string>(
       pipe(
-        switchMap((id) =>
+        tap((id) => {
+          patchState(
+            store,
+            updateEntity({ id, changes: { isRead: true } }, NOTIFICATION_ENTITY_CONFIG),
+            { unreadCount: Math.max(0, store.unreadCount() - 1) }
+          );
+        }),
+        mergeMap((id) =>
           notificationService.markAsRead(id).pipe(
-            tap(() => {
-              patchState(
-                store,
-                updateEntity({ id, changes: { isRead: true } }, NOTIFICATION_ENTITY_CONFIG),
-                { unreadCount: Math.max(0, store.unreadCount() - 1) }
-              );
-            }),
-            catchError(() => EMPTY)
+            catchError((err) => {
+              console.error('Failed to mark notification as read:', err);
+              return EMPTY;
+            })
           )
         )
       )
@@ -97,21 +100,21 @@ export const NotificationStore = signalStore(
 
     const markAllAsRead = rxMethod<void>(
       pipe(
-        switchMap(() =>
+        tap(() => {
+          const currentNotifications = store.notificationEntities();
+          const updated = currentNotifications.map(n => ({ id: n.id, changes: { isRead: true } }));
+          
+          patchState(store, { unreadCount: 0 });
+          updated.forEach(update => {
+            patchState(store, updateEntity(update, NOTIFICATION_ENTITY_CONFIG));
+          });
+        }),
+        mergeMap(() =>
           notificationService.markAllAsRead().pipe(
-            tap(() => {
-              const currentNotifications = store.notificationEntities();
-              const updated = currentNotifications.map(n => ({ id: n.id, changes: { isRead: true } }));
-              
-              const newState: any = { unreadCount: 0 };
-              
-              patchState(store, newState);
-              // Cập nhật từng entity
-              updated.forEach(update => {
-                patchState(store, updateEntity(update, NOTIFICATION_ENTITY_CONFIG));
-              });
-            }),
-            catchError(() => EMPTY)
+            catchError((err) => {
+              console.error('Failed to mark all notifications as read:', err);
+              return EMPTY;
+            })
           )
         )
       )

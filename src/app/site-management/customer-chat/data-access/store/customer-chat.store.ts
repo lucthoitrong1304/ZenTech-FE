@@ -50,6 +50,11 @@ interface CustomerChatUiState {
   sending: boolean;
   errorMessage: string | null;
   lastActivityLabel: string;
+  searchSidebarOpen: boolean;
+  searchKeyword: string;
+  searchResults: ChatMessageResponse[];
+  isSearching: boolean;
+  highlightedMessageId: string | null;
 }
 
 const MESSAGE_ENTITY_CONFIG = {
@@ -80,6 +85,11 @@ const INITIAL_STATE: CustomerChatUiState = {
   sending: false,
   errorMessage: null,
   lastActivityLabel: '',
+  searchSidebarOpen: false,
+  searchKeyword: '',
+  searchResults: [],
+  isSearching: false,
+  highlightedMessageId: null,
 };
 
 export const CustomerChatStore = signalStore(
@@ -337,6 +347,44 @@ export const CustomerChatStore = signalStore(
 
           case CustomerChatEventType.SharedSidebarClosed:
             patchState(store, { sharedSidebarOpen: false });
+            break;
+
+          case CustomerChatEventType.SearchRequested:
+            patchState(store, {
+              searchSidebarOpen: true,
+              fullSidebarMode: 'SEARCH',
+              sharedSidebarOpen: false,
+              searchKeyword: '',
+              searchResults: [],
+            });
+            break;
+
+          case CustomerChatEventType.SearchSidebarToggled:
+            const isOpen = event.searchSidebarOpen;
+            patchState(store, {
+              searchSidebarOpen: isOpen,
+              fullSidebarMode: isOpen ? 'SEARCH' : 'DETAILS',
+              sharedSidebarOpen: false,
+            });
+            break;
+
+          case CustomerChatEventType.SearchMessagesStarted:
+            patchState(store, { isSearching: true, errorMessage: null });
+            break;
+
+          case CustomerChatEventType.SearchMessagesSucceeded:
+            patchState(store, {
+              isSearching: false,
+              searchResults: event.results,
+              errorMessage: null,
+            });
+            break;
+
+          case CustomerChatEventType.SearchMessagesFailed:
+            patchState(store, {
+              isSearching: false,
+              errorMessage: 'Không thể tìm kiếm tin nhắn.',
+            });
             break;
         }
       };
@@ -802,6 +850,94 @@ export const CustomerChatStore = signalStore(
         )
       );
 
+      const searchMessages = rxMethod<string>(
+        pipe(
+          tap((keyword) => {
+            patchState(store, { searchKeyword: keyword });
+            if (!keyword.trim()) {
+              patchState(store, { searchResults: [] });
+              return;
+            }
+            handleEvent({ type: CustomerChatEventType.SearchMessagesStarted });
+          }),
+          filter((keyword) => !!keyword.trim()),
+          switchMap((keyword) => {
+            const conversationId = store.activeConversationId();
+            if (!conversationId) return EMPTY;
+
+            return customerChatService.searchMessages(conversationId, keyword, 0, 50).pipe(
+              tap({
+                next: (results) => {
+                  handleEvent({
+                    type: CustomerChatEventType.SearchMessagesSucceeded,
+                    results: results.content || [],
+                  });
+                },
+                error: () => {
+                  handleEvent({ type: CustomerChatEventType.SearchMessagesFailed });
+                },
+              }),
+              catchError(() => EMPTY)
+            );
+          })
+        )
+      );
+
+      const jumpToMessage = rxMethod<string>(
+        pipe(
+          tap(() => patchState(store, { loading: true })),
+          switchMap((messageId) => {
+            const conversationId = store.activeConversationId();
+            if (!conversationId) return EMPTY;
+
+            // Check if message is already in store
+            const exists = store.messages().some((m) => m.id === messageId);
+            if (exists) {
+              patchState(store, { loading: false, highlightedMessageId: messageId });
+              // Logic to trigger scroll can be done in UI component by observing a signal or using a service
+              return of(messageId);
+            }
+
+            // Fetch context messages
+            return customerChatService.getMessageContext(conversationId, messageId).pipe(
+              tap({
+                next: (messages) => {
+                  const conv = store.conversations().find((c) => c.id === conversationId);
+                  if (conv) {
+                    const session = mapToCustomerChatSession(
+                      conv,
+                      messages,
+                      authStorageService.getSession()?.accountId || null
+                    );
+                    patchState(
+                      store,
+                      setAllEntities(session.messages, MESSAGE_ENTITY_CONFIG),
+                      setAllEntities(session.sharedItems, SHARED_ITEM_ENTITY_CONFIG),
+                      {
+                        session,
+                        loading: false,
+                        highlightedMessageId: messageId,
+                      }
+                    );
+                  }
+                },
+                error: () => patchState(store, { loading: false }),
+              }),
+              catchError(() => {
+                patchState(store, { loading: false });
+                return EMPTY;
+              })
+            );
+          })
+        )
+      );
+
+      const clearHighlightedMessage = rxMethod<void>(
+        pipe(
+          tap(() => patchState(store, { highlightedMessageId: null }))
+        )
+      );
+
       return {
         dispatch: handleEvent,
         loadSession,
@@ -813,6 +949,9 @@ export const CustomerChatStore = signalStore(
         requestAgent,
         closeConversation,
         reopenConversation,
+        searchMessages,
+        jumpToMessage,
+        clearHighlightedMessage,
         openPopup(): void {
           if (!hasCustomerSession()) {
             patchState(store, {
