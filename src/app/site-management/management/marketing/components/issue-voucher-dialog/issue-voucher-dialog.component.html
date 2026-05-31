@@ -104,8 +104,12 @@
                   (click)="updateCustomer(cust.customerId)"
                 >
                   <div class="customer-info-left">
-                    <span class="cust-avatar" [style.background-color]="getAvatarColor(cust.fullName)">
-                      {{ getInitials(cust.fullName) }}
+                    <span class="cust-avatar" [style.background-color]="cust.imageUrl ? 'transparent' : getAvatarColor(cust.fullName)">
+                      @if (cust.imageUrl) {
+                        <img [src]="cust.imageUrl" [alt]="cust.fullName" class="cust-avatar-img" />
+                      } @else {
+                        {{ getInitials(cust.fullName) }}
+                      }
                     </span>
                     <div class="cust-details">
                       <span class="cust-name">{{ cust.fullName }}</span>

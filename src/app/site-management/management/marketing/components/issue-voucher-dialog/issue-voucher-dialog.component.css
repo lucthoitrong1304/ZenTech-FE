@@ -158,6 +158,10 @@
   @apply flex items-center justify-center rounded-full text-white font-bold text-xs select-none w-8 h-8 flex-shrink-0;
 }
 
+.cust-avatar-img {
+  @apply w-full h-full rounded-full object-cover;
+}
+
 .cust-details {
   @apply flex flex-col overflow-hidden;
 }
