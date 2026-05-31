@@ -47,6 +47,19 @@ export const managementRoutes: Routes = [
           ),
       },
       {
+        path: 'attendance-report',
+        data: {
+          eyebrow: 'Điều hành kinh doanh',
+          title: 'Báo cáo chấm công',
+          description: 'Theo dõi thống kê và chi tiết lịch sử chấm công.',
+          primaryAction: 'Lọc dữ liệu',
+        },
+        loadComponent: () =>
+          import('./employees/pages/attendance-report/attendance-report-page.component').then(
+            m => m.AttendanceReportPageComponent
+          ),
+      },
+      {
         path: 'chat',
         data: {
           eyebrow: 'Điều hành kinh doanh',

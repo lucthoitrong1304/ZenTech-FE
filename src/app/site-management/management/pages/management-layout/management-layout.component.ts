@@ -192,6 +192,7 @@ export class ManagementLayoutComponent {
       title: 'Điều hành kinh doanh',
       items: [
         { label: 'Nhân viên', path: '/management/employees', icon: 'employees' },
+        { label: 'Báo cáo chấm công', path: '/management/attendance-report', icon: 'reports' },
         { label: 'Tư vấn khách hàng', path: '/management/chat', icon: 'chat' },
         { label: 'Đơn hàng', path: '/management/orders', icon: 'orders' },
         {
