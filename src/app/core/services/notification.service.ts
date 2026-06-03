@@ -20,11 +20,11 @@ export class NotificationService {
     return this.apiService.get<IUnreadCountResponse>(NOTIFICATION_API_ENDPOINTS.GET_UNREAD_COUNT);
   }
 
-  markAsRead(id: string): Observable<void> {
-    return this.apiService.put<void, void>(NOTIFICATION_API_ENDPOINTS.MARK_AS_READ(id), undefined);
+  markAsRead(id: string): Observable<string> {
+    return this.apiService.putText<void>(NOTIFICATION_API_ENDPOINTS.MARK_AS_READ(id), undefined);
   }
 
-  markAllAsRead(): Observable<void> {
-    return this.apiService.put<void, void>(NOTIFICATION_API_ENDPOINTS.MARK_ALL_AS_READ, undefined);
+  markAllAsRead(): Observable<string> {
+    return this.apiService.putText<void>(NOTIFICATION_API_ENDPOINTS.MARK_ALL_AS_READ, undefined);
   }
 }

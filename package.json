@@ -36,6 +36,7 @@
     "@ngrx/signals": "^21.1.0",
     "@primeuix/themes": "^2.0.3",
     "@stomp/stompjs": "^7.3.0",
+    "face-api.js": "^0.22.2",
     "chart.js": "^4.5.1",
     "marked": "^17.0.6",
     "ngx-markdown": "^21.2.0",

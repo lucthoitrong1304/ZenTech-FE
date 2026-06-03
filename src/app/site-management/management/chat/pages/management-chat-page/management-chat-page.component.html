@@ -1,4 +1,4 @@
-﻿<section class="management-chat-shell">
+<section class="management-chat-shell">
   @if (managementShellUi.sidebarMode() === 'chatFilters') {
   <app-chat-filter-sidebar
     [statusCounts]="store.statusCounts()"
@@ -31,16 +31,19 @@
           [mediaDrawerOpen]="store.mediaDrawerOpen()"
           [canCall]="conversation.status !== 'CLOSED' && !!conversation.customer.email"
           (mediaClicked)="store.toggleMediaDrawer()"
+          (searchClicked)="store.toggleSearchSidebar()"
           (callClicked)="startCustomerCall(conversation.customer.email)"
           (acceptClicked)="store.acceptConversation()"
-          (transferClicked)="store.acceptConversation()"
+          (transferClicked)="openTransferDialog()"
           (closeClicked)="store.closeConversation()"
         />
 
         <app-message-timeline
           [conversation]="conversation"
           [messages]="store.selectedMessages()"
+          [highlightedMessageId]="store.highlightedMessageId()"
           (previewRequested)="openPreview($event)"
+          (highlightCleared)="store.clearHighlightedMessage()"
         />
 
         @if (store.canReplyToSelectedConversation()) {
@@ -56,6 +59,15 @@
         <app-chat-empty-state />
       }
     </section>
+
+    <app-chat-search-sidebar
+      [open]="store.searchSidebarOpen()"
+      [isSearching]="store.isSearching()"
+      [results]="store.searchResults()"
+      (closed)="store.closeSearchSidebar()"
+      (searchKeywordChanged)="store.searchMessages($event)"
+      (resultSelected)="store.jumpToMessage($event)"
+    />
   </main>
 
   <app-chat-media-drawer
@@ -68,4 +80,50 @@
   />
 
   <app-media-preview-dialog [item]="previewItem()" (closed)="closePreview()" />
+
+  <p-dialog
+    header="Chuyển tiếp hội thoại"
+    [modal]="true"
+    [visible]="transferDialogOpen()"
+    (visibleChange)="transferDialogOpen.set($event)"
+    [style]="{ width: '450px' }"
+  >
+    <div class="flex flex-col gap-4 py-4">
+      <p class="text-sm text-[#4f4632]">
+        Chọn nhân viên đang online để chuyển tiếp cuộc hội thoại này:
+      </p>
+      
+      <select
+        [ngModel]="selectedStaffId()"
+        (ngModelChange)="selectedStaffId.set($event)"
+        class="w-full rounded-[8px] border border-[#d2c5ab]/30 bg-[#f6f3f2] p-3 text-sm text-[#101010] outline-none transition focus:border-[#645efb] focus:ring-1 focus:ring-[#645efb]"
+      >
+        <option [ngValue]="null" disabled>-- Chọn nhân viên --</option>
+        @for (staff of store.activeStaffList(); track staff.accountId) {
+          <option [ngValue]="staff.accountId">
+            {{ staff.displayName }} ({{ staff.role }})
+          </option>
+        }
+      </select>
+    </div>
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-3 pt-4">
+        <button
+          type="button"
+          class="rounded-[8px] bg-white px-4 py-2 text-sm font-semibold text-[#101010] ring-1 ring-inset ring-[#e5e7eb] hover:bg-[#f9fafb]"
+          (click)="transferDialogOpen.set(false)"
+        >
+          Hủy
+        </button>
+        <button
+          type="button"
+          class="rounded-[8px] bg-[#645efb] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5b54e3] disabled:cursor-not-allowed disabled:opacity-50"
+          [disabled]="!selectedStaffId() || store.loading()"
+          (click)="submitTransfer()"
+        >
+          {{ store.loading() ? 'Đang chuyển...' : 'Chuyển tiếp' }}
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
 </section>

@@ -5,7 +5,7 @@ import { AuthStorageService } from './auth-storage.service';
 import { WebRTCService } from './webrtc.service';
 
 export interface WebRtcSignalMessage {
-  type: 'CALL_REQUEST' | 'CALL_ACCEPTED' | 'CALL_REJECTED' | 'OFFER' | 'ANSWER' | 'ICE_CANDIDATE' | 'HANG_UP' | 'BUSY';
+  type: 'CALL_REQUEST' | 'CALL_ACCEPTED' | 'CALL_REJECTED' | 'OFFER' | 'ANSWER' | 'ICE_CANDIDATE' | 'HANG_UP' | 'BUSY' | 'PARTNER_LEFT';
   senderEmail: string;
   targetEmail: string;
   sdp?: string;
@@ -75,9 +75,23 @@ export class CallSignalingService {
 
   private async handleIncomingSignal(message: WebRtcSignalMessage) {
     switch (message.type) {
+      case 'PARTNER_LEFT':
+        this.peerConnectionInitialized = false;
+        this.webrtcService.resetPeerConnection();
+        break;
+
       case 'CALL_REQUEST':
-        // Show incoming call dialog
-        this.incomingCall.set({ senderEmail: message.senderEmail });
+        if (this.activeCall()?.targetEmail === message.senderEmail) {
+          // Auto-accept if we are already waiting for this partner
+          this.sendSignal({
+            type: 'CALL_ACCEPTED',
+            senderEmail: '',
+            targetEmail: message.senderEmail
+          });
+        } else {
+          // Show incoming call dialog
+          this.incomingCall.set({ senderEmail: message.senderEmail });
+        }
         break;
 
       case 'CALL_ACCEPTED':
@@ -101,7 +115,8 @@ export class CallSignalingService {
                 targetEmail: message.senderEmail,
                 sdp: JSON.stringify(offer)
               });
-            }
+            },
+            () => this.handleIncomingSignal({ type: 'PARTNER_LEFT', senderEmail: message.senderEmail, targetEmail: '' })
           );
           this.peerConnectionInitialized = true;
         }
@@ -138,7 +153,8 @@ export class CallSignalingService {
                 targetEmail: message.senderEmail,
                 sdp: JSON.stringify(offer)
               });
-            }
+            },
+            () => this.handleIncomingSignal({ type: 'PARTNER_LEFT', senderEmail: message.senderEmail, targetEmail: '' })
           );
           this.peerConnectionInitialized = true;
         }

@@ -1,0 +1,76 @@
+<p-dialog 
+  [visible]="visible()" 
+  (visibleChange)="handleHide()" 
+  [modal]="true" 
+  [draggable]="false"
+  [resizable]="false"
+  header="Đăng Ký Khuôn Mặt"
+  styleClass="face-register-dialog rounded-2xl overflow-hidden shadow-lg"
+  [style]="{ width: '500px', maxWidth: '90vw' }"
+>
+  <div class="flex flex-col items-center justify-center p-4">
+    <!-- Instruction Text -->
+    <div class="mb-4 text-center">
+      <h3 class="text-lg font-bold text-gray-900">Vui lòng nhìn thẳng vào Camera</h3>
+      <p class="text-sm mt-1" 
+         [ngClass]="{
+           'text-red-500 font-semibold': status() !== 'VALID' && status() !== 'INITIALIZING',
+           'text-blue-600 font-bold': status() === 'VALID',
+           'text-gray-500': status() === 'INITIALIZING'
+         }">
+        {{ feedbackText() }}
+      </p>
+    </div>
+
+    <!-- Camera Viewport -->
+    <div class="camera-container relative rounded-2xl overflow-hidden bg-gray-100 shadow-inner" style="width: 320px; height: 320px;">
+      
+      <!-- Video Element -->
+      <video 
+        #videoElement 
+        autoplay 
+        muted 
+        playsinline
+        class="absolute inset-0 w-full h-full object-cover transform -scale-x-100"
+      ></video>
+      
+      <!-- Overlay Guide (Oval) -->
+      <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+        <div class="w-48 h-64 border-4 rounded-[40%] transition-colors duration-300"
+             [ngClass]="{
+               'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]': status() === 'VALID',
+               'border-red-500': status() !== 'VALID' && status() !== 'INITIALIZING',
+               'border-gray-300': status() === 'INITIALIZING'
+             }">
+        </div>
+      </div>
+      
+      <!-- Progress Ring SVG -->
+      <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+        <svg width="220" height="280" viewBox="0 0 220 280" class="transform -rotate-90">
+          <rect 
+            x="10" y="10" width="200" height="260" rx="90" ry="120"
+            fill="none" 
+            stroke="transparent" 
+            stroke-width="6" 
+          />
+          <rect 
+            x="10" y="10" width="200" height="260" rx="90" ry="120"
+            fill="none" 
+            stroke="#3b82f6" 
+            stroke-width="6"
+            stroke-dasharray="720"
+            [attr.stroke-dashoffset]="720 - (720 * progress() / 100)"
+            class="transition-all duration-300 ease-out"
+            *ngIf="status() === 'VALID'"
+          />
+        </svg>
+      </div>
+
+      <!-- Scanning Effect -->
+      <div class="absolute inset-0 z-20 bg-blue-500/10 pointer-events-none scan-line" *ngIf="status() === 'VALID'"></div>
+    </div>
+    
+    <p class="text-xs text-gray-500 mt-4 text-center">Hệ thống cần 2.5s để ghi nhận đặc trưng khuôn mặt của bạn một cách chính xác nhất.</p>
+  </div>
+</p-dialog>

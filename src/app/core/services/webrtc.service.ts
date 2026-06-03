@@ -43,10 +43,21 @@ export class WebRTCService {
   createPeerConnection(
     onIceCandidate: (candidate: RTCIceCandidate) => void,
     onTrack: (stream: MediaStream) => void,
-    onNegotiationNeeded?: (offer: RTCSessionDescriptionInit) => void
+    onNegotiationNeeded?: (offer: RTCSessionDescriptionInit) => void,
+    onDisconnect?: () => void
   ): RTCPeerConnection {
     this.peerConnection = new RTCPeerConnection(this.iceServers);
     this.onNegotiationCallback = onNegotiationNeeded || null;
+
+    // Listen for ICE connection state changes
+    this.peerConnection.oniceconnectionstatechange = () => {
+      const state = this.peerConnection?.iceConnectionState;
+      if (state === 'disconnected' || state === 'failed' || state === 'closed') {
+        if (onDisconnect) {
+          onDisconnect();
+        }
+      }
+    };
 
     // Add local stream tracks to peer connection
     const currentLocalStream = this.localStream();
@@ -91,12 +102,45 @@ export class WebRTCService {
   async startScreenShare(): Promise<void> {
     if (!this.peerConnection) return;
     try {
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 60, max: 60 }
+        },
+        audio: true
+      });
+      
+      // Prioritize smooth framerate over strict resolution for videos/gaming
+      screenStream.getVideoTracks().forEach(track => {
+        track.contentHint = 'motion';
+      });
+
       this.localScreenStream.set(screenStream);
       
       screenStream.getTracks().forEach(track => {
         const sender = this.peerConnection?.addTrack(track, screenStream);
-        if (sender) this.senders.set(track.id, sender);
+        if (sender) {
+          this.senders.set(track.id, sender);
+          
+          // Optimize video encoding for consistent smoothness
+          if (track.kind === 'video') {
+            try {
+              const parameters = sender.getParameters();
+              if (!parameters.encodings || parameters.encodings.length === 0) {
+                parameters.encodings = [{}];
+              }
+              // Reduce bitrate to 5 Mbps to prevent network congestion stutters
+              parameters.encodings[0].maxBitrate = 5000000; 
+              // Explicitly tell the WebRTC engine to never drop frames when under stress
+              parameters.degradationPreference = 'maintain-framerate';
+              
+              sender.setParameters(parameters);
+            } catch (e) {
+              console.warn('Failed to set video parameters', e);
+            }
+          }
+        }
         
         // Stop sharing when native browser UI 'Stop sharing' is clicked
         track.onended = () => {
@@ -176,7 +220,7 @@ export class WebRTCService {
     }
   }
 
-  closeConnection() {
+  resetPeerConnection() {
     this.stopScreenShare();
     if (this.peerConnection) {
       this.peerConnection.close();
@@ -185,6 +229,12 @@ export class WebRTCService {
     this.pendingIceCandidates.length = 0;
     this.senders.clear();
     this.onNegotiationCallback = null;
+    this.remoteStream.set(null);
+    this.remoteScreenStream.set(null);
+  }
+
+  closeConnection() {
+    this.resetPeerConnection();
     
     // Stop all local tracks
     const stream = this.localStream();
@@ -192,7 +242,5 @@ export class WebRTCService {
       stream.getTracks().forEach(track => track.stop());
     }
     this.localStream.set(null);
-    this.remoteStream.set(null);
-    this.remoteScreenStream.set(null);
   }
 }

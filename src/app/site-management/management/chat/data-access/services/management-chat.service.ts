@@ -17,6 +17,7 @@ import {
   ManagementChatConversationStatus,
   ManagementChatCustomer,
   ManagementChatWorkspace,
+  ChatStaffResponse
 } from '../models/management-chat.models';
 
 @Injectable({
@@ -54,6 +55,20 @@ export class ManagementChatService {
   joinSilent(conversationId: string): Observable<ConversationResponse> {
     return this.apiService
       .post<unknown, ApiResponse<ConversationResponse>>(`${this.baseUrl}/${conversationId}/participants/silent`, {})
+      .pipe(map((res) => res.data));
+  }
+
+  getActiveStaffList(): Observable<ChatStaffResponse[]> {
+    return this.apiService
+      .get<ApiResponse<ChatStaffResponse[]>>(`${environment.apiBaseUrl}/management/chat/staffs/active`)
+      .pipe(map((res) => res.data));
+  }
+
+  transferConversation(conversationId: string, toAccountId: string | null): Observable<ConversationResponse> {
+    return this.apiService
+      .post<unknown, ApiResponse<ConversationResponse>>(`${this.baseUrl}/${conversationId}/transfer`, {
+        targetAccountId: toAccountId
+      })
       .pipe(map((res) => res.data));
   }
 
