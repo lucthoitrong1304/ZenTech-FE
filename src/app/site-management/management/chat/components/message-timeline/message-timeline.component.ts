@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
 import { LucideBot, LucideFileText, LucideImage, LucidePhone } from '@lucide/angular';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import {
@@ -21,7 +21,30 @@ import {
 export class MessageTimelineComponent {
   readonly conversation = input.required<ManagementChatConversation>();
   readonly messages = input.required<ManagementChatMessage[]>();
+  readonly highlightedMessageId = input<string | null>(null);
   readonly previewRequested = output<MediaPreviewItem>();
+  readonly highlightCleared = output<void>();
+
+  constructor() {
+    effect(() => {
+      const id = this.highlightedMessageId();
+      if (id) {
+        setTimeout(() => {
+          const el = document.getElementById(`msg-${id}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            el.classList.add('bg-yellow-100/50', 'transition-colors', 'duration-1000');
+            
+            setTimeout(() => {
+              el.classList.remove('bg-yellow-100/50', 'transition-colors', 'duration-1000');
+              this.highlightCleared.emit();
+            }, 3000);
+          }
+        }, 100);
+      }
+    });
+  }
 
   protected isPreviewable(attachment: ManagementChatMessageAttachment): boolean {
     return attachment.type === 'IMAGE' || attachment.type === 'VIDEO';

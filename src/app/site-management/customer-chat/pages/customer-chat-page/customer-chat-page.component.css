@@ -39,15 +39,15 @@
 }
 
 .new-conv-btn {
-  @apply flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#ffc700] px-4 text-sm font-black text-[#111827] shadow-sm transition hover:bg-[#ffd633];
+  @apply flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#ffc700] px-4 text-sm font-medium text-[#111827] shadow-sm transition hover:bg-[#ffd633];
 }
 
 .recent-convs-header {
-  @apply mt-2 text-xs font-black uppercase tracking-[0.14em] text-[#4f4632];
+  @apply mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#4f4632];
 }
 
 .sidebar-conv-btn {
-  @apply flex min-w-0 items-center gap-3 rounded-[8px] px-4 py-3 text-left font-bold transition hover:bg-white/70;
+  @apply flex min-w-0 items-center gap-3 rounded-[8px] px-4 py-3 text-left font-medium transition hover:bg-white/70;
 }
 
 .sidebar-conv-btn.active {
@@ -83,11 +83,11 @@
 }
 
 .request-agent-btn {
-  @apply flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#4f4642] px-4 text-sm font-bold text-white transition hover:bg-[#3f3835] shadow-sm;
+  @apply flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#4f4642] px-4 text-sm font-medium text-white transition hover:bg-[#3f3835] shadow-sm;
 }
 
 .close-conversation-btn {
-  @apply flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#e11d48] px-4 text-sm font-bold text-white transition hover:bg-[#be123c] shadow-sm;
+  @apply flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#e11d48] px-4 text-sm font-medium text-white transition hover:bg-[#be123c] shadow-sm;
 }
 
 .chat-closed-container {
@@ -95,5 +95,5 @@
 }
 
 .closed-badge {
-  @apply inline-flex items-center justify-center w-full rounded-full bg-gray-100 text-gray-500 text-xs font-bold py-2.5 border border-gray-200;
+  @apply inline-flex items-center justify-center w-full rounded-full bg-gray-100 text-gray-500 text-xs font-semibold py-2.5 border border-gray-200;
 }

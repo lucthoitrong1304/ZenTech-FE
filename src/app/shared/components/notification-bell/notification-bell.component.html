@@ -41,6 +41,8 @@
             <svg *ngIf="notification.type === 'ORDER_STATUS'" lucidePackage class="w-5 h-5 text-green-500"></svg>
             <svg *ngIf="notification.type === 'PROMOTION'" lucideTag class="w-5 h-5 text-primary"></svg>
             <svg *ngIf="notification.type === 'SYSTEM'" lucideInfo class="w-5 h-5 text-gray-500"></svg>
+            <svg *ngIf="notification.type === 'AGENT_REQUEST'" lucideUser class="w-5 h-5 text-orange-500"></svg>
+            <svg *ngIf="notification.type === 'CONVERSATION_TRANSFER'" lucideArrowRightLeft class="w-5 h-5 text-purple-500"></svg>
           </div>
           
           <div class="flex-1 min-w-0">

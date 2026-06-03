@@ -56,25 +56,25 @@
             <p class="mt-2 text-sm font-semibold text-[#4f4632]">
               Chúng tôi có thể giúp gì cho bạn?
             </p>
-            
+
             @if (store.conversations().length > 0) {
               <div class="mt-6 grid gap-2.5">
-                <button 
-                  class="w-full rounded-full bg-[#ffc700] px-5 py-3 text-sm font-bold text-[#111827] hover:bg-[#ffd633] transition" 
+                <button
+                  class="w-full rounded-full bg-[#ffc700] px-5 py-3 text-sm font-bold text-[#111827] hover:bg-[#ffd633] transition"
                   (click)="store.switchConversation(store.conversations()[0].id)"
                 >
                   Tiếp tục trò chuyện
                 </button>
-                <button 
-                  class="w-full rounded-full px-5 py-3 text-sm font-bold text-[#111827] ring-1 ring-inset ring-[#e5e7eb] hover:bg-[#f6f3f2] transition" 
+                <button
+                  class="w-full rounded-full px-5 py-3 text-sm font-bold text-[#111827] ring-1 ring-inset ring-[#e5e7eb] hover:bg-[#f6f3f2] transition"
                   (click)="store.createNewConversation()"
                 >
                   Tạo hội thoại mới
                 </button>
               </div>
             } @else {
-              <button 
-                class="mt-6 w-full rounded-full bg-[#ffc700] px-5 py-3 text-sm font-bold text-[#111827] hover:bg-[#ffd633] transition" 
+              <button
+                class="mt-6 w-full rounded-full bg-[#ffc700] px-5 py-3 text-sm font-bold text-[#111827] hover:bg-[#ffd633] transition"
                 (click)="store.createNewConversation()"
               >
                 Bắt đầu trò chuyện mới
@@ -90,6 +90,12 @@
           [compact]="true"
           (previewRequested)="openPreview($event)"
         />
+
+        @if (store.aiResponding()) {
+          <div class="border-t border-[#d2c5ab]/25 bg-white px-4 py-2.5 text-xs font-semibold text-[#4f4632]">
+            ZenTech AI đang trả lời..
+          </div>
+        }
 
         <app-customer-upload-queue
           [uploads]="store.uploads()"

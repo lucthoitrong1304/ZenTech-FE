@@ -7,7 +7,7 @@
   <div class="relative z-10 mx-auto grid w-full max-w-4xl gap-5">
     @if (!compact()) {
       <div class="flex justify-center py-2">
-        <span class="rounded-full bg-[#f6f3f2] px-4 py-1 text-xs font-black uppercase tracking-[0.14em] text-[#4f4632]">
+        <span class="rounded-full bg-[#f6f3f2] px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#4f4632]">
           Today
         </span>
       </div>
@@ -15,6 +15,7 @@
 
     @for (message of messages(); track message.id) {
       <article
+        [id]="'msg-' + message.id"
         class="message-bubble flex max-w-[86%] gap-3"
         [class.ml-auto]="message.sender === 'CUSTOMER'"
         [class.flex-row-reverse]="message.sender === 'CUSTOMER'"
@@ -33,7 +34,7 @@
           } @else if (message.sender === 'STAFF') {
             <svg lucideUserRound class="h-4 w-4" [attr.stroke-width]="2"></svg>
           } @else {
-            <span class="text-[10px] font-black">{{ customer()?.initials || 'BN' }}</span>
+            <span class="text-[10px] font-semibold">{{ customer()?.initials || 'BN' }}</span>
           }
         </span>
 
@@ -42,10 +43,10 @@
             class="flex items-baseline gap-2"
             [class.flex-row-reverse]="message.sender === 'CUSTOMER'"
           >
-            <strong class="truncate text-sm font-black text-[#101010]">
+            <strong class="truncate text-sm font-semibold text-[#101010]">
               {{ message.senderName }}
             </strong>
-            <span class="shrink-0 text-[10px] font-bold text-[#4f4632]/70">
+            <span class="shrink-0 text-[10px] font-medium text-[#4f4632]/70">
               {{ message.sentAtLabel }}
             </span>
           </div>
@@ -54,19 +55,21 @@
             class="grid max-w-full gap-3 rounded-[8px] px-3 py-2.5 text-sm leading-relaxed"
             [class.rounded-tr-sm]="message.sender === 'CUSTOMER'"
             [class.rounded-tl-sm]="message.sender !== 'CUSTOMER'"
-            [class.bg-[#101010]]="message.sender === 'CUSTOMER'"
-            [class.text-white]="message.sender === 'CUSTOMER'"
-            [class.bg-white]="message.sender !== 'CUSTOMER'"
-            [class.text-[#1c1b1b]]="message.sender !== 'CUSTOMER'"
+            [class.bg-[#F3F4F6]]="message.sender === 'CUSTOMER'"
+            [class.text-[#111827]]="message.sender === 'CUSTOMER'"
+            [class.bg-[#F0FDF4]]="message.sender === 'AI'"
+            [class.text-[#16A34A]]="message.sender === 'AI'"
+            [class.bg-white]="message.sender === 'STAFF'"
+            [class.text-[#111827]]="message.sender === 'STAFF'"
             [class.shadow-[0_18px_42px_-34px_rgba(16,16,16,0.7)]]="true"
           >
             @if (message.messageType === 'CALL' && message.callData) {
               <div class="flex items-center gap-3">
-                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f6f3f2] text-[#101010]">
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#111827] shadow-sm">
                   <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
                 </span>
                 <div class="flex flex-col">
-                  <strong class="text-sm font-black">{{ message.callData.status === 'ENDED' ? 'Cuộc gọi kết thúc' : (message.callData.status === 'BUSY' ? 'Máy bận' : 'Cuộc gọi nhỡ') }}</strong>
+                  <strong class="text-sm font-semibold">{{ message.callData.status === 'ENDED' ? 'Cuộc gọi kết thúc' : (message.callData.status === 'BUSY' ? 'Máy bận' : 'Cuộc gọi nhỡ') }}</strong>
                   <span class="text-xs font-medium opacity-80">{{ message.callData.duration }}</span>
                 </div>
               </div>
@@ -94,7 +97,7 @@
                             <svg lucideImage class="h-5 w-5" [attr.stroke-width]="2"></svg>
                           </span>
                         }
-                        <span class="min-w-0 truncate text-xs font-black">{{ attachment.title }}</span>
+                        <span class="min-w-0 truncate text-xs font-semibold">{{ attachment.title }}</span>
                       </button>
                     } @else {
                       <a
@@ -111,7 +114,7 @@
                             <svg lucideImage class="h-5 w-5" [attr.stroke-width]="2"></svg>
                           }
                         </span>
-                        <span class="min-w-0 truncate text-xs font-black">{{ attachment.title }}</span>
+                        <span class="min-w-0 truncate text-xs font-semibold">{{ attachment.title }}</span>
                       </a>
                     }
                   }
@@ -124,7 +127,7 @@
     }
 
     @if (staff(); as currentStaff) {
-      <div class="mx-auto inline-flex items-center gap-2 rounded-full bg-[#101010] px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-[#ffc700]">
+      <div class="mx-auto inline-flex items-center gap-2 rounded-full bg-[#101010] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#ffc700]">
         {{ currentStaff.name }} đã tham gia cuộc trò chuyện
       </div>
     }

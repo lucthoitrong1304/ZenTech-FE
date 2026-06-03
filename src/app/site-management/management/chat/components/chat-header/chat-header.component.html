@@ -51,6 +51,15 @@
 
     <button
       type="button"
+      class="grid h-10 w-10 place-items-center rounded-[8px] text-[#4f4632] transition hover:bg-[#f6f3f2]"
+      (click)="searchClicked.emit()"
+      title="Tìm kiếm tin nhắn"
+    >
+      <svg lucideSearch class="h-5 w-5" [attr.stroke-width]="2"></svg>
+    </button>
+
+    <button
+      type="button"
       class="chat-header-action chat-header-action--media inline-flex min-h-10 items-center gap-2 rounded-[8px] px-3 text-sm font-bold text-[#4f4632] transition hover:bg-[#f6f3f2]"
       [class.bg-[#ffc700]/10]="mediaDrawerOpen()"
       [class.text-[#765b00]]="mediaDrawerOpen()"
@@ -61,21 +70,23 @@
       <span class="chat-header-action__label">Media</span>
     </button>
 
-    <button
-      type="button"
-      class="chat-header-action chat-header-action--transfer min-h-10 rounded-[8px] border border-[#645efb] px-4 text-sm font-bold text-[#3323cc] transition hover:bg-[#645efb]/5"
-      (click)="transferClicked.emit()"
-      aria-label="Chuyển nhân viên"
-      title="Chuyển nhân viên"
-    >
-      <svg
-        lucideUserRoundCog
-        class="chat-header-action__icon h-5 w-5"
-        [attr.stroke-width]="2"
-      ></svg>
-      <span class="chat-header-action__label">Chuyển nhân viên</span>
-      <span class="chat-header-action__short" aria-hidden="true">Chuyển</span>
-    </button>
+    @if (conversation().status !== 'CLOSED') {
+      <button
+        type="button"
+        class="chat-header-action chat-header-action--transfer min-h-10 rounded-[8px] border border-[#645efb] px-4 text-sm font-bold text-[#3323cc] transition hover:bg-[#645efb]/5"
+        (click)="transferClicked.emit()"
+        aria-label="Chuyển nhân viên"
+        title="Chuyển nhân viên"
+      >
+        <svg
+          lucideUserRoundCog
+          class="chat-header-action__icon h-5 w-5"
+          [attr.stroke-width]="2"
+        ></svg>
+        <span class="chat-header-action__label">Chuyển nhân viên</span>
+        <span class="chat-header-action__short" aria-hidden="true">Chuyển</span>
+      </button>
+    }
 
     @if (conversation().status !== 'STAFF_HANDLING' && conversation().status !== 'CLOSED') {
       <button
@@ -97,13 +108,15 @@
 
     <span class="h-6 w-px bg-[#d2c5ab]/40" aria-hidden="true"></span>
 
-    <button
-      type="button"
-      class="grid h-10 w-10 place-items-center rounded-[8px] text-[#4f4632] transition hover:bg-[#f6f3f2]"
-      (click)="closeClicked.emit()"
-      title="Đóng tư vấn"
-    >
-      <svg lucideX class="h-5 w-5" [attr.stroke-width]="2"></svg>
-    </button>
+    @if (conversation().status !== 'CLOSED') {
+      <button
+        type="button"
+        class="grid h-10 w-10 place-items-center rounded-[8px] text-[#4f4632] transition hover:bg-[#f6f3f2]"
+        (click)="closeClicked.emit()"
+        title="Đóng tư vấn"
+      >
+        <svg lucideX class="h-5 w-5" [attr.stroke-width]="2"></svg>
+      </button>
+    }
   </div>
 </header>

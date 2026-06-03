@@ -1,0 +1,29 @@
+:host ::ng-deep .face-registration-dialog {
+  .p-dialog-header {
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.75rem;
+  }
+  .p-dialog-content {
+    padding: 0;
+  }
+}
+
+.scan-line {
+  height: 2px;
+  background-color: #22c55e;
+  box-shadow: 0 0 10px #22c55e;
+  animation: scan 2s linear infinite;
+  opacity: 0.8;
+}
+
+@keyframes scan {
+  0% {
+    top: 0;
+  }
+  50% {
+    top: 100%;
+  }
+  100% {
+    top: 0;
+  }
+}

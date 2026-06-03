@@ -25,8 +25,10 @@ import { CustomerChatComposerComponent } from '../../components/customer-chat-co
 import { CustomerChatHeaderComponent } from '../../components/customer-chat-header/customer-chat-header.component';
 import { CustomerMessageTimelineComponent } from '../../components/customer-message-timeline/customer-message-timeline.component';
 import { CustomerSharedContentSidebarComponent } from '../../components/customer-shared-content-sidebar/customer-shared-content-sidebar.component';
+import { CustomerChatSearchSidebarComponent } from '../../components/customer-chat-search-sidebar/customer-chat-search-sidebar.component';
 import { CustomerUploadQueueComponent } from '../../components/customer-upload-queue/customer-upload-queue.component';
 import { CustomerChatSharedItem } from '../../data-access/models/customer-chat.models';
+import { CustomerChatEventType } from '../../data-access/models/customer-chat.event';
 import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
 
 @Component({
@@ -39,6 +41,7 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
     CustomerChatHeaderComponent,
     CustomerMessageTimelineComponent,
     CustomerSharedContentSidebarComponent,
+    CustomerChatSearchSidebarComponent,
     CustomerUploadQueueComponent,
     MediaPreviewDialogComponent,
     LucideExternalLink,
@@ -46,7 +49,6 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
     LucideImage,
     LucideLink,
     LucideMessageCircle,
-    LucideMoreVertical,
     LucidePhone,
     LucidePlus,
     LucideSearch,
@@ -108,6 +110,10 @@ export class CustomerChatPageComponent implements OnInit {
         }
       }
     );
+  }
+
+  protected openSearch(): void {
+    this.store.dispatch({ type: CustomerChatEventType.SearchRequested });
   }
 
   protected onLogout(): void {

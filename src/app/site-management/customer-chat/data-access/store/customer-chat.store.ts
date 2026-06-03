@@ -48,8 +48,14 @@ interface CustomerChatUiState {
   requiresLogin: boolean;
   loading: boolean;
   sending: boolean;
+  aiResponding: boolean;
   errorMessage: string | null;
   lastActivityLabel: string;
+  searchSidebarOpen: boolean;
+  searchKeyword: string;
+  searchResults: ChatMessageResponse[];
+  isSearching: boolean;
+  highlightedMessageId: string | null;
 }
 
 const MESSAGE_ENTITY_CONFIG = {
@@ -78,8 +84,14 @@ const INITIAL_STATE: CustomerChatUiState = {
   requiresLogin: false,
   loading: false,
   sending: false,
+  aiResponding: false,
   errorMessage: null,
   lastActivityLabel: '',
+  searchSidebarOpen: false,
+  searchKeyword: '',
+  searchResults: [],
+  isSearching: false,
+  highlightedMessageId: null,
 };
 
 export const CustomerChatStore = signalStore(
@@ -210,6 +222,7 @@ export const CustomerChatStore = signalStore(
                 session: event.session,
                 lastActivityLabel: event.session.lastActivityLabel,
                 loading: false,
+                aiResponding: false,
                 requiresLogin: false,
                 errorMessage: null,
               }
@@ -219,6 +232,7 @@ export const CustomerChatStore = signalStore(
           case CustomerChatEventType.SessionLoadFailed:
             patchState(store, {
               loading: false,
+              aiResponding: false,
               errorMessage: 'Không thể tải cuộc trò chuyện. Vui lòng thử lại sau.',
             });
             break;
@@ -240,6 +254,7 @@ export const CustomerChatStore = signalStore(
           case CustomerChatEventType.CustomerMessageFailed:
             patchState(store, {
               sending: false,
+              aiResponding: false,
               errorMessage: 'Tin nhắn chưa gửi được. Vui lòng thử lại.',
             });
             break;
@@ -338,6 +353,44 @@ export const CustomerChatStore = signalStore(
           case CustomerChatEventType.SharedSidebarClosed:
             patchState(store, { sharedSidebarOpen: false });
             break;
+
+          case CustomerChatEventType.SearchRequested:
+            patchState(store, {
+              searchSidebarOpen: true,
+              fullSidebarMode: 'SEARCH',
+              sharedSidebarOpen: false,
+              searchKeyword: '',
+              searchResults: [],
+            });
+            break;
+
+          case CustomerChatEventType.SearchSidebarToggled:
+            const isOpen = event.searchSidebarOpen;
+            patchState(store, {
+              searchSidebarOpen: isOpen,
+              fullSidebarMode: isOpen ? 'SEARCH' : 'DETAILS',
+              sharedSidebarOpen: false,
+            });
+            break;
+
+          case CustomerChatEventType.SearchMessagesStarted:
+            patchState(store, { isSearching: true, errorMessage: null });
+            break;
+
+          case CustomerChatEventType.SearchMessagesSucceeded:
+            patchState(store, {
+              isSearching: false,
+              searchResults: event.results,
+              errorMessage: null,
+            });
+            break;
+
+          case CustomerChatEventType.SearchMessagesFailed:
+            patchState(store, {
+              isSearching: false,
+              errorMessage: 'Không thể tìm kiếm tin nhắn.',
+            });
+            break;
         }
       };
 
@@ -368,7 +421,12 @@ export const CustomerChatStore = signalStore(
       const switchConversation = rxMethod<string>(
         pipe(
           tap((id) => {
-            patchState(store, { activeConversationId: id, loading: true, errorMessage: null });
+            patchState(store, {
+              activeConversationId: id,
+              loading: true,
+              aiResponding: false,
+              errorMessage: null,
+            });
 
             if (messageSub) {
               messageSub.unsubscribe();
@@ -399,6 +457,7 @@ export const CustomerChatStore = signalStore(
                       {
                         session,
                         loading: false,
+                        aiResponding: false,
                         errorMessage: null,
                       }
                     );
@@ -460,6 +519,7 @@ export const CustomerChatStore = signalStore(
 
                           patchState(store, addEntity(mappedMsg, MESSAGE_ENTITY_CONFIG), {
                             sending: false,
+                            aiResponding: msg.senderType === ParticipantType.BOT ? false : store.aiResponding(),
                             lastActivityLabel: mappedMsg.sentAtLabel,
                           });
 
@@ -504,6 +564,7 @@ export const CustomerChatStore = signalStore(
                 error: () => {
                   patchState(store, {
                     loading: false,
+                    aiResponding: false,
                     errorMessage: 'Không thể tải cuộc trò chuyện.',
                   });
                 },
@@ -547,6 +608,7 @@ export const CustomerChatStore = signalStore(
               patchState(store, {
                 session: null,
                 loading: false,
+                aiResponding: false,
                 requiresLogin: false,
                 errorMessage: null,
               });
@@ -574,6 +636,7 @@ export const CustomerChatStore = signalStore(
               catchError(() => {
                 patchState(store, {
                   loading: false,
+                  aiResponding: false,
                   errorMessage: 'Không thể tải danh sách cuộc hội thoại.',
                 });
                 return EMPTY;
@@ -608,6 +671,10 @@ export const CustomerChatStore = signalStore(
                 content: body,
                 attachments: [],
               };
+              patchState(store, {
+                aiResponding: store.session()?.status === 'BOT_CONSULTING',
+                errorMessage: null,
+              });
               websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
               return of(null);
             }
@@ -672,6 +739,7 @@ export const CustomerChatStore = signalStore(
                     ),
                     {
                       sending: false,
+                      aiResponding: false,
                       errorMessage: 'KhÃ´ng thá»ƒ táº£i tá»‡p lÃªn. Vui lÃ²ng thá»­ láº¡i.',
                     }
                   );
@@ -742,7 +810,13 @@ export const CustomerChatStore = signalStore(
                     ...currentSession,
                     status: updatedConv.status as unknown as CustomerChatSessionStatus,
                   };
-                  patchState(store, { session: newSession });
+                  patchState(store, {
+                    session: newSession,
+                    aiResponding:
+                      updatedConv.status === ConversationStatus.BOT_CONSULTING
+                        ? store.aiResponding()
+                        : false,
+                  });
                 }
               })
             );
@@ -768,11 +842,125 @@ export const CustomerChatStore = signalStore(
                     ...currentSession,
                     status: updatedConv.status as unknown as CustomerChatSessionStatus,
                   };
-                  patchState(store, { session: newSession });
+                  patchState(store, { session: newSession, aiResponding: false });
                 }
               })
             );
           })
+        )
+      );
+
+      const reopenConversation = rxMethod<void>(
+        pipe(
+          switchMap(() => {
+            const id = store.activeConversationId();
+            if (!id) return EMPTY;
+            return customerChatService.reopenConversation(id).pipe(
+              tap((updatedConv) => {
+                const updatedList = store
+                  .conversations()
+                  .map((c) => (c.id === updatedConv.id ? updatedConv : c));
+                patchState(store, { conversations: updatedList });
+
+                const currentSession = store.session();
+                if (currentSession && currentSession.id === updatedConv.id) {
+                  const newSession = {
+                    ...currentSession,
+                    status: updatedConv.status as unknown as CustomerChatSessionStatus,
+                  };
+                  patchState(store, { session: newSession, aiResponding: false });
+                }
+              })
+            );
+          })
+        )
+      );
+
+      const searchMessages = rxMethod<string>(
+        pipe(
+          tap((keyword) => {
+            patchState(store, { searchKeyword: keyword });
+            if (!keyword.trim()) {
+              patchState(store, { searchResults: [] });
+              return;
+            }
+            handleEvent({ type: CustomerChatEventType.SearchMessagesStarted });
+          }),
+          filter((keyword) => !!keyword.trim()),
+          switchMap((keyword) => {
+            const conversationId = store.activeConversationId();
+            if (!conversationId) return EMPTY;
+
+            return customerChatService.searchMessages(conversationId, keyword, 0, 50).pipe(
+              tap({
+                next: (results) => {
+                  handleEvent({
+                    type: CustomerChatEventType.SearchMessagesSucceeded,
+                    results: results.content || [],
+                  });
+                },
+                error: () => {
+                  handleEvent({ type: CustomerChatEventType.SearchMessagesFailed });
+                },
+              }),
+              catchError(() => EMPTY)
+            );
+          })
+        )
+      );
+
+      const jumpToMessage = rxMethod<string>(
+        pipe(
+          tap(() => patchState(store, { loading: true })),
+          switchMap((messageId) => {
+            const conversationId = store.activeConversationId();
+            if (!conversationId) return EMPTY;
+
+            // Check if message is already in store
+            const exists = store.messages().some((m) => m.id === messageId);
+            if (exists) {
+              patchState(store, { loading: false, highlightedMessageId: messageId });
+              // Logic to trigger scroll can be done in UI component by observing a signal or using a service
+              return of(messageId);
+            }
+
+            // Fetch context messages
+            return customerChatService.getMessageContext(conversationId, messageId).pipe(
+              tap({
+                next: (messages) => {
+                  const conv = store.conversations().find((c) => c.id === conversationId);
+                  if (conv) {
+                    const session = mapToCustomerChatSession(
+                      conv,
+                      messages,
+                      authStorageService.getSession()?.accountId || null
+                    );
+                    patchState(
+                      store,
+                      setAllEntities(session.messages, MESSAGE_ENTITY_CONFIG),
+                      setAllEntities(session.sharedItems, SHARED_ITEM_ENTITY_CONFIG),
+                      {
+                        session,
+                        loading: false,
+                        highlightedMessageId: messageId,
+                      }
+                    );
+                  }
+                },
+                error: () => patchState(store, { loading: false }),
+              }),
+              catchError(() => {
+                patchState(store, { loading: false });
+                return EMPTY;
+              })
+            );
+          })
+        )
+      );
+
+      const clearHighlightedMessage = rxMethod<void>(
+        pipe(
+          tap(() => patchState(store, { highlightedMessageId: null }))
         )
       );
 
@@ -786,6 +974,10 @@ export const CustomerChatStore = signalStore(
         selectFiles,
         requestAgent,
         closeConversation,
+        reopenConversation,
+        searchMessages,
+        jumpToMessage,
+        clearHighlightedMessage,
         openPopup(): void {
           if (!hasCustomerSession()) {
             patchState(store, {
