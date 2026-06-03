@@ -1,8 +1,11 @@
 import { Routes } from '@angular/router';
 
+import { homeRedirectGuard } from './core/guards/home-redirect.guard';
+
 export const routes: Routes = [
   {
     path: '', // Home route pattern
+    canActivate: [homeRedirectGuard],
     loadComponent: () => import('./site-management/home/home.component').then(m => m.HomeComponent)
   },
   {
