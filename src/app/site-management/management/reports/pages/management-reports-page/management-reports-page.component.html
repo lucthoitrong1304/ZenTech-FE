@@ -1,0 +1,774 @@
+<section class="reports-page">
+  <!-- Header Báo cáo & Chọn chu kỳ thời gian -->
+  <div class="reports-command">
+    <div class="reports-command__copy">
+      <span class="reports-kicker">System Analytics Center</span>
+      <h1>Báo cáo & Thống kê</h1>
+      <p>Theo dõi doanh thu bán lẻ, hiệu suất danh mục hàng và tồn kho hệ thống thời gian thực.</p>
+    </div>
+    
+    <div class="reports-command__actions">
+      <!-- Bộ lọc chu kỳ thời gian -->
+      <div class="reports-period-selector">
+        <button 
+          type="button" 
+          class="reports-period-btn" 
+          [class.reports-period-btn--active]="store.period() === ReportPeriod.Today && !showCustomDatePanel"
+          (click)="selectPeriod(ReportPeriod.Today)">
+          Hôm nay
+        </button>
+        <button 
+          type="button" 
+          class="reports-period-btn" 
+          [class.reports-period-btn--active]="store.period() === ReportPeriod.Last7Days && !showCustomDatePanel"
+          (click)="selectPeriod(ReportPeriod.Last7Days)">
+          7 ngày
+        </button>
+        <button 
+          type="button" 
+          class="reports-period-btn" 
+          [class.reports-period-btn--active]="store.period() === ReportPeriod.Last30Days && !showCustomDatePanel"
+          (click)="selectPeriod(ReportPeriod.Last30Days)">
+          30 ngày
+        </button>
+        <button 
+          type="button" 
+          class="reports-period-btn" 
+          [class.reports-period-btn--active]="showCustomDatePanel"
+          (click)="selectPeriod(ReportPeriod.Custom)">
+          Tự chọn
+        </button>
+      </div>
+
+      <!-- Nút Xuất Báo Cáo chuyên nghiệp -->
+      <button 
+        type="button" 
+        class="reports-primary-action"
+        (click)="openExportWizard()"
+        [disabled]="store.loading()">
+        <svg lucideDownload [attr.stroke-width]="2.2"></svg>
+        <span>Xuất báo cáo</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Chọn khoảng ngày tuỳ chọn -->
+  @if (showCustomDatePanel) {
+    <div class="reports-custom-date-panel animate-slide-down">
+      <div class="reports-date-fields">
+        <div class="reports-date-field-group">
+          <label>Ngày bắt đầu</label>
+          <input 
+            type="date" 
+            [(ngModel)]="customStartDate">
+        </div>
+        <div class="reports-date-field-group">
+          <label>Ngày kết thúc</label>
+          <input 
+            type="date" 
+            [(ngModel)]="customEndDate">
+        </div>
+        <button 
+          type="button" 
+          class="reports-date-submit-btn" 
+          (click)="applyCustomDates()">
+          Áp dụng
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Trạng thái Loading -->
+  @if (store.loading()) {
+    <div class="reports-loading">
+      <div class="reports-spinner"></div>
+      <p>Đang tải dữ liệu báo cáo phân tích...</p>
+    </div>
+  } @else {
+
+    <!-- KPI STATS PANEL (Ghim đầu trang đồng bộ với orders-stats) -->
+    <div class="reports-stats">
+      <!-- 1. Doanh thu bán lẻ -->
+      <article (click)="setSubTab('revenue')">
+        <span>Tổng doanh thu bán lẻ</span>
+        <strong>{{ store.summary()?.totalRevenue | number:'1.0-0' }} VNĐ</strong>
+        <span class="reports-stat-growth" [class.reports-stat-growth--up]="(store.summary()?.growthRate || 0) >= 0">
+          {{ (store.summary()?.growthRate || 0) >= 0 ? '▲ +' : '▼ ' }}{{ store.summary()?.growthRate | number:'1.1-2' }}% kỳ trước
+        </span>
+      </article>
+
+      <!-- 2. Quy mô đơn hàng -->
+      <article (click)="setSubTab('customers')">
+        <span>Đơn hàng hoàn tất</span>
+        <strong>{{ store.summary()?.totalOrders | number:'1.0-0' }} đơn</strong>
+        <span class="reports-stat-badge">Hoàn thành</span>
+      </article>
+
+      <!-- 3. Giá trị trung bình đơn -->
+      <article (click)="setSubTab('revenue')">
+        <span>Giá trị trung bình đơn (AOV)</span>
+        <strong>{{ store.summary()?.averageOrderValue | number:'1.0-0' }} VNĐ</strong>
+        <span class="reports-stat-badge">Hiệu suất giỏ</span>
+      </article>
+
+      <!-- 4. Tỷ lệ xử lý thành công -->
+      <article (click)="setSubTab('inventory')">
+        <span>Tỷ lệ hoàn thành đơn</span>
+        <strong>{{ store.summary()?.autoFulfillmentRate | number:'1.1-1' }}%</strong>
+        <span class="reports-stat-badge">Hệ thống xử lý</span>
+      </article>
+    </div>
+
+    <!-- THANH DIỀU HƯỚNG TABS TỐI GIẢN QUẢN TRỊ -->
+    <div class="reports-tabs-bar">
+      <button 
+        type="button" 
+        class="reports-tab-link" 
+        [class.reports-tab-link--active]="activeSubTab === 'revenue'"
+        (click)="setSubTab('revenue')">
+        <svg lucideChartBar></svg>
+        <span>Doanh thu & Bán lẻ</span>
+      </button>
+      <button 
+        type="button" 
+        class="reports-tab-link" 
+        [class.reports-tab-link--active]="activeSubTab === 'products'"
+        (click)="setSubTab('products')">
+        <svg lucideShoppingCart></svg>
+        <span>Sản phẩm & Danh mục</span>
+      </button>
+      <button 
+        type="button" 
+        class="reports-tab-link" 
+        [class.reports-tab-link--active]="activeSubTab === 'customers'"
+        (click)="setSubTab('customers')">
+        <svg lucideUsers></svg>
+        <span>Khách hàng VIP & Vouchers</span>
+      </button>
+      <button 
+        type="button" 
+        class="reports-tab-link" 
+        [class.reports-tab-link--active]="activeSubTab === 'inventory'"
+        (click)="setSubTab('inventory')">
+        <svg lucideLayers></svg>
+        <span>Cảnh báo & Tồn kho</span>
+      </button>
+    </div>
+
+    <!-- NỘI DUNG CHI TIẾT TỪNG TAB -->
+
+    <!-- TAB 1: DOANH THU & KÊNH THANH TOÁN -->
+    @if (activeSubTab === 'revenue') {
+      <div class="reports-tab-content animate-fade-in">
+        <div class="reports-grid-two-cols">
+          <!-- Cột biểu đồ doanh thu mượt mà -->
+          <div class="reports-chart-card">
+            <div class="reports-card-header">
+              <h3>Biểu đồ Xu hướng Doanh thu Bán lẻ</h3>
+              <p>Đối chiếu chu kỳ hiện tại (đường cong phát sáng) với chu kỳ trước (nét đứt xám)</p>
+            </div>
+
+            @if (revenueChart().labels.length > 0) {
+              <div class="reports-chart-wrapper">
+                <div 
+                  #chartContainer
+                  class="reports-svg-container"
+                  (mousemove)="onChartMouseMove($event, chartContainer)"
+                  (mouseleave)="onChartMouseLeave()">
+                  
+                  <svg viewBox="0 0 800 240" class="reports-svg-element">
+                    <defs>
+                      <linearGradient id="currentAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.22" />
+                        <stop offset="100%" stop-color="#4F46E5" stop-opacity="0.0" />
+                      </linearGradient>
+                    </defs>
+
+                    <!-- Đường lưới mảnh đứt nét -->
+                    <line x1="30" y1="30" x2="770" y2="30" class="reports-chart-grid" />
+                    <line x1="30" y1="120" x2="770" y2="120" class="reports-chart-grid" />
+                    <line x1="30" y1="210" x2="770" y2="210" class="reports-chart-grid" />
+
+                    <!-- Area gradient filled -->
+                    <path [attr.d]="revenueChart().areaPath" fill="url(#currentAreaGradient)" />
+
+                    <!-- Chu kỳ trước nét đứt -->
+                    <path [attr.d]="revenueChart().prevPath" class="reports-bezier reports-bezier--prev" />
+
+                    <!-- Chu kỳ này nét liền -->
+                    <path [attr.d]="revenueChart().currentPath" class="reports-bezier reports-bezier--current" />
+
+                    <!-- Điểm tròn kép -->
+                    @for (pt of revenueChart().points; track pt.x) {
+                      <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="5.5" class="reports-node-outer" />
+                      <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="2.5" class="reports-node-inner" />
+                    }
+
+                    <!-- Trục chữ X -->
+                    @for (lbl of revenueChart().labels; track lbl.x) {
+                      <text [attr.x]="lbl.x" y="230" class="reports-axis-label">{{ lbl.label }}</text>
+                    }
+                  </svg>
+
+                  <!-- Floating Tooltip Glassmorphic -->
+                  @if (hoveredPoint) {
+                    <div 
+                      class="reports-chart-tooltip"
+                      [style.left.px]="tooltipX"
+                      [style.top.px]="tooltipY">
+                      <p class="reports-tooltip-title">{{ hoveredPoint.label }}</p>
+                      <div class="reports-tooltip-row">
+                        <span class="reports-tooltip-dot reports-tooltip-dot--current"></span>
+                        <span>Doanh thu:</span>
+                        <strong>{{ hoveredPoint.current | number:'1.0-0' }}đ</strong>
+                      </div>
+                      <div class="reports-tooltip-row">
+                        <span class="reports-tooltip-dot reports-tooltip-dot--prev"></span>
+                        <span>Kỳ trước:</span>
+                        <strong>{{ hoveredPoint.prev | number:'1.0-0' }}đ</strong>
+                      </div>
+                      <p class="reports-tooltip-growth" [class.reports-tooltip-growth--up]="hoveredPoint.diff >= 0">
+                        {{ hoveredPoint.diff >= 0 ? '▲ Tăng' : '▼ Giảm' }} {{ hoveredPoint.diff | number:'1.1-2' }}%
+                      </p>
+                    </div>
+                  }
+                </div>
+
+                <div class="reports-chart-legend">
+                  <span class="legend-item"><span class="legend-dot legend-dot--current"></span>Chu kỳ hiện tại</span>
+                  <span class="legend-item"><span class="legend-dot legend-dot--prev"></span>Chu kỳ trước đó</span>
+                </div>
+              </div>
+            } @else {
+              <div class="reports-no-data">
+                <p>Không ghi nhận dữ liệu thống kê bán lẻ phát sinh trong kỳ này.</p>
+              </div>
+            }
+          </div>
+
+          <!-- Kênh thanh toán & Tóm tắt nhanh -->
+          <div class="reports-side-panel">
+            <div class="reports-quick-metrics-card">
+              <h3>Tổng hợp hiệu suất kỳ</h3>
+              <div class="quick-metrics-list">
+                <div class="quick-metric-row">
+                  <span>Tổng doanh số bán lẻ thực tế</span>
+                  <strong>{{ store.summary()?.totalRevenue | number:'1.0-0' }}đ</strong>
+                </div>
+                <div class="quick-metric-row">
+                  <span>Doanh thu trung bình mỗi ngày</span>
+                  <span class="text-[#374151] font-semibold">{{ getAverageDailyRevenue() | number:'1.0-0' }}đ</span>
+                </div>
+                <div class="quick-metric-row">
+                  <span>Hiệu suất giao nhận và vận hành</span>
+                  <span class="text-[#16A34A] font-bold">{{ store.summary()?.aiOpsScore | number:'1.1-1' }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cơ cấu thanh toán -->
+            <div class="reports-payment-card">
+              <h3>Cơ cấu phương thức giao dịch</h3>
+              <p>Phân bổ tỷ lệ doanh thu theo các kênh ví điện tử và COD</p>
+
+              <div class="payment-shares-stack">
+                @for (method of store.paymentMethods(); track method.method) {
+                  <div class="payment-share-item">
+                    <div class="payment-share-info">
+                      <span>
+                        <svg lucideCreditCard></svg>
+                        {{ method.method === 'CASH' ? 'COD (Tiền mặt)' : (method.method === 'VNPAY' ? 'Cổng VNPAY' : 'Ví MoMo') }}
+                      </span>
+                      <span>
+                        <strong>{{ method.percentage | number:'1.1-1' }}%</strong>
+                        <span>({{ method.revenue | number:'1.0-0' }} VNĐ)</span>
+                      </span>
+                    </div>
+                    <!-- Tiến trình đa sắc đồng bộ -->
+                    <div class="reports-progress-container">
+                      <div 
+                        class="reports-progress-fill transition-all duration-500" 
+                        [class.reports-progress-fill--momo]="method.method === 'MOMO'"
+                        [class.reports-progress-fill--vnpay]="method.method === 'VNPAY'"
+                        [class.reports-progress-fill--cod]="method.method === 'CASH'"
+                        [style.width.%]="method.percentage">
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 2: HIỆU SUẤT SẢN PHẨM & DANH MỤC -->
+    @if (activeSubTab === 'products') {
+      <div class="reports-tab-content animate-fade-in">
+        <div class="reports-grid-one-col">
+          <!-- Bảng sản phẩm bán chạy nhất -->
+          <div class="reports-list-card">
+            <div class="reports-card-header">
+              <h3>Top 10 sản phẩm bán chạy hàng đầu</h3>
+              <p>Thống kê sản lượng tiêu thụ và doanh thu đóng góp của các gaming gear & linh kiện</p>
+            </div>
+
+            <div class="reports-table-wrapper">
+              <table class="reports-data-table">
+                <thead>
+                  <tr>
+                    <th>Tên sản phẩm</th>
+                    <th>Biến thể</th>
+                    <th>Đã bán</th>
+                    <th>Doanh thu</th>
+                    <th>Tồn kho</th>
+                    <th>Hồ sơ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (product of store.products(); track product.productName + product.variantName) {
+                    <tr class="table-hover-row">
+                      <td>
+                        <button 
+                          type="button" 
+                          class="table-link-btn" 
+                          (click)="openProductDetails(product)">
+                          {{ product.productName }}
+                        </button>
+                      </td>
+                      <td><span class="variant-pill">{{ product.variantName }}</span></td>
+                      <td><strong>{{ product.quantitySold }} chiếc</strong></td>
+                      <td><strong>{{ product.revenue | number:'1.0-0' }}đ</strong></td>
+                      <td>
+                        <span class="stock-status" [class.stock-status--alert]="product.stockRemaining < 5">
+                          {{ product.stockRemaining }} chiếc
+                        </span>
+                      </td>
+                      <td>
+                        <button 
+                          type="button" 
+                          class="table-action-details-btn" 
+                          (click)="openProductDetails(product)">
+                          Xem
+                        </button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="table-empty-row">Không phát sinh sản phẩm bán lẻ phát sinh doanh thu.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Cơ cấu Doanh thu theo Danh mục -->
+          <div class="reports-categories-card">
+            <h3>Doanh thu theo danh mục hàng</h3>
+            <p>Tỷ lệ phân chia doanh thu giữa các nhóm ngành hàng thiết bị phần cứng</p>
+
+            <div class="categories-shares-stack">
+              @for (cat of store.categories(); track cat.categoryName; let idx = $index) {
+                <div class="category-share-item">
+                  <div class="category-share-info">
+                    <span>
+                      <svg lucideLayers></svg>
+                      {{ cat.categoryName }}
+                    </span>
+                    <span>
+                      <strong>{{ cat.percentage | number:'1.1-1' }}%</strong>
+                      <span>({{ cat.revenue | number:'1.0-0' }}đ)</span>
+                    </span>
+                  </div>
+                  <div class="reports-progress-container">
+                    <div 
+                      class="reports-progress-fill transition-all duration-500" 
+                      [class.reports-progress-fill--index0]="idx % 4 === 0"
+                      [class.reports-progress-fill--index1]="idx % 4 === 1"
+                      [class.reports-progress-fill--index2]="idx % 4 === 2"
+                      [class.reports-progress-fill--index3]="idx % 4 === 3"
+                      [style.width.%]="cat.percentage">
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 3: KHÁCH HÀNG VIP & VOUCHERS -->
+    @if (activeSubTab === 'customers') {
+      <div class="reports-tab-content animate-fade-in">
+        <div class="reports-grid-one-col">
+          <!-- Bảng khách hàng VIP -->
+          <div class="reports-list-card">
+            <div class="reports-card-header">
+              <h3>Khách hàng thân thiết đóng góp cao</h3>
+              <p>Danh sách các tài khoản khách hàng VIP có giá trị giao dịch cao nhất chu kỳ</p>
+            </div>
+
+            <div class="reports-table-wrapper">
+              <table class="reports-data-table">
+                <thead>
+                  <tr>
+                    <th>Khách hàng</th>
+                    <th>Email liên hệ</th>
+                    <th>Số đơn đã đặt</th>
+                    <th>Doanh số đóng góp</th>
+                    <th>Hạng thẻ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (customer of store.customers(); track customer.email) {
+                    <tr class="table-hover-row">
+                      <td>
+                        <button 
+                          type="button" 
+                          class="table-link-btn" 
+                          (click)="openCustomerDetails(customer)">
+                          {{ customer.customerName }}
+                        </button>
+                      </td>
+                      <td><span class="customer-email">{{ customer.email }}</span></td>
+                      <td><strong>{{ customer.orderCount }} đơn</strong></td>
+                      <td><span class="customer-spent">{{ customer.totalSpent | number:'1.0-0' }} VNĐ</span></td>
+                      <td>
+                        <span class="rank-badge" [class.rank-badge--gold]="customer.totalSpent > 10000000">
+                          {{ customer.totalSpent > 10000000 ? 'Platinum VIP' : 'Gold Member' }}
+                        </span>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="5" class="table-empty-row">Không ghi nhận tài khoản phát sinh sức mua sắm.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Mã giảm giá tiếp thị -->
+          <div class="reports-coupons-card">
+            <div class="reports-card-header">
+              <h3>Hiệu quả hoạt động chương trình Voucher</h3>
+              <p>Thống kê số lượng mã ưu đãi áp dụng thành công và số tiền đã tri ân giảm trừ</p>
+            </div>
+
+            <div class="reports-table-wrapper">
+              <table class="reports-data-table">
+                <thead>
+                  <tr>
+                    <th>Mã giảm giá (Code)</th>
+                    <th>Lượt quy đổi</th>
+                    <th>Tổng chiết khấu áp dụng</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (coupon of store.coupons(); track coupon.couponCode) {
+                    <tr>
+                      <td><span class="voucher-code">{{ coupon.couponCode }}</span></td>
+                      <td><strong>{{ coupon.usageCount }} lượt</strong></td>
+                      <td><span class="voucher-discount">-{{ coupon.totalDiscountApplied | number:'1.0-0' }}đ</span></td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="3" class="table-empty-row">Không phát sinh voucher khuyến mãi được áp dụng.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 4: CẢNH BÁO & TỒN KHO -->
+    @if (activeSubTab === 'inventory') {
+      <div class="reports-tab-content animate-fade-in">
+        <div class="reports-grid-one-col">
+          <!-- Cột Cảnh báo hệ thống & Insights -->
+          <div class="reports-alerts-side">
+            <div class="reports-alerts-box">
+              <div class="reports-card-header">
+                <h3>Hộp cảnh báo & Vận hành kho hàng</h3>
+                <p>Nhận diện tự động tình hình kho hàng và các chỉ số vận hành để đề xuất xử lý nhanh</p>
+              </div>
+
+              <div class="alerts-stack">
+                @for (insight of store.insights(); track insight.id) {
+                  <div class="alert-box-card" [class]="'alert-box-card--' + insight.type">
+                    <div class="alert-box-header">
+                      <span class="alert-box-badge" [class]="'alert-box-badge--' + insight.type">
+                        {{ insight.type === 'warning' ? 'Cảnh báo tồn' : (insight.type === 'success' ? 'Tăng trưởng' : 'Thông tin') }}
+                      </span>
+                    </div>
+                    <h4 class="alert-box-title">{{ insight.title }}</h4>
+                    <p class="alert-box-desc">{{ insight.description }}</p>
+                  </div>
+                } @empty {
+                  <div class="alerts-empty">
+                    <p>Không ghi nhận bất kỳ cảnh báo bất thường nào từ kho hàng.</p>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Bảng các sản phẩm bán chạy nhất cần Nhập hàng -->
+          <div class="reports-list-card">
+            <div class="reports-card-header">
+              <h3>Đề xuất bổ sung hàng khẩn cấp</h3>
+              <p>Danh sách sản phẩm bán chạy có lượng tồn kho cực thấp dưới 5 sản phẩm</p>
+            </div>
+
+            <div class="reports-table-wrapper">
+              <table class="reports-data-table">
+                <thead>
+                  <tr>
+                    <th>Sản phẩm bán chạy</th>
+                    <th>Biến thể</th>
+                    <th>Sản lượng đã bán</th>
+                    <th>Còn lại trong kho</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (product of store.products(); track product.productName + product.variantName) {
+                    @if (product.stockRemaining < 5) {
+                      <tr>
+                        <td><strong class="font-bold text-[#111827]">{{ product.productName }}</strong></td>
+                        <td><span class="variant-pill">{{ product.variantName }}</span></td>
+                        <td><strong>{{ product.quantitySold }} chiếc</strong></td>
+                        <td><span class="text-[#E11D48] font-bold">{{ product.stockRemaining }} chiếc</span></td>
+                        <td>
+                          <button 
+                            type="button" 
+                            class="low-stock-order-trigger-btn"
+                            (click)="openProductDetails(product)">
+                            Nhập hàng
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  } @empty {
+                    <tr>
+                      <td colspan="5" class="table-empty-row">Tuyệt vời! Không phát hiện sản phẩm bán chạy nào rơi vào trạng thái tồn kho thấp.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+  }
+</section>
+
+<!-- ==================== DIALOG CHI TIẾT SẢN PHẨM ==================== -->
+<p-dialog 
+  header="Đề xuất Phương án Nhập kho Sản phẩm" 
+  [(visible)]="showProductDetailsDialog" 
+  [modal]="true" 
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  styleClass="reports-custom-dialog"
+  [style]="{ width: '480px' }">
+  
+  @if (selectedProductDetails) {
+    <div class="reports-dialog-layout">
+      <div class="dialog-meta-panel">
+        <h4 class="dialog-meta-title">{{ selectedProductDetails.productName }}</h4>
+        <div class="dialog-meta-badges">
+          <span class="variant-pill">{{ selectedProductDetails.variantName }}</span>
+          <span class="dialog-stock-tag" [class.dialog-stock-tag--alert]="selectedProductDetails.stockRemaining < 5">
+            Tồn kho: {{ selectedProductDetails.stockRemaining }} chiếc
+          </span>
+        </div>
+      </div>
+
+      <div class="dialog-section-border">
+        <div class="dialog-row-group">
+          <span class="dialog-label">Đề xuất số lượng đặt hàng</span>
+          <strong class="dialog-value">25 sản phẩm (Khuyên dùng)</strong>
+          <p class="dialog-description">
+            Dựa trên sức mua thực tế {{ selectedProductDetails.quantitySold }} chiếc trong chu kỳ vừa qua, đây là số lượng nhập hàng tối ưu nhất để tránh làm đứt gãy chuỗi cung ứng và tối ưu hóa đọng vốn kho.
+          </p>
+        </div>
+
+        <div class="dialog-grid-fields">
+          <div class="dialog-field-block">
+            <span class="dialog-label">Nhà phân phối sỉ đề nghị</span>
+            <strong class="dialog-value-small">TechWorld Distributor APAC</strong>
+          </div>
+          <div class="dialog-field-block">
+            <span class="dialog-label">Thời gian giao dự kiến</span>
+            <strong class="dialog-value-small">3 - 5 ngày làm việc</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="dialog-actions-row">
+        <button 
+          type="button" 
+          class="dialog-btn-close" 
+          (click)="showProductDetailsDialog = false">
+          Đóng lại
+        </button>
+        <button 
+          type="button" 
+          class="dialog-btn-approve" 
+          (click)="showProductDetailsDialog = false">
+          Phê duyệt đặt hàng
+        </button>
+      </div>
+    </div>
+  }
+</p-dialog>
+
+<!-- ==================== DIALOG CHI TIẾT KHÁCH HÀNG VIP ==================== -->
+<p-dialog 
+  header="Hồ sơ tích lũy & Chi tiêu Khách hàng VIP" 
+  [(visible)]="showCustomerDetailsDialog" 
+  [modal]="true" 
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  styleClass="reports-custom-dialog"
+  [style]="{ width: '480px' }">
+  
+  @if (selectedCustomerDetails) {
+    <div class="reports-dialog-layout">
+      <div class="dialog-meta-panel">
+        <h4 class="dialog-meta-title">{{ selectedCustomerDetails.customerName }}</h4>
+        <div class="dialog-meta-badges">
+          <span class="dialog-customer-email">{{ selectedCustomerDetails.email }}</span>
+          <span class="rank-badge" [class.rank-badge--gold]="selectedCustomerDetails.totalSpent > 10000000">
+            {{ selectedCustomerDetails.totalSpent > 10000000 ? 'Platinum VIP' : 'Gold Member' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="dialog-section-border">
+        <div class="dialog-grid-fields">
+          <div class="dialog-field-block">
+            <span class="dialog-label">Tổng doanh thu đóng góp</span>
+            <strong class="dialog-value text-[#16A34A]">{{ selectedCustomerDetails.totalSpent | number:'1.0-0' }} VNĐ</strong>
+          </div>
+          <div class="dialog-field-block">
+            <span class="dialog-label">Tần suất giao dịch</span>
+            <strong class="dialog-value">{{ selectedCustomerDetails.orderCount }} đơn hàng</strong>
+          </div>
+        </div>
+
+        <div class="dialog-row-group">
+          <span class="dialog-label">Hành động gắn kết đề xuất</span>
+          <p class="dialog-description">
+            Đây là tài khoản thuộc nhóm đóng góp doanh số mua hàng lớn nhất hệ thống. Đề xuất gửi mã Voucher ưu đãi tri ân đặc quyền 5% vào email trực tiếp của khách hàng để gia tăng lòng trung thành.
+          </p>
+        </div>
+      </div>
+
+      <div class="dialog-actions-row">
+        <button 
+          type="button" 
+          class="dialog-btn-close" 
+          (click)="showCustomerDetailsDialog = false">
+          Đóng lại
+        </button>
+        <button 
+          type="button" 
+          class="dialog-btn-approve" 
+          (click)="showCustomerDetailsDialog = false">
+          Gửi Voucher đặc quyền
+        </button>
+      </div>
+    </div>
+  }
+</p-dialog>
+
+<!-- ==================== DIALOG WIZARD XUẤT BÁO CÁO ==================== -->
+<p-dialog 
+  header="Cấu hình trích xuất tệp tin Báo cáo" 
+  [(visible)]="showExportWizardDialog" 
+  [modal]="true" 
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  styleClass="reports-custom-dialog"
+  [style]="{ width: '450px' }">
+  
+  <div class="reports-dialog-layout">
+    <div class="dialog-meta-panel">
+      <h4 class="dialog-meta-title">Cấu hình trường dữ liệu xuất (.CSV)</h4>
+      <p class="text-xs text-[#6B7280]">Chọn các phần báo cáo phân tích bạn muốn đính kèm trong tệp tin tải xuống</p>
+    </div>
+
+    <!-- Checkboxes -->
+    <div class="dialog-section-border wizard-checks-stack">
+      <label class="wizard-check-label">
+        <input type="checkbox" [(ngModel)]="exportOptions.summary" class="wizard-check-input">
+        <span class="wizard-check-box">
+          @if (exportOptions.summary) {
+            <svg lucideCheck class="w-3 h-3 text-white"></svg>
+          }
+        </span>
+        <span class="wizard-check-text">I. Tổng quan chỉ số sức khỏe tài chính & bán lẻ</span>
+      </label>
+
+      <label class="wizard-check-label">
+        <input type="checkbox" [(ngModel)]="exportOptions.products" class="wizard-check-input">
+        <span class="wizard-check-box">
+          @if (exportOptions.products) {
+            <svg lucideCheck class="w-3 h-3 text-white"></svg>
+          }
+        </span>
+        <span class="wizard-check-text">II. Báo cáo danh sách 10 sản phẩm bán chạy nhất</span>
+      </label>
+
+      <label class="wizard-check-label">
+        <input type="checkbox" [(ngModel)]="exportOptions.coupons" class="wizard-check-input">
+        <span class="wizard-check-box">
+          @if (exportOptions.coupons) {
+            <svg lucideCheck class="w-3 h-3 text-white"></svg>
+          }
+        </span>
+        <span class="wizard-check-text">III. Thống kê hiệu quả hoạt động chương trình Voucher tiếp thị</span>
+      </label>
+
+      <label class="wizard-check-label">
+        <input type="checkbox" [(ngModel)]="exportOptions.customers" class="wizard-check-input">
+        <span class="wizard-check-box">
+          @if (exportOptions.customers) {
+            <svg lucideCheck class="w-3 h-3 text-white"></svg>
+          }
+        </span>
+        <span class="wizard-check-text">IV. Báo cáo phân khúc đóng góp nhóm khách hàng VIP</span>
+      </label>
+    </div>
+
+    <div class="dialog-actions-row">
+      <button 
+        type="button" 
+        class="dialog-btn-close" 
+        (click)="showExportWizardDialog = false">
+        Hủy bỏ
+      </button>
+      <button 
+        type="button" 
+        class="dialog-btn-approve" 
+        (click)="exportToCsv()"
+        [disabled]="!exportOptions.summary && !exportOptions.products && !exportOptions.coupons && !exportOptions.customers">
+        Xác nhận tải tệp
+      </button>
+    </div>
+  </div>
+</p-dialog>
