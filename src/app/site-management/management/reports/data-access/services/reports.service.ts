@@ -12,6 +12,8 @@ import {
   ReportPeriod,
   IPaymentMethodShare,
   ICategoryShare,
+  IInventoryStats,
+  IAIAnalyzeResponse,
 } from '../models/reports.model';
 
 interface ApiResponseDto<T> {
@@ -65,6 +67,17 @@ export class ReportsService {
   getCategories(period: ReportPeriod, customStart?: string, customEnd?: string): Observable<ApiResponseDto<ICategoryShare[]>> {
     const params = this.buildDateParams(period, customStart, customEnd);
     return this.apiService.get<ApiResponseDto<ICategoryShare[]>>(`${this.baseUrl}/categories`, { params });
+  }
+
+  getInventoryStats(period: ReportPeriod, customStart?: string, customEnd?: string): Observable<ApiResponseDto<IInventoryStats>> {
+    const params = this.buildDateParams(period, customStart, customEnd);
+    return this.apiService.get<ApiResponseDto<IInventoryStats>>(`${this.baseUrl}/inventory-stats`, { params });
+  }
+
+  analyzeReport(tab: string, period: ReportPeriod, customStart?: string, customEnd?: string): Observable<ApiResponseDto<IAIAnalyzeResponse>> {
+    let params = this.buildDateParams(period, customStart, customEnd);
+    params['tab'] = tab;
+    return this.apiService.get<ApiResponseDto<IAIAnalyzeResponse>>(`${this.baseUrl}/analyze`, { params });
   }
 
   private buildDateParams(period: ReportPeriod, customStart?: string, customEnd?: string): Record<string, string> {

@@ -1,7 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { marked } from 'marked';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
+import { ChartModule } from 'primeng/chart';
 import {
   LucideChartBar,
   LucideDownload,
@@ -10,10 +13,43 @@ import {
   LucideCreditCard,
   LucideLayers,
   LucideCheck,
+  LucidePackage,
+  LucideBot,
 } from '@lucide/angular';
 import { ReportsStore } from '../../data-access/store/reports.store';
 import { ReportPeriod, ReportsTab, IProductReport, ICustomerSegment } from '../../data-access/models/reports.model';
 import { ReportsEvent } from '../../data-access/models/reports.event';
+
+interface ChartTooltipContext {
+  dataset: {
+    label?: string;
+  };
+  parsed: {
+    y: number | null;
+  };
+}
+
+interface ChartDataset {
+  label: string;
+  data: number[];
+  borderColor: string;
+  backgroundColor?: string;
+  borderDash?: number[];
+  borderWidth?: number;
+  tension: number;
+  fill: boolean;
+  pointRadius: number;
+  pointHoverRadius: number;
+  pointBackgroundColor?: string;
+  pointBorderColor?: string;
+  pointBorderWidth?: number;
+  pointHitRadius?: number;
+}
+
+interface ChartData {
+  labels: string[];
+  datasets: ChartDataset[];
+}
 
 @Component({
   selector: 'app-management-reports-page',
@@ -22,6 +58,7 @@ import { ReportsEvent } from '../../data-access/models/reports.event';
     CommonModule,
     FormsModule,
     DialogModule,
+    ChartModule,
     LucideChartBar,
     LucideDownload,
     LucideUsers,
@@ -29,15 +66,18 @@ import { ReportsEvent } from '../../data-access/models/reports.event';
     LucideCreditCard,
     LucideLayers,
     LucideCheck,
+    LucidePackage,
+    LucideBot,
   ],
   providers: [ReportsStore],
-  templateUrl: './management-reports-page.component.html',
-  styleUrl: './management-reports-page.component.css',
+  templateUrl: './management-reports.component.html',
+  styleUrl: './management-reports.component.css',
 })
 export class ManagementReportsPageComponent implements OnInit {
   protected readonly store = inject(ReportsStore);
   protected readonly ReportsTab = ReportsTab;
   protected readonly ReportPeriod = ReportPeriod;
+  private readonly sanitizer = inject(DomSanitizer);
   
   // 4 visual tabs: 'revenue' | 'products' | 'customers' | 'inventory'
   protected activeSubTab: 'revenue' | 'products' | 'customers' | 'inventory' = 'revenue';
@@ -60,15 +100,117 @@ export class ManagementReportsPageComponent implements OnInit {
     summary: true,
     products: true,
     coupons: true,
-    customers: true
+    customers: true,
+    aiAnalysis: true
   };
   
   // Interactive SVG chart tooltip
-  protected hoveredPoint: { label: string; current: number; prev: number; diff: number } | null = null;
+  protected hoveredPoint: { label: string; current: number; prev: number; diff: number; svgX: number; svgY: number } | null = null;
   protected tooltipX = 0;
   protected tooltipY = 0;
 
-  protected readonly revenueChart = computed(() => this.getRevenueChartPaths());
+  protected readonly revenueChart = computed(() => this.getRevenueChartData());
+
+  protected chartOptions = {
+    maintainAspectRatio: false,
+    aspectRatio: 0.6,
+    animation: {
+      duration: 900,
+      easing: 'easeOutQuart'
+    },
+    plugins: {
+      legend: {
+        align: 'end',
+        labels: {
+          color: '#374151',
+          usePointStyle: true,
+          pointStyle: 'circle',
+          boxWidth: 8,
+          boxHeight: 8,
+          padding: 18,
+          font: { family: 'Inter', size: 12, weight: '600' }
+        },
+        position: 'bottom'
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: '#101010',
+        titleColor: '#FFC700',
+        bodyColor: '#FFFFFF',
+        borderColor: 'rgba(255, 199, 0, 0.35)',
+        borderWidth: 1,
+        padding: 14,
+        boxPadding: 8,
+        cornerRadius: 14,
+        displayColors: true,
+        titleFont: { family: 'Inter', size: 13, weight: '600' },
+        bodyFont: { family: 'Inter', size: 12, weight: '500' },
+        callbacks: {
+          label: (context: ChartTooltipContext) => {
+            let label = context.dataset.label || '';
+            if (label) label += ': ';
+            if (context.parsed.y !== null) {
+              label += new Intl.NumberFormat('vi-VN').format(context.parsed.y) + 'đ';
+            }
+            return label;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: '#6B7280',
+          maxRotation: 45,
+          minRotation: 45,
+          font: { family: 'Inter', size: 11, weight: '500' }
+        },
+        grid: { display: false },
+        border: { display: false }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: { 
+          color: '#6B7280', 
+          padding: 10,
+          font: { family: 'Inter', size: 12, weight: '500' },
+          callback: (value: number | string) => {
+            const numericValue = Number(value);
+            if (numericValue >= 1_000_000_000) return (numericValue / 1_000_000_000).toFixed(1).replace('.0', '') + ' Tỷ';
+            if (numericValue >= 1_000_000) return (numericValue / 1_000_000).toFixed(0) + ' Tr';
+            return numericValue;
+          }
+        },
+        grid: {
+          color: 'rgba(229, 231, 235, 0.72)',
+          drawTicks: false
+        },
+        border: { display: false }
+      }
+    },
+    elements: {
+      line: { capBezierPoints: true }
+    },
+    interaction: { mode: 'index', intersect: false }
+  };
+
+  // Filter AI insights based on the active tab category
+  protected readonly currentTabInsights = computed(() => {
+    const all = this.store.insights();
+    return all.filter(i => i.category === this.activeSubTab);
+  });
+
+  protected safeAiHtml = computed(() => {
+    const raw = this.store.aiAnalysisResult();
+    if (!raw) return null;
+    const html = marked.parse(raw) as string;
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  });
+
+  protected triggerAiAnalysis() {
+    this.store.dispatch({ type: ReportsEvent.AnalyzeClicked, payload: this.activeSubTab });
+  }
 
   ngOnInit(): void {
     // Initialize date inputs to default 30 days range
@@ -96,7 +238,10 @@ export class ManagementReportsPageComponent implements OnInit {
       this.store.setTab(ReportsTab.Revenue);
     } else if (tab === 'products') {
       this.store.setTab(ReportsTab.Products);
+    } else if (tab === 'inventory') {
+      this.store.setTab(ReportsTab.Inventory);
     } else {
+      // For customers tab (or we can just reuse AIOps as a generic trigger if needed)
       this.store.setTab(ReportsTab.AIOps);
     }
   }
@@ -159,126 +304,45 @@ export class ManagementReportsPageComponent implements OnInit {
     }
   }
 
-  // Draw smooth Bezier paths instead of basic straight lines
-  protected getRevenueChartPaths(): {
-    currentPath: string;
-    prevPath: string;
-    areaPath: string;
-    points: { x: number; y: number; label: string; current: number; prev: number }[];
-    labels: { x: number; label: string }[];
-  } {
+  protected getRevenueChartData(): ChartData {
     const series = this.store.revenueSeries();
-    if (series.length === 0) {
-      return { currentPath: '', prevPath: '', areaPath: '', points: [], labels: [] };
-    }
-
-    const maxVal = Math.max(
-      ...series.map((s) => Math.max(s.currentValue, s.previousValue)),
-      1000000 // avoid divide by zero, scale to 1M minimum
-    );
-
-    const width = 800;
-    const height = 240;
-    const padding = 30;
-
-    const stepX = (width - padding * 2) / (series.length - 1 || 1);
-    
-    // Map series to SVG coordinates
-    const points = series.map((pt, idx) => {
-      const x = padding + idx * stepX;
-      // Invert Y for SVG space
-      const currentY = height - padding - (pt.currentValue / maxVal) * (height - padding * 2);
-      const prevY = height - padding - (pt.previousValue / maxVal) * (height - padding * 2);
-      return { x, currentY, prevY, label: pt.label, currentValue: pt.currentValue, previousValue: pt.previousValue };
-    });
-
-    const labels: { x: number; label: string }[] = [];
-    series.forEach((pt, idx) => {
-      const x = padding + idx * stepX;
-      if (series.length < 10 || idx % Math.ceil(series.length / 7) === 0 || idx === series.length - 1) {
-        labels.push({ x, label: pt.label });
-      }
-    });
-
-    // Compute Bezier Curve path string
-    const getBezierPathString = (pts: { x: number; y: number }[]): string => {
-      if (pts.length === 0) return '';
-      let path = `M ${pts[0].x} ${pts[0].y}`;
-      for (let i = 0; i < pts.length - 1; i++) {
-        const p0 = pts[i];
-        const p1 = pts[i + 1];
-        const cp1x = p0.x + (p1.x - p0.x) / 3;
-        const cp1y = p0.y;
-        const cp2x = p1.x - (p1.x - p0.x) / 3;
-        const cp2y = p1.y;
-        path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p1.x} ${p1.y}`;
-      }
-      return path;
-    };
-
-    const currentPoints = points.map(p => ({ x: p.x, y: p.currentY }));
-    const prevPoints = points.map(p => ({ x: p.x, y: p.prevY }));
-
-    const currentPath = getBezierPathString(currentPoints);
-    const prevPath = getBezierPathString(prevPoints);
-
-    // Compute closed path for glowing area fill under the current curve
-    let areaPath = '';
-    if (points.length > 0) {
-      const first = points[0];
-      const last = points[points.length - 1];
-      areaPath = `${currentPath} L ${last.x} ${height - padding} L ${first.x} ${height - padding} Z`;
-    }
+    if (series.length === 0) return { labels: [], datasets: [] };
 
     return {
-      currentPath,
-      prevPath,
-      areaPath,
-      points: points.map(p => ({ x: p.x, y: p.currentY, label: p.label, current: p.currentValue, prev: p.previousValue })),
-      labels
+      labels: series.map(s => s.label),
+      datasets: [
+        {
+          label: 'Chu kỳ hiện tại',
+          data: series.map(s => s.currentValue),
+          borderColor: '#4F46E5',
+          backgroundColor: 'rgba(79, 70, 229, 0.12)',
+          borderWidth: 3,
+          tension: 0.42,
+          fill: true,
+          pointRadius: 0,
+          pointHoverRadius: 7,
+          pointHitRadius: 12,
+          pointBackgroundColor: '#FFC700',
+          pointBorderColor: '#101010',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Chu kỳ trước đó',
+          data: series.map(s => s.previousValue),
+          borderColor: '#9CA3AF',
+          borderDash: [7, 7],
+          borderWidth: 2,
+          tension: 0.42,
+          fill: false,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointHitRadius: 10,
+          pointBackgroundColor: '#FFFFFF',
+          pointBorderColor: '#9CA3AF',
+          pointBorderWidth: 2
+        }
+      ]
     };
-  }
-
-  // Handle SVG hovering for custom tooltips
-  protected onChartMouseMove(event: MouseEvent, container: HTMLDivElement): void {
-    const rect = container.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    
-    // Scale mouse coordinate to SVG space (viewBox 800x240)
-    const svgWidth = 800;
-    const scaledX = (mouseX / rect.width) * svgWidth;
-    
-    const chartData = this.revenueChart();
-    if (chartData.points.length === 0) return;
-
-    // Find the closest point on the X axis
-    let closestPt = chartData.points[0];
-    let minDist = Math.abs(chartData.points[0].x - scaledX);
-    
-    for (let i = 1; i < chartData.points.length; i++) {
-      const dist = Math.abs(chartData.points[i].x - scaledX);
-      if (dist < minDist) {
-        minDist = dist;
-        closestPt = chartData.points[i];
-      }
-    }
-
-    const diffPercent = closestPt.prev > 0 ? ((closestPt.current - closestPt.prev) / closestPt.prev) * 100 : 0;
-
-    // Position tooltip relative to container (percentages)
-    this.tooltipX = (closestPt.x / svgWidth) * rect.width;
-    this.tooltipY = (closestPt.y / 240) * rect.height - 10;
-
-    this.hoveredPoint = {
-      label: closestPt.label,
-      current: closestPt.current,
-      prev: closestPt.prev,
-      diff: diffPercent
-    };
-  }
-
-  protected onChartMouseLeave(): void {
-    this.hoveredPoint = null;
   }
 
   // Detail Drill-down launchers
@@ -306,6 +370,15 @@ export class ManagementReportsPageComponent implements OnInit {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&apos;');
+  }
+
+  private cleanMarkdownForExcel(val: string): string {
+    if (!val) return '';
+    return val
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+      .replace(/\*(.*?)\*/g, '$1')     // Remove italic
+      .replace(/^#+\s/gm, '')          // Remove headings
+      .replace(/^- /gm, '• ');         // Use bullet point for lists
   }
 
   // Premium Styled XML Spreadsheet 2003 Exporter (Excel high-fidelity styling)
@@ -422,6 +495,18 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `    <Border ss:Position="Bottom" ss:LineStyle="Double" ss:Weight="3" ss:Color="#111827"/>\n`;
     xml += `   </Borders>\n`;
     xml += `   <Alignment ss:Vertical="Center" ss:Horizontal="Left"/>\n`;
+    xml += `  </Style>\n`;
+    
+    xml += `  <Style ss:ID="AiCell">\n`;
+    xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Color="#1F2937"/>\n`;
+    xml += `   <Interior ss:Color="#F0FDF4" ss:Pattern="Solid"/>\n`;
+    xml += `   <Borders>\n`;
+    xml += `    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#16A34A"/>\n`;
+    xml += `    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#16A34A"/>\n`;
+    xml += `    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#16A34A"/>\n`;
+    xml += `    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#16A34A"/>\n`;
+    xml += `   </Borders>\n`;
+    xml += `   <Alignment ss:Vertical="Top" ss:Horizontal="Left" ss:WrapText="1"/>\n`;
     xml += `  </Style>\n`;
     
     xml += `  <Style ss:ID="TotalRowRight">\n`;
@@ -694,6 +779,40 @@ export class ManagementReportsPageComponent implements OnInit {
       xml += `    <Cell ss:StyleID="TotalRowRight"><Data ss:Type="String"></Data></Cell>\n`;
       xml += `    <Cell ss:StyleID="CurrencyCellTotal"><Data ss:Type="Number">${totalSpends}</Data></Cell>\n`;
       xml += `    <Cell ss:StyleID="TotalRow"><Data ss:Type="String"></Data></Cell>\n`;
+      xml += `   </Row>\n`;
+    }
+
+    // 5. AI Copilot Analysis
+    if (this.exportOptions.aiAnalysis) {
+      xml += `   <Row ss:Height="25"/>\n`; // Spacing row
+
+      xml += `   <Row ss:Height="24">\n`;
+      xml += `    <Cell ss:MergeAcross="4" ss:StyleID="SectionHeader">\n`;
+      xml += `     <Data ss:Type="String">V. ĐÁNH GIÁ &amp; KHUYẾN NGHỊ TỪ TRỢ LÝ AI</Data>\n`;
+      xml += `    </Cell>\n`;
+      xml += `   </Row>\n`;
+
+      xml += `   <Row ss:Height="20">\n`;
+      xml += `    <Cell ss:MergeAcross="4" ss:StyleID="TableHeader">\n`;
+      xml += `     <Data ss:Type="String">Nội dung phân tích</Data>\n`;
+      xml += `    </Cell>\n`;
+      xml += `   </Row>\n`;
+
+      const aiText = this.store.aiAnalysisResult();
+      let content = 'Dữ liệu AI chưa được phân tích hoặc bạn chưa thực hiện phân tích cho kỳ báo cáo này.';
+      if (aiText) {
+        const cleaned = this.cleanMarkdownForExcel(aiText);
+        content = this.escapeXmlValue(cleaned).replace(/\n/g, '&#10;');
+      }
+      
+      // Calculate approximate height to fit text (WrapText requires fixed height in old XML standard)
+      const lineBreaks = (content.match(/&#10;/g) || []).length;
+      const height = Math.max(80, (content.length / 80) * 15 + lineBreaks * 15);
+      
+      xml += `   <Row ss:Height="${Math.round(height)}">\n`;
+      xml += `    <Cell ss:MergeAcross="4" ss:StyleID="AiCell">\n`;
+      xml += `     <Data ss:Type="String">${content}</Data>\n`;
+      xml += `    </Cell>\n`;
       xml += `   </Row>\n`;
     }
     

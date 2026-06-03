@@ -162,7 +162,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Xuất báo cáo',
         },
         loadComponent: () =>
-          import('./reports/pages/management-reports-page/management-reports-page.component').then(
+          import('./reports/pages/management-reports/management-reports.component').then(
             m => m.ManagementReportsPageComponent
           ),
       },

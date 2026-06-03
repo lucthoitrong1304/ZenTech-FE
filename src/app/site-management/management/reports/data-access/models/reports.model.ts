@@ -1,7 +1,8 @@
 export enum ReportsTab {
   AIOps = 'AIOPS',
   Revenue = 'REVENUE',
-  Products = 'PRODUCTS'
+  Products = 'PRODUCTS',
+  Inventory = 'INVENTORY'
 }
 
 export enum ReportPeriod {
@@ -42,6 +43,9 @@ export interface IRevenuePoint {
 export interface IProductReport {
   productName: string;
   variantName: string;
+  imageUrl?: string;
+  categoryName?: string;
+  price?: number;
   quantitySold: number;
   revenue: number;
   stockRemaining: number;
@@ -56,6 +60,9 @@ export interface ICouponReport {
 export interface ICustomerSegment {
   customerName: string;
   email: string;
+  imageUrl?: string;
+  joinDate?: string;
+  address?: string;
   totalSpent: number;
   orderCount: number;
 }
@@ -68,7 +75,19 @@ export interface ICustomerRegistrationTrend {
 export interface IAIOpsInsight {
   id: string;
   type: 'info' | 'warning' | 'success';
+  category: 'revenue' | 'products' | 'customers' | 'inventory';
   title: string;
   description: string;
   createdAt: string;
+}
+
+export interface IInventoryStats {
+  totalInventoryValue: number;
+  totalItemsInStock: number;
+  lowStockVariations: number;
+  deadStockVariations: number;
+}
+
+export interface IAIAnalyzeResponse {
+  content: string;
 }

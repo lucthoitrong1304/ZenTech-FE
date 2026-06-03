@@ -13,6 +13,7 @@ import {
   ReportsTab,
   IPaymentMethodShare,
   ICategoryShare,
+  IInventoryStats,
 } from '../models/reports.model';
 import { ReportsEvent } from '../models/reports.event';
 import { ReportsService } from '../services/reports.service';
@@ -28,7 +29,10 @@ interface ReportsUiState {
   insights: IAIOpsInsight[];
   paymentMethods: IPaymentMethodShare[];
   categories: ICategoryShare[];
+  inventoryStats: IInventoryStats | null;
   loading: boolean;
+  isAnalyzing: boolean;
+  aiAnalysisResult: string | null;
   errorMessage: string | null;
 }
 
@@ -43,7 +47,10 @@ const INITIAL_STATE: ReportsUiState = {
   insights: [],
   paymentMethods: [],
   categories: [],
+  inventoryStats: null,
   loading: false,
+  isAnalyzing: false,
+  aiAnalysisResult: null,
   errorMessage: null,
 };
 
@@ -53,6 +60,7 @@ export const ReportsStore = signalStore(
     isAIOpsActive: computed(() => activeTab() === ReportsTab.AIOps),
     isRevenueActive: computed(() => activeTab() === ReportsTab.Revenue),
     isProductsActive: computed(() => activeTab() === ReportsTab.Products),
+    isInventoryActive: computed(() => activeTab() === ReportsTab.Inventory),
     hasInsights: computed(() => !loading()),
   })),
   withMethods((store, reportsService = inject(ReportsService)) => {
@@ -75,6 +83,7 @@ export const ReportsStore = signalStore(
             insights: reportsService.getAIOpsInsights(period, startDate, endDate),
             paymentMethods: reportsService.getPaymentMethods(period, startDate, endDate),
             categories: reportsService.getCategories(period, startDate, endDate),
+            inventoryStats: reportsService.getInventoryStats(period, startDate, endDate),
           }).pipe(
             tap({
               next: (results) => {
@@ -87,6 +96,7 @@ export const ReportsStore = signalStore(
                   insights: results.insights.data,
                   paymentMethods: results.paymentMethods.data,
                   categories: results.categories.data,
+                  inventoryStats: results.inventoryStats.data,
                   loading: false,
                 });
               },
@@ -103,10 +113,35 @@ export const ReportsStore = signalStore(
       )
     );
 
+    const analyzeCurrentTab = rxMethod<{ tab: ReportsTab; period: ReportPeriod }>(
+      pipe(
+        tap(() => patchState(store, { isAnalyzing: true, aiAnalysisResult: null, errorMessage: null })),
+        switchMap(({ tab, period }) => {
+          return reportsService.analyzeReport(tab, period).pipe(
+            tap({
+              next: (result) => {
+                patchState(store, {
+                  isAnalyzing: false,
+                  aiAnalysisResult: result.data.content,
+                });
+              },
+              error: (err) => {
+                patchState(store, {
+                  isAnalyzing: false,
+                  errorMessage: 'AI phân tích thất bại.',
+                });
+              }
+            }),
+            catchError(() => EMPTY)
+          );
+        })
+      )
+    );
+
     const handleEvent = (event: { type: ReportsEvent; payload?: unknown }): void => {
       switch (event.type) {
         case ReportsEvent.TabChanged:
-          patchState(store, { activeTab: event.payload as ReportsTab });
+          patchState(store, { activeTab: event.payload as ReportsTab, aiAnalysisResult: null });
           break;
 
         case ReportsEvent.PeriodChanged: {
@@ -118,6 +153,11 @@ export const ReportsStore = signalStore(
 
         case ReportsEvent.RefreshRequested:
           loadAllReports(store.period());
+          break;
+
+        case ReportsEvent.AnalyzeClicked:
+          const targetTab = (event.payload as string) || store.activeTab();
+          analyzeCurrentTab({ tab: targetTab as ReportsTab, period: store.period() });
           break;
       }
     };
