@@ -48,6 +48,7 @@ interface CustomerChatUiState {
   requiresLogin: boolean;
   loading: boolean;
   sending: boolean;
+  aiResponding: boolean;
   errorMessage: string | null;
   lastActivityLabel: string;
   searchSidebarOpen: boolean;
@@ -83,6 +84,7 @@ const INITIAL_STATE: CustomerChatUiState = {
   requiresLogin: false,
   loading: false,
   sending: false,
+  aiResponding: false,
   errorMessage: null,
   lastActivityLabel: '',
   searchSidebarOpen: false,
@@ -220,6 +222,7 @@ export const CustomerChatStore = signalStore(
                 session: event.session,
                 lastActivityLabel: event.session.lastActivityLabel,
                 loading: false,
+                aiResponding: false,
                 requiresLogin: false,
                 errorMessage: null,
               }
@@ -229,6 +232,7 @@ export const CustomerChatStore = signalStore(
           case CustomerChatEventType.SessionLoadFailed:
             patchState(store, {
               loading: false,
+              aiResponding: false,
               errorMessage: 'Không thể tải cuộc trò chuyện. Vui lòng thử lại sau.',
             });
             break;
@@ -250,6 +254,7 @@ export const CustomerChatStore = signalStore(
           case CustomerChatEventType.CustomerMessageFailed:
             patchState(store, {
               sending: false,
+              aiResponding: false,
               errorMessage: 'Tin nhắn chưa gửi được. Vui lòng thử lại.',
             });
             break;
@@ -416,7 +421,12 @@ export const CustomerChatStore = signalStore(
       const switchConversation = rxMethod<string>(
         pipe(
           tap((id) => {
-            patchState(store, { activeConversationId: id, loading: true, errorMessage: null });
+            patchState(store, {
+              activeConversationId: id,
+              loading: true,
+              aiResponding: false,
+              errorMessage: null,
+            });
 
             if (messageSub) {
               messageSub.unsubscribe();
@@ -447,6 +457,7 @@ export const CustomerChatStore = signalStore(
                       {
                         session,
                         loading: false,
+                        aiResponding: false,
                         errorMessage: null,
                       }
                     );
@@ -508,6 +519,7 @@ export const CustomerChatStore = signalStore(
 
                           patchState(store, addEntity(mappedMsg, MESSAGE_ENTITY_CONFIG), {
                             sending: false,
+                            aiResponding: msg.senderType === ParticipantType.BOT ? false : store.aiResponding(),
                             lastActivityLabel: mappedMsg.sentAtLabel,
                           });
 
@@ -552,6 +564,7 @@ export const CustomerChatStore = signalStore(
                 error: () => {
                   patchState(store, {
                     loading: false,
+                    aiResponding: false,
                     errorMessage: 'Không thể tải cuộc trò chuyện.',
                   });
                 },
@@ -595,6 +608,7 @@ export const CustomerChatStore = signalStore(
               patchState(store, {
                 session: null,
                 loading: false,
+                aiResponding: false,
                 requiresLogin: false,
                 errorMessage: null,
               });
@@ -622,6 +636,7 @@ export const CustomerChatStore = signalStore(
               catchError(() => {
                 patchState(store, {
                   loading: false,
+                  aiResponding: false,
                   errorMessage: 'Không thể tải danh sách cuộc hội thoại.',
                 });
                 return EMPTY;
@@ -656,6 +671,10 @@ export const CustomerChatStore = signalStore(
                 content: body,
                 attachments: [],
               };
+              patchState(store, {
+                aiResponding: store.session()?.status === 'BOT_CONSULTING',
+                errorMessage: null,
+              });
               websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
               return of(null);
             }
@@ -720,6 +739,7 @@ export const CustomerChatStore = signalStore(
                     ),
                     {
                       sending: false,
+                      aiResponding: false,
                       errorMessage: 'KhÃ´ng thá»ƒ táº£i tá»‡p lÃªn. Vui lÃ²ng thá»­ láº¡i.',
                     }
                   );
@@ -790,7 +810,13 @@ export const CustomerChatStore = signalStore(
                     ...currentSession,
                     status: updatedConv.status as unknown as CustomerChatSessionStatus,
                   };
-                  patchState(store, { session: newSession });
+                  patchState(store, {
+                    session: newSession,
+                    aiResponding:
+                      updatedConv.status === ConversationStatus.BOT_CONSULTING
+                        ? store.aiResponding()
+                        : false,
+                  });
                 }
               })
             );
@@ -816,7 +842,7 @@ export const CustomerChatStore = signalStore(
                     ...currentSession,
                     status: updatedConv.status as unknown as CustomerChatSessionStatus,
                   };
-                  patchState(store, { session: newSession });
+                  patchState(store, { session: newSession, aiResponding: false });
                 }
               })
             );
@@ -842,7 +868,7 @@ export const CustomerChatStore = signalStore(
                     ...currentSession,
                     status: updatedConv.status as unknown as CustomerChatSessionStatus,
                   };
-                  patchState(store, { session: newSession });
+                  patchState(store, { session: newSession, aiResponding: false });
                 }
               })
             );
