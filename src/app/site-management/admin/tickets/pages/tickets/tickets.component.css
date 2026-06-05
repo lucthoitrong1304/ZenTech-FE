@@ -1,0 +1,239 @@
+@import "tailwindcss" reference;
+
+.tck-layout {
+  @apply flex flex-col border border-[#E5E7EB] rounded-2xl overflow-hidden shadow-sm bg-white;
+}
+
+.tck-sidebar {
+  @apply w-full border-r border-[#E5E7EB] flex flex-col bg-[#F9FAFB] flex-shrink-0;
+}
+
+@media (min-width: 768px) {
+  .tck-layout {
+    @apply flex-row h-[calc(100vh-210px)];
+  }
+  
+  .tck-sidebar {
+    @apply w-80;
+  }
+}
+
+.tck-sidebar-header {
+  @apply p-4 border-b border-[#E5E7EB] flex flex-col gap-3 flex-shrink-0;
+}
+
+.tck-sidebar-title {
+  @apply text-xs font-bold text-gray-500 uppercase tracking-wider;
+}
+
+.tck-filter-row {
+  @apply flex items-center bg-[#E5E7EB] p-0.5 rounded-full overflow-x-auto;
+}
+
+.tck-filter-btn {
+  @apply px-3 py-1.5 text-[9px] font-bold text-gray-500 hover:text-gray-900 rounded-full border-none outline-none cursor-pointer transition flex-shrink-0;
+}
+
+.tck-filter-btn--active {
+  @apply bg-white text-gray-900 font-bold shadow-xs;
+}
+
+.tck-list {
+  @apply flex-1 overflow-y-auto divide-y divide-[#E5E7EB];
+}
+
+.tck-list-empty {
+  @apply text-center py-12 text-xs text-gray-400 font-medium;
+}
+
+.tck-list-item {
+  @apply p-4 cursor-pointer hover:bg-white transition flex flex-col gap-2 border-l-4 border-l-transparent;
+}
+
+.tck-list-item--active {
+  @apply bg-white border-l-[#111827];
+}
+
+.tck-list-header {
+  @apply flex items-center justify-between;
+}
+
+.tck-list-name {
+  @apply text-xs font-bold text-gray-800;
+}
+
+.tck-list-time {
+  @apply text-[9px] text-gray-400 font-semibold;
+}
+
+.tck-list-subject {
+  @apply text-xs font-semibold text-gray-950 truncate max-w-[200px];
+}
+
+.tck-list-footer {
+  @apply flex items-center gap-2;
+}
+
+.tck-badge-status {
+  @apply text-[8px] font-bold px-1.5 py-0.5 rounded uppercase;
+}
+
+.tck-badge-status.status-open {
+  @apply bg-rose-50 text-rose-700 border border-rose-100;
+}
+
+.tck-badge-status.status-in_progress {
+  @apply bg-amber-50 text-amber-700 border border-amber-100;
+}
+
+.tck-badge-status.status-resolved {
+  @apply bg-emerald-50 text-emerald-700 border border-emerald-100;
+}
+
+.tck-badge-status.status-closed {
+  @apply bg-gray-100 text-gray-600 border border-gray-200;
+}
+
+.tck-badge-priority {
+  @apply text-[8px] font-bold px-1.5 py-0.5 rounded uppercase border;
+}
+
+.tck-badge-priority.priority-critical {
+  @apply bg-rose-600 text-white border-none;
+}
+
+.tck-badge-priority.priority-high {
+  @apply bg-orange-100 text-orange-800 border-none;
+}
+
+.tck-badge-priority.priority-medium {
+  @apply bg-yellow-100 text-yellow-800 border-none;
+}
+
+.tck-badge-priority.priority-low {
+  @apply bg-blue-100 text-blue-800 border-none;
+}
+
+.tck-main-pane {
+  @apply flex-1 flex flex-col bg-white min-w-0;
+}
+
+.tck-empty-view {
+  @apply flex-1 flex flex-col items-center justify-center text-center p-8;
+}
+
+.tck-empty-icon {
+  @apply w-12 h-12 text-gray-300 mb-2;
+}
+
+.tck-empty-text {
+  @apply text-xs text-gray-400 font-medium;
+}
+
+.tck-chat-wrapper {
+  @apply flex-1 flex flex-col h-full overflow-hidden;
+}
+
+.tck-chat-header {
+  @apply p-4 border-b border-[#E5E7EB] bg-[#F9FAFB] flex items-start justify-between flex-shrink-0 flex-wrap gap-4;
+}
+
+.tck-chat-title-group {
+  @apply flex flex-col min-w-0;
+}
+
+.tck-chat-title {
+  @apply text-sm font-bold text-gray-900 leading-snug truncate;
+}
+
+.tck-chat-customer {
+  @apply text-[10px] text-gray-500 mt-1 font-semibold;
+}
+
+.tck-chat-status-area {
+  @apply flex items-center gap-2 flex-shrink-0;
+}
+
+.tck-status-label {
+  @apply text-xs font-semibold text-gray-600;
+}
+
+.tck-chat-status-select {
+  @apply px-2.5 py-1.5 bg-white border border-[#E5E7EB] rounded-lg text-xs outline-none focus:border-[#4F46E5] transition font-medium;
+}
+
+.tck-chat-history {
+  @apply flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-[#F9FAFB];
+}
+
+.tck-msg {
+  @apply flex;
+}
+
+.tck-msg--customer {
+  @apply justify-start;
+}
+
+.tck-msg--agent {
+  @apply justify-end;
+}
+
+.tck-bubble {
+  @apply max-w-[75%] p-4 rounded-2xl shadow-xs;
+}
+
+.tck-msg--customer .tck-bubble {
+  @apply bg-white text-gray-900 border border-[#E5E7EB] rounded-tl-none;
+}
+
+.tck-msg--agent .tck-bubble {
+  @apply bg-[#F0FDF4] text-[#16A34A] border border-emerald-100 rounded-tr-none;
+}
+
+.tck-bubble-header {
+  @apply flex items-center justify-between mb-1;
+}
+
+.tck-bubble-sender {
+  @apply text-[9px] font-bold uppercase tracking-wider text-gray-400;
+}
+
+.tck-msg--agent .tck-bubble-sender {
+  @apply text-emerald-600;
+}
+
+.tck-bubble-content {
+  @apply text-xs leading-relaxed font-medium text-gray-800;
+}
+
+.tck-bubble-time {
+  @apply text-[8px] text-gray-400 font-semibold block mt-2 text-right;
+}
+
+.tck-msg--agent .tck-bubble-time {
+  @apply text-emerald-500;
+}
+
+.tck-chat-input-area {
+  @apply p-4 border-t border-[#E5E7EB] bg-white flex-shrink-0;
+}
+
+.tck-chat-form {
+  @apply flex items-center gap-3;
+}
+
+.tck-chat-input {
+  @apply flex-1 px-4 py-2.5 bg-[#F9FAFB] focus:bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-full text-xs outline-none focus:ring-1 focus:ring-[#4F46E5] transition font-medium;
+}
+
+.tck-chat-send-btn {
+  @apply flex items-center gap-1.5 px-4.5 py-2.5 bg-[#FFC700] hover:bg-[#FFD633] text-[#111827] rounded-full text-xs font-bold transition border-none outline-none cursor-pointer;
+}
+
+.tck-chat-send-btn svg {
+  @apply w-3.5 h-3.5;
+}
+
+/* Premium Admin Console surface overrides */
+.tickets-container { color: #111827; }
+

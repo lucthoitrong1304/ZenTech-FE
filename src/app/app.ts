@@ -41,6 +41,7 @@ export class App {
     return !(
       url === '/chat' ||
       url.startsWith('/management') ||
+      url.startsWith('/admin') ||
       url.startsWith('/auth') ||
       url.startsWith('/error')
     );

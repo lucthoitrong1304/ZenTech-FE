@@ -1,0 +1,153 @@
+<div class="incidents-container">
+  <!-- Filters Bar -->
+  <div class="incidents-controls">
+    <div class="incidents-filter-group">
+      <button
+        type="button"
+        (click)="handleFilterChange('ALL')"
+        class="incidents-filter-btn"
+        [class.incidents-filter-btn--active]="activeFilter() === 'ALL'"
+      >
+        Tất cả
+      </button>
+      <button
+        type="button"
+        (click)="handleFilterChange(IncidentStatus.OPEN)"
+        class="incidents-filter-btn incidents-filter-btn--open"
+        [class.incidents-filter-btn--active]="activeFilter() === IncidentStatus.OPEN"
+      >
+        Đang mở
+      </button>
+      <button
+        type="button"
+        (click)="handleFilterChange(IncidentStatus.INVESTIGATING)"
+        class="incidents-filter-btn incidents-filter-btn--investigating"
+        [class.incidents-filter-btn--active]="activeFilter() === IncidentStatus.INVESTIGATING"
+      >
+        Đang điều tra
+      </button>
+      <button
+        type="button"
+        (click)="handleFilterChange(IncidentStatus.RESOLVED)"
+        class="incidents-filter-btn incidents-filter-btn--resolved"
+        [class.incidents-filter-btn--active]="activeFilter() === IncidentStatus.RESOLVED"
+      >
+        Đã xử lý
+      </button>
+    </div>
+  </div>
+
+  <!-- Incidents Cards Grid -->
+  <div class="incidents-grid">
+    @if (store.filteredIncidents().length === 0) {
+      <div class="incidents-empty-state">
+        <p>Không tìm thấy sự cố hệ thống nào phù hợp với bộ lọc hiện tại.</p>
+      </div>
+    } @else {
+      @for (inc of store.filteredIncidents(); track inc.id) {
+        <div class="incidents-card">
+          <div class="incidents-card-header">
+            <span class="incidents-id">{{ inc.id }}</span>
+            <span class="incidents-severity-badge" [class]="'severity-' + inc.severity.toLowerCase()">
+              {{ inc.severity }}
+            </span>
+          </div>
+
+          <h3 class="incidents-title">{{ inc.title }}</h3>
+          <p class="incidents-desc">{{ inc.description }}</p>
+
+          <div class="incidents-meta">
+            <div class="incidents-meta-item">
+              <strong>Báo cáo lúc:</strong> <span>{{ inc.reportedAt | date:'HH:mm dd/MM/yyyy' }}</span>
+            </div>
+            @if (inc.resolvedAt) {
+              <div class="incidents-meta-item text-emerald-600">
+                <strong>Đã xử lý:</strong> <span>{{ inc.resolvedAt | date:'HH:mm dd/MM/yyyy' }}</span>
+              </div>
+            }
+            <div class="incidents-meta-item">
+              <strong>Người phụ trách:</strong> <span>{{ inc.assignee || 'Chưa phân công' }}</span>
+            </div>
+          </div>
+
+          <div class="incidents-actions">
+            <span class="incidents-status-badge" [class]="'status-' + inc.status.toLowerCase()">
+              {{ inc.status === IncidentStatus.OPEN ? 'Đang mở' : inc.status === IncidentStatus.INVESTIGATING ? 'Đang điều tra' : 'Đã xử lý' }}
+            </span>
+
+            <button type="button" (click)="openEditModal(inc)" class="incidents-edit-btn" aria-label="Xử lý sự cố">
+              <svg lucideEye [attr.stroke-width]="2"></svg>
+              <span>Xem & Cập nhật</span>
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<!-- Custom Edit Incident Modal -->
+@if (isModalOpen() && selectedIncident()) {
+  <div class="modal-backdrop">
+    <div class="modal-wrapper">
+      <div class="modal-container">
+        <!-- Header -->
+        <div class="modal-header">
+          <h3 class="modal-title">Cập Nhật Sự Cố: {{ selectedIncident()?.id }}</h3>
+          <button type="button" (click)="closeEditModal()" class="modal-close-btn" aria-label="Đóng modal">
+            <svg lucideX [attr.stroke-width]="2"></svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          <h4 class="modal-body-subject">{{ selectedIncident()?.title }}</h4>
+          <p class="modal-body-desc">{{ selectedIncident()?.description }}</p>
+
+          <hr class="modal-divider" />
+
+          <div class="modal-form">
+            <!-- Status -->
+            <div class="form-group">
+              <label for="incident-status" class="form-label">Trạng thái xử lý</label>
+              <select id="incident-status" [(ngModel)]="editStatus" class="form-select">
+                <option [value]="IncidentStatus.OPEN">Đang mở (Open)</option>
+                <option [value]="IncidentStatus.INVESTIGATING">Đang điều tra (Investigating)</option>
+                <option [value]="IncidentStatus.RESOLVED">Đã xử lý (Resolved)</option>
+              </select>
+            </div>
+
+            <!-- Severity -->
+            <div class="form-group">
+              <label for="incident-severity" class="form-label">Mức độ nghiêm trọng</label>
+              <select id="incident-severity" [(ngModel)]="editSeverity" class="form-select">
+                <option [value]="IncidentSeverity.LOW">LOW (Thấp)</option>
+                <option [value]="IncidentSeverity.MEDIUM">MEDIUM (Trung bình)</option>
+                <option [value]="IncidentSeverity.HIGH">HIGH (Cao)</option>
+                <option [value]="IncidentSeverity.CRITICAL">CRITICAL (Nghiêm trọng)</option>
+              </select>
+            </div>
+
+            <!-- Assignee -->
+            <div class="form-group">
+              <label for="incident-assignee" class="form-label">Người phụ trách xử lý</label>
+              <input
+                id="incident-assignee"
+                type="text"
+                [(ngModel)]="editAssignee"
+                class="form-input"
+                placeholder="Nhập tên kỹ sư phụ trách..."
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" (click)="closeEditModal()" class="btn-secondary">Hủy</button>
+          <button type="button" (click)="handleSaveChanges()" class="btn-primary">Lưu thay đổi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

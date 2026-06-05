@@ -1,0 +1,206 @@
+<div class="admin-shell">
+  <header class="admin-topbar">
+    <div class="admin-topbar-left">
+      <button
+        id="admin-sidebar-toggle"
+        type="button"
+        class="admin-icon-button admin-menu-button"
+        aria-label="Mở menu quản trị"
+        [attr.aria-expanded]="isSidebarOpen()"
+        (click)="toggleSidebar()"
+      >
+        <svg lucideMenu [attr.stroke-width]="2"></svg>
+      </button>
+
+      <a id="admin-brand-home-link" routerLink="/admin/dashboard" class="admin-brand-area" aria-label="Về trang chủ admin">
+        <span class="admin-brand-mark">
+          <img src="/brand/zentech-zt-badge.svg" alt="ZenTech" />
+        </span>
+        <div class="admin-brand-copy">
+          <span class="admin-brand-title">ZenTech Admin</span>
+          <span class="admin-brand-subtitle">Premium control center</span>
+        </div>
+        <span class="admin-brand-tag">Hệ thống</span>
+      </a>
+    </div>
+
+    <div class="admin-command-strip" aria-label="Admin quick search">
+      <svg lucideSearch [attr.stroke-width]="2"></svg>
+      <span>Tìm logs, ticket, tài khoản...</span>
+      <kbd>⌘K</kbd>
+    </div>
+
+    <div class="admin-topbar-actions">
+      <button id="admin-alerts-button" type="button" class="admin-icon-button" aria-label="Thông báo quản trị">
+        <svg lucideBell [attr.stroke-width]="2"></svg>
+        <span class="admin-alert-dot" aria-hidden="true"></span>
+      </button>
+
+      <button
+        id="admin-profile-menu-trigger"
+        type="button"
+        class="admin-profile-trigger"
+        (click)="adminMenu.toggle($event)"
+        aria-label="Mở menu tài khoản admin"
+      >
+        <span class="admin-avatar-placeholder">
+          @if (adminAvatarUrl()) {
+            <img [src]="adminAvatarUrl()" alt="Ảnh đại diện admin" referrerpolicy="no-referrer" />
+          } @else {
+            {{ adminInitials() }}
+          }
+        </span>
+        <div class="admin-info-block">
+          <strong class="admin-fullname">{{ displayName() }}</strong>
+          <small class="admin-role-label">HỆ THỐNG ADMIN</small>
+        </div>
+        <svg lucideChevronDown class="admin-chevron-icon" [attr.stroke-width]="2"></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="admin-body-container">
+    @if (isSidebarOpen()) {
+      <button
+        id="admin-sidebar-backdrop"
+        type="button"
+        class="admin-sidebar-backdrop"
+        aria-label="Đóng menu quản trị"
+        (click)="closeSidebar()"
+      ></button>
+    }
+
+    <aside class="admin-sidebar" [class.admin-sidebar--open]="isSidebarOpen()">
+      <div class="admin-sidebar-head">
+        <div class="admin-sidebar-badge">
+          <svg lucideCommand [attr.stroke-width]="2"></svg>
+          <span>Command Center</span>
+        </div>
+        <button
+          id="admin-sidebar-close"
+          type="button"
+          class="admin-icon-button admin-sidebar-close"
+          aria-label="Đóng menu quản trị"
+          (click)="closeSidebar()"
+        >
+          <svg lucideX [attr.stroke-width]="2"></svg>
+        </button>
+      </div>
+
+      <nav class="admin-sidebar-nav" aria-label="Admin Navigation">
+        @for (section of navSections; track section.title) {
+          <div class="admin-nav-section">
+            <p class="admin-nav-section-title">{{ section.title }}</p>
+
+            @for (item of section.items; track item.path) {
+              <a
+                [routerLink]="item.path"
+                routerLinkActive="admin-nav-link-active"
+                class="admin-nav-link"
+                (click)="closeSidebar()"
+              >
+                <span class="admin-nav-icon-box">
+                  @switch (item.icon) {
+                    @case ('dashboard') {
+                      <svg lucideLayoutDashboard [attr.stroke-width]="2"></svg>
+                    }
+                    @case ('logs') {
+                      <svg lucideFileText [attr.stroke-width]="2"></svg>
+                    }
+                    @case ('incidents') {
+                      <svg lucideAlertTriangle [attr.stroke-width]="2"></svg>
+                    }
+                    @case ('tickets') {
+                      <svg lucideTicket [attr.stroke-width]="2"></svg>
+                    }
+                    @case ('statistics') {
+                      <svg lucideChartBar [attr.stroke-width]="2"></svg>
+                    }
+                    @case ('accounts') {
+                      <svg lucideUser [attr.stroke-width]="2"></svg>
+                    }
+                    @case ('permissions') {
+                      <svg lucideKey [attr.stroke-width]="2"></svg>
+                    }
+                    @case ('activity-logs') {
+                      <svg lucideHistory [attr.stroke-width]="2"></svg>
+                    }
+                  }
+                </span>
+                <span class="admin-nav-link-label">{{ item.label }}</span>
+              </a>
+            }
+          </div>
+        }
+      </nav>
+    </aside>
+
+    <main class="admin-workspace">
+      <section class="admin-page-header" aria-labelledby="admin-page-title">
+        <div class="admin-breadcrumb">
+          <span>{{ header().eyebrow }}</span>
+          <span class="admin-breadcrumb-slash">/</span>
+          <span class="admin-breadcrumb-current">{{ header().title }}</span>
+        </div>
+        <div class="admin-page-title-row">
+          <div>
+            <h1 id="admin-page-title" class="admin-page-title">{{ header().title }}</h1>
+            <p class="admin-page-desc">{{ header().description }}</p>
+          </div>
+          <span class="admin-page-status">Live system</span>
+        </div>
+      </section>
+
+      <div class="admin-content-canvas">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+</div>
+
+<p-popover #adminMenu styleClass="admin-popover-menu">
+  <div class="admin-dropdown-container">
+    <div class="admin-dropdown-header">
+      <span class="admin-dropdown-avatar">
+        @if (adminAvatarUrl()) {
+          <img [src]="adminAvatarUrl()" alt="Ảnh đại diện admin" referrerpolicy="no-referrer" />
+        } @else {
+          {{ adminInitials() }}
+        }
+      </span>
+      <div class="admin-dropdown-meta">
+        <span class="admin-dropdown-name">{{ displayName() }}</span>
+        <span class="admin-dropdown-email">{{ adminEmail() }}</span>
+      </div>
+    </div>
+    <div class="admin-dropdown-list">
+      <a
+        id="admin-profile-link"
+        routerLink="/admin/profile"
+        class="admin-dropdown-item"
+        (click)="adminMenu.hide()"
+      >
+        <svg lucideUser [attr.stroke-width]="2"></svg>
+        <span>Hồ sơ cá nhân</span>
+      </a>
+      <a
+        id="admin-change-password-link"
+        routerLink="/admin/change-password"
+        class="admin-dropdown-item"
+        (click)="adminMenu.hide()"
+      >
+        <svg lucideKey [attr.stroke-width]="2"></svg>
+        <span>Đổi mật khẩu</span>
+      </a>
+      <button
+        id="admin-logout-button"
+        type="button"
+        class="admin-dropdown-item admin-logout-item"
+        (click)="logout(); adminMenu.hide()"
+      >
+        <svg lucideLogOut [attr.stroke-width]="2"></svg>
+        <span>Đăng xuất</span>
+      </button>
+    </div>
+  </div>
+</p-popover>

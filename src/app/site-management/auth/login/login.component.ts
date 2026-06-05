@@ -148,6 +148,9 @@ export class LoginComponent implements AfterViewInit {
 }
 
 export function resolvePostLoginRoute(roles: string[], returnUrl: string | null): string {
+  if (hasRole(roles, Role.ADMIN)) {
+    return '/admin/dashboard';
+  }
   return hasRole(roles, Role.OWNER) || hasRole(roles, Role.MANAGER) || hasRole(roles, Role.EMPLOYEE)
     ? '/management/dashboard'
     : getSafeReturnUrl(returnUrl);

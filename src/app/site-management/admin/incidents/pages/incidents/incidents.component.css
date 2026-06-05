@@ -1,0 +1,196 @@
+@import "tailwindcss" reference;
+
+.incidents-container {
+  @apply flex flex-col gap-6;
+}
+
+.incidents-controls {
+  @apply flex items-center justify-between gap-4 flex-shrink-0;
+}
+
+.incidents-filter-group {
+  @apply flex items-center bg-[#F9FAFB] p-1 border border-[#E5E7EB] rounded-full;
+}
+
+.incidents-filter-btn {
+  @apply px-4 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 rounded-full transition border-none outline-none cursor-pointer;
+}
+
+.incidents-filter-btn--active {
+  @apply bg-white text-gray-900 shadow-sm font-bold;
+}
+
+.incidents-grid {
+  @apply grid grid-cols-1 gap-6;
+}
+
+@media (min-width: 768px) {
+  .incidents-grid {
+    @apply grid-cols-2;
+  }
+}
+
+.incidents-card {
+  @apply bg-[#F9FAFB] p-5 rounded-xl border border-[#E5E7EB] shadow-sm flex flex-col gap-4 hover:bg-white hover:border-gray-300 transition duration-200;
+}
+
+.incidents-card-header {
+  @apply flex items-center justify-between;
+}
+
+.incidents-id {
+  @apply text-xs font-bold text-gray-400;
+}
+
+.incidents-severity-badge {
+  @apply text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider;
+}
+
+.incidents-severity-badge.severity-critical {
+  @apply bg-rose-50 text-rose-700 border border-rose-100;
+}
+
+.incidents-severity-badge.severity-high {
+  @apply bg-orange-50 text-orange-700 border border-orange-100;
+}
+
+.incidents-severity-badge.severity-medium {
+  @apply bg-yellow-50 text-yellow-700 border border-yellow-100;
+}
+
+.incidents-severity-badge.severity-low {
+  @apply bg-blue-50 text-blue-700 border border-blue-100;
+}
+
+.incidents-title {
+  @apply text-sm font-bold text-gray-900 leading-snug;
+}
+
+.incidents-desc {
+  @apply text-xs text-gray-600 leading-relaxed line-clamp-3;
+}
+
+.incidents-meta {
+  @apply flex flex-col gap-1.5 border-y border-[#E5E7EB] py-3;
+}
+
+.incidents-meta-item {
+  @apply flex items-center justify-between text-xs text-gray-500;
+}
+
+.incidents-meta-item strong {
+  @apply text-gray-700 font-semibold;
+}
+
+.incidents-actions {
+  @apply flex items-center justify-between mt-auto pt-2;
+}
+
+.incidents-status-badge {
+  @apply text-[9px] font-bold px-2 py-0.5 rounded-full border;
+}
+
+.incidents-status-badge.status-open {
+  @apply bg-rose-50 text-rose-700 border-rose-200;
+}
+
+.incidents-status-badge.status-investigating {
+  @apply bg-amber-50 text-amber-700 border-amber-200;
+}
+
+.incidents-status-badge.status-resolved {
+  @apply bg-emerald-50 text-emerald-700 border-emerald-200;
+}
+
+.incidents-edit-btn {
+  @apply flex items-center gap-1.5 px-3 py-1.5 bg-[#111827] hover:bg-gray-800 text-white hover:text-white rounded-full text-xs font-semibold transition border-none outline-none cursor-pointer;
+}
+
+.incidents-edit-btn svg {
+  @apply w-3.5 h-3.5;
+}
+
+.incidents-empty-state {
+  @apply text-center py-16 text-gray-400 text-xs font-medium w-full;
+}
+
+/* Custom Modal Overlay */
+.modal-backdrop {
+  @apply fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs;
+}
+
+.modal-wrapper {
+  @apply w-full max-w-lg;
+}
+
+.modal-container {
+  @apply bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden;
+}
+
+.modal-header {
+  @apply flex items-center justify-between px-6 py-4 border-b border-[#E5E7EB] bg-[#F9FAFB];
+}
+
+.modal-title {
+  @apply text-xs font-bold text-[#111827] uppercase tracking-wider;
+}
+
+.modal-close-btn {
+  @apply text-gray-400 hover:text-gray-600 transition border-none outline-none bg-transparent cursor-pointer p-1 rounded-full hover:bg-gray-200 flex items-center justify-center;
+}
+
+.modal-close-btn svg {
+  @apply w-5 h-5;
+}
+
+.modal-body {
+  @apply p-6 flex flex-col gap-4 overflow-y-auto max-h-[70vh];
+}
+
+.modal-body-subject {
+  @apply text-sm font-bold text-gray-900;
+}
+
+.modal-body-desc {
+  @apply text-xs text-gray-600 leading-relaxed bg-[#F9FAFB] p-3.5 rounded-xl border border-[#E5E7EB];
+}
+
+.modal-divider {
+  @apply border-none border-t border-[#E5E7EB] my-1;
+}
+
+.modal-form {
+  @apply flex flex-col gap-4;
+}
+
+.form-group {
+  @apply flex flex-col gap-1.5;
+}
+
+.form-label {
+  @apply text-xs font-semibold text-gray-700;
+}
+
+.form-select {
+  @apply px-3.5 py-2.5 bg-[#F9FAFB] focus:bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-xl text-xs outline-none focus:ring-1 focus:ring-[#4F46E5] transition;
+}
+
+.form-input {
+  @apply px-3.5 py-2.5 bg-[#F9FAFB] focus:bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-xl text-xs outline-none focus:ring-1 focus:ring-[#4F46E5] transition;
+}
+
+.modal-footer {
+  @apply flex items-center justify-end gap-3 px-6 py-4 border-t border-[#E5E7EB] bg-[#F9FAFB];
+}
+
+.btn-secondary {
+  @apply px-4 py-2 border border-[#E5E7EB] hover:bg-gray-50 text-gray-700 rounded-full text-xs font-semibold transition cursor-pointer outline-none;
+}
+
+.btn-primary {
+  @apply px-5 py-2 bg-[#FFC700] hover:bg-[#FFD633] text-[#111827] rounded-full text-xs font-semibold transition cursor-pointer outline-none border-none;
+}
+
+/* Premium Admin Console surface overrides */
+.incidents-container { color: #111827; }
+
