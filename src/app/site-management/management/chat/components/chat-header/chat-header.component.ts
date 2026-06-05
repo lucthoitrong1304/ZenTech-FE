@@ -22,4 +22,14 @@ export class ChatHeaderComponent {
   readonly acceptClicked = output<void>();
   readonly transferClicked = output<void>();
   readonly closeClicked = output<void>();
+
+  protected failedImages = new Set<string>();
+
+  protected onImageError(id: string): void {
+    this.failedImages.add(id);
+  }
+
+  protected isImageFailed(id: string): boolean {
+    return this.failedImages.has(id);
+  }
 }

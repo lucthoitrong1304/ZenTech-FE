@@ -104,9 +104,9 @@
                   (click)="updateCustomer(cust.customerId)"
                 >
                   <div class="customer-info-left">
-                    <span class="cust-avatar" [style.background-color]="cust.imageUrl ? 'transparent' : getAvatarColor(cust.fullName)">
-                      @if (cust.imageUrl) {
-                        <img [src]="cust.imageUrl" [alt]="cust.fullName" class="cust-avatar-img" />
+                    <span class="cust-avatar" [style.background-color]="(cust.imageUrl && !isImageFailed(cust.customerId)) ? 'transparent' : getAvatarColor(cust.fullName)">
+                      @if (cust.imageUrl && !isImageFailed(cust.customerId)) {
+                        <img [src]="cust.imageUrl" [alt]="cust.fullName" class="cust-avatar-img" referrerpolicy="no-referrer" (error)="onImageError(cust.customerId)" />
                       } @else {
                         {{ getInitials(cust.fullName) }}
                       }

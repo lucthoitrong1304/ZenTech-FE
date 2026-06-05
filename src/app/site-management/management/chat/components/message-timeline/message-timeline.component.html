@@ -12,11 +12,13 @@
         [class.flex-row-reverse]="message.sender === 'STAFF'"
       >
         @if (message.sender === 'CUSTOMER') {
-          @if (conversation().customer.avatarUrl) {
+          @if (conversation().customer.avatarUrl && !isImageFailed(conversation().id)) {
             <img
               class="mt-1 h-8 w-8 shrink-0 rounded-[5px] bg-[#f0edec] object-cover"
               [src]="conversation().customer.avatarUrl"
               [alt]="conversation().customer.fullName"
+              referrerpolicy="no-referrer"
+              (error)="onImageError(conversation().id)"
             />
           } @else {
             <span

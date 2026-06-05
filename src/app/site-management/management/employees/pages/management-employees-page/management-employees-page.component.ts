@@ -160,6 +160,16 @@ export class ManagementEmployeesPageComponent {
 
     return page < totalPages ? page : null;
   }
+
+  protected failedImages = new Set<string>();
+
+  protected onImageError(employeeId: string): void {
+    this.failedImages.add(employeeId);
+  }
+
+  protected isImageFailed(employeeId: string): boolean {
+    return this.failedImages.has(employeeId);
+  }
 }
 
 function readInputValue(event: Event): string {
