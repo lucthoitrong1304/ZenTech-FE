@@ -1,0 +1,203 @@
+@import "tailwindcss" reference;
+
+.logs-container {
+  @apply flex flex-col gap-6;
+}
+
+.logs-controls {
+  @apply flex flex-col items-stretch justify-between gap-4 flex-shrink-0;
+}
+
+@media (min-width: 1024px) {
+  .logs-controls {
+    @apply flex-row items-center;
+  }
+}
+
+.logs-search-wrapper {
+  @apply relative flex-1 max-w-2xl;
+}
+
+.logs-search-icon {
+  @apply absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none;
+}
+
+.logs-search-input {
+  @apply w-full pl-10 pr-4 py-2.5 bg-[#F9FAFB] hover:bg-white focus:bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-full text-sm outline-none focus:ring-1 focus:ring-[#4F46E5] transition;
+}
+
+.logs-actions-row {
+  @apply flex flex-col items-stretch gap-3 flex-shrink-0;
+}
+
+@media (min-width: 640px) {
+  .logs-actions-row {
+    @apply flex-row items-center;
+  }
+}
+
+.logs-filter-group {
+  @apply flex items-center bg-[#F9FAFB] p-1 border border-[#E5E7EB] rounded-full;
+}
+
+.logs-filter-btn {
+  @apply px-4 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 rounded-full transition border-none outline-none cursor-pointer;
+}
+
+.logs-filter-btn--active {
+  @apply bg-white text-gray-900 shadow-sm font-bold;
+}
+
+.logs-clear-btn {
+  @apply flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-rose-50 text-rose-600 hover:text-rose-700 border border-rose-200 hover:border-rose-300 rounded-full text-xs font-semibold transition cursor-pointer outline-none;
+}
+
+.logs-clear-btn svg {
+  @apply w-4 h-4;
+}
+
+.logs-table-card {
+  @apply bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-sm;
+}
+
+.logs-table-wrapper {
+  @apply overflow-x-auto;
+}
+
+.logs-table {
+  @apply w-full border-collapse text-left;
+}
+
+.logs-th {
+  @apply px-4 py-3.5 bg-[#F9FAFB] text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-[#E5E7EB];
+}
+
+.logs-th--expand {
+  @apply w-10 text-center;
+}
+
+.logs-th--time {
+  @apply w-48;
+}
+
+.logs-th--level {
+  @apply w-28;
+}
+
+.logs-th--category {
+  @apply w-32;
+}
+
+.logs-th--message {
+  @apply min-w-[300px];
+}
+
+.logs-row {
+  @apply border-b border-[#E5E7EB] hover:bg-[#F9FAFB] cursor-pointer transition;
+}
+
+.logs-row--expanded {
+  @apply bg-[#F9FAFB];
+}
+
+.logs-td {
+  @apply px-4 py-3.5 text-sm text-gray-950 font-medium;
+}
+
+.logs-td--expand {
+  @apply text-center text-gray-400 w-10;
+}
+
+.logs-td--expand svg {
+  @apply w-4 h-4 mx-auto transition-transform duration-200;
+}
+
+.logs-row--expanded .logs-td--expand svg {
+  @apply rotate-180;
+}
+
+.logs-td--time {
+  @apply text-gray-500 font-mono text-xs;
+}
+
+.logs-td--category {
+  @apply font-semibold text-[#4F46E5] text-xs uppercase tracking-wide;
+}
+
+.logs-td--message {
+  @apply font-mono text-xs truncate max-w-[600px] text-gray-800;
+}
+
+.logs-level-badge {
+  @apply text-[9px] font-bold px-2 py-0.5 rounded uppercase border;
+}
+
+.logs-level-badge.level-info {
+  @apply bg-emerald-50 text-emerald-700 border-emerald-200;
+}
+
+.logs-level-badge.level-warn {
+  @apply bg-amber-50 text-amber-700 border-amber-200;
+}
+
+.logs-level-badge.level-error {
+  @apply bg-rose-50 text-rose-700 border-rose-200;
+}
+
+.logs-level-badge.level-debug {
+  @apply bg-gray-100 text-gray-600 border-gray-200;
+}
+
+.logs-details-row {
+  @apply bg-[#F9FAFB];
+}
+
+.logs-details-td {
+  @apply p-6 border-b border-[#E5E7EB];
+}
+
+.logs-details-card {
+  @apply bg-white p-5 rounded-xl border border-[#E5E7EB] shadow-inner;
+}
+
+.logs-details-title {
+  @apply text-xs font-bold text-[#111827] uppercase tracking-wider mb-4;
+}
+
+.logs-details-grid {
+  @apply grid grid-cols-1 gap-4 text-xs mb-4;
+}
+
+@media (min-width: 640px) {
+  .logs-details-grid {
+    @apply grid-cols-2;
+  }
+}
+
+.logs-details-item {
+  @apply flex items-center gap-2 text-gray-600;
+}
+
+.logs-details-item strong {
+  @apply text-gray-800;
+}
+
+.logs-details-block {
+  @apply flex flex-col gap-2 text-xs;
+}
+
+.logs-details-block strong {
+  @apply text-gray-800;
+}
+
+.logs-details-code {
+  @apply bg-gray-900 text-emerald-400 p-4 rounded-lg overflow-x-auto font-mono text-xs shadow-md max-w-full leading-relaxed;
+}
+
+.logs-empty-state {
+  @apply text-center py-16 text-gray-400 text-xs font-medium;
+}
+
+/* Premium Admin Console surface overrides */
+.logs-container { color: #111827; }
+

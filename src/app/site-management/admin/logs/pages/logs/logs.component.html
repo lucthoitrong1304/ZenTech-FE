@@ -1,0 +1,142 @@
+<div class="logs-container">
+  <!-- Controls Bar -->
+  <div class="logs-controls">
+    <div class="logs-search-wrapper">
+      <svg lucideSearch class="logs-search-icon" [attr.stroke-width]="2"></svg>
+      <input
+        type="text"
+        placeholder="Tìm kiếm log theo nội dung, phân hệ..."
+        [value]="searchText()"
+        (input)="handleSearchInput($event)"
+        class="logs-search-input"
+        aria-label="Tìm kiếm log"
+      />
+    </div>
+
+    <div class="logs-actions-row">
+      <!-- Filter Level Tabs -->
+      <div class="logs-filter-group">
+        <button
+          type="button"
+          (click)="handleFilterChange('ALL')"
+          class="logs-filter-btn"
+          [class.logs-filter-btn--active]="activeFilter() === 'ALL'"
+        >
+          Tất cả
+        </button>
+        <button
+          type="button"
+          (click)="handleFilterChange(LogLevel.INFO)"
+          class="logs-filter-btn logs-filter-btn--info"
+          [class.logs-filter-btn--active]="activeFilter() === LogLevel.INFO"
+        >
+          INFO
+        </button>
+        <button
+          type="button"
+          (click)="handleFilterChange(LogLevel.WARN)"
+          class="logs-filter-btn logs-filter-btn--warn"
+          [class.logs-filter-btn--active]="activeFilter() === LogLevel.WARN"
+        >
+          WARN
+        </button>
+        <button
+          type="button"
+          (click)="handleFilterChange(LogLevel.ERROR)"
+          class="logs-filter-btn logs-filter-btn--error"
+          [class.logs-filter-btn--active]="activeFilter() === LogLevel.ERROR"
+        >
+          ERROR
+        </button>
+        <button
+          type="button"
+          (click)="handleFilterChange(LogLevel.DEBUG)"
+          class="logs-filter-btn logs-filter-btn--debug"
+          [class.logs-filter-btn--active]="activeFilter() === LogLevel.DEBUG"
+        >
+          DEBUG
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <button type="button" (click)="handleClearLogs()" class="logs-clear-btn" aria-label="Xóa logs">
+        <svg lucideTrash2 [attr.stroke-width]="2"></svg>
+        <span>Xóa sạch logs</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Logs Table Card -->
+  <div class="logs-table-card">
+    @if (store.filteredLogs().length === 0) {
+      <div class="logs-empty-state">
+        <p>Không tìm thấy log hệ thống nào phù hợp với bộ lọc hiện tại.</p>
+      </div>
+    } @else {
+      <div class="logs-table-wrapper">
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th scope="col" class="logs-th logs-th--expand"></th>
+              <th scope="col" class="logs-th logs-th--time">Thời gian</th>
+              <th scope="col" class="logs-th logs-th--level">Mức độ</th>
+              <th scope="col" class="logs-th logs-th--category">Phân hệ</th>
+              <th scope="col" class="logs-th logs-th--message">Thông điệp</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (log of store.filteredLogs(); track log.id) {
+              <!-- Standard Row -->
+              <tr class="logs-row" (click)="toggleExpand(log.id)" [class.logs-row--expanded]="expandedLogId() === log.id">
+                <td class="logs-td logs-td--expand">
+                  @if (expandedLogId() === log.id) {
+                    <svg lucideChevronUp [attr.stroke-width]="2"></svg>
+                  } @else {
+                    <svg lucideChevronDown [attr.stroke-width]="2"></svg>
+                  }
+                </td>
+                <td class="logs-td logs-td--time">
+                  {{ log.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}
+                </td>
+                <td class="logs-td logs-td--level">
+                  <span class="logs-level-badge" [class]="'level-' + log.level.toLowerCase()">
+                    {{ log.level }}
+                  </span>
+                </td>
+                <td class="logs-td logs-td--category">
+                  {{ log.category }}
+                </td>
+                <td class="logs-td logs-td--message">
+                  {{ log.message }}
+                </td>
+              </tr>
+
+              <!-- Expandable Diagnostics Detail Row -->
+              @if (expandedLogId() === log.id) {
+                <tr class="logs-details-row">
+                  <td colspan="5" class="logs-details-td">
+                    <div class="logs-details-card">
+                      <h4 class="logs-details-title">Chi tiết chẩn đoán lỗi (Logs Diagnostics)</h4>
+                      <div class="logs-details-grid">
+                        <div class="logs-details-item">
+                          <strong>ID Log:</strong> <span>{{ log.id }}</span>
+                        </div>
+                        <div class="logs-details-item">
+                          <strong>Phân hệ chính:</strong> <span>{{ log.category }}</span>
+                        </div>
+                      </div>
+                      <div class="logs-details-block">
+                        <strong>Payload / Tham số kỹ thuật:</strong>
+                        <pre class="logs-details-code"><code>{{ log.details }}</code></pre>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

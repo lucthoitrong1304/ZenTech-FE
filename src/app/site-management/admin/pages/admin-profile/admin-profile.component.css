@@ -1,0 +1,41 @@
+@import "tailwindcss" reference;
+
+.admin-profile-page { @apply mx-auto w-full max-w-6xl pb-10; }
+.admin-back-link { @apply mb-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#111827] no-underline shadow-sm ring-1 ring-[#E5E7EB] transition hover:bg-[#FFC700] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5]; }
+.admin-back-link svg { @apply h-4 w-4; }
+.admin-profile-card { @apply overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-[#E5E7EB]; }
+.admin-profile-cover { @apply h-24 bg-[#101010]; }
+.admin-profile-identity { @apply relative flex flex-col gap-4 px-6 pb-7 sm:flex-row sm:items-start sm:px-8 lg:px-10; }
+.admin-avatar-frame { @apply relative -mt-12 flex h-28 w-28 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border-[6px] border-white bg-[#FFC700] text-3xl font-semibold text-[#111827] shadow-lg; }
+.admin-avatar-frame img { @apply h-full w-full object-cover; }
+.admin-avatar-frame span { @apply uppercase; }
+.admin-avatar-upload { @apply absolute inset-0 flex cursor-pointer items-center justify-center bg-black/55 text-white opacity-0 transition hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC700]; }
+.admin-avatar-upload svg { @apply h-5 w-5; }
+.admin-hidden-input { @apply hidden; }
+.admin-identity-panel { @apply mt-5 flex min-w-0 flex-1 items-center; }
+.admin-identity-copy { @apply min-w-0 rounded-3xl bg-white/95 px-1 py-1; }
+.admin-role-chip { @apply inline-flex rounded-full bg-[#FFF7CC] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#111827] ring-1 ring-[#FFE680]; }
+.admin-identity-copy h2 { @apply mt-3 text-3xl font-semibold tracking-tight text-[#111827]; }
+.admin-identity-copy p { @apply mt-1 text-sm text-[#6B7280]; }
+.admin-profile-form { @apply border-t border-[#E5E7EB] px-6 py-7 sm:px-8 lg:px-10; }
+.admin-form-grid { @apply grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1fr]; }
+.admin-form-section { @apply rounded-3xl bg-[#FBFCFE] p-5 ring-1 ring-[#EEF2F7]; }
+.admin-section-heading { @apply mb-6 flex items-start gap-3 border-b border-[#E5E7EB] pb-4; }
+.admin-section-heading svg { @apply mt-0.5 h-5 w-5 text-[#111827]; }
+.admin-section-heading h3 { @apply text-base font-semibold text-[#111827]; }
+.admin-section-heading p { @apply mt-1 text-xs leading-relaxed text-[#6B7280]; }
+.admin-field { @apply mb-5 block last:mb-0; }
+.admin-field > span { @apply mb-2 block text-sm font-medium text-[#374151]; }
+.admin-field strong { @apply text-[#E11D48]; }
+.admin-field input,
+.admin-field textarea { @apply w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5]; }
+.admin-input-icon { @apply relative; }
+.admin-input-icon svg { @apply pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9CA3AF]; }
+.admin-input-icon input { @apply pl-10; }
+.admin-textarea-icon svg { @apply top-4 translate-y-0; }
+.admin-textarea-icon textarea { @apply min-h-[132px] resize-none pl-10; }
+.admin-input-readonly input { @apply cursor-not-allowed bg-[#F3F4F6] text-[#6B7280]; }
+.admin-form-footer { @apply mt-7 flex justify-end border-t border-[#E5E7EB] pt-6; }
+.admin-form-footer span { @apply hidden; }
+.admin-primary-button { @apply inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#FFC700] px-7 py-3 text-sm font-semibold text-[#111827] shadow-sm transition hover:bg-[#FFD633] disabled:cursor-not-allowed disabled:bg-[#E5E7EB] disabled:text-[#9CA3AF] sm:w-auto; }
+.admin-spin { @apply h-4 w-4 animate-spin; }

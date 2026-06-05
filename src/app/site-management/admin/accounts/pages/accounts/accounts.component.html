@@ -1,0 +1,184 @@
+<div class="acc-container">
+  <!-- Header / Actions -->
+  <div class="acc-header-row">
+    <div class="acc-search-wrapper">
+      <svg lucideSearch class="acc-search-icon" [attr.stroke-width]="2"></svg>
+      <input
+        type="text"
+        placeholder="Tìm kiếm tài khoản theo họ tên, email..."
+        [value]="searchText()"
+        (input)="handleSearchInput($event)"
+        class="acc-search-input"
+        aria-label="Tìm kiếm tài khoản"
+      />
+    </div>
+
+    <button type="button" (click)="openAddModal()" class="acc-add-btn" aria-label="Thêm tài khoản">
+      <svg lucideUserPlus [attr.stroke-width]="2"></svg>
+      <span>Thêm tài khoản mới</span>
+    </button>
+  </div>
+
+  <!-- Accounts Table Card -->
+  <div class="acc-table-card">
+    @if (store.filteredAccounts().length === 0) {
+      <div class="acc-empty-state">
+        <p>Không tìm thấy tài khoản người dùng nào phù hợp.</p>
+      </div>
+    } @else {
+      <div class="acc-table-wrapper">
+        <table class="acc-table">
+          <thead>
+            <tr>
+              <th scope="col" class="acc-th">Người dùng</th>
+              <th scope="col" class="acc-th">Vai trò</th>
+              <th scope="col" class="acc-th">Trạng thái</th>
+              <th scope="col" class="acc-th">Đăng nhập cuối</th>
+              <th scope="col" class="acc-th text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (acc of store.filteredAccounts(); track acc.id) {
+              <tr class="acc-tr">
+                <!-- User Profile Column -->
+                <td class="acc-td">
+                  <div class="acc-user-info">
+                    <span class="acc-avatar">{{ getAccountInitials(acc.fullName) }}</span>
+                    <div class="acc-name-block">
+                      <span class="acc-name">{{ acc.fullName }}</span>
+                      <span class="acc-email">{{ acc.email }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Role Badge Column -->
+                <td class="acc-td">
+                  @for (role of acc.roles; track role) {
+                    <span class="acc-role-badge" [class]="getRoleBadgeClass(role)">
+                      {{ role }}
+                    </span>
+                  }
+                </td>
+
+                <!-- Status Badge Column -->
+                <td class="acc-td">
+                  <span class="acc-status-badge" [class.acc-status-badge--active]="acc.active">
+                    {{ acc.active ? 'Hoạt động' : 'Đã khóa' }}
+                  </span>
+                </td>
+
+                <!-- Last Login Column -->
+                <td class="acc-td acc-td--time">
+                  {{ acc.lastLogin | date:'HH:mm dd/MM/yyyy' }}
+                </td>
+
+                <!-- Actions Column -->
+                <td class="acc-td text-right">
+                  <div class="acc-actions">
+                    <!-- Edit Button -->
+                    <button type="button" (click)="openEditModal(acc)" class="acc-action-btn acc-action-btn--edit" aria-label="Sửa tài khoản">
+                      <svg lucideEdit [attr.stroke-width]="2"></svg>
+                    </button>
+
+                    <!-- Lock / Unlock Button -->
+                    <button type="button" (click)="toggleAccountStatus(acc)" class="acc-action-btn" [class.acc-action-btn--lock]="acc.active" [class.acc-action-btn--unlock]="!acc.active" [attr.aria-label]="acc.active ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'">
+                      @if (acc.active) {
+                        <svg lucideLock [attr.stroke-width]="2"></svg>
+                      } @else {
+                        <svg lucideUnlock [attr.stroke-width]="2"></svg>
+                      }
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Add/Edit Account Modal -->
+@if (isModalOpen()) {
+  <div class="modal-backdrop">
+    <div class="modal-wrapper">
+      <div class="modal-container">
+        <!-- Header -->
+        <div class="modal-header">
+          <h3 class="modal-title">
+            {{ isEditMode() ? 'Cập Nhật Tài Khoản' : 'Thêm Tài Khoản Mới' }}
+          </h3>
+          <button type="button" (click)="closeModal()" class="modal-close-btn" aria-label="Đóng modal">
+            <svg lucideX [attr.stroke-width]="2"></svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+          <div class="modal-form">
+            <!-- Fullname -->
+            <div class="form-group">
+              <label for="acc-fullname" class="form-label">Họ và tên</label>
+              <input
+                id="acc-fullname"
+                type="text"
+                [(ngModel)]="editFullName"
+                class="form-input"
+                placeholder="Nhập họ tên đầy đủ..."
+                required
+              />
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+              <label for="acc-email" class="form-label">Email tài khoản</label>
+              <input
+                id="acc-email"
+                type="email"
+                [(ngModel)]="editEmail"
+                class="form-input"
+                placeholder="example@zentech.vn"
+                [disabled]="isEditMode()"
+                required
+              />
+            </div>
+
+            <!-- Role select -->
+            <div class="form-group">
+              <label for="acc-role" class="form-label">Vai trò phân quyền</label>
+              <select id="acc-role" [(ngModel)]="editRole" class="form-select">
+                <option [value]="AdminAccountRole.CUSTOMER">CUSTOMER (Khách hàng)</option>
+                <option [value]="AdminAccountRole.EMPLOYEE">EMPLOYEE (Nhân viên)</option>
+                <option [value]="AdminAccountRole.MANAGER">MANAGER (Quản lý)</option>
+                <option [value]="AdminAccountRole.OWNER">OWNER (Chủ cửa hàng)</option>
+                <option [value]="AdminAccountRole.ADMIN">ADMIN (Quản trị viên)</option>
+              </select>
+            </div>
+
+            <!-- Active / Lock checkbox (only when editing) -->
+            @if (isEditMode()) {
+              <div class="form-checkbox-group">
+                <input
+                  id="acc-active"
+                  type="checkbox"
+                  [(ngModel)]="editActive"
+                  class="form-checkbox"
+                />
+                <label for="acc-active" class="form-checkbox-label">
+                  Tài khoản đang trong trạng thái hoạt động (Kích hoạt)
+                </label>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button type="button" (click)="closeModal()" class="btn-secondary">Hủy</button>
+          <button type="button" (click)="handleSaveAccount()" class="btn-primary">Lưu thông tin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

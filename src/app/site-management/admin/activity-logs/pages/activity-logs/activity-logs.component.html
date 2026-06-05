@@ -1,0 +1,69 @@
+<div class="audit-container">
+  <!-- Search Bar -->
+  <div class="audit-header-row">
+    <div class="audit-search-wrapper">
+      <svg lucideSearch class="audit-search-icon" [attr.stroke-width]="2"></svg>
+      <input
+        type="text"
+        placeholder="Tìm kiếm theo email, hành động, đối tượng tác động..."
+        [value]="searchText()"
+        (input)="handleSearchInput($event)"
+        class="audit-search-input"
+        aria-label="Tìm kiếm nhật ký hoạt động"
+      />
+    </div>
+  </div>
+
+  <!-- Audit Logs Table Card -->
+  <div class="audit-table-card">
+    @if (store.filteredActivityLogs().length === 0) {
+      <div class="audit-empty-state">
+        <p>Không tìm thấy nhật ký hoạt động nào phù hợp.</p>
+      </div>
+    } @else {
+      <div class="audit-table-wrapper">
+        <table class="audit-table">
+          <thead>
+            <tr>
+              <th scope="col" class="audit-th">Thời gian</th>
+              <th scope="col" class="audit-th">Quản trị viên / Nhân viên</th>
+              <th scope="col" class="audit-th">Hành động</th>
+              <th scope="col" class="audit-th">Đối tượng tác động</th>
+              <th scope="col" class="audit-th">Địa chỉ IP</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (act of store.filteredActivityLogs(); track act.id) {
+              <tr class="audit-tr">
+                <!-- Time Column -->
+                <td class="audit-td audit-td--time">
+                  {{ act.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}
+                </td>
+
+                <!-- Operator Column -->
+                <td class="audit-td audit-td--operator">
+                  {{ act.operatorEmail }}
+                </td>
+
+                <!-- Action Column -->
+                <td class="audit-td audit-td--action">
+                  <span class="action-highlight">{{ act.action }}</span>
+                </td>
+
+                <!-- Target Column -->
+                <td class="audit-td audit-td--target">
+                  {{ act.target }}
+                </td>
+
+                <!-- IP Column -->
+                <td class="audit-td audit-td--ip">
+                  {{ act.ipAddress }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

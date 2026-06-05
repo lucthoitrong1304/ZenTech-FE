@@ -57,6 +57,10 @@ export const routes: Routes = [
     path: 'management',
     loadChildren: () => import('./site-management/management/management.routes').then(m => m.managementRoutes)
   },
+  {
+    path: 'admin',
+    loadChildren: () => import('./site-management/admin/admin.routes').then(m => m.adminRoutes)
+  },
   { // Keep global error route untouched
     path: 'error',
     loadComponent: () => import('./shared/components/system-error/system-error.component').then(m => m.SystemErrorComponent)
