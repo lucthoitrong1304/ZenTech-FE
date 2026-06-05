@@ -104,8 +104,8 @@
               </td>
               <td>
                 <div class="employees-identity">
-                  @if (employee.imageUrl) {
-                    <img [src]="employee.imageUrl" [alt]="employee.fullName" />
+                  @if (employee.imageUrl && !isImageFailed(employee.employeeId)) {
+                    <img [src]="employee.imageUrl" [alt]="employee.fullName" referrerpolicy="no-referrer" (error)="onImageError(employee.employeeId)" />
                   } @else {
                     <span class="employees-avatar">{{ getEmployeeInitials(employee) }}</span>
                   }
@@ -304,8 +304,8 @@
 
         <div class="employees-detail">
           <div class="employees-detail__avatar">
-            @if (employee.imageUrl) {
-              <img [src]="employee.imageUrl" [alt]="employee.fullName" />
+            @if (employee.imageUrl && !isImageFailed(employee.employeeId)) {
+              <img [src]="employee.imageUrl" [alt]="employee.fullName" referrerpolicy="no-referrer" (error)="onImageError(employee.employeeId)" />
             } @else {
               <span>{{ getEmployeeInitials(employee) }}</span>
             }

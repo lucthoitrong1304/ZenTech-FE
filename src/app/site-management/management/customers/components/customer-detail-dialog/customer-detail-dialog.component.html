@@ -30,8 +30,8 @@
       <section class="customer-dialog__grid">
         <article class="customer-profile">
           <div class="customer-profile__avatar-wrap">
-            @if (selectedCustomer.imageUrl) {
-              <img [src]="selectedCustomer.imageUrl" [alt]="selectedCustomer.fullName" />
+            @if (selectedCustomer.imageUrl && !isImageFailed(selectedCustomer.customerId)) {
+              <img [src]="selectedCustomer.imageUrl" [alt]="selectedCustomer.fullName" referrerpolicy="no-referrer" (error)="onImageError(selectedCustomer.customerId)" />
             } @else {
               <span class="customer-profile__avatar-fallback">{{ selectedCustomer.fullName.charAt(0).toUpperCase() }}</span>
             }

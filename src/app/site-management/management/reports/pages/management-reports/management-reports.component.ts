@@ -830,4 +830,14 @@ export class ManagementReportsPageComponent implements OnInit {
     link.click();
     document.body.removeChild(link);
   }
+
+  protected failedImages = new Set<string>();
+
+  protected onImageError(email: string): void {
+    this.failedImages.add(email);
+  }
+
+  protected isImageFailed(email: string): boolean {
+    return this.failedImages.has(email);
+  }
 }

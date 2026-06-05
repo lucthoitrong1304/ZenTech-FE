@@ -135,4 +135,14 @@ export class IssueVoucherDialogComponent {
   protected onSubmit(): void {
     this.save.emit();
   }
+
+  protected failedImages = new Set<string>();
+
+  protected onImageError(customerId: string): void {
+    this.failedImages.add(customerId);
+  }
+
+  protected isImageFailed(customerId: string): boolean {
+    return this.failedImages.has(customerId);
+  }
 }

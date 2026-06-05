@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LucideSearch } from '@lucide/angular';
 import { ManagementChatConversation } from '../../data-access/models/management-chat.models';
@@ -21,5 +21,15 @@ export class ConversationListComponent {
   protected onSearchChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchKeywordChanged.emit(target.value);
+  }
+
+  protected failedImages = new Set<string>();
+
+  protected onImageError(id: string): void {
+    this.failedImages.add(id);
+  }
+
+  protected isImageFailed(id: string): boolean {
+    return this.failedImages.has(id);
   }
 }
