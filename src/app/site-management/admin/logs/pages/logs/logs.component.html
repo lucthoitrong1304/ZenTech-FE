@@ -5,7 +5,7 @@
       <svg lucideSearch class="logs-search-icon" [attr.stroke-width]="2"></svg>
       <input
         type="text"
-        placeholder="Tìm kiếm log theo nội dung, phân hệ..."
+        placeholder="Tìm kiếm log theo nội dung, phân hệ, hoặc Trace ID (ZT-xxxxxx)..."
         [value]="searchText()"
         (input)="handleSearchInput($event)"
         class="logs-search-input"
@@ -14,6 +14,42 @@
     </div>
 
     <div class="logs-actions-row">
+      <!-- Filter Service Tabs -->
+      <div class="logs-filter-group bg-[#F3F4F6]">
+        <button
+          type="button"
+          (click)="handleServiceChange(LogServiceCategory.ALL)"
+          class="logs-filter-btn"
+          [class.logs-filter-btn--active]="activeService() === LogServiceCategory.ALL"
+        >
+          Tất cả
+        </button>
+        <button
+          type="button"
+          (click)="handleServiceChange(LogServiceCategory.BACKEND)"
+          class="logs-filter-btn logs-filter-btn--backend"
+          [class.logs-filter-btn--active]="activeService() === LogServiceCategory.BACKEND"
+        >
+          Backend
+        </button>
+        <button
+          type="button"
+          (click)="handleServiceChange(LogServiceCategory.FRONTEND)"
+          class="logs-filter-btn logs-filter-btn--frontend"
+          [class.logs-filter-btn--active]="activeService() === LogServiceCategory.FRONTEND"
+        >
+          Frontend
+        </button>
+        <button
+          type="button"
+          (click)="handleServiceChange(LogServiceCategory.AI_SERVICE)"
+          class="logs-filter-btn logs-filter-btn--ai"
+          [class.logs-filter-btn--active]="activeService() === LogServiceCategory.AI_SERVICE"
+        >
+          AI Service
+        </button>
+      </div>
+
       <!-- Filter Level Tabs -->
       <div class="logs-filter-group">
         <button
@@ -58,85 +94,265 @@
         </button>
       </div>
 
-      <!-- Action Buttons -->
-      <button type="button" (click)="handleClearLogs()" class="logs-clear-btn" aria-label="Xóa logs">
-        <svg lucideTrash2 [attr.stroke-width]="2"></svg>
-        <span>Xóa sạch logs</span>
-      </button>
+      <!-- Refresh and Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="toggleAutoRefresh()"
+          class="logs-auto-refresh-btn"
+          [class.logs-auto-refresh-btn--active]="autoRefreshEnabled()"
+          [attr.aria-pressed]="autoRefreshEnabled()"
+          aria-label="Bật hoặc tắt tự động làm mới logs"
+        >
+          <span class="logs-live-dot"></span>
+          <span>{{ autoRefreshEnabled() ? 'Live ' + autoRefreshSeconds + 's' : 'Auto refresh' }}</span>
+        </button>
+        <button type="button" (click)="handleRefreshLogs()" class="logs-refresh-btn" aria-label="Làm mới logs">
+          <svg lucideRefreshCw [attr.stroke-width]="2"></svg>
+        </button>
+        <button type="button" (click)="handleClearLogs()" class="logs-clear-btn" aria-label="Xóa logs">
+          <svg lucideTrash2 [attr.stroke-width]="2"></svg>
+          <span>Xóa sạch logs</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Logs Table Card -->
-  <div class="logs-table-card">
-    @if (store.filteredLogs().length === 0) {
-      <div class="logs-empty-state">
-        <p>Không tìm thấy log hệ thống nào phù hợp với bộ lọc hiện tại.</p>
-      </div>
-    } @else {
-      <div class="logs-table-wrapper">
-        <table class="logs-table">
-          <thead>
-            <tr>
-              <th scope="col" class="logs-th logs-th--expand"></th>
-              <th scope="col" class="logs-th logs-th--time">Thời gian</th>
-              <th scope="col" class="logs-th logs-th--level">Mức độ</th>
-              <th scope="col" class="logs-th logs-th--category">Phân hệ</th>
-              <th scope="col" class="logs-th logs-th--message">Thông điệp</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (log of store.filteredLogs(); track log.id) {
-              <!-- Standard Row -->
-              <tr class="logs-row" (click)="toggleExpand(log.id)" [class.logs-row--expanded]="expandedLogId() === log.id">
-                <td class="logs-td logs-td--expand">
-                  @if (expandedLogId() === log.id) {
-                    <svg lucideChevronUp [attr.stroke-width]="2"></svg>
-                  } @else {
-                    <svg lucideChevronDown [attr.stroke-width]="2"></svg>
-                  }
-                </td>
-                <td class="logs-td logs-td--time">
-                  {{ log.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}
-                </td>
-                <td class="logs-td logs-td--level">
-                  <span class="logs-level-badge" [class]="'level-' + log.level.toLowerCase()">
-                    {{ log.level }}
-                  </span>
-                </td>
-                <td class="logs-td logs-td--category">
-                  {{ log.category }}
-                </td>
-                <td class="logs-td logs-td--message">
-                  {{ log.message }}
-                </td>
+  <!-- Loading State -->
+  @if (store.isLoadingLogs()) {
+    <div class="logs-loading-container">
+      <div class="logs-spinner"></div>
+      <p class="logs-loading-text">Đang kết nối Loki và tải nhật ký hệ thống...</p>
+    </div>
+  } @else {
+    <!-- Logs Table Card -->
+    <div class="logs-table-card">
+      @if (displayedLogs().length === 0) {
+        <div class="logs-empty-state">
+          <p>Không tìm thấy log hệ thống nào phù hợp với bộ lọc hiện tại.</p>
+        </div>
+      } @else {
+        <div class="logs-table-wrapper">
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th scope="col" class="logs-th logs-th--expand"></th>
+                <th scope="col" class="logs-th logs-th--time">Thời gian</th>
+                <th scope="col" class="logs-th logs-th--level">Mức độ</th>
+                <th scope="col" class="logs-th logs-th--category">Phân hệ (Source)</th>
+                <th scope="col" class="logs-th logs-th--message">Thông điệp</th>
               </tr>
-
-              <!-- Expandable Diagnostics Detail Row -->
-              @if (expandedLogId() === log.id) {
-                <tr class="logs-details-row">
-                  <td colspan="5" class="logs-details-td">
-                    <div class="logs-details-card">
-                      <h4 class="logs-details-title">Chi tiết chẩn đoán lỗi (Logs Diagnostics)</h4>
-                      <div class="logs-details-grid">
-                        <div class="logs-details-item">
-                          <strong>ID Log:</strong> <span>{{ log.id }}</span>
-                        </div>
-                        <div class="logs-details-item">
-                          <strong>Phân hệ chính:</strong> <span>{{ log.category }}</span>
-                        </div>
-                      </div>
-                      <div class="logs-details-block">
-                        <strong>Payload / Tham số kỹ thuật:</strong>
-                        <pre class="logs-details-code"><code>{{ log.details }}</code></pre>
-                      </div>
+            </thead>
+            <tbody>
+              @for (log of displayedLogs(); track log.id) {
+                <tr class="logs-row" (click)="openLogDetails(log)">
+                  <td class="logs-td logs-td--expand">
+                    <svg lucideChevronDown [attr.stroke-width]="2"></svg>
+                  </td>
+                  <td class="logs-td logs-td--time">
+                    {{ log.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}
+                  </td>
+                  <td class="logs-td logs-td--level">
+                    <span class="logs-level-badge" [class]="'level-' + log.level.toLowerCase()">
+                      {{ log.level }}
+                    </span>
+                  </td>
+                  <td class="logs-td logs-td--category">
+                    <span class="service-source-tag" [class]="'source-' + log.category.toLowerCase()">
+                      {{ log.category }}
+                    </span>
+                  </td>
+                  <td class="logs-td logs-td--message">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="truncate max-w-[500px]" [title]="log.message">{{ log.message }}</span>
+                      @if (log.traceId) {
+                        <button
+                          type="button"
+                          (click)="filterByTraceId(log.traceId, $event)"
+                          class="logs-trace-badge"
+                          title="Click để lọc truy vết tất cả log có Trace ID này"
+                        >
+                          {{ log.traceId }}
+                        </button>
+                      }
                     </div>
                   </td>
                 </tr>
               }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+  @if (selectedLog(); as log) {
+    <div class="logs-modal-backdrop" (click)="closeLogDetails()">
+      <section class="logs-modal-panel" role="dialog" aria-modal="true" aria-labelledby="log-detail-title" (click)="$event.stopPropagation()">
+        <div class="logs-modal-header">
+          <div>
+            <p class="logs-modal-kicker">Chi tiết nhật ký hệ thống</p>
+            <h3 id="log-detail-title" class="logs-modal-title">{{ log.message }}</h3>
+          </div>
+          <button type="button" class="logs-modal-close-btn" (click)="closeLogDetails()" aria-label="Đóng chi tiết log">×</button>
+        </div>
+
+        <div class="logs-modal-meta-row">
+          <span class="logs-level-badge" [class]="'level-' + log.level.toLowerCase()">{{ log.level }}</span>
+          <span class="service-source-tag" [class]="'source-' + log.category.toLowerCase()">{{ log.category }}</span>
+          <span class="logs-modal-time">{{ log.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</span>
+          @if (log.traceId) {
+            <button type="button" (click)="filterByTraceId(log.traceId, $event); closeLogDetails()" class="logs-trace-badge">
+              {{ log.traceId }}
+            </button>
+          }
+        </div>
+
+        <div class="logs-details-card logs-details-card--modal">
+          <div class="logs-details-header">
+            <h4 class="logs-details-title">Chẩn đoán log</h4>
+            <div class="logs-tab-switcher">
+              <button type="button" (click)="setLogViewMode(log.id, 'structured')" class="logs-tab-btn" [class.logs-tab-btn--active]="getLogViewMode(log.id) === 'structured'">Sơ đồ & Cấu trúc</button>
+              <button type="button" (click)="setLogViewMode(log.id, 'raw')" class="logs-tab-btn" [class.logs-tab-btn--active]="getLogViewMode(log.id) === 'raw'">Raw JSON</button>
+            </div>
+          </div>
+
+          @if (getLogViewMode(log.id) === 'structured') {
+            <div class="logs-trace-graph-panel">
+              <span class="logs-graph-title">Vị trí phát sinh trong chuỗi Request (Distributed Tracing):</span>
+              <div class="logs-trace-timeline">
+                <div class="logs-timeline-node" [class.logs-timeline-node--active]="log.category === 'FRONTEND'">
+                  <svg lucideGlobe class="w-4 h-4"></svg>
+                  <span>Angular FE</span>
+                </div>
+                <div class="logs-timeline-arrow" [class.logs-timeline-arrow--active]="log.category === 'BACKEND' || log.category === 'AI-SERVICE'"></div>
+                <div class="logs-timeline-node" [class.logs-timeline-node--active]="log.category === 'BACKEND'">
+                  <svg lucideTerminal class="w-4 h-4"></svg>
+                  <span>Spring Boot BE</span>
+                </div>
+                <div class="logs-timeline-arrow" [class.logs-timeline-arrow--active]="log.category === 'AI-SERVICE'"></div>
+                <div class="logs-timeline-node" [class.logs-timeline-node--active]="log.category === 'AI-SERVICE'">
+                  <svg lucideBot class="w-4 h-4"></svg>
+                  <span>FastAPI AI Service</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="logs-inspector-section">
+              <button type="button" class="logs-inspector-section-title">
+                <span>⌄</span>
+                <span>Log line</span>
+              </button>
+              <div class="logs-inspector-log-line">{{ log.details || log.message }}</div>
+            </div>
+
+            <div class="logs-inspector-section">
+              <button type="button" class="logs-inspector-section-title">
+                <span>⌄</span>
+                <span>Structured metadata</span>
+              </button>
+              <div class="logs-metadata-list">
+                @for (item of getStructuredMetadata(log); track item.label) {
+                  <div class="logs-metadata-row">
+                    <span class="logs-metadata-label">{{ item.label }}</span>
+                    <span class="logs-metadata-value">{{ item.value }}</span>
+                    @if (item.label === 'trace_id') {
+                      <button type="button" (click)="filterByTraceId(item.value, $event); closeLogDetails()" class="logs-metadata-filter-btn">Filter</button>
+                    }
+                    @if (item.label === 'detected_level') {
+                      <button type="button" (click)="applyLevelFilter(log.level, $event); closeLogDetails()" class="logs-metadata-filter-btn">Filter</button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="logs-inspector-section">
+              <button type="button" class="logs-inspector-section-title">
+                <span>⌄</span>
+                <span>Indexed labels</span>
+              </button>
+              <div class="logs-metadata-list">
+                @for (item of getIndexedLabels(log); track item.label) {
+                  <div class="logs-metadata-row">
+                    <span class="logs-metadata-label">{{ item.label }}</span>
+                    <span class="logs-metadata-value">{{ item.value }}</span>
+                    @if (item.label === 'service') {
+                      <button type="button" (click)="applyServiceFilter(log.category, $event); closeLogDetails()" class="logs-metadata-filter-btn">Filter</button>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="logs-inspector-section">
+              <button type="button" class="logs-inspector-section-title">
+                <span>⌄</span>
+                <span>Event timeline</span>
+              </button>
+              <div class="logs-journey-list">
+                @for (journey of getUserJourney(log); track journey.id) {
+                  <div class="logs-journey-item" [class.logs-journey-item--current]="journey.isCurrent">
+                    <div class="logs-journey-marker" [class]="'journey-level-' + journey.level.toLowerCase()"></div>
+                    <div class="logs-journey-content">
+                      <div class="logs-journey-header">
+                        <span class="logs-journey-title">{{ journey.title }}</span>
+                        @if (journey.isCurrent) {
+                          <span class="logs-journey-current-badge">Current event</span>
+                        }
+                        <span class="logs-journey-time">{{ journey.time | date:'HH:mm:ss' }}</span>
+                      </div>
+                      <p class="logs-journey-description">{{ journey.description }}</p>
+                      <span class="service-source-tag logs-journey-service" [class]="'source-' + journey.category.toLowerCase()">{{ journey.category }}</span>
+                    </div>
+                  </div>
+                } @empty {
+                  <p class="logs-journey-empty">Chưa đủ breadcrumb để dựng lại hành vi trước lỗi.</p>
+                }
+              </div>
+            </div>
+
+            @if (log.level === 'ERROR' || log.level === 'WARN' || log.message.toLowerCase().includes('exception')) {
+              <div class="logs-ai-explain-panel">
+                @if (!explanations()[log.id] && !explainingIds()[log.id]) {
+                  <div class="flex flex-col items-start gap-2">
+                    <span class="text-xs text-gray-500">Phát hiện log lỗi/cảnh báo hệ thống. Bạn có muốn AI giải thích và gợi ý fix?</span>
+                    <button type="button" (click)="handleExplainLog(log)" class="logs-ai-explain-btn">
+                      <svg lucideSparkles class="w-4 h-4 text-amber-500"></svg>
+                      <span>AI Giải Thích Nhanh</span>
+                    </button>
+                  </div>
+                }
+                @if (explainingIds()[log.id]) {
+                  <div class="logs-ai-loading">
+                    <svg lucideBot class="w-5 h-5 logs-ai-loading-icon"></svg>
+                    <span>AI đang chẩn đoán chi tiết lỗi và lập phương án khắc phục...</span>
+                  </div>
+                }
+                @if (explanations()[log.id]) {
+                  <div class="logs-ai-result-box">
+                    <div class="logs-ai-result-header">
+                      <svg lucideSparkles class="w-4 h-4 text-indigo-500"></svg>
+                      <strong>AI Chẩn Đoán Lỗi Hệ Thống:</strong>
+                    </div>
+                    <p class="logs-ai-result-text">{{ explanations()[log.id] }}</p>
+                  </div>
+                }
+              </div>
             }
-          </tbody>
-        </table>
-      </div>
-    }
-  </div>
+          } @else {
+            <div class="logs-details-block">
+              <div class="flex items-center justify-between">
+                <strong>Raw Log Line:</strong>
+                <button type="button" (click)="copyToClipboard(log.details, $event)" class="logs-copy-btn">
+                  <svg lucideCopy class="w-3.5 h-3.5"></svg>
+                  <span>Sao chép log</span>
+                </button>
+              </div>
+              <pre class="logs-details-code"><code>{{ log.details }}</code></pre>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  }
 </div>

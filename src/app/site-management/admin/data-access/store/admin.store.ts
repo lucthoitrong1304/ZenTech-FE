@@ -1,6 +1,9 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { rxMethod } from '@ngrx/signals/rxjs-interop';
+import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { AdminLogsService } from '../services/admin-logs.service';
 import {
   LogLevel,
   SystemLog,
@@ -20,6 +23,7 @@ import {
 
 interface AdminState {
   logs: SystemLog[];
+  isLoadingLogs: boolean;
   incidents: SystemIncident[];
   tickets: SupportTicket[];
   accounts: AdminAccount[];
@@ -350,7 +354,8 @@ const mockPermissions: PermissionItem[] = [
 ];
 
 const initialState: AdminState = {
-  logs: mockLogs,
+  logs: [],
+  isLoadingLogs: false,
   incidents: mockIncidents,
   tickets: mockTickets,
   accounts: mockAccounts,
@@ -453,7 +458,11 @@ export const AdminStore = signalStore(
       return logs().filter(log => log.level === LogLevel.ERROR).length;
     })
   })),
-  withMethods((store, toastService = inject(ToastService)) => {
+  withMethods((
+    store,
+    toastService = inject(ToastService),
+    adminLogsService = inject(AdminLogsService)
+  ) => {
     // Helper to log audit actions dynamically
     const logActivity = (action: string, target: string) => {
       const newAudit: ActivityLog = {
@@ -470,12 +479,50 @@ export const AdminStore = signalStore(
     };
 
     return {
+      loadLogs: rxMethod<{ level: string; search: string; traceId: string }>(
+        pipe(
+          tap(() => patchState(store, { isLoadingLogs: true })),
+          switchMap(({ level, search, traceId }) =>
+            adminLogsService.getLogs(level, search, traceId).pipe(
+              tap((logs) => {
+                patchState(store, { logs, isLoadingLogs: false });
+              }),
+              catchError((err) => {
+                console.error(err);
+                toastService.error('Không thể tải nhật ký hệ thống');
+                patchState(store, { isLoadingLogs: false });
+                return EMPTY;
+              })
+            )
+          )
+        )
+      ),
+
+      explainLog(
+        logMessage: string,
+        logDetails: string,
+        service: string,
+        onSuccess: (explanation: string) => void,
+        onError: () => void
+      ) {
+        adminLogsService.explainLog(logMessage, logDetails, service).subscribe({
+          next: (res) => onSuccess(res.explanation),
+          error: (err) => {
+            console.error(err);
+            toastService.error('Không thể gọi AI phân tích lỗi');
+            onError();
+          }
+        });
+      },
+
       setLogFilter(filter: LogLevel | 'ALL') {
         patchState(store, { logFilter: filter });
+        this.loadLogs({ level: filter, search: store.logSearch(), traceId: '' });
       },
 
       setLogSearch(search: string) {
         patchState(store, { logSearch: search });
+        this.loadLogs({ level: store.logFilter(), search, traceId: '' });
       },
 
       setIncidentFilter(filter: IncidentStatus | 'ALL') {

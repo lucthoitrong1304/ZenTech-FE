@@ -12,6 +12,14 @@ export interface SystemLog {
   category: string;
   message: string;
   details: string;
+  traceId?: string;
+}
+
+export enum LogServiceCategory {
+  ALL = 'ALL',
+  BACKEND = 'BACKEND',
+  FRONTEND = 'FRONTEND',
+  AI_SERVICE = 'AI-SERVICE',
 }
 
 export enum IncidentStatus {

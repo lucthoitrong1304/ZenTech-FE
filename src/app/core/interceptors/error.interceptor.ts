@@ -7,6 +7,8 @@ import { AuthRefreshService } from '../services/auth-refresh.service';
 import { AuthStorageService } from '../services/auth-storage.service';
 import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../tokens/api-context.token';
 import { AuthSessionStore } from '../../site-management/auth/data-access/store/auth-session.store';
+import { ClientLogEventType } from '../logging/client-log.model';
+import { ClientLogService } from '../logging/client-log.service';
 
 type RefreshState =
   | { status: 'idle' }
@@ -26,9 +28,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const injector = inject(Injector);
   const skipAuth = req.context.get(SKIP_AUTH_TOKEN);
   const skipGlobalError = req.context.get(SKIP_GLOBAL_ERROR);
+  const clientLogService = inject(ClientLogService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      logHttpFailure(clientLogService, req, error);
+
       // Bỏ qua nếu có cờ SKIP_GLOBAL_ERROR
       if (skipGlobalError) {
         return throwError(() => error);
@@ -39,6 +44,17 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         if (skipAuth) {
           return throwError(() => error);
         }
+
+        clientLogService.warn(
+          ClientLogEventType.AuthTokenExpired,
+          'Phiên đăng nhập hết hạn hoặc không hợp lệ.',
+          {
+            method: req.method,
+            apiPath: req.url,
+            statusCode: error.status,
+            traceId: req.headers.get('X-Trace-Id') ?? undefined,
+          },
+        );
 
         return handle401Error(req, next, authRefreshService, authStorageService, router);
       }
@@ -85,6 +101,28 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
+
+function logHttpFailure(
+  clientLogService: ClientLogService,
+  req: HttpRequest<unknown>,
+  error: HttpErrorResponse
+): void {
+  if (req.url.includes('/logs/client')) {
+    return;
+  }
+
+  clientLogService.error(
+    ClientLogEventType.HttpRequestFailed,
+    `${req.method} ${req.url} thất bại với mã ${error.status}.`,
+    {
+      method: req.method,
+      apiPath: req.url,
+      statusCode: error.status,
+      traceId: req.headers.get('X-Trace-Id') ?? undefined,
+      reason: error.statusText || error.message,
+    },
+  );
+}
 
 // Hàm phụ trợ xử lý luồng 401
 function handle401Error(
