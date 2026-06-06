@@ -22,6 +22,19 @@ import { ProfileService } from '../../../management/data-access/services/profile
 import { AuthRefreshService } from '../../../../core/services/auth-refresh.service';
 import { decodeJwt } from '../../../../shared/utils/jwt.util';
 import { of, timer } from 'rxjs';
+import { Router } from '@angular/router';
+
+interface ProfileResponseData {
+  fullName?: string;
+  imageUrl?: string | null;
+  role?: string;
+  hasRegisteredFace?: boolean;
+}
+
+interface ProfileResponse {
+  success: boolean;
+  data?: ProfileResponseData;
+}
 
 interface AuthSessionState {
   currentUser: CurrentAuthUser | null;
@@ -52,7 +65,8 @@ export const AuthSessionStore = signalStore(
       authStorageService = inject(AuthStorageService),
       accountService = inject(AccountService),
       profileService = inject(ProfileService),
-      authRefreshService = inject(AuthRefreshService)
+      authRefreshService = inject(AuthRefreshService),
+      router = inject(Router)
     ) => {
       const completeLogout = (
         successMessage: string | null,
@@ -72,13 +86,20 @@ export const AuthSessionStore = signalStore(
           switchMap(() => {
             const roles = authStorageService.getCurrentUser()?.roles || [];
             
-            const handleResponse = tap((res: any) => {
+            const handleResponse = tap((res: ProfileResponse) => {
               if (res.success && res.data) {
                 const fullName = res.data.fullName || '';
                 const avatarUrl = res.data.imageUrl || null;
                 if (typeof authStorageService.updateProfileInfo === 'function') {
                   authStorageService.updateProfileInfo(fullName, avatarUrl);
                 }
+
+                const newRole = res.data.role;
+                const updatedRoles = newRole ? [newRole.startsWith('ROLE_') ? newRole : `ROLE_${newRole}`] : ['ROLE_CUSTOMER'];
+                if (typeof authStorageService.updateRoles === 'function') {
+                  authStorageService.updateRoles(updatedRoles);
+                }
+
                 const currentUser = store.currentUser();
                 if (currentUser) {
                   patchState(store, {
@@ -86,9 +107,26 @@ export const AuthSessionStore = signalStore(
                       ...currentUser,
                       fullName,
                       avatarUrl,
+                      roles: updatedRoles,
                       hasRegisteredFace: res.data.hasRegisteredFace,
                     },
                   });
+                }
+
+                // Check if they need to be kicked out of management/admin
+                const currentUrl = router.url;
+                if (currentUrl.startsWith('/management')) {
+                  const isManagement = hasRole(updatedRoles, Role.OWNER) || 
+                                     hasRole(updatedRoles, Role.MANAGER) || 
+                                     hasRole(updatedRoles, Role.EMPLOYEE);
+                  if (!isManagement) {
+                    router.navigate(['/']);
+                  }
+                } else if (currentUrl.startsWith('/admin')) {
+                  const isAdmin = hasRole(updatedRoles, Role.ADMIN);
+                  if (!isAdmin) {
+                    router.navigate(['/']);
+                  }
                 }
               }
             });
@@ -204,6 +242,20 @@ export const AuthSessionStore = signalStore(
               session.hasRegisteredFace = hasRegisteredFace;
               localStorage.setItem('auth_session', JSON.stringify(session));
             }
+          }
+        },
+        updateUserRoles(roles: string[]): void {
+          if (typeof authStorageService.updateRoles === 'function') {
+            authStorageService.updateRoles(roles);
+          }
+          const currentUser = store.currentUser();
+          if (currentUser) {
+            patchState(store, {
+              currentUser: {
+                ...currentUser,
+                roles,
+              },
+            });
           }
         },
         clearLogoutMessages(): void {

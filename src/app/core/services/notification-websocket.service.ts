@@ -29,10 +29,13 @@ export class NotificationWebsocketService {
 
     this.client = new Client({
       brokerURL: wsUrl,
-      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
+      beforeConnect: () => {
+        const token = this.authStorageService.getAccessToken();
+        this.client!.connectHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+      },
       onConnect: () => {
         this.connectionState$.next(true);
       },

@@ -1,184 +1,509 @@
-<div class="acc-container">
-  <!-- Header / Actions -->
-  <div class="acc-header-row">
-    <div class="acc-search-wrapper">
-      <svg lucideSearch class="acc-search-icon" [attr.stroke-width]="2"></svg>
-      <input
-        type="text"
-        placeholder="Tìm kiếm tài khoản theo họ tên, email..."
-        [value]="searchText()"
-        (input)="handleSearchInput($event)"
-        class="acc-search-input"
-        aria-label="Tìm kiếm tài khoản"
-      />
-    </div>
+<section class="accounts-shell">
+  <div class="accounts-metrics-grid">
+    <article class="metric-card metric-card--total">
+      <div class="metric-card__icon"><svg lucideUsers [attr.stroke-width]="2"></svg></div>
+      <div class="metric-card__content">
+        <p class="metric-card__label">Tổng tài khoản</p>
+        <strong class="metric-card__value">{{ store.totalElements() }}</strong>
+        <div class="metric-progress-wrapper">
+          <div class="metric-progress-bar">
+            <div class="metric-progress-fill metric-progress-fill--total" style="width: 100%"></div>
+          </div>
+          <span class="metric-progress-text">Hệ thống live</span>
+        </div>
+      </div>
+    </article>
 
-    <button type="button" (click)="openAddModal()" class="acc-add-btn" aria-label="Thêm tài khoản">
-      <svg lucideUserPlus [attr.stroke-width]="2"></svg>
-      <span>Thêm tài khoản mới</span>
-    </button>
+    <article class="metric-card metric-card--active">
+      <div class="metric-card__icon"><svg lucideShieldCheck [attr.stroke-width]="2"></svg></div>
+      <div class="metric-card__content">
+        <p class="metric-card__label">Active trên trang</p>
+        <strong class="metric-card__value">{{ store.activeAccountsOnPage() }}</strong>
+        <div class="metric-progress-wrapper">
+          <div class="metric-progress-bar">
+            <div class="metric-progress-fill metric-progress-fill--active" [style.width.%]="getActivePercentage()"></div>
+          </div>
+          <span class="metric-progress-text">{{ getActivePercentage() }}% hoạt động</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="metric-card metric-card--locked">
+      <div class="metric-card__icon"><svg lucideLock [attr.stroke-width]="2"></svg></div>
+      <div class="metric-card__content">
+        <p class="metric-card__label">Đang khóa</p>
+        <strong class="metric-card__value">{{ store.lockedAccountsOnPage() }}</strong>
+        <div class="metric-progress-wrapper">
+          <div class="metric-progress-bar">
+            <div class="metric-progress-fill metric-progress-fill--locked" [style.width.%]="getLockedPercentage()"></div>
+          </div>
+          <span class="metric-progress-text">{{ getLockedPercentage() }}% đã khóa</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="metric-card metric-card--internal">
+      <div class="metric-card__icon"><svg lucideUserCog [attr.stroke-width]="2"></svg></div>
+      <div class="metric-card__content">
+        <p class="metric-card__label">Nội bộ</p>
+        <strong class="metric-card__value">{{ store.internalAccountsOnPage() }}</strong>
+        <div class="metric-progress-wrapper">
+          <div class="metric-progress-bar">
+            <div class="metric-progress-fill metric-progress-fill--internal" [style.width.%]="getInternalPercentage()"></div>
+          </div>
+          <span class="metric-progress-text">{{ getInternalPercentage() }}% nhân sự</span>
+        </div>
+      </div>
+    </article>
   </div>
 
-  <!-- Accounts Table Card -->
-  <div class="acc-table-card">
-    @if (store.filteredAccounts().length === 0) {
-      <div class="acc-empty-state">
-        <p>Không tìm thấy tài khoản người dùng nào phù hợp.</p>
+  <div class="accounts-toolbar">
+    <!-- Trái: Tìm kiếm và nút Tạo tài khoản -->
+    <div class="toolbar-left">
+      <div class="accounts-search">
+        <svg lucideSearch class="accounts-search__icon" [attr.stroke-width]="2"></svg>
+        <input
+          pInputText
+          id="admin-accounts-search-input"
+          type="search"
+          class="accounts-search__input"
+          placeholder="Tìm theo email hoặc tên hiển thị..."
+          [value]="searchKeyword()"
+          (input)="handleSearchInput($event)"
+        />
       </div>
-    } @else {
-      <div class="acc-table-wrapper">
-        <table class="acc-table">
-          <thead>
-            <tr>
-              <th scope="col" class="acc-th">Người dùng</th>
-              <th scope="col" class="acc-th">Vai trò</th>
-              <th scope="col" class="acc-th">Trạng thái</th>
-              <th scope="col" class="acc-th">Đăng nhập cuối</th>
-              <th scope="col" class="acc-th text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (acc of store.filteredAccounts(); track acc.id) {
-              <tr class="acc-tr">
-                <!-- User Profile Column -->
-                <td class="acc-td">
-                  <div class="acc-user-info">
-                    <span class="acc-avatar">{{ getAccountInitials(acc.fullName) }}</span>
-                    <div class="acc-name-block">
-                      <span class="acc-name">{{ acc.fullName }}</span>
-                      <span class="acc-email">{{ acc.email }}</span>
-                    </div>
-                  </div>
-                </td>
 
-                <!-- Role Badge Column -->
-                <td class="acc-td">
-                  @for (role of acc.roles; track role) {
-                    <span class="acc-role-badge" [class]="getRoleBadgeClass(role)">
-                      {{ role }}
-                    </span>
+      <button
+        pButton
+        type="button"
+        class="accounts-primary-btn"
+        id="admin-accounts-create-button"
+        (click)="openCreateDialog()"
+      >
+        <svg lucideUserPlus [attr.stroke-width]="2"></svg>
+        <span>Tạo tài khoản nội bộ</span>
+      </button>
+    </div>
+
+    <!-- Phải: Các bộ lọc và thao tác -->
+    <div class="toolbar-right">
+      <p-select
+        inputId="admin-accounts-role-filter"
+        styleClass="accounts-dropdown"
+        [options]="roleFilterOptions"
+        [ngModel]="store.role()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Vai trò"
+        (onChange)="handleRoleFilterChange($event.value)"
+      />
+
+      <p-select
+        inputId="admin-accounts-status-filter"
+        styleClass="accounts-dropdown"
+        [options]="statusOptions"
+        [ngModel]="store.activeFilter()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Trạng thái"
+        (onChange)="handleStatusFilterChange($event.value)"
+      />
+
+      <button
+        type="button"
+        class="accounts-refresh-icon-btn"
+        id="admin-accounts-refresh-button"
+        (click)="refreshAccounts()"
+        [disabled]="store.isLoading()"
+        title="Làm mới"
+      >
+        <svg lucideRefreshCw [class.animate-spin]="store.isLoading()" [attr.stroke-width]="2"></svg>
+      </button>
+
+      <div class="accounts-view-toggles">
+        <button
+          type="button"
+          class="view-toggle-btn"
+          [class.view-toggle-btn--active]="viewMode() === 'card'"
+          (click)="toggleViewMode('card')"
+          title="Xem dạng thẻ"
+        >
+          <svg lucideLayoutGrid [attr.stroke-width]="2"></svg>
+        </button>
+        <button
+          type="button"
+          class="view-toggle-btn"
+          [class.view-toggle-btn--active]="viewMode() === 'table'"
+          (click)="toggleViewMode('table')"
+          title="Xem dạng bảng"
+        >
+          <svg lucideLayoutList [attr.stroke-width]="2"></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="accounts-panel">
+    @if (viewMode() === 'table') {
+      <p-table
+        styleClass="accounts-table"
+        [value]="store.accounts()"
+        [loading]="store.isLoading()"
+        [rowHover]="true"
+        responsiveLayout="scroll"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Tài khoản</th>
+            <th>Vai trò</th>
+            <th>Trạng thái</th>
+            <th>Ngày tạo</th>
+            <th class="accounts-table__actions-heading">Thao tác</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-account>
+          <tr>
+            <td>
+              <div class="account-identity">
+                @if (getAvatarUrl(account); as avatarUrl) {
+                  <img class="account-avatar" [src]="avatarUrl" [alt]="account.displayName" />
+                } @else {
+                  <span class="account-avatar account-avatar--fallback" [style.background]="getAvatarGradient(account.email)">{{ getAccountInitials(account) }}</span>
+                }
+                <div class="account-copy">
+                  <strong>{{ account.displayName || 'Chưa cập nhật tên' }}</strong>
+                  <span>{{ account.email }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <p-tag
+                [value]="account.role"
+                [severity]="getRoleSeverity(account.role)"
+                [styleClass]="account.role === AdminAccountRole.ADMIN ? 'role-tag-admin' : ''"
+              />
+            </td>
+            <td>
+              <p-tag [value]="getStatusLabel(account.isActive)" [severity]="getStatusSeverity(account.isActive)" />
+            </td>
+            <td class="accounts-date-cell">{{ account.createdAt | date: 'HH:mm dd/MM/yyyy' }}</td>
+            <td>
+              <div class="accounts-row-actions">
+                <button
+                  pButton
+                  type="button"
+                  class="accounts-icon-btn accounts-icon-btn--edit"
+                  [id]="'admin-accounts-edit-role-' + account.id"
+                  (click)="openRoleDialog(account)"
+                  aria-label="Đổi vai trò tài khoản"
+                >
+                  <svg lucideUserCog [attr.stroke-width]="2"></svg>
+                </button>
+
+                <button
+                  pButton
+                  type="button"
+                  class="accounts-icon-btn"
+                  [class.accounts-icon-btn--lock]="account.isActive"
+                  [class.accounts-icon-btn--unlock]="!account.isActive"
+                  [id]="'admin-accounts-toggle-status-' + account.id"
+                  (click)="toggleAccountStatus(account)"
+                  [attr.aria-label]="account.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản'"
+                >
+                  @if (account.isActive) {
+                    <svg lucideLock [attr.stroke-width]="2"></svg>
+                  } @else {
+                    <svg lucideUnlock [attr.stroke-width]="2"></svg>
                   }
-                </td>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
 
-                <!-- Status Badge Column -->
-                <td class="acc-td">
-                  <span class="acc-status-badge" [class.acc-status-badge--active]="acc.active">
-                    {{ acc.active ? 'Hoạt động' : 'Đã khóa' }}
-                  </span>
-                </td>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5">
+              <div class="accounts-empty">
+                <svg lucideUsers [attr.stroke-width]="1.6"></svg>
+                <strong>Không tìm thấy tài khoản phù hợp</strong>
+                <span>Thử đổi bộ lọc hoặc từ khóa tìm kiếm.</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    } @else {
+      <!-- Chế độ thẻ (Grid) -->
+      <div class="accounts-grid-wrapper">
+        @if (store.isLoading() && !store.hasAccounts()) {
+          <div class="accounts-grid-loading">
+            <svg lucideRefreshCw class="animate-spin" [attr.stroke-width]="2"></svg>
+            <span>Đang tải danh sách tài khoản...</span>
+          </div>
+        } @else if (!store.hasAccounts()) {
+          <div class="accounts-empty">
+            <svg lucideUsers [attr.stroke-width]="1.6"></svg>
+            <strong>Không tìm thấy tài khoản phù hợp</strong>
+            <span>Thử đổi bộ lọc hoặc từ khóa tìm kiếm.</span>
+          </div>
+        } @else {
+          <div class="accounts-card-grid">
+            @for (account of store.accounts(); track account.id) {
+              <article class="account-profile-card" [class.account-profile-card--inactive]="!account.isActive">
+                <div class="profile-card-header" [style.background]="getAvatarGradient(account.email)">
+                  <p-tag
+                    [value]="account.role"
+                    [severity]="getRoleSeverity(account.role)"
+                    [styleClass]="account.role === AdminAccountRole.ADMIN ? 'role-tag-admin' : ''"
+                    class="profile-card-tag"
+                  />
+                </div>
+                
+                <div class="profile-card-avatar-wrap">
+                  @if (getAvatarUrl(account); as avatarUrl) {
+                    <img class="profile-card-avatar" [src]="avatarUrl" [alt]="account.displayName" />
+                  } @else {
+                    <div class="profile-card-avatar profile-card-avatar--fallback" [style.background]="getAvatarGradient(account.email)">
+                      <span>{{ getAccountInitials(account) }}</span>
+                    </div>
+                  }
+                </div>
 
-                <!-- Last Login Column -->
-                <td class="acc-td acc-td--time">
-                  {{ acc.lastLogin | date:'HH:mm dd/MM/yyyy' }}
-                </td>
+                <div class="profile-card-body">
+                  <h3 class="profile-card-name" [title]="account.displayName || 'Chưa cập nhật tên'">
+                    {{ account.displayName || 'Chưa cập nhật tên' }}
+                  </h3>
+                  
+                  <div class="profile-card-info-item">
+                    <svg lucideMail [attr.stroke-width]="1.8"></svg>
+                    <span [title]="account.email">{{ account.email }}</span>
+                  </div>
 
-                <!-- Actions Column -->
-                <td class="acc-td text-right">
-                  <div class="acc-actions">
-                    <!-- Edit Button -->
-                    <button type="button" (click)="openEditModal(acc)" class="acc-action-btn acc-action-btn--edit" aria-label="Sửa tài khoản">
-                      <svg lucideEdit [attr.stroke-width]="2"></svg>
+                  <div class="profile-card-info-item">
+                    <svg lucideCalendar [attr.stroke-width]="1.8"></svg>
+                    <span>{{ account.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                  </div>
+                </div>
+
+                <div class="profile-card-footer">
+                  <div class="profile-card-status">
+                    <span class="status-indicator" [class.status-indicator--active]="account.isActive"></span>
+                    <span>{{ getStatusLabel(account.isActive) }}</span>
+                  </div>
+
+                  <div class="profile-card-actions">
+                    <button
+                      pButton
+                      type="button"
+                      class="profile-action-btn profile-action-btn--edit"
+                      (click)="openRoleDialog(account)"
+                      title="Đổi vai trò"
+                    >
+                      <svg lucideUserCog [attr.stroke-width]="2"></svg>
                     </button>
 
-                    <!-- Lock / Unlock Button -->
-                    <button type="button" (click)="toggleAccountStatus(acc)" class="acc-action-btn" [class.acc-action-btn--lock]="acc.active" [class.acc-action-btn--unlock]="!acc.active" [attr.aria-label]="acc.active ? 'Khóa tài khoản' : 'Kích hoạt tài khoản'">
-                      @if (acc.active) {
+                    <button
+                      pButton
+                      type="button"
+                      class="profile-action-btn"
+                      [class.profile-action-btn--lock]="account.isActive"
+                      [class.profile-action-btn--unlock]="!account.isActive"
+                      (click)="toggleAccountStatus(account)"
+                      [title]="account.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản'"
+                    >
+                      @if (account.isActive) {
                         <svg lucideLock [attr.stroke-width]="2"></svg>
                       } @else {
                         <svg lucideUnlock [attr.stroke-width]="2"></svg>
                       }
                     </button>
                   </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
-  </div>
-</div>
-
-<!-- Add/Edit Account Modal -->
-@if (isModalOpen()) {
-  <div class="modal-backdrop">
-    <div class="modal-wrapper">
-      <div class="modal-container">
-        <!-- Header -->
-        <div class="modal-header">
-          <h3 class="modal-title">
-            {{ isEditMode() ? 'Cập Nhật Tài Khoản' : 'Thêm Tài Khoản Mới' }}
-          </h3>
-          <button type="button" (click)="closeModal()" class="modal-close-btn" aria-label="Đóng modal">
-            <svg lucideX [attr.stroke-width]="2"></svg>
-          </button>
-        </div>
-
-        <!-- Body -->
-        <div class="modal-body">
-          <div class="modal-form">
-            <!-- Fullname -->
-            <div class="form-group">
-              <label for="acc-fullname" class="form-label">Họ và tên</label>
-              <input
-                id="acc-fullname"
-                type="text"
-                [(ngModel)]="editFullName"
-                class="form-input"
-                placeholder="Nhập họ tên đầy đủ..."
-                required
-              />
-            </div>
-
-            <!-- Email -->
-            <div class="form-group">
-              <label for="acc-email" class="form-label">Email tài khoản</label>
-              <input
-                id="acc-email"
-                type="email"
-                [(ngModel)]="editEmail"
-                class="form-input"
-                placeholder="example@zentech.vn"
-                [disabled]="isEditMode()"
-                required
-              />
-            </div>
-
-            <!-- Role select -->
-            <div class="form-group">
-              <label for="acc-role" class="form-label">Vai trò phân quyền</label>
-              <select id="acc-role" [(ngModel)]="editRole" class="form-select">
-                <option [value]="AdminAccountRole.CUSTOMER">CUSTOMER (Khách hàng)</option>
-                <option [value]="AdminAccountRole.EMPLOYEE">EMPLOYEE (Nhân viên)</option>
-                <option [value]="AdminAccountRole.MANAGER">MANAGER (Quản lý)</option>
-                <option [value]="AdminAccountRole.OWNER">OWNER (Chủ cửa hàng)</option>
-                <option [value]="AdminAccountRole.ADMIN">ADMIN (Quản trị viên)</option>
-              </select>
-            </div>
-
-            <!-- Active / Lock checkbox (only when editing) -->
-            @if (isEditMode()) {
-              <div class="form-checkbox-group">
-                <input
-                  id="acc-active"
-                  type="checkbox"
-                  [(ngModel)]="editActive"
-                  class="form-checkbox"
-                />
-                <label for="acc-active" class="form-checkbox-label">
-                  Tài khoản đang trong trạng thái hoạt động (Kích hoạt)
-                </label>
-              </div>
+                </div>
+              </article>
             }
           </div>
-        </div>
+        }
+      </div>
+    }
 
-        <!-- Footer -->
-        <div class="modal-footer">
-          <button type="button" (click)="closeModal()" class="btn-secondary">Hủy</button>
-          <button type="button" (click)="handleSaveAccount()" class="btn-primary">Lưu thông tin</button>
-        </div>
+    <p-paginator
+      styleClass="accounts-paginator"
+      [first]="store.page() * store.size()"
+      [rows]="store.size()"
+      [totalRecords]="store.totalElements()"
+      [rowsPerPageOptions]="[12, 24, 48]"
+      (onPageChange)="handlePageChange($event)"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Hiển thị {first} - {last} trong số {totalRecords} tài khoản"
+    />
+  </div>
+</section>
+
+<p-dialog
+  styleClass="accounts-dialog accounts-dialog--wide"
+  header="Tạo tài khoản nội bộ"
+  [modal]="true"
+  [visible]="isCreateDialogVisible()"
+  [draggable]="false"
+  [resizable]="false"
+  (visibleChange)="$event ? null : closeDialog()"
+>
+  <div class="dialog-split-container">
+    <form class="accounts-form" [formGroup]="createForm" (ngSubmit)="submitCreateAccount()">
+      <label class="form-field" for="admin-accounts-create-email">
+        <span>Email</span>
+        <input id="admin-accounts-create-email" pInputText type="email" formControlName="email" placeholder="staff@zentech.vn" />
+        @if (hasControlError('email', 'required')) {
+          <span class="form-error">Email không được để trống.</span>
+        } @else if (hasControlError('email', 'email')) {
+          <span class="form-error">Email không đúng định dạng.</span>
+        }
+      </label>
+
+      <label class="form-field" for="admin-accounts-create-name">
+        <span>Họ tên</span>
+        <input id="admin-accounts-create-name" pInputText type="text" formControlName="fullName" placeholder="Nguyễn Văn A" />
+        @if (hasControlError('fullName', 'required')) {
+          <span class="form-error">Họ tên không được để trống.</span>
+        } @else if (hasControlError('fullName', 'minlength')) {
+          <span class="form-error">Họ tên phải có ít nhất 2 ký tự.</span>
+        }
+      </label>
+
+      <label class="form-field" for="admin-accounts-create-password">
+        <span>Mật khẩu tạm</span>
+        <p-password
+          inputId="admin-accounts-create-password"
+          formControlName="password"
+          [toggleMask]="true"
+          [feedback]="false"
+          placeholder="Tối thiểu 6 ký tự"
+          styleClass="accounts-password"
+        />
+        @if (hasControlError('password', 'required')) {
+          <span class="form-error">Mật khẩu không được để trống.</span>
+        } @else if (hasControlError('password', 'minlength')) {
+          <span class="form-error">Mật khẩu phải có ít nhất 6 ký tự.</span>
+        }
+      </label>
+
+      <label class="form-field" for="admin-accounts-create-role">
+        <span>Vai trò</span>
+        <p-select
+          inputId="admin-accounts-create-role"
+          styleClass="accounts-dialog-dropdown"
+          [options]="internalRoleOptions"
+          formControlName="role"
+          optionLabel="label"
+          optionValue="value"
+          scrollHeight="250px"
+          appendTo="body"
+        />
+      </label>
+
+      <div class="dialog-actions">
+        <button pButton type="button" class="dialog-secondary-btn" id="admin-accounts-create-cancel" (click)="closeDialog()">Hủy</button>
+        <button pButton type="submit" class="dialog-primary-btn" id="admin-accounts-create-submit" [disabled]="store.isSubmitting()">
+          Tạo tài khoản
+        </button>
+      </div>
+    </form>
+
+    <!-- Khu vực Xem trước Live Preview -->
+    <div class="live-preview-panel">
+      <h4 class="preview-title">Xem trước thẻ nhân sự</h4>
+      
+      <div class="preview-card-wrapper">
+        <article class="account-profile-card account-profile-card--preview">
+          <div class="profile-card-header" [style.background]="getAvatarGradient(createForm.controls.email.value)">
+            <p-tag
+              [value]="createForm.controls.role.value"
+              [severity]="getRoleSeverity(createForm.controls.role.value)"
+              [styleClass]="createForm.controls.role.value === AdminAccountRole.ADMIN ? 'role-tag-admin' : ''"
+              class="profile-card-tag"
+            />
+          </div>
+          
+          <div class="profile-card-avatar-wrap">
+            <div class="profile-card-avatar profile-card-avatar--fallback" [style.background]="getAvatarGradient(createForm.controls.email.value)">
+              <span>
+                {{ 
+                  (createForm.controls.fullName.value || 'ZT') 
+                    .trim()
+                    .split(/\s+/)
+                    .slice(0, 2)
+                    .map(part => part.charAt(0).toUpperCase())
+                    .join('') || 'ZT'
+                }}
+              </span>
+            </div>
+          </div>
+
+          <div class="profile-card-body">
+            <h3 class="profile-card-name">{{ createForm.controls.fullName.value || 'Chưa cập nhật tên' }}</h3>
+            
+            <div class="profile-card-info-item">
+              <svg lucideMail [attr.stroke-width]="1.8"></svg>
+              <span>{{ createForm.controls.email.value || 'chưa_nhập_email@zentech.vn' }}</span>
+            </div>
+
+            <div class="profile-card-info-item">
+              <svg lucideUser [attr.stroke-width]="1.8"></svg>
+              <span class="preview-active-status">Trạng thái: Hoạt động (Mặc định)</span>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
   </div>
-}
+</p-dialog>
+
+<p-dialog
+  styleClass="accounts-dialog"
+  header="Cập nhật vai trò"
+  [modal]="true"
+  [visible]="isRoleDialogVisible()"
+  [draggable]="false"
+  [resizable]="false"
+  (visibleChange)="$event ? null : closeDialog()"
+>
+  <div class="role-dialog-body">
+    @if (store.selectedAccount(); as selectedAccount) {
+      <div class="role-target">
+        @if (getAvatarUrl(selectedAccount); as avatarUrl) {
+          <img class="account-avatar" [src]="avatarUrl" [alt]="selectedAccount.displayName" />
+        } @else {
+          <span class="account-avatar account-avatar--fallback" [style.background]="getAvatarGradient(selectedAccount.email)">{{ getAccountInitials(selectedAccount) }}</span>
+        }
+        <div class="account-copy">
+          <strong>{{ selectedAccount.displayName || 'Chưa cập nhật tên' }}</strong>
+          <span>{{ selectedAccount.email }}</span>
+        </div>
+      </div>
+    }
+
+    <label class="form-field" for="admin-accounts-edit-role-select">
+      <span>Vai trò mới</span>
+      <p-select
+        inputId="admin-accounts-edit-role-select"
+        styleClass="accounts-dialog-dropdown"
+        [options]="roleFilterOptions.slice(1)"
+        [ngModel]="selectedRoleForEdit()"
+        optionLabel="label"
+        optionValue="value"
+        scrollHeight="250px"
+        appendTo="body"
+        (onChange)="selectedRoleForEdit.set($event.value)"
+      />
+    </label>
+
+    <div class="dialog-actions">
+      <button pButton type="button" class="dialog-secondary-btn" id="admin-accounts-edit-role-cancel" (click)="closeDialog()">Hủy</button>
+      <button pButton type="button" class="dialog-primary-btn" id="admin-accounts-edit-role-submit" [disabled]="store.isSubmitting()" (click)="submitRoleUpdate()">
+        Lưu vai trò
+      </button>
+    </div>
+  </div>
+</p-dialog>

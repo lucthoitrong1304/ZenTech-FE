@@ -138,6 +138,14 @@ export class AuthStorageService {
     }
   }
 
+  updateRoles(roles: string[]): void {
+    const session = this.getSession();
+    if (session) {
+      session.roles = roles;
+      localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+    }
+  }
+
   clear(): void {
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);

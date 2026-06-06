@@ -1,11 +1,12 @@
 import { HttpErrorResponse, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { ErrorStateService } from '../errors/error-state.service';
 import { AuthRefreshService } from '../services/auth-refresh.service';
 import { AuthStorageService } from '../services/auth-storage.service';
 import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../tokens/api-context.token';
+import { AuthSessionStore } from '../../site-management/auth/data-access/store/auth-session.store';
 
 type RefreshState =
   | { status: 'idle' }
@@ -22,6 +23,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const errorStateService = inject(ErrorStateService);
   const authRefreshService = inject(AuthRefreshService);
   const authStorageService = inject(AuthStorageService);
+  const injector = inject(Injector);
   const skipAuth = req.context.get(SKIP_AUTH_TOKEN);
   const skipGlobalError = req.context.get(SKIP_GLOBAL_ERROR);
 
@@ -39,6 +41,22 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }
 
         return handle401Error(req, next, authRefreshService, authStorageService, router);
+      }
+
+      // Xử lý riêng cho 403 Forbidden (Không có quyền)
+      if (error.status === 403) {
+        const currentUrl = router.url;
+        if (currentUrl.startsWith('/management') || currentUrl.startsWith('/admin')) {
+          // Cập nhật lại role của user thành CUSTOMER vì đã bị chặn truy cập quản trị
+          try {
+            const authSessionStore = injector.get(AuthSessionStore);
+            authSessionStore.updateUserRoles(['ROLE_CUSTOMER']);
+          } catch (e) {
+            console.error('Không thể cập nhật vai trò người dùng trong interceptor:', e);
+          }
+          // Chuyển hướng người dùng về trang chủ
+          router.navigate(['/']);
+        }
       }
 
       // Xử lý các lỗi hệ thống/mạng khác
