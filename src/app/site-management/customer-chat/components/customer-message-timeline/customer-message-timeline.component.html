@@ -74,7 +74,11 @@
                 </div>
               </div>
             } @else {
-              <p>{{ message.body }}</p>
+              @if (message.sender === 'AI') {
+                <markdown class="customer-ai-markdown" [data]="message.body"></markdown>
+              } @else {
+                <p>{{ message.body }}</p>
+              }
 
               @if (message.attachments.length > 0) {
                 <div class="grid gap-2">
