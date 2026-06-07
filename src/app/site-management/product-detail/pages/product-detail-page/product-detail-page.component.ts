@@ -18,6 +18,8 @@ import { ProductReviewDraft } from '../../data-access/models/product-detail-view
 import { AddReviewModalComponent } from '../../components/add-review-modal/add-review-modal.component';
 import { ProductDetailGalleryComponent } from '../../components/product-detail-gallery/product-detail-gallery.component';
 import { ProductReviewListComponent } from '../../components/product-review-list/product-review-list.component';
+import { ClientLogService } from '../../../../core/logging/client-log.service';
+import { ClientLogEventType } from '../../../../core/logging/client-log.model';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -46,6 +48,7 @@ export class ProductDetailPageComponent {
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   protected readonly cartStore = inject(CartStore);
+  private readonly clientLogService = inject(ClientLogService);
 
   readonly navItems = this.categoryNavigationStore.navItems;
   readonly currentUser = this.authSessionStore.currentUser;
@@ -107,6 +110,23 @@ export class ProductDetailPageComponent {
         if (!this.selectedImage()) {
           this.selectedImage.set(image);
         }
+      }
+    });
+
+    effect(() => {
+      const product = this.productDetailStore.product();
+
+      if (product) {
+        untracked(() => {
+          this.clientLogService.info(
+            ClientLogEventType.ProductViewed,
+            `Người dùng xem chi tiết sản phẩm ${product.name}.`,
+            {
+              routeUrl: this.router.url,
+              productId: product.id,
+            },
+          );
+        });
       }
     });
 
@@ -208,6 +228,15 @@ export class ProductDetailPageComponent {
     }
 
     this.cartStore.addItem(draft);
+    this.clientLogService.info(
+      ClientLogEventType.CartItemAdded,
+      `Người dùng thêm sản phẩm ${draft.productName} vào giỏ hàng.`,
+      {
+        routeUrl: this.router.url,
+        productId: draft.productId,
+        quantity: draft.quantity,
+      },
+    );
     this.toastService.success(`${draft.productName} đã được thêm vào giỏ hàng.`);
   }
 
@@ -225,6 +254,16 @@ export class ProductDetailPageComponent {
     }
 
     this.cartStore.addItem(draft);
+    this.clientLogService.info(
+      ClientLogEventType.CartItemAdded,
+      `Người dùng mua ngay sản phẩm ${draft.productName}.`,
+      {
+        routeUrl: this.router.url,
+        productId: draft.productId,
+        quantity: draft.quantity,
+        result: 'BuyNow',
+      },
+    );
     this.router.navigate(['/cart']);
   }
 

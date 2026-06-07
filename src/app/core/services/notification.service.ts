@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ApiService } from '../api/api.service';
 import { NOTIFICATION_API_ENDPOINTS } from '../api/notification-api-endpoints';
 import { INotification, IUnreadCountResponse, IPageResponse } from '../models/notification.model';
@@ -17,7 +17,9 @@ export class NotificationService {
   }
 
   getUnreadCount(): Observable<IUnreadCountResponse> {
-    return this.apiService.get<IUnreadCountResponse>(NOTIFICATION_API_ENDPOINTS.GET_UNREAD_COUNT);
+    return this.apiService.getText(NOTIFICATION_API_ENDPOINTS.GET_UNREAD_COUNT).pipe(
+      map(countText => ({ count: Number(countText) }))
+    );
   }
 
   markAsRead(id: string): Observable<string> {
