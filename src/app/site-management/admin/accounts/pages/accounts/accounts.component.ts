@@ -214,7 +214,11 @@ export class AccountsComponent implements OnInit {
 
   protected getAccountInitials(account: AccountSummary): string {
     const name = account.displayName || account.email;
-    const initials = name
+    return this.getInitials(name);
+  }
+
+  protected getInitials(name: string): string {
+    const initials = (name || 'ZT')
       .trim()
       .split(/\s+/)
       .slice(0, 2)

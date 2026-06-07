@@ -429,14 +429,7 @@
           <div class="profile-card-avatar-wrap">
             <div class="profile-card-avatar profile-card-avatar--fallback" [style.background]="getAvatarGradient(createForm.controls.email.value)">
               <span>
-                {{ 
-                  (createForm.controls.fullName.value || 'ZT') 
-                    .trim()
-                    .split(/\s+/)
-                    .slice(0, 2)
-                    .map(part => part.charAt(0).toUpperCase())
-                    .join('') || 'ZT'
-                }}
+                {{ getInitials(createForm.controls.fullName.value) }}
               </span>
             </div>
           </div>
