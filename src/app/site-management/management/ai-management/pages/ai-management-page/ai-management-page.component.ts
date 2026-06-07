@@ -5,10 +5,12 @@ import {
   LucideBot,
   LucideDatabase,
   LucideFileText,
+  LucideFilter,
   LucidePlay,
   LucidePlus,
   LucideRefreshCw,
   LucideSave,
+  LucideSearch,
   LucideTrash2,
   LucideUpload,
 } from '@lucide/angular';
@@ -49,10 +51,12 @@ interface DemoMessage {
     LucideBot,
     LucideDatabase,
     LucideFileText,
+    LucideFilter,
     LucidePlay,
     LucidePlus,
     LucideRefreshCw,
     LucideSave,
+    LucideSearch,
     LucideTrash2,
     LucideUpload,
     MarkdownComponent,
@@ -70,13 +74,16 @@ export class AiManagementPageComponent {
   protected readonly datasets = signal<AiDataset[]>([]);
   protected readonly detailTab = signal<AgentDetailTab>('overview');
   protected readonly detailTabs: { id: AgentDetailTab; label: string; icon: string }[] = [
-    { id: 'overview', label: 'Overview', icon: 'bot' },
-    { id: 'settings', label: 'Settings', icon: 'save' },
-    { id: 'datasets', label: 'Datasets', icon: 'database' },
+    { id: 'overview', label: 'Tổng quan', icon: 'bot' },
+    { id: 'settings', label: 'Cấu hình', icon: 'save' },
+    { id: 'datasets', label: 'Dataset', icon: 'database' },
     { id: 'demo', label: 'Demo', icon: 'play' },
   ];
   protected readonly selectedAgentId = signal<string | null>(null);
   protected readonly creatingNewAgent = signal(false);
+  protected readonly agentKeyword = signal('');
+  protected readonly agentStatusFilter = signal<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
+  protected readonly agentRoleFilter = signal<'ALL' | AiRole>('ALL');
   protected readonly agentDraft = signal<AiAgentPayload>(createEmptyAgentPayload());
   protected readonly datasetDraft = signal<AiDatasetPayload>({
     name: '',
@@ -104,12 +111,25 @@ export class AiManagementPageComponent {
     const ids = new Set(this.agentDraft().datasetIds);
     return this.datasets().filter(dataset => !ids.has(dataset.id));
   });
+  protected readonly filteredAgents = computed(() => {
+    const keyword = this.agentKeyword().trim().toLowerCase();
+    const status = this.agentStatusFilter();
+    const role = this.agentRoleFilter();
+
+    return this.agents().filter(agent => {
+      const matchesKeyword =
+        !keyword ||
+        agent.name.toLowerCase().includes(keyword) ||
+        (agent.description ?? '').toLowerCase().includes(keyword) ||
+        agent.assignedRoles.some(item => item.toLowerCase().includes(keyword));
+      const matchesStatus = status === 'ALL' || agent.status === status;
+      const matchesRole = role === 'ALL' || agent.assignedRoles.includes(role);
+      return matchesKeyword && matchesStatus && matchesRole;
+    });
+  });
   protected readonly activeAgentsCount = computed(() => this.agents().filter(agent => agent.status === 'ACTIVE').length);
   protected readonly readyDocumentsCount = computed(() =>
     this.datasets().flatMap(dataset => dataset.documents).filter(document => document.ingestStatus === 'READY').length
-  );
-  protected readonly failedDocumentsCount = computed(() =>
-    this.datasets().flatMap(dataset => dataset.documents).filter(document => document.ingestStatus === 'FAILED').length
   );
 
   constructor() {
@@ -130,12 +150,12 @@ export class AiManagementPageComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: agents => this.agents.set(agents),
-        error: () => this.toastService.error('Khong the tai danh sach AI agent.'),
+        error: () => this.toastService.error('Không thể tải danh sách AI agent.'),
       });
 
     this.aiManagementService.getDatasets().subscribe({
       next: datasets => this.datasets.set(datasets),
-      error: () => this.toastService.error('Khong the tai dataset AI.'),
+      error: () => this.toastService.error('Không thể tải dataset AI.'),
     });
   }
 
@@ -174,6 +194,22 @@ export class AiManagementPageComponent {
     this.detailTab.set(tab);
   }
 
+  protected setAgentStatusFilter(value: string): void {
+    if (value === 'ACTIVE' || value === 'INACTIVE') {
+      this.agentStatusFilter.set(value);
+      return;
+    }
+    this.agentStatusFilter.set('ALL');
+  }
+
+  protected setAgentRoleFilter(value: string): void {
+    if (this.roles.includes(value as AiRole)) {
+      this.agentRoleFilter.set(value as AiRole);
+      return;
+    }
+    this.agentRoleFilter.set('ALL');
+  }
+
   protected updateAgentDraft(patch: Partial<AiAgentPayload>): void {
     this.agentDraft.update(current => ({ ...current, ...patch }));
   }
@@ -201,7 +237,7 @@ export class AiManagementPageComponent {
   protected saveAgent(): void {
     const payload = this.agentDraft();
     if (!payload.name.trim() || !payload.systemPrompt.trim() || payload.assignedRoles.length === 0) {
-      this.toastService.error('Vui long nhap ten, prompt va it nhat mot role cho agent.');
+      this.toastService.error('Vui lòng nhập tên, prompt và ít nhất một role cho agent.');
       return;
     }
 
@@ -218,9 +254,9 @@ export class AiManagementPageComponent {
           this.upsertAgent(agent);
           this.creatingNewAgent.set(false);
           this.selectAgent(agent);
-          this.toastService.success('Da luu AI agent.');
+          this.toastService.success('Đã lưu AI agent.');
         },
-        error: err => this.toastService.error(readError(err, 'Khong the luu AI agent.')),
+        error: err => this.toastService.error(readError(err, 'Không thể lưu AI agent.')),
       });
   }
 
@@ -238,14 +274,14 @@ export class AiManagementPageComponent {
         next: agent => {
           this.upsertAgent(agent);
           this.selectAgent(agent);
-          this.toastService.success('Da cap nhat dataset cho agent.');
+          this.toastService.success('Đã cập nhật dataset cho agent.');
         },
-        error: err => this.toastService.error(readError(err, 'Khong the cap nhat dataset cho agent.')),
+        error: err => this.toastService.error(readError(err, 'Không thể cập nhật dataset cho agent.')),
       });
   }
 
   protected deleteAgent(agent: AiAgent): void {
-    if (!confirm(`Xoa agent "${agent.name}"?`)) {
+    if (!confirm(`Xóa agent "${agent.name}"?`)) {
       return;
     }
 
@@ -257,9 +293,9 @@ export class AiManagementPageComponent {
           this.agentDraft.set(createEmptyAgentPayload());
           this.creatingNewAgent.set(false);
         }
-        this.toastService.success('Da xoa AI agent.');
+        this.toastService.success('Đã xóa AI agent.');
       },
-      error: () => this.toastService.error('Khong the xoa AI agent.'),
+      error: () => this.toastService.error('Không thể xóa AI agent.'),
     });
   }
 
@@ -270,7 +306,7 @@ export class AiManagementPageComponent {
   protected createDataset(): void {
     const payload = this.datasetDraft();
     if (!payload.name.trim()) {
-      this.toastService.error('Vui long nhap ten dataset.');
+      this.toastService.error('Vui lòng nhập tên dataset.');
       return;
     }
 
@@ -286,9 +322,9 @@ export class AiManagementPageComponent {
             this.saveAgentDatasets();
           }
           this.datasetDraft.set({ name: '', description: '', status: 'ACTIVE' });
-          this.toastService.success('Da tao dataset.');
+          this.toastService.success('Đã tạo dataset.');
         },
-        error: () => this.toastService.error('Khong the tao dataset.'),
+        error: () => this.toastService.error('Không thể tạo dataset.'),
       });
   }
 
@@ -326,9 +362,9 @@ export class AiManagementPageComponent {
       .subscribe({
         next: document => {
           this.upsertDocument(datasetId, document);
-          this.toastService.success('Da upload va ingest tai lieu.');
+          this.toastService.success('Đã upload và ingest tài liệu.');
         },
-        error: err => this.toastService.error(readError(err, 'Khong the upload tai lieu.')),
+        error: err => this.toastService.error(readError(err, 'Không thể upload tài liệu.')),
       });
   }
 
@@ -336,14 +372,14 @@ export class AiManagementPageComponent {
     this.aiManagementService.reingestDocument(document.id).subscribe({
       next: updatedDocument => {
         this.upsertDocument(document.datasetId, updatedDocument);
-        this.toastService.success('Da reingest tai lieu.');
+        this.toastService.success('Đã reingest tài liệu.');
       },
-      error: () => this.toastService.error('Khong the reingest tai lieu.'),
+      error: () => this.toastService.error('Không thể reingest tài liệu.'),
     });
   }
 
   protected deleteDocument(document: AiDocument): void {
-    if (!confirm(`Xoa tai lieu "${document.fileName}"?`)) {
+    if (!confirm(`Xóa tài liệu "${document.fileName}"?`)) {
       return;
     }
 
@@ -360,9 +396,9 @@ export class AiManagementPageComponent {
               : dataset
           )
         );
-        this.toastService.success('Da xoa tai lieu.');
+        this.toastService.success('Đã xóa tài liệu.');
       },
-      error: () => this.toastService.error('Khong the xoa tai lieu.'),
+      error: () => this.toastService.error('Không thể xóa tài liệu.'),
     });
   }
 
@@ -370,7 +406,7 @@ export class AiManagementPageComponent {
     const agentId = this.selectedAgentId();
     const message = this.demoMessage().trim();
     if (!agentId || !message) {
-      this.toastService.error('Chon agent va nhap cau hoi demo.');
+      this.toastService.error('Chọn agent và nhập câu hỏi demo.');
       return;
     }
 
@@ -406,7 +442,7 @@ export class AiManagementPageComponent {
         error: () => {
           this.demoMessages.update(messages => messages.filter(item => item.id !== userMessage.id));
           this.demoMessage.set(message);
-          this.toastService.error('Khong the demo agent.');
+          this.toastService.error('Không thể demo agent.');
         },
       });
   }
@@ -423,6 +459,34 @@ export class AiManagementPageComponent {
 
   protected roleAttached(role: AiRole): boolean {
     return this.agentDraft().assignedRoles.includes(role);
+  }
+
+  protected roleLabel(role: AiRole): string {
+    const labels: Record<AiRole, string> = {
+      ADMIN: 'Admin',
+      OWNER: 'Owner',
+      MANAGER: 'Manager',
+      EMPLOYEE: 'Nhân viên',
+      CUSTOMER: 'Khách hàng',
+    };
+    return labels[role];
+  }
+
+  protected documentStatusLabel(status: AiDocument['ingestStatus']): string {
+    const labels: Record<AiDocument['ingestStatus'], string> = {
+      UPLOADED: 'Đã tải lên',
+      PROCESSING: 'Đang xử lý',
+      READY: 'Sẵn sàng',
+      FAILED: 'Lỗi ingest',
+    };
+    return labels[status];
+  }
+
+  protected documentStatusTone(status: AiDocument['ingestStatus']): string {
+    if (status === 'READY') return 'ready';
+    if (status === 'FAILED') return 'failed';
+    if (status === 'PROCESSING') return 'processing';
+    return 'uploaded';
   }
 
   protected formatFileSize(size: number): string {
