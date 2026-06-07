@@ -175,8 +175,8 @@ export const managementRoutes: Routes = [
           primaryAction: 'Thiết lập AI',
         },
         loadComponent: () =>
-          import('./pages/management-placeholder/management-placeholder.component').then(
-            m => m.ManagementPlaceholderComponent
+          import('./ai-management/pages/ai-management-page/ai-management-page.component').then(
+            m => m.AiManagementPageComponent
           ),
       },
       {
