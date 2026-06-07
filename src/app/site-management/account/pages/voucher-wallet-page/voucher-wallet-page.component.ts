@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { LucideCopy, LucideShare2, LucideTicket } from '@lucide/angular';
+import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { VoucherStatus } from '../../data-access/models/account.models';
 import { AccountStore } from '../../data-access/store/account.store';
 
@@ -12,6 +13,7 @@ import { AccountStore } from '../../data-access/store/account.store';
 })
 export class VoucherWalletPageComponent {
   protected readonly accountStore = inject(AccountStore);
+  private readonly toastService = inject(ToastService);
   protected readonly tabs: { label: string; status: VoucherStatus }[] = [
     { label: 'Active', status: 'active' },
     { label: 'Used', status: 'used' },
@@ -33,6 +35,36 @@ export class VoucherWalletPageComponent {
       case 'primary':
       default:
         return 'bg-[#ffc700] text-[#251a00]';
+    }
+  }
+
+  protected copyVoucherCode(code: string): void {
+    this.copyText(code)
+      .then(() => this.toastService.success(`Da copy ma ${code}`))
+      .catch(() => this.toastService.error('Khong the copy ma voucher. Vui long copy thu cong.'));
+  }
+
+  private async copyText(value: string): Promise<void> {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+      const copied = document.execCommand('copy');
+      if (!copied) {
+        throw new Error('Copy command failed');
+      }
+    } finally {
+      document.body.removeChild(textarea);
     }
   }
 }

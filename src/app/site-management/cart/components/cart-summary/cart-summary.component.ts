@@ -13,5 +13,7 @@ export class CartSummaryComponent {
   readonly itemCount = input(0);
   readonly subtotal = input(0);
   readonly total = input(0);
+  readonly canCheckout = input(true);
+  readonly checkoutLabel = input('Proceed to Checkout');
   readonly checkout = output<void>();
 }
