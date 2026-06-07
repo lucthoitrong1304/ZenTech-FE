@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, pipe, switchMap, tap } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AdminLogsService } from '../services/admin-logs.service';
 import {
@@ -23,6 +23,7 @@ import {
 
 interface AdminState {
   logs: SystemLog[];
+  issueLogs: SystemLog[];
   isLoadingLogs: boolean;
   incidents: SystemIncident[];
   tickets: SupportTicket[];
@@ -355,6 +356,7 @@ const mockPermissions: PermissionItem[] = [
 
 const initialState: AdminState = {
   logs: [],
+  issueLogs: [],
   isLoadingLogs: false,
   incidents: mockIncidents,
   tickets: mockTickets,
@@ -372,7 +374,7 @@ const initialState: AdminState = {
 export const AdminStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  withComputed(({ logs, logFilter, logSearch, incidents, incidentFilter, tickets, ticketFilter, accounts, accountSearch, activityLogs, activitySearch }) => ({
+  withComputed(({ logs, issueLogs, logFilter, logSearch, incidents, incidentFilter, tickets, ticketFilter, accounts, accountSearch, activityLogs, activitySearch }) => ({
     filteredLogs: computed(() => {
       let result = logs();
       const filterVal = logFilter();
@@ -388,6 +390,21 @@ export const AdminStore = signalStore(
           log.details.toLowerCase().includes(searchVal)
         );
       }
+      return result;
+    }),
+
+    filteredIssueLogs: computed(() => {
+      const searchVal = logSearch().toLowerCase().trim();
+      let result = issueLogs();
+
+      if (searchVal) {
+        result = result.filter(log =>
+          log.message.toLowerCase().includes(searchVal) ||
+          log.category.toLowerCase().includes(searchVal) ||
+          log.details.toLowerCase().includes(searchVal)
+        );
+      }
+
       return result;
     }),
 
@@ -498,6 +515,26 @@ export const AdminStore = signalStore(
         )
       ),
 
+      loadIssueLogs: rxMethod<{ search: string; traceId: string }>(
+        pipe(
+          switchMap(({ search, traceId }) =>
+            forkJoin([
+              adminLogsService.getLogs(LogLevel.WARN, search, traceId, 500),
+              adminLogsService.getLogs(LogLevel.ERROR, search, traceId, 500),
+            ]).pipe(
+              tap(([warnLogs, errorLogs]) => {
+                patchState(store, { issueLogs: [...warnLogs, ...errorLogs] });
+              }),
+              catchError((err) => {
+                console.error(err);
+                toastService.error('Không thể tải danh sách issue');
+                return EMPTY;
+              })
+            )
+          )
+        )
+      ),
+
       explainLog(
         logMessage: string,
         logDetails: string,
@@ -539,6 +576,17 @@ export const AdminStore = signalStore(
 
       setActivitySearch(search: string) {
         patchState(store, { activitySearch: search });
+      },
+
+      appendLog(logItem: SystemLog) {
+        patchState(store, (state) => {
+          if (state.logs.some(l => l.id === logItem.id)) {
+            return state;
+          }
+          return {
+            logs: [logItem, ...state.logs].slice(0, 1000)
+          };
+        });
       },
 
       clearLogs() {

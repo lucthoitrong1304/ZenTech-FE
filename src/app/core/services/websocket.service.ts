@@ -1,12 +1,12 @@
 import { inject, Injectable } from '@angular/core';
-import { Client, IMessage } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AuthStorageService } from './auth-storage.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class NotificationWebsocketService {
+export class WebsocketService {
   private readonly authStorageService = inject(AuthStorageService);
   private client: Client | null = null;
   private readonly connectionState$ = new BehaviorSubject<boolean>(false);
@@ -33,8 +33,8 @@ export class NotificationWebsocketService {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       beforeConnect: () => {
-        const token = this.authStorageService.getAccessToken();
-        this.client!.connectHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+        const currentToken = this.authStorageService.getAccessToken();
+        this.client!.connectHeaders = currentToken ? { Authorization: `Bearer ${currentToken}` } : {};
       },
       onConnect: () => {
         this.connectionState$.next(true);
@@ -43,7 +43,7 @@ export class NotificationWebsocketService {
         this.connectionState$.next(false);
       },
       onStompError: (frame) => {
-        console.error('[Notification WS Error]', frame.headers['message']);
+        console.error('[System WS Error]', frame.headers['message']);
         this.connectionState$.next(false);
       },
       onWebSocketClose: () => {
@@ -64,7 +64,7 @@ export class NotificationWebsocketService {
 
   subscribe<T>(destination: string): Observable<T> {
     return new Observable<T>((observer) => {
-      let stompSubscription: any = null;
+      let stompSubscription: StompSubscription | null = null;
 
       const sub = this.connectionState$.subscribe((connected) => {
         if (connected && this.client && this.client.connected) {
@@ -73,7 +73,7 @@ export class NotificationWebsocketService {
               const body = JSON.parse(message.body) as T;
               observer.next(body);
             } catch (e) {
-              console.error('[Notification WS] Failed to parse payload', e);
+              console.error(`[System WS] Failed to parse payload for ${destination}`, e);
             }
           });
         }

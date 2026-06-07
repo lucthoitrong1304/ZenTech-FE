@@ -5,7 +5,7 @@ import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { catchError, EMPTY, pipe, Subscription, mergeMap, tap, switchMap } from 'rxjs';
 import { INotification } from '../models/notification.model';
 import { NotificationService } from '../services/notification.service';
-import { NotificationWebsocketService } from '../services/notification-websocket.service';
+import { WebsocketService } from '../services/websocket.service';
 
 interface NotificationState {
   unreadCount: number;
@@ -42,7 +42,7 @@ export const NotificationStore = signalStore(
   withMethods((
     store,
     notificationService = inject(NotificationService),
-    wsService = inject(NotificationWebsocketService)
+    wsService = inject(WebsocketService)
   ) => {
     let wsSubscription: Subscription | null = null;
 

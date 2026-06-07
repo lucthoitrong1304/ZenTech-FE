@@ -20,7 +20,7 @@ export class AdminLogsService {
     level: string = 'ALL',
     search: string = '',
     traceId: string = '',
-    limit: number = 100
+    limit: number = 500
   ): Observable<SystemLog[]> {
     const url = `${this.adminLogsUrl}?level=${level}&search=${encodeURIComponent(search)}&traceId=${traceId}&limit=${limit}`;
     return this.apiService.get<SystemLog[]>(url);
