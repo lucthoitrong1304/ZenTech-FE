@@ -111,17 +111,67 @@ function logHttpFailure(
     return;
   }
 
-  clientLogService.error(
-    ClientLogEventType.HttpRequestFailed,
-    `${req.method} ${req.url} thất bại với mã ${error.status}.`,
-    {
+  const status = error.status;
+
+  // 1. statusCode từ 200 đến 299 => Bỏ qua hoàn toàn (không ghi ERROR / HttpRequestFailed)
+  if (status >= 200 && status < 300) {
+    return;
+  }
+
+  const traceId = req.headers.get('X-Trace-Id') ?? undefined;
+  const reason = error.statusText || error.message;
+
+  // 2. Request bị network error, timeout, CORS, server không phản hồi => ERROR với statusCode = 0
+  if (status === 0 || status === null || status === undefined) {
+    clientLogService.error(
+      ClientLogEventType.HttpRequestFailed,
+      `${req.method} ${req.url} thất bại do lỗi kết nối mạng (Network Error / Timeout / CORS / Server Unreachable).`,
+      {
+        method: req.method,
+        apiPath: req.url,
+        statusCode: 0,
+        traceId,
+        reason: reason || 'Network Error or Server Unreachable',
+      },
+    );
+    return;
+  }
+
+  // 3. statusCode từ 400 đến 499 => WARN hoặc ERROR tùy trường hợp
+  if (status >= 400 && status < 500) {
+    const isWarningStatus = [400, 401, 403, 404, 409].includes(status);
+    const message = `${req.method} ${req.url} thất bại với mã ${status}.`;
+    const context = {
       method: req.method,
       apiPath: req.url,
-      statusCode: error.status,
-      traceId: req.headers.get('X-Trace-Id') ?? undefined,
-      reason: error.statusText || error.message,
-    },
-  );
+      statusCode: status,
+      traceId,
+      reason,
+    };
+
+    if (isWarningStatus) {
+      clientLogService.warn(ClientLogEventType.HttpRequestFailed, message, context);
+    } else {
+      clientLogService.error(ClientLogEventType.HttpRequestFailed, message, context);
+    }
+    return;
+  }
+
+  // 4. statusCode từ 500 trở lên => ERROR
+  if (status >= 500) {
+    clientLogService.error(
+      ClientLogEventType.HttpRequestFailed,
+      `${req.method} ${req.url} thất bại với mã ${status}.`,
+      {
+        method: req.method,
+        apiPath: req.url,
+        statusCode: status,
+        traceId,
+        reason,
+      },
+    );
+    return;
+  }
 }
 
 // Hàm phụ trợ xử lý luồng 401

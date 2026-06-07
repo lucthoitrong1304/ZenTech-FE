@@ -5,14 +5,21 @@ import { ClientLogEventType } from '../logging/client-log.model';
 import { ClientLogService } from '../logging/client-log.service';
 import { SKIP_CLIENT_LOG } from '../tokens/api-context.token';
 
-const LOGGED_SUCCESS_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+const LOGGED_SUCCESS_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']);
+const EXCLUDED_SUCCESS_URLS = [
+  '/api/notifications',
+  '/api/notifications/unread-count',
+  '/api/logs/client'
+];
 
 export const httpClientLogInterceptor: HttpInterceptorFn = (req, next) => {
   const clientLogService = inject(ClientLogService);
   const startedAt = performance.now();
   const traceId = req.headers.get('X-Trace-Id') ?? undefined;
 
-  if (req.context.get(SKIP_CLIENT_LOG) || req.url.includes('/logs/client')) {
+  const isExcludedUrl = EXCLUDED_SUCCESS_URLS.some(url => req.url.includes(url));
+
+  if (req.context.get(SKIP_CLIENT_LOG) || isExcludedUrl) {
     return next(req);
   }
 
