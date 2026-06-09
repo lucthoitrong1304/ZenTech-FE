@@ -1,0 +1,142 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="close.emit()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [showHeader]="false"
+  styleClass="adjust-p-dialog"
+>
+  <div class="dialog-wrapper">
+    <!-- Header -->
+    <header class="dialog-header">
+      <div class="dialog-title-group">
+        <svg lucideWarehouse class="title-icon"></svg>
+        <div>
+          <h2>Cập nhật kho hàng</h2>
+          <p>Điều chỉnh tồn kho thủ công cho biến thể sản phẩm.</p>
+        </div>
+      </div>
+      <button type="button" class="close-btn" (click)="close.emit()">
+        <svg lucideX class="close-icon"></svg>
+      </button>
+    </header>
+
+    @if (item()) {
+      <div class="product-info-panel">
+        <div class="product-details">
+          @if (item()?.representativeImageUrl) {
+            <img [src]="item()!.representativeImageUrl" [alt]="item()!.productName" class="product-img" />
+          } @else {
+            <div class="product-no-img">
+              <svg lucideWarehouse class="fallback-icon"></svg>
+            </div>
+          }
+          <div class="product-text">
+            <h3>{{ item()!.productName }}</h3>
+            <span class="variant-badge" [style.border-color]="item()!.colorCode || '#E5E7EB'">
+              {{ item()!.variantName || 'Mặc định' }}
+            </span>
+          </div>
+        </div>
+        <div class="stock-status-panel">
+          <span class="stock-label">Tồn kho hiện tại</span>
+          <strong class="stock-value">{{ item()!.stockQuantity }}</strong>
+        </div>
+      </div>
+
+      <form (submit)="$event.preventDefault()" class="dialog-form">
+        <!-- Error alert -->
+        @if (errorMessage()) {
+          <div class="submit-error">
+            <svg lucideTriangleAlert class="alert-icon"></svg>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <!-- 1. Chọn loại giao dịch -->
+        <div class="form-group">
+          <label class="form-label">Loại giao dịch <strong class="required-asterisk">*</strong></label>
+          <div class="toggle-buttons">
+            <button
+              type="button"
+              class="toggle-btn toggle-btn--import"
+              [class.active]="type() === InventoryTransactionType.IMPORT"
+              (click)="setType(InventoryTransactionType.IMPORT)"
+            >
+              <svg lucidePlusCircle class="btn-icon"></svg>
+              <span>Nhập kho (Tăng tồn)</span>
+            </button>
+            <button
+              type="button"
+              class="toggle-btn toggle-btn--export"
+              [class.active]="type() === InventoryTransactionType.EXPORT"
+              (click)="setType(InventoryTransactionType.EXPORT)"
+            >
+              <svg lucideMinusCircle class="btn-icon"></svg>
+              <span>Xuất kho (Giảm tồn)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- 2. Số lượng -->
+          <div class="form-group form-group--half">
+            <label for="adjustQuantity" class="form-label">Số lượng điều chỉnh <strong class="required-asterisk">*</strong></label>
+            <input
+              id="adjustQuantity"
+              type="number"
+              class="form-input"
+              [ngModel]="quantity()"
+              (ngModelChange)="quantity.set($event)"
+              name="quantity"
+              min="1"
+              required
+            />
+          </div>
+
+          <!-- 3. Lý do điều chỉnh -->
+          <div class="form-group form-group--half">
+            <label for="adjustReason" class="form-label">Lý do điều chỉnh <strong class="required-asterisk">*</strong></label>
+            <select
+              id="adjustReason"
+              class="form-select"
+              [ngModel]="reason()"
+              (ngModelChange)="reason.set($event)"
+              name="reason"
+              required
+            >
+              @for (r of getAvailableReasons(); track r.value) {
+                <option [value]="r.value">{{ r.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- 4. Ghi chú -->
+        <div class="form-group">
+          <label for="adjustNote" class="form-label">Ghi chú</label>
+          <textarea
+            id="adjustNote"
+            rows="3"
+            class="form-textarea"
+            placeholder="Nhập thông tin lý do chi tiết..."
+            [ngModel]="note()"
+            (ngModelChange)="note.set($event)"
+            name="note"
+          ></textarea>
+        </div>
+
+        <!-- Footer -->
+        <footer class="dialog-footer">
+          <button type="button" class="btn-cancel" (click)="close.emit()" [disabled]="saving()">
+            <span>Hủy</span>
+          </button>
+          <button type="button" class="btn-save" (click)="onSubmit()" [disabled]="saving() || quantity() <= 0">
+            <span>{{ saving() ? 'Đang cập nhật...' : 'Cập nhật kho' }}</span>
+          </button>
+        </footer>
+      </form>
+    }
+  </div>
+</p-dialog>

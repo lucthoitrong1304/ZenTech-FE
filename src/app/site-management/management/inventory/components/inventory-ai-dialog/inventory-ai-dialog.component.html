@@ -1,0 +1,46 @@
+<p-dialog
+  [visible]="visible()"
+  (onHide)="close.emit()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [showHeader]="false"
+  styleClass="ai-inventory-dialog"
+>
+  <div class="ai-dialog-container">
+    <!-- Header -->
+    <div class="dialog-header">
+      <div class="header-left">
+        <svg lucideSparkles class="header-icon"></svg>
+        <span class="header-title">Hệ Thống Giám Sát AI - Đề Xuất Nhập Kho</span>
+      </div>
+      <button class="close-btn" (click)="close.emit()">
+        <svg lucideX class="close-icon"></svg>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="dialog-content">
+      @if (loading()) {
+        <div class="loading-container">
+          <div class="spinner-outer">
+            <div class="spinner-inner"></div>
+            <svg lucideCpu class="loading-icon-cpu"></svg>
+          </div>
+          <p class="loading-title">ZenTech AI đang phân tích...</p>
+          <p class="loading-desc">Tính toán tốc độ bán hàng, đối chiếu mức tồn kho tối thiểu và tổng hợp kế hoạch cung ứng.</p>
+        </div>
+      } @else {
+        <div class="report-wrapper">
+          <markdown class="ai-markdown" [data]="content()"></markdown>
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="dialog-footer">
+      <button class="footer-close-btn" (click)="close.emit()">Đóng Báo Cáo</button>
+    </div>
+  </div>
+</p-dialog>
