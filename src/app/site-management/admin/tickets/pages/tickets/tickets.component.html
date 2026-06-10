@@ -1,0 +1,145 @@
+<div class="tck-layout">
+  <!-- Left Side: Tickets List -->
+  <div class="tck-sidebar">
+    <div class="tck-sidebar-header">
+      <h3 class="tck-sidebar-title">Danh sách Ticket hỗ trợ</h3>
+      <div class="tck-filter-row">
+        <button
+          type="button"
+          (click)="handleFilterChange('ALL')"
+          class="tck-filter-btn"
+          [class.tck-filter-btn--active]="activeFilter() === 'ALL'"
+        >
+          Tất cả
+        </button>
+        <button
+          type="button"
+          (click)="handleFilterChange(TicketStatus.OPEN)"
+          class="tck-filter-btn"
+          [class.tck-filter-btn--active]="activeFilter() === TicketStatus.OPEN"
+        >
+          Đang mở
+        </button>
+        <button
+          type="button"
+          (click)="handleFilterChange(TicketStatus.IN_PROGRESS)"
+          class="tck-filter-btn"
+          [class.tck-filter-btn--active]="activeFilter() === TicketStatus.IN_PROGRESS"
+        >
+          Đang xử lý
+        </button>
+        <button
+          type="button"
+          (click)="handleFilterChange(TicketStatus.RESOLVED)"
+          class="tck-filter-btn"
+          [class.tck-filter-btn--active]="activeFilter() === TicketStatus.RESOLVED"
+        >
+          Đã xử lý
+        </button>
+      </div>
+    </div>
+
+    <div class="tck-list">
+      @if (store.filteredTickets().length === 0) {
+        <div class="tck-list-empty">Không tìm thấy ticket nào.</div>
+      } @else {
+        @for (tck of store.filteredTickets(); track tck.id) {
+          <div
+            class="tck-list-item"
+            (click)="selectTicket(tck.id)"
+            [class.tck-list-item--active]="selectedTicketId() === tck.id"
+          >
+            <div class="tck-list-header">
+              <span class="tck-list-name">{{ tck.customerName }}</span>
+              <span class="tck-list-time">{{ tck.createdAt | date:'HH:mm dd/MM' }}</span>
+            </div>
+            <h4 class="tck-list-subject">{{ tck.subject }}</h4>
+            <div class="tck-list-footer">
+              <span class="tck-badge-status" [class]="'status-' + tck.status.toLowerCase()">
+                {{ tck.status === TicketStatus.OPEN ? 'Đang mở' : tck.status === TicketStatus.IN_PROGRESS ? 'Đang xử lý' : tck.status === TicketStatus.RESOLVED ? 'Đã xử lý' : 'Đã đóng' }}
+              </span>
+              <span class="tck-badge-priority" [class]="'priority-' + tck.priority.toLowerCase()">
+                {{ tck.priority }}
+              </span>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Right Side: Ticket Conversation & Response -->
+  <div class="tck-main-pane">
+    @if (!selectedTicketId() || !getSelectedTicket()) {
+      <div class="tck-empty-view">
+        <svg lucideMessageSquare class="tck-empty-icon" [attr.stroke-width]="1.5"></svg>
+        <p class="tck-empty-text">Chọn một Ticket từ danh sách bên trái để phản hồi khách hàng.</p>
+      </div>
+    } @else {
+      @let activeTck = getSelectedTicket()!;
+      <div class="tck-chat-wrapper">
+        <!-- Chat Header -->
+        <div class="tck-chat-header">
+          <div class="tck-chat-title-group">
+            <h3 class="tck-chat-title">{{ activeTck.subject }}</h3>
+            <p class="tck-chat-customer">Khách hàng: {{ activeTck.customerName }} | Mã Ticket: {{ activeTck.id }}</p>
+          </div>
+          <div class="tck-chat-status-area">
+            <label for="ticket-status-select" class="tck-status-label">Trạng thái:</label>
+            <select
+              id="ticket-status-select"
+              [value]="activeTck.status"
+              (change)="handleStatusChange($event)"
+              class="tck-chat-status-select"
+            >
+              <option [value]="TicketStatus.OPEN">Đang mở (Open)</option>
+              <option [value]="TicketStatus.IN_PROGRESS">Đang xử lý (In Progress)</option>
+              <option [value]="TicketStatus.RESOLVED">Đã xử lý (Resolved)</option>
+              <option [value]="TicketStatus.CLOSED">Đã đóng (Closed)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Chat History -->
+        <div class="tck-chat-history">
+          @for (msg of activeTck.messages; track msg.id) {
+            <div class="tck-msg" [class.tck-msg--customer]="msg.sender === TicketMessageSender.CUSTOMER" [class.tck-msg--agent]="msg.sender === TicketMessageSender.SUPPORT_AGENT">
+              <div class="tck-bubble">
+                <div class="tck-bubble-header">
+                  <span class="tck-bubble-sender">
+                    @if (msg.sender === TicketMessageSender.CUSTOMER) {
+                      {{ activeTck.customerName }} (Khách)
+                    } @else {
+                      ZenTech Support (Admin)
+                    }
+                  </span>
+                </div>
+                <p class="tck-bubble-content">{{ msg.content }}</p>
+                <span class="tck-bubble-time">{{ msg.timestamp | date:'HH:mm dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Chat Input Composer -->
+        <div class="tck-chat-input-area">
+          <form (submit)="handleSendReply(); $event.preventDefault()" class="tck-chat-form">
+            <input
+              type="text"
+              [(ngModel)]="replyText"
+              name="replyText"
+              placeholder="Nhập nội dung phản hồi khách hàng..."
+              class="tck-chat-input"
+              required
+              autocomplete="off"
+            />
+            <button type="submit" class="tck-chat-send-btn" aria-label="Gửi tin nhắn">
+              <svg lucideSend [attr.stroke-width]="2"></svg>
+              <span>Gửi phản hồi</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    }
+  </div>
+</div>

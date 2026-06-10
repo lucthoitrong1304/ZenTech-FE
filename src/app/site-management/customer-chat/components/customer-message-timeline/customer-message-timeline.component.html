@@ -16,7 +16,10 @@
     @for (message of messages(); track message.id) {
       <article
         [id]="'msg-' + message.id"
-        class="message-bubble flex max-w-[86%] gap-3"
+        class="message-bubble flex gap-3"
+        [class.ai-message]="message.sender === 'AI'"
+        [class.max-w-[760px]]="message.sender === 'AI'"
+        [class.max-w-[72%]]="message.sender !== 'AI'"
         [class.ml-auto]="message.sender === 'CUSTOMER'"
         [class.flex-row-reverse]="message.sender === 'CUSTOMER'"
       >
@@ -26,6 +29,7 @@
           [class.text-[#101010]]="message.sender === 'CUSTOMER'"
           [class.bg-[#101010]]="message.sender === 'AI'"
           [class.text-[#ffc700]]="message.sender === 'AI'"
+          [class.shadow-[0_12px_28px_-18px_rgba(16,16,16,0.85)]]="message.sender === 'AI'"
           [class.bg-[#4b41e1]]="message.sender === 'STAFF'"
           [class.text-white]="message.sender === 'STAFF'"
         >
@@ -57,11 +61,15 @@
             [class.rounded-tl-sm]="message.sender !== 'CUSTOMER'"
             [class.bg-[#F3F4F6]]="message.sender === 'CUSTOMER'"
             [class.text-[#111827]]="message.sender === 'CUSTOMER'"
-            [class.bg-[#F0FDF4]]="message.sender === 'AI'"
-            [class.text-[#16A34A]]="message.sender === 'AI'"
+            [class.pl-4]="message.sender === 'AI'"
+            [class.border]="message.sender === 'AI'"
+            [class.border-[#efe7cf]]="message.sender === 'AI'"
+            [class.bg-[#fffdf7]]="message.sender === 'AI'"
+            [class.text-[#1f2937]]="message.sender === 'AI'"
+            [class.shadow-[0_18px_46px_-34px_rgba(16,16,16,0.6)]]="message.sender === 'AI'"
             [class.bg-white]="message.sender === 'STAFF'"
             [class.text-[#111827]]="message.sender === 'STAFF'"
-            [class.shadow-[0_18px_42px_-34px_rgba(16,16,16,0.7)]]="true"
+            [class.shadow-[0_18px_42px_-34px_rgba(16,16,16,0.7)]]="message.sender !== 'AI'"
           >
             @if (message.messageType === 'CALL' && message.callData) {
               <div class="flex items-center gap-3">
@@ -74,7 +82,11 @@
                 </div>
               </div>
             } @else {
-              <p>{{ message.body }}</p>
+              @if (message.sender === 'AI') {
+                <markdown class="customer-ai-markdown" [data]="message.body"></markdown>
+              } @else {
+                <p>{{ message.body }}</p>
+              }
 
               @if (message.attachments.length > 0) {
                 <div class="grid gap-2">

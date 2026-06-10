@@ -42,8 +42,8 @@
                   class="customer-identity"
                   (click)="viewCustomer.emit(customer.customerId)"
                 >
-                  @if (customer.imageUrl) {
-                    <img [src]="customer.imageUrl" [alt]="customer.fullName" />
+                  @if (customer.imageUrl && !isImageFailed(customer.customerId)) {
+                    <img [src]="customer.imageUrl" [alt]="customer.fullName" referrerpolicy="no-referrer" (error)="onImageError(customer.customerId)" />
                   } @else {
                     <span class="customer-avatar">{{ customer.fullName.charAt(0).toUpperCase() }}</span>
                   }

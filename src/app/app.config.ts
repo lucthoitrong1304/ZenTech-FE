@@ -5,6 +5,8 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { GlobalErrorHandler } from './core/errors/global-error-handler';
 import { tokenInterceptor } from './core/interceptors/token.interceptor';
+import { traceInterceptor } from './core/interceptors/trace.interceptor';
+import { httpClientLogInterceptor } from './core/interceptors/http-client-log.interceptor';
 import Aura from '@primeuix/themes/aura';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
@@ -23,7 +25,7 @@ export const appConfig: ApplicationConfig = {
       },
     }),
     provideMarkdown(),
-    provideHttpClient(withInterceptors([tokenInterceptor, errorInterceptor])),
+    provideHttpClient(withInterceptors([traceInterceptor, httpClientLogInterceptor, tokenInterceptor, errorInterceptor])),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     ConfirmationService,
     MessageService

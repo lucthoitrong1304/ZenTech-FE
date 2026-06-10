@@ -1,0 +1,58 @@
+<p-dialog
+  [visible]="visible()"
+  (onHide)="close.emit()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [showHeader]="false"
+  styleClass="ai-inventory-dialog"
+>
+  <div class="ai-dialog-container">
+    <div class="dialog-header">
+      <div class="header-left">
+        <svg lucideSparkles class="header-icon"></svg>
+        <div class="header-copy">
+          <span class="header-kicker">AI Inventory Intelligence</span>
+          <span class="header-title">Hệ Thống Giám Sát AI - Đề Xuất Nhập Kho</span>
+        </div>
+      </div>
+      <button class="close-btn" type="button" (click)="close.emit()" aria-label="Đóng báo cáo AI">
+        <svg lucideX class="close-icon"></svg>
+      </button>
+    </div>
+
+    <div class="dialog-content">
+      @if (loading()) {
+        <div class="loading-container">
+          <div class="spinner-outer">
+            <div class="spinner-inner"></div>
+            <svg lucideCpu class="loading-icon-cpu"></svg>
+          </div>
+          <p class="loading-title">ZenTech AI đang phân tích...</p>
+          <p class="loading-desc">Tính toán tốc độ bán hàng, đối chiếu mức tồn kho tối thiểu và tổng hợp kế hoạch cung ứng.</p>
+          <div class="loading-steps" aria-hidden="true">
+            <span>Đọc tồn kho</span>
+            <span>So tốc độ bán</span>
+            <span>Gợi ý nhập hàng</span>
+          </div>
+        </div>
+      } @else {
+        <div class="report-wrapper">
+          <div class="report-toolbar">
+            <span class="report-pill">
+              <svg lucideSparkles></svg>
+              Báo cáo AI
+            </span>
+            <span class="report-state">Đã phân tích dữ liệu hiện tại</span>
+          </div>
+          <markdown class="ai-markdown" [data]="content()"></markdown>
+        </div>
+      }
+    </div>
+
+    <div class="dialog-footer">
+      <button class="footer-close-btn" type="button" (click)="close.emit()">Đóng báo cáo</button>
+    </div>
+  </div>
+</p-dialog>

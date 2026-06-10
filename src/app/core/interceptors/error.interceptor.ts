@@ -1,11 +1,14 @@
 import { HttpErrorResponse, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { ErrorStateService } from '../errors/error-state.service';
 import { AuthRefreshService } from '../services/auth-refresh.service';
 import { AuthStorageService } from '../services/auth-storage.service';
 import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../tokens/api-context.token';
+import { AuthSessionStore } from '../../site-management/auth/data-access/store/auth-session.store';
+import { ClientLogEventType } from '../logging/client-log.model';
+import { ClientLogService } from '../logging/client-log.service';
 
 type RefreshState =
   | { status: 'idle' }
@@ -22,11 +25,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const errorStateService = inject(ErrorStateService);
   const authRefreshService = inject(AuthRefreshService);
   const authStorageService = inject(AuthStorageService);
+  const injector = inject(Injector);
   const skipAuth = req.context.get(SKIP_AUTH_TOKEN);
   const skipGlobalError = req.context.get(SKIP_GLOBAL_ERROR);
+  const clientLogService = inject(ClientLogService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      logHttpFailure(clientLogService, req, error);
+
       // Bỏ qua nếu có cờ SKIP_GLOBAL_ERROR
       if (skipGlobalError) {
         return throwError(() => error);
@@ -38,7 +45,34 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           return throwError(() => error);
         }
 
+        clientLogService.warn(
+          ClientLogEventType.AuthTokenExpired,
+          'Phiên đăng nhập hết hạn hoặc không hợp lệ.',
+          {
+            method: req.method,
+            apiPath: req.url,
+            statusCode: error.status,
+            traceId: req.headers.get('X-Trace-Id') ?? undefined,
+          },
+        );
+
         return handle401Error(req, next, authRefreshService, authStorageService, router);
+      }
+
+      // Xử lý riêng cho 403 Forbidden (Không có quyền)
+      if (error.status === 403) {
+        const currentUrl = router.url;
+        if (currentUrl.startsWith('/management') || currentUrl.startsWith('/admin')) {
+          // Cập nhật lại role của user thành CUSTOMER vì đã bị chặn truy cập quản trị
+          try {
+            const authSessionStore = injector.get(AuthSessionStore);
+            authSessionStore.updateUserRoles(['ROLE_CUSTOMER']);
+          } catch (e) {
+            console.error('Không thể cập nhật vai trò người dùng trong interceptor:', e);
+          }
+          // Chuyển hướng người dùng về trang chủ
+          router.navigate(['/']);
+        }
       }
 
       // Xử lý các lỗi hệ thống/mạng khác
@@ -67,6 +101,78 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
+
+function logHttpFailure(
+  clientLogService: ClientLogService,
+  req: HttpRequest<unknown>,
+  error: HttpErrorResponse
+): void {
+  if (req.url.includes('/logs/client')) {
+    return;
+  }
+
+  const status = error.status;
+
+  // 1. statusCode từ 200 đến 299 => Bỏ qua hoàn toàn (không ghi ERROR / HttpRequestFailed)
+  if (status >= 200 && status < 300) {
+    return;
+  }
+
+  const traceId = req.headers.get('X-Trace-Id') ?? undefined;
+  const reason = error.statusText || error.message;
+
+  // 2. Request bị network error, timeout, CORS, server không phản hồi => ERROR với statusCode = 0
+  if (status === 0 || status === null || status === undefined) {
+    clientLogService.error(
+      ClientLogEventType.HttpRequestFailed,
+      `${req.method} ${req.url} thất bại do lỗi kết nối mạng (Network Error / Timeout / CORS / Server Unreachable).`,
+      {
+        method: req.method,
+        apiPath: req.url,
+        statusCode: 0,
+        traceId,
+        reason: reason || 'Network Error or Server Unreachable',
+      },
+    );
+    return;
+  }
+
+  // 3. statusCode từ 400 đến 499 => WARN hoặc ERROR tùy trường hợp
+  if (status >= 400 && status < 500) {
+    const isWarningStatus = [400, 401, 403, 404, 409].includes(status);
+    const message = `${req.method} ${req.url} thất bại với mã ${status}.`;
+    const context = {
+      method: req.method,
+      apiPath: req.url,
+      statusCode: status,
+      traceId,
+      reason,
+    };
+
+    if (isWarningStatus) {
+      clientLogService.warn(ClientLogEventType.HttpRequestFailed, message, context);
+    } else {
+      clientLogService.error(ClientLogEventType.HttpRequestFailed, message, context);
+    }
+    return;
+  }
+
+  // 4. statusCode từ 500 trở lên => ERROR
+  if (status >= 500) {
+    clientLogService.error(
+      ClientLogEventType.HttpRequestFailed,
+      `${req.method} ${req.url} thất bại với mã ${status}.`,
+      {
+        method: req.method,
+        apiPath: req.url,
+        statusCode: status,
+        traceId,
+        reason,
+      },
+    );
+    return;
+  }
+}
 
 // Hàm phụ trợ xử lý luồng 401
 function handle401Error(

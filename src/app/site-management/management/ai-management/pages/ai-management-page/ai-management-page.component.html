@@ -1,0 +1,607 @@
+<section class="ai-page">
+  <header class="ai-command">
+    <div class="ai-command__copy">
+      <span class="ai-kicker">AI Operations Center</span>
+      <h1>Quản lý AI Agent</h1>
+      <p>Cấu hình agent, gắn dataset tri thức và kiểm thử hội thoại trong một workspace quản trị thống nhất.</p>
+    </div>
+
+    <div class="ai-command__actions">
+      <button type="button" class="ai-secondary-action" [disabled]="loading()" (click)="loadAll()">
+        <svg lucideRefreshCw [size]="16"></svg>
+        <span>{{ loading() ? 'Đang tải...' : 'Tải lại' }}</span>
+      </button>
+      <button type="button" class="ai-primary-action" (click)="newAgent()">
+        <svg lucidePlus [size]="16"></svg>
+        <span>Tạo agent</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="agent-workspace">
+    <aside class="agent-sidebar">
+      <div class="sidebar-head">
+        <div>
+          <h2>Agent registry</h2>
+          <span>{{ agents().length }} agent · {{ activeAgentsCount() }} active</span>
+        </div>
+      </div>
+
+      <label class="agent-search">
+        <svg lucideSearch [size]="17"></svg>
+        <input
+          type="search"
+          placeholder="Tìm theo tên, mô tả, role..."
+          [ngModel]="agentKeyword()"
+          (ngModelChange)="agentKeyword.set($event)"
+        />
+      </label>
+
+      <div class="agent-filters">
+        <label>
+          <span>Trạng thái</span>
+          <select [ngModel]="agentStatusFilter()" (ngModelChange)="setAgentStatusFilter($event)">
+            <option value="ALL">Tất cả</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </label>
+        <label>
+          <span>Role</span>
+          <select [ngModel]="agentRoleFilter()" (ngModelChange)="setAgentRoleFilter($event)">
+            <option value="ALL">Tất cả role</option>
+            @for (role of roles; track role) {
+              <option [value]="role">{{ roleLabel(role) }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="agent-list">
+        @for (agent of filteredAgents(); track agent.id) {
+          <button
+            type="button"
+            class="agent-card"
+            [class.agent-card--selected]="selectedAgentId() === agent.id"
+            (click)="selectAgent(agent)"
+          >
+            <span class="agent-avatar">
+              <svg lucideBot [size]="18"></svg>
+            </span>
+            <span class="agent-card__body">
+              <span class="agent-card__top">
+                <strong>{{ agent.name }}</strong>
+                <span class="status-dot" [class.status-dot--active]="agent.status === 'ACTIVE'"></span>
+              </span>
+              <span class="agent-card__description">{{ agent.description || 'Chưa có mô tả ngắn.' }}</span>
+              <span class="role-row">
+                @for (role of agent.assignedRoles; track role) {
+                  <small>{{ roleLabel(role) }}</small>
+                }
+              </span>
+              <span class="agent-card__meta">
+                <span>{{ agent.datasetCount }} dataset</span>
+                <span>Priority {{ agent.priority }}</span>
+                @if (agent.defaultForRole) {
+                  <span class="default-badge">Default</span>
+                }
+              </span>
+            </span>
+          </button>
+        } @empty {
+          <div class="empty-list">
+            <svg lucideFilter [size]="28"></svg>
+            <strong>{{ agents().length ? 'Không tìm thấy agent' : 'Chưa có agent' }}</strong>
+            <p>
+              {{
+                agents().length
+                  ? 'Thử đổi từ khóa hoặc bộ lọc để xem thêm agent.'
+                  : 'Tạo agent đầu tiên để bắt đầu quản lý prompt và dataset.'
+              }}
+            </p>
+          </div>
+        }
+      </div>
+    </aside>
+
+    <main class="agent-detail">
+      @if (selectedAgent(); as agent) {
+        <section class="detail-shell">
+          <div class="detail-head">
+            <div>
+              <span class="status-pill" [class.status-pill--active]="agent.status === 'ACTIVE'">{{ agent.status }}</span>
+              <h2>{{ agent.name }}</h2>
+              <p>{{ agent.description || 'Agent này chưa có mô tả. Thêm mô tả ngắn để đội vận hành dễ nhận diện.' }}</p>
+            </div>
+            <div class="detail-head__actions">
+              <button type="button" class="ghost-btn" (click)="setDetailTab('demo')">
+                <svg lucidePlay [size]="16"></svg>
+                <span>Demo</span>
+              </button>
+              <button type="button" class="danger-btn" (click)="deleteAgent(agent)">
+                <svg lucideTrash2 [size]="16"></svg>
+                <span>Xóa</span>
+              </button>
+            </div>
+          </div>
+
+          <nav class="detail-tabs" aria-label="Agent detail tabs">
+            @for (tab of detailTabs; track tab.id) {
+              <button type="button" [class.active]="detailTab() === tab.id" (click)="setDetailTab(tab.id)">
+                @if (tab.icon === 'database') {
+                  <svg lucideDatabase [size]="16"></svg>
+                } @else if (tab.icon === 'play') {
+                  <svg lucidePlay [size]="16"></svg>
+                } @else if (tab.icon === 'save') {
+                  <svg lucideSave [size]="16"></svg>
+                } @else {
+                  <svg lucideBot [size]="16"></svg>
+                }
+                <span>{{ tab.label }}</span>
+              </button>
+            }
+          </nav>
+
+          @if (detailTab() === 'overview') {
+            <section class="tab-panel overview-panel">
+              <div class="overview-grid">
+                <article>
+                  <span>Trạng thái</span>
+                  <strong>{{ agent.status }}</strong>
+                </article>
+                <article>
+                  <span>Role phục vụ</span>
+                  <strong>{{ agent.assignedRoles.length }}</strong>
+                </article>
+                <article>
+                  <span>Dataset</span>
+                  <strong>{{ attachedDatasets().length }}</strong>
+                </article>
+                <article>
+                  <span>Ready docs</span>
+                  <strong>{{ readyDocumentsCount() }}</strong>
+                </article>
+              </div>
+
+              <div class="overview-layout">
+                <article class="prompt-preview">
+                  <div class="panel-title">
+                    <div>
+                      <h3>System prompt</h3>
+                      <span>Prompt đang dùng cho agent này</span>
+                    </div>
+                    <button type="button" class="text-action" (click)="setDetailTab('settings')">Chỉnh sửa</button>
+                  </div>
+                  <p>{{ agent.systemPrompt }}</p>
+                </article>
+
+                <aside class="runtime-summary">
+                  <h3>Runtime</h3>
+                  <div>
+                    <span>Temperature</span>
+                    <strong>{{ agent.temperature | number: '1.1-1' }}</strong>
+                  </div>
+                  <div>
+                    <span>Top K</span>
+                    <strong>{{ agent.topK }}</strong>
+                  </div>
+                  <div>
+                    <span>Score threshold</span>
+                    <strong>{{ agent.scoreThreshold | number: '1.2-2' }}</strong>
+                  </div>
+                  <div>
+                    <span>Max tokens</span>
+                    <strong>{{ agent.maxTokens }}</strong>
+                  </div>
+                </aside>
+              </div>
+
+            </section>
+          }
+
+          @if (detailTab() === 'settings') {
+            <section class="tab-panel settings-panel">
+              <div class="panel-title">
+                <div>
+                  <h3>Cấu hình agent</h3>
+                  <span>Thông tin định danh, routing, prompt và tham số runtime.</span>
+                </div>
+                <button type="button" class="save-btn" [disabled]="savingAgent()" (click)="saveAgent()">
+                  <svg lucideSave [size]="16"></svg>
+                  <span>{{ savingAgent() ? 'Đang lưu...' : 'Lưu cấu hình' }}</span>
+                </button>
+              </div>
+
+              <article class="settings-section">
+                <h4>Định danh</h4>
+                <div class="form-grid">
+                  <label>
+                    <span>Tên agent</span>
+                    <input [ngModel]="agentDraft().name" (ngModelChange)="updateAgentDraft({ name: $event })" />
+                  </label>
+                  <label>
+                    <span>Trạng thái</span>
+                    <select [ngModel]="agentDraft().status" (ngModelChange)="updateAgentDraft({ status: $event })">
+                      <option value="ACTIVE">Active</option>
+                      <option value="INACTIVE">Inactive</option>
+                    </select>
+                  </label>
+                </div>
+                <label>
+                  <span>Mô tả</span>
+                  <input [ngModel]="agentDraft().description" (ngModelChange)="updateAgentDraft({ description: $event })" />
+                </label>
+              </article>
+
+              <article class="settings-section">
+                <h4>Role & routing</h4>
+                <div class="form-grid">
+                  <label>
+                    <span>Priority</span>
+                    <input type="number" [ngModel]="agentDraft().priority" (ngModelChange)="updateAgentDraft({ priority: +$event })" />
+                  </label>
+                  <label>
+                    <span>Default cho role</span>
+                    <select
+                      [ngModel]="agentDraft().defaultForRole ? 'true' : 'false'"
+                      (ngModelChange)="updateAgentDraft({ defaultForRole: $event === 'true' })"
+                    >
+                      <option value="false">Không</option>
+                      <option value="true">Có</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="check-section">
+                  <span>Role được phục vụ</span>
+                  <div class="check-grid">
+                    @for (role of roles; track role) {
+                      <label class="check-item">
+                        <input type="checkbox" [checked]="roleAttached(role)" (change)="toggleRole(role, $any($event.target).checked)" />
+                        <span>{{ roleLabel(role) }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+              </article>
+
+              <article class="settings-section">
+                <h4>Prompt & guardrails</h4>
+                <label>
+                  <span>System prompt</span>
+                  <textarea
+                    rows="7"
+                    [ngModel]="agentDraft().systemPrompt"
+                    (ngModelChange)="updateAgentDraft({ systemPrompt: $event })"
+                  ></textarea>
+                </label>
+                <label>
+                  <span>Guardrails</span>
+                  <textarea rows="4" [ngModel]="agentDraft().guardrails" (ngModelChange)="updateAgentDraft({ guardrails: $event })"></textarea>
+                </label>
+              </article>
+
+              <article class="settings-section">
+                <h4>Runtime</h4>
+                <div class="runtime-grid">
+                  <label>
+                    <span>Temperature</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="2"
+                      step="0.1"
+                      [ngModel]="agentDraft().temperature"
+                      (ngModelChange)="updateAgentDraft({ temperature: +$event })"
+                    />
+                  </label>
+                  <label>
+                    <span>Top K</span>
+                    <input type="number" min="1" max="20" [ngModel]="agentDraft().topK" (ngModelChange)="updateAgentDraft({ topK: +$event })" />
+                  </label>
+                  <label>
+                    <span>Score threshold</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      [ngModel]="agentDraft().scoreThreshold"
+                      (ngModelChange)="updateAgentDraft({ scoreThreshold: +$event })"
+                    />
+                  </label>
+                  <label>
+                    <span>Max tokens</span>
+                    <input
+                      type="number"
+                      min="100"
+                      max="8000"
+                      [ngModel]="agentDraft().maxTokens"
+                      (ngModelChange)="updateAgentDraft({ maxTokens: +$event })"
+                    />
+                  </label>
+                </div>
+              </article>
+
+              <article class="settings-section">
+                <h4>Fallback & handoff</h4>
+                <div class="form-grid">
+                  <label>
+                    <span>Handoff enabled</span>
+                    <select
+                      [ngModel]="agentDraft().handoffEnabled ? 'true' : 'false'"
+                      (ngModelChange)="updateAgentDraft({ handoffEnabled: $event === 'true' })"
+                    >
+                      <option value="true">Bật</option>
+                      <option value="false">Tắt</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Handoff threshold</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      [ngModel]="agentDraft().handoffThreshold"
+                      (ngModelChange)="updateAgentDraft({ handoffThreshold: +$event })"
+                    />
+                  </label>
+                </div>
+                <label>
+                  <span>Fallback message</span>
+                  <textarea
+                    rows="3"
+                    [ngModel]="agentDraft().fallbackMessage"
+                    (ngModelChange)="updateAgentDraft({ fallbackMessage: $event })"
+                  ></textarea>
+                </label>
+              </article>
+            </section>
+          }
+
+          @if (detailTab() === 'datasets') {
+            <section class="tab-panel dataset-panel">
+              <div class="panel-title">
+                <div>
+                  <h3>Dataset tri thức</h3>
+                  <span>{{ attachedDatasets().length }} dataset đã gắn · {{ readyDocumentsCount() }} tài liệu sẵn sàng</span>
+                </div>
+              </div>
+
+              <div class="dataset-controls">
+                <div class="attach-row">
+                  <select #datasetSelect>
+                    <option value="">Chọn dataset có sẵn</option>
+                    @for (dataset of availableDatasets(); track dataset.id) {
+                      <option [value]="dataset.id">{{ dataset.name }}</option>
+                    }
+                  </select>
+                  <button type="button" (click)="attachDataset(datasetSelect.value); datasetSelect.value = ''">
+                    <svg lucidePlus [size]="15"></svg>
+                    <span>Gắn dataset</span>
+                  </button>
+                </div>
+
+                <div class="create-dataset">
+                  <input
+                    placeholder="Tên dataset mới"
+                    [ngModel]="datasetDraft().name"
+                    (ngModelChange)="updateDatasetDraft({ name: $event })"
+                  />
+                  <input
+                    placeholder="Mô tả ngắn"
+                    [ngModel]="datasetDraft().description"
+                    (ngModelChange)="updateDatasetDraft({ description: $event })"
+                  />
+                  <button type="button" [disabled]="savingDataset()" (click)="createDataset()">
+                    <svg lucideDatabase [size]="15"></svg>
+                    <span>{{ savingDataset() ? 'Đang tạo...' : 'Tạo & gắn' }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="dataset-list">
+                @for (dataset of attachedDatasets(); track dataset.id) {
+                  <article class="dataset-card">
+                    <div class="dataset-head">
+                      <div>
+                        <h4>{{ dataset.name }}</h4>
+                        <p>{{ dataset.description || 'Dataset này chưa có mô tả.' }}</p>
+                      </div>
+                      <div class="dataset-actions">
+                        <span class="dataset-status">{{ dataset.status }}</span>
+                        <label class="upload-btn">
+                          <svg lucideUpload [size]="15"></svg>
+                          <span>{{ uploadingDatasetId() === dataset.id ? 'Đang tải...' : 'Upload' }}</span>
+                          <input type="file" accept=".pdf,.txt,.md" (change)="uploadDocument(dataset.id, $event)" />
+                        </label>
+                        <button type="button" class="ghost-danger" (click)="detachDataset(dataset.id)">Gỡ</button>
+                      </div>
+                    </div>
+
+                    <div class="document-list">
+                      @for (document of dataset.documents; track document.id) {
+                        <div class="document-row">
+                          <span class="document-icon">
+                            <svg lucideFileText [size]="18"></svg>
+                          </span>
+                          <div>
+                            <strong>{{ document.fileName }}</strong>
+                            <span>
+                              {{ documentStatusLabel(document.ingestStatus) }} · {{ document.chunkCount }} chunks ·
+                              {{ formatFileSize(document.fileSize) }}
+                            </span>
+                            @if (document.errorMessage) {
+                              <small>{{ document.errorMessage }}</small>
+                            }
+                          </div>
+                          <span class="document-status" [ngClass]="'document-status--' + documentStatusTone(document.ingestStatus)">
+                            {{ documentStatusLabel(document.ingestStatus) }}
+                          </span>
+                          <button type="button" title="Reingest" (click)="reingestDocument(document)">
+                            <svg lucideRefreshCw [size]="15"></svg>
+                          </button>
+                          <button type="button" class="danger-icon" title="Xóa tài liệu" (click)="deleteDocument(document)">
+                            <svg lucideTrash2 [size]="15"></svg>
+                          </button>
+                        </div>
+                      } @empty {
+                        <p class="muted">Dataset này chưa có tài liệu. Upload PDF, TXT hoặc Markdown để ingest.</p>
+                      }
+                    </div>
+                  </article>
+                } @empty {
+                  <div class="empty-section">
+                    <svg lucideDatabase [size]="34"></svg>
+                    <strong>Agent chưa có dataset</strong>
+                    <p>Gắn dataset có sẵn hoặc tạo dataset mới để agent có context khi trả lời.</p>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          @if (detailTab() === 'demo') {
+            <section class="tab-panel demo-panel chat-demo-panel">
+              <div class="panel-title chat-demo-title">
+                <div>
+                  <h3>Chat demo tạm thời</h3>
+                  <span>Không lưu DB · dùng để kiểm thử agent trước khi đưa vào vận hành.</span>
+                </div>
+                <button type="button" class="ghost-btn" (click)="clearDemoConversation()">Xóa chat</button>
+              </div>
+
+              <div class="chat-demo-layout">
+                <div class="chat-surface">
+                  <div class="chat-thread">
+                    @for (message of demoMessages(); track message.id) {
+                      <article class="chat-message" [class.user]="message.role === 'customer'" [class.assistant]="message.role === 'assistant'">
+                        <div class="chat-bubble">
+                          <span class="chat-role">{{ message.role === 'customer' ? 'Bạn' : selectedAgent()?.name || 'Agent' }}</span>
+                          @if (message.role === 'assistant') {
+                            <markdown class="chat-markdown" [data]="message.content"></markdown>
+                          } @else {
+                            <p>{{ message.content }}</p>
+                          }
+                          @if (message.result) {
+                            <div class="message-flags">
+                              <span [class.on]="message.result.fallback">Fallback: {{ message.result.fallback ? 'có' : 'không' }}</span>
+                              <span [class.on]="message.result.handoffRecommended">
+                                Handoff: {{ message.result.handoffRecommended ? 'có' : 'không' }}
+                              </span>
+                            </div>
+                          }
+                        </div>
+                      </article>
+                    } @empty {
+                      <div class="empty-chat">
+                        <svg lucideBot [size]="34"></svg>
+                        <strong>Bắt đầu hội thoại kiểm thử</strong>
+                        <p>Gửi vài câu hỏi để kiểm tra prompt, dataset context và fallback của agent.</p>
+                      </div>
+                    }
+
+                    @if (demoLoading()) {
+                      <article class="chat-message assistant">
+                        <div class="chat-bubble typing">
+                          <span></span>
+                          <span></span>
+                          <span></span>
+                        </div>
+                      </article>
+                    }
+                  </div>
+
+                  <div class="chat-composer">
+                    <textarea
+                      rows="2"
+                      [ngModel]="demoMessage()"
+                      (ngModelChange)="demoMessage.set($event)"
+                      (keydown.control.enter)="runDemo()"
+                      placeholder="Nhập tin nhắn demo... Ctrl + Enter để gửi"
+                    ></textarea>
+                    <button type="button" class="send-btn" [disabled]="demoLoading() || !demoMessage().trim()" (click)="runDemo()">
+                      <svg lucidePlay [size]="16"></svg>
+                      <span>{{ demoLoading() ? 'Đang gửi...' : 'Gửi' }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <aside class="context-panel">
+                  <div class="context-panel__head">
+                    <h4>Context truy xuất gần nhất</h4>
+                    @if (demoResult(); as result) {
+                      <span>{{ result.retrievedContext.length }} nguồn</span>
+                    }
+                  </div>
+                  @if (demoResult(); as result) {
+                    <div class="result-flags">
+                      <span [class.on]="result.fallback">Fallback: {{ result.fallback ? 'có' : 'không' }}</span>
+                      <span [class.on]="result.handoffRecommended">Handoff: {{ result.handoffRecommended ? 'có' : 'không' }}</span>
+                    </div>
+
+                    @for (source of result.retrievedContext; track source.id) {
+                      <article class="source-card">
+                        <strong>{{ source.source || 'Dataset source' }}</strong>
+                        <span>Score {{ source.score | number: '1.3-3' }}</span>
+                        <p>{{ source.content }}</p>
+                      </article>
+                    } @empty {
+                      <p class="muted">Chưa tìm thấy context phù hợp từ dataset cho lượt này.</p>
+                    }
+                  } @else {
+                    <p class="muted">Context của câu trả lời gần nhất sẽ hiển thị ở đây.</p>
+                  }
+                </aside>
+              </div>
+            </section>
+          }
+        </section>
+      } @else {
+        <section class="empty-detail">
+          <svg lucideBot [size]="38"></svg>
+          <h2>{{ creatingNewAgent() ? 'Tạo agent mới' : agents().length ? 'Chọn một agent' : 'Chưa có agent nào' }}</h2>
+          <p>
+            {{
+              creatingNewAgent()
+                ? 'Nhập cấu hình ban đầu rồi lưu để tiếp tục gắn dataset và demo.'
+                : agents().length
+                  ? 'Chọn agent bên trái để quản lý prompt, dataset và demo.'
+                  : 'Nhấn Tạo agent để tạo agent đầu tiên.'
+            }}
+          </p>
+
+          <div class="new-agent-card">
+            <div class="panel-title">
+              <div>
+                <h3>Quick create</h3>
+                <span>Tạo agent với các trường tối thiểu.</span>
+              </div>
+            </div>
+            <label>
+              <span>Tên agent</span>
+              <input [ngModel]="agentDraft().name" (ngModelChange)="updateAgentDraft({ name: $event })" placeholder="Customer Consultant" />
+            </label>
+            <label>
+              <span>System prompt</span>
+              <textarea rows="4" [ngModel]="agentDraft().systemPrompt" (ngModelChange)="updateAgentDraft({ systemPrompt: $event })"></textarea>
+            </label>
+            <div class="check-grid">
+              @for (role of roles; track role) {
+                <label class="check-item">
+                  <input type="checkbox" [checked]="roleAttached(role)" (change)="toggleRole(role, $any($event.target).checked)" />
+                  <span>{{ roleLabel(role) }}</span>
+                </label>
+              }
+            </div>
+            <button type="button" class="save-btn" [disabled]="savingAgent()" (click)="saveAgent()">
+              <svg lucideSave [size]="16"></svg>
+              <span>{{ savingAgent() ? 'Đang tạo...' : 'Tạo agent' }}</span>
+            </button>
+          </div>
+        </section>
+      }
+    </main>
+  </div>
+</section>

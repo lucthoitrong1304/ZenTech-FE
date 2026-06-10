@@ -1,0 +1,95 @@
+@import "tailwindcss" reference;
+
+.db-container { @apply flex flex-col gap-5; }
+
+.db-hero-panel {
+  @apply relative overflow-hidden rounded-3xl bg-[#101010] p-5 text-white shadow-sm ring-1 ring-black/5;
+}
+.db-hero-panel::before { content: ''; @apply absolute inset-y-0 left-0 w-1.5 bg-[#16A34A]; }
+.db-hero-panel::after { content: ''; @apply absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[#FFC700]/20 blur-3xl; }
+.db-hero-panel--warn::before { @apply bg-[#E11D48]; }
+.db-hero-panel--warn::after { @apply bg-[#E11D48]/20; }
+@media (min-width: 768px) { .db-hero-panel { @apply flex items-center justify-between gap-6 p-6; } }
+
+.db-hero-content { @apply relative z-10 max-w-3xl; }
+.db-hero-eyebrow { @apply text-[11px] font-bold uppercase tracking-[0.22em] text-[#FFC700]; }
+.db-hero-title { @apply mt-2 text-xl font-semibold tracking-tight text-white md:text-2xl; }
+.db-hero-desc { @apply mt-2 text-sm leading-relaxed text-white/70; }
+.db-hero-actions { @apply relative z-10 mt-5 flex flex-wrap items-center gap-2 md:mt-0 md:justify-end; }
+.db-live-chip { @apply rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-white ring-1 ring-white/10; }
+.db-uptime-tag { @apply rounded-full bg-[#FFC700] px-4 py-1.5 text-xs font-bold text-[#111827]; }
+
+.db-stats-grid { @apply grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4; }
+.db-stat-card {
+  @apply relative overflow-hidden rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#E5E7EB] transition hover:-translate-y-0.5 hover:shadow-md hover:ring-[#FFC700]/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5];
+}
+.db-stat-card::after { content: ''; @apply absolute -right-10 -top-12 h-24 w-24 rounded-full bg-[#FFC700]/10 blur-xl transition; }
+.db-stat-card:hover::after { @apply bg-[#FFC700]/20; }
+.db-stat-card { @apply flex items-center gap-4 no-underline; }
+.db-stat-icon-wrapper { @apply relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl ring-1; }
+.db-stat-icon-wrapper svg { @apply h-5 w-5; }
+.db-stat-info { @apply relative z-10 flex min-w-0 flex-col; }
+.db-stat-kicker { @apply text-[10px] font-bold uppercase tracking-[0.18em] text-[#9CA3AF]; }
+.db-stat-value { @apply mt-1 text-3xl font-semibold leading-none tracking-tight text-[#111827]; }
+.db-stat-value--compact { @apply text-lg; }
+.db-stat-label { @apply mt-1 truncate text-xs font-medium text-[#6B7280]; }
+.db-stat-card--errors .db-stat-icon-wrapper { @apply bg-rose-50 text-[#E11D48] ring-rose-100; }
+.db-stat-card--incidents .db-stat-icon-wrapper { @apply bg-amber-50 text-amber-600 ring-amber-100; }
+.db-stat-card--tickets .db-stat-icon-wrapper { @apply bg-indigo-50 text-[#4F46E5] ring-indigo-100; }
+.db-stat-card--system .db-stat-icon-wrapper { @apply bg-emerald-50 text-[#16A34A] ring-emerald-100; }
+
+.db-resource-card,
+.db-column-card { @apply rounded-3xl bg-white shadow-sm ring-1 ring-[#E5E7EB]; }
+.db-resource-card { @apply p-5; }
+.db-section-header { @apply mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-end; }
+.db-section-header--compact { @apply mb-4; }
+.db-section-kicker { @apply text-[10px] font-bold uppercase tracking-[0.2em] text-[#9CA3AF]; }
+.db-section-title { @apply mt-1 text-base font-semibold tracking-tight text-[#111827]; }
+.db-section-meta { @apply self-start rounded-full bg-[#F9FAFB] px-3 py-1.5 text-xs font-semibold text-[#6B7280] ring-1 ring-[#E5E7EB] sm:self-auto; }
+
+.db-resource-grid { @apply grid grid-cols-1 gap-4 md:grid-cols-3; }
+.db-resource-item { @apply rounded-2xl bg-[#F9FAFB] p-4 ring-1 ring-[#E5E7EB]; }
+.db-resource-item-header { @apply mb-3 flex items-center justify-between text-xs; }
+.db-resource-label-area { @apply flex items-center gap-2 font-semibold text-[#374151]; }
+.db-resource-label-area svg { @apply h-4 w-4 text-[#111827]; }
+.db-resource-value-text { @apply font-bold text-[#111827]; }
+.db-progress-bar-container { @apply h-2.5 w-full overflow-hidden rounded-full bg-[#E5E7EB]; }
+.db-progress-bar { @apply h-full rounded-full bg-[#FFC700] transition-all duration-500; }
+.db-progress-bar--warn { @apply bg-[#E11D48]; }
+
+.db-content-columns { @apply grid grid-cols-1 gap-5 xl:grid-cols-2; }
+.db-column-card { @apply flex flex-col p-5; }
+.db-view-more-link { @apply rounded-full bg-[#F9FAFB] px-3 py-1.5 text-xs font-semibold text-[#4F46E5] no-underline ring-1 ring-[#E5E7EB] transition hover:bg-indigo-50 hover:text-[#4338CA]; }
+.db-incident-list,
+.db-log-list { @apply flex max-h-[380px] flex-col overflow-y-auto pr-1; }
+.db-incident-list { @apply gap-3; }
+.db-log-list { @apply gap-2.5; }
+
+.db-incident-item,
+.db-log-item { @apply rounded-2xl bg-[#F9FAFB] ring-1 ring-[#E5E7EB] transition hover:bg-white hover:ring-[#FFC700]/70; }
+.db-incident-item { @apply flex flex-col gap-2 p-4; }
+.db-log-item { @apply flex flex-col gap-1.5 p-3.5; }
+.db-incident-header { @apply flex items-center justify-between gap-3; }
+.db-incident-id { @apply text-xs font-bold text-[#9CA3AF]; }
+.db-incident-severity { @apply rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider; }
+.db-incident-severity.severity-critical { @apply border-rose-100 bg-rose-50 text-rose-700; }
+.db-incident-severity.severity-high { @apply border-orange-100 bg-orange-50 text-orange-700; }
+.db-incident-severity.severity-medium { @apply border-yellow-100 bg-yellow-50 text-yellow-700; }
+.db-incident-severity.severity-low { @apply border-blue-100 bg-blue-50 text-blue-700; }
+.db-incident-subject { @apply text-sm font-semibold leading-snug text-[#111827]; }
+.db-incident-meta { @apply text-xs leading-normal text-[#6B7280]; }
+.db-incident-status { @apply mt-1 self-start rounded-full border px-2 py-0.5 text-[10px] font-semibold; }
+.db-incident-status.status-open { @apply border-rose-200 bg-rose-50 text-rose-700; }
+.db-incident-status.status-investigating { @apply border-amber-200 bg-amber-50 text-amber-700; }
+.db-incident-status.status-resolved { @apply border-emerald-200 bg-emerald-50 text-emerald-700; }
+
+.db-log-meta { @apply flex flex-wrap items-center gap-2 text-xs; }
+.db-log-level { @apply rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider; }
+.db-log-level.level-info { @apply border-emerald-100 bg-emerald-50 text-emerald-700; }
+.db-log-level.level-warn { @apply border-amber-100 bg-amber-50 text-amber-700; }
+.db-log-level.level-error { @apply border-rose-100 bg-rose-50 text-rose-700; }
+.db-log-level.level-debug { @apply border-gray-200 bg-gray-100 text-gray-600; }
+.db-log-time { @apply font-medium text-[#9CA3AF]; }
+.db-log-cat { @apply text-[10px] font-semibold uppercase tracking-wider text-[#4F46E5]; }
+.db-log-msg { @apply break-all font-mono text-xs leading-normal text-[#111827]; }
+.db-empty-state { @apply rounded-2xl bg-[#F9FAFB] py-8 text-center text-xs font-medium text-[#6B7280] ring-1 ring-[#E5E7EB]; }

@@ -1,0 +1,73 @@
+@import "tailwindcss" reference;
+
+.perm-container {
+  @apply flex flex-col gap-6;
+}
+
+.perm-alert-card {
+  @apply flex items-start gap-3 bg-amber-50 text-amber-800 p-4 rounded-xl border border-amber-100 text-xs shadow-xs leading-relaxed;
+}
+
+.perm-alert-icon {
+  @apply w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0;
+}
+
+.perm-alert-text {
+  @apply flex flex-col gap-1;
+}
+
+.perm-grid-card {
+  @apply bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-sm;
+}
+
+.perm-table-wrapper {
+  @apply overflow-x-auto;
+}
+
+.perm-table {
+  @apply w-full border-collapse text-left;
+}
+
+.perm-th {
+  @apply px-4 py-3.5 bg-[#F9FAFB] text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-[#E5E7EB];
+}
+
+.perm-th--module {
+  @apply min-w-[280px];
+}
+
+.perm-tr {
+  @apply border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition;
+}
+
+.perm-td {
+  @apply px-4 py-4 text-xs text-gray-950 font-medium;
+}
+
+.perm-td--module {
+  @apply min-w-[280px];
+}
+
+.perm-name-block {
+  @apply flex flex-col;
+}
+
+.perm-module-name {
+  @apply text-sm font-bold text-gray-900;
+}
+
+.perm-module-desc {
+  @apply text-xs text-gray-500 font-medium mt-0.5 leading-relaxed;
+}
+
+.perm-checkbox-wrapper {
+  @apply flex items-center justify-center;
+}
+
+.perm-checkbox {
+  @apply w-4.5 h-4.5 text-[#4F46E5] border-gray-300 rounded focus:ring-[#4F46E5] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Premium Admin Console surface overrides */
+.permissions-container { color: #111827; }
+

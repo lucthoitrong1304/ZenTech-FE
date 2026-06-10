@@ -5,6 +5,8 @@ import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
 import { LoginRequest } from '../models/auth.models';
 import { AuthService } from '../services/auth.service';
 import { AuthSessionStore } from './auth-session.store';
+import { ClientLogService } from '../../../../core/logging/client-log.service';
+import { ClientLogEventType } from '../../../../core/logging/client-log.model';
 import {
   AuthRequestState,
   createInitialAuthRequestState,
@@ -23,7 +25,12 @@ export const LoginStore = signalStore(
     vm: computed(() => ({ loading: loading() })),
   })),
   withMethods(
-    (store, authService = inject(AuthService), authSessionStore = inject(AuthSessionStore)) => ({
+    (
+      store,
+      authService = inject(AuthService),
+      authSessionStore = inject(AuthSessionStore),
+      clientLogService = inject(ClientLogService),
+    ) => ({
       login: rxMethod<LoginRequest>(
         pipe(
           tap(() => patchState(store, toRequestStartState())),
@@ -33,12 +40,32 @@ export const LoginStore = signalStore(
                 next: (response) => {
                   authSessionStore.setSession(response);
                   patchState(store, toRequestSuccessState(LOGIN_SUCCESS_MESSAGE));
+
+                  clientLogService.info(
+                    ClientLogEventType.AuthLoginSucceeded,
+                    `User ${response.email} đăng nhập thành công bằng Email.`,
+                    {
+                      routeUrl: '/auth/login',
+                      userEmail: response.email,
+                    },
+                  );
                 },
-                error: (error) =>
+                error: (error) => {
                   patchState(
                     store,
                     toRequestErrorState(parseAuthErrorMessage(error, LOGIN_ERROR_MESSAGE)),
-                  ),
+                  );
+
+                  clientLogService.warn(
+                    ClientLogEventType.AuthLoginFailed,
+                    `User đăng nhập thất bại bằng Email. Target: ${payload.email}`,
+                    {
+                      routeUrl: '/auth/login',
+                      userEmail: payload.email,
+                      reason: parseAuthErrorMessage(error, LOGIN_ERROR_MESSAGE),
+                    },
+                  );
+                },
               }),
               catchError(() => EMPTY),
             ),
@@ -55,12 +82,31 @@ export const LoginStore = signalStore(
                 next: (response) => {
                   authSessionStore.setSession(response);
                   patchState(store, toRequestSuccessState(LOGIN_SUCCESS_MESSAGE));
+
+                  clientLogService.info(
+                    ClientLogEventType.AuthLoginSucceeded,
+                    `User ${response.email} đăng nhập thành công bằng Google.`,
+                    {
+                      routeUrl: '/auth/login',
+                      userEmail: response.email,
+                    },
+                  );
                 },
-                error: (error) =>
+                error: (error) => {
                   patchState(
                     store,
                     toRequestErrorState(parseAuthErrorMessage(error, 'Đăng nhập Google thất bại.')),
-                  ),
+                  );
+
+                  clientLogService.warn(
+                    ClientLogEventType.AuthLoginFailed,
+                    'User đăng nhập thất bại bằng Google.',
+                    {
+                      routeUrl: '/auth/login',
+                      reason: parseAuthErrorMessage(error, 'Đăng nhập Google thất bại.'),
+                    },
+                  );
+                },
               }),
               catchError(() => EMPTY),
             ),

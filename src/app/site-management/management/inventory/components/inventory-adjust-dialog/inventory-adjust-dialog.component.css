@@ -1,0 +1,165 @@
+@import "tailwindcss" reference;
+
+:host ::ng-deep .adjust-p-dialog .p-dialog {
+  @apply overflow-hidden rounded-2xl bg-white shadow-xl border border-[#E5E7EB] w-full max-w-lg mx-4;
+}
+
+:host ::ng-deep .adjust-p-dialog .p-dialog-content {
+  @apply p-0;
+}
+
+.dialog-wrapper {
+  @apply flex flex-col;
+}
+
+.dialog-header {
+  @apply flex items-center justify-between border-b border-[#E5E7EB] px-6 py-4;
+}
+
+.dialog-title-group {
+  @apply flex items-center gap-3;
+}
+
+.title-icon {
+  @apply h-6 w-6 text-[#4F46E5];
+}
+
+.dialog-header h2 {
+  @apply m-0 text-base font-semibold text-[#111827];
+}
+
+.dialog-header p {
+  @apply m-0 text-xs text-[#6B7280] mt-0.5;
+}
+
+.close-btn {
+  @apply flex h-8 w-8 items-center justify-center rounded-full bg-transparent text-[#6B7280] transition-colors border-none cursor-pointer hover:bg-[#F3F4F6] hover:text-[#111827] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5];
+}
+
+.close-icon {
+  @apply h-4 w-4;
+}
+
+.product-info-panel {
+  @apply flex items-center justify-between bg-[#F9FAFB] border-b border-[#E5E7EB] px-6 py-4;
+}
+
+.product-details {
+  @apply flex items-center gap-3 flex-1 min-w-0;
+}
+
+.product-img {
+  @apply h-12 w-12 rounded-lg object-cover bg-white border border-[#E5E7EB];
+}
+
+.product-no-img {
+  @apply flex h-12 w-12 items-center justify-center rounded-lg bg-white border border-[#E5E7EB] text-[#9CA3AF];
+}
+
+.fallback-icon {
+  @apply h-6 w-6;
+}
+
+.product-text {
+  @apply flex flex-col min-w-0;
+}
+
+.product-text h3 {
+  @apply m-0 text-sm font-semibold text-[#111827] truncate;
+}
+
+.variant-badge {
+  @apply inline-block self-start mt-1 text-[11px] font-medium px-2 py-0.5 rounded-full border bg-white text-[#4F46E5] max-w-max truncate;
+}
+
+.stock-status-panel {
+  @apply flex flex-col items-end flex-shrink-0 pl-4;
+}
+
+.stock-label {
+  @apply text-[10px] font-semibold text-[#6B7280] uppercase tracking-[0.08em];
+}
+
+.stock-value {
+  @apply text-xl font-bold text-[#111827] mt-0.5;
+}
+
+.dialog-form {
+  @apply p-6 flex flex-col gap-4;
+}
+
+.submit-error {
+  @apply flex items-start gap-2.5 rounded-xl bg-rose-50 border border-rose-100 p-3.5 text-xs text-rose-700 font-medium;
+}
+
+.alert-icon {
+  @apply h-4 w-4 flex-shrink-0 mt-0.5;
+}
+
+.form-group {
+  @apply flex flex-col gap-1.5;
+}
+
+.form-row {
+  @apply flex flex-col gap-4 sm:flex-row;
+}
+
+.form-group--half {
+  @apply flex-1;
+}
+
+.form-label {
+  @apply text-xs font-semibold text-[#374151];
+}
+
+.required-asterisk {
+  @apply text-rose-500;
+}
+
+.toggle-buttons {
+  @apply grid grid-cols-2 gap-3;
+}
+
+.toggle-btn {
+  @apply flex items-center justify-center gap-2 rounded-xl border border-[#E5E7EB] bg-white py-3 px-4 text-xs font-semibold text-[#475569] transition-all cursor-pointer hover:bg-[#F8FAFC];
+}
+
+.btn-icon {
+  @apply h-4 w-4;
+}
+
+.toggle-btn--import.active {
+  @apply border-[#16A34A] bg-[#F0FDF4] text-[#16A34A];
+}
+
+.toggle-btn--export.active {
+  @apply border-[#E11D48] bg-[#FFF1F2] text-[#E11D48];
+}
+
+.form-input {
+  @apply h-10 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3.5 text-sm text-[#111827] transition-all focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5] focus-visible:outline-none;
+}
+
+.form-select {
+  @apply h-10 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3.5 text-sm text-[#111827] transition-all focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5] focus-visible:outline-none cursor-pointer;
+}
+
+.form-textarea {
+  @apply rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-3 text-sm text-[#111827] transition-all focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5] focus-visible:outline-none resize-none;
+}
+
+.dialog-footer {
+  @apply flex items-center justify-end gap-3 border-t border-[#E5E7EB] pt-4 mt-2;
+}
+
+.btn-cancel {
+  @apply inline-flex items-center justify-center rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-6 py-2.5 text-xs font-semibold text-[#374151] transition-colors hover:bg-[#F3F4F6] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5];
+}
+
+.btn-save {
+  @apply inline-flex items-center justify-center rounded-full border-none bg-[#FFC700] px-6 py-2.5 text-xs font-black text-[#111827] shadow-sm transition-colors hover:bg-[#FFD633] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5];
+}
+
+.btn-save:disabled, .btn-cancel:disabled {
+  @apply bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed shadow-none border-none;
+}

@@ -25,6 +25,10 @@ export class ApiService {
     return this.http.get<T>(url, options);
   }
 
+  getText(url: string, options?: ApiRequestOptions): Observable<string> {
+    return this.http.get(url, { ...options, responseType: 'text' });
+  }
+
   post<TRequest, TResponse>(
     url: string,
     body: TRequest,

@@ -10,6 +10,7 @@ import { AuthStorageService } from './core/services/auth-storage.service';
 import { CallSignalingService } from './core/services/call-signaling.service';
 import { IncomingCallDialogComponent } from './shared/components/incoming-call-dialog/incoming-call-dialog.component';
 import { InCallDialogComponent } from './shared/components/in-call-dialog/in-call-dialog.component';
+import { RouteClientLogService } from './core/logging/route-client-log.service';
 
 @Component({
   selector: 'app-root',
@@ -21,6 +22,7 @@ export class App {
   private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly router = inject(Router);
   private readonly authStorageService = inject(AuthStorageService);
+  private readonly routeClientLogService = inject(RouteClientLogService);
   protected readonly title = signal('ZenTech-FE');
   protected readonly currentUrl = toSignal(
     this.router.events.pipe(
@@ -41,6 +43,7 @@ export class App {
     return !(
       url === '/chat' ||
       url.startsWith('/management') ||
+      url.startsWith('/admin') ||
       url.startsWith('/auth') ||
       url.startsWith('/error')
     );
@@ -50,6 +53,7 @@ export class App {
 
   constructor() {
     this.categoryNavigationStore.loadCategoriesOnce();
+    this.routeClientLogService.initialize();
 
     effect(() => {
       this.currentUrl();

@@ -672,8 +672,8 @@
   <div class="dialog-content-wrapper">
     <div class="dialog-customer-header">
       <div class="dialog-avatar-wrapper">
-        <img *ngIf="selectedCustomerDetails.imageUrl" [src]="selectedCustomerDetails.imageUrl" class="dialog-avatar-img" />
-        <span *ngIf="!selectedCustomerDetails.imageUrl" class="dialog-avatar-fallback">
+        <img *ngIf="selectedCustomerDetails.imageUrl && !isImageFailed(selectedCustomerDetails.email)" [src]="selectedCustomerDetails.imageUrl" class="dialog-avatar-img" referrerpolicy="no-referrer" (error)="onImageError(selectedCustomerDetails.email)" />
+        <span *ngIf="!selectedCustomerDetails.imageUrl || isImageFailed(selectedCustomerDetails.email)" class="dialog-avatar-fallback">
           {{ selectedCustomerDetails.customerName | slice:0:1 | uppercase }}
         </span>
       </div>

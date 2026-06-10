@@ -64,8 +64,12 @@ export class CartPageComponent {
     });
   }
 
-  protected onCheckout(): void {
-    this.toastService.warning('Checkout sẽ được kết nối trong phase tiếp theo.');
+  protected goToCheckout(): void {
+    if (this.cartStore.isEmpty()) {
+      return;
+    }
+
+    this.router.navigate(['/checkout']);
   }
 
   protected onLogout(): void {

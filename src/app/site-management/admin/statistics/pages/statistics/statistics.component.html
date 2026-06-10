@@ -1,0 +1,152 @@
+<div class="stats-container">
+  <!-- Top KPI Cards -->
+  <div class="stats-summary-grid">
+    <!-- Total Errors KPI -->
+    <div class="stats-summary-card">
+      <div class="stats-summary-header">
+        <span class="stats-summary-title">Tổng số lỗi ghi nhận</span>
+        <svg lucideAlertCircle class="stats-summary-icon text-rose-500" [attr.stroke-width]="2"></svg>
+      </div>
+      <div class="stats-summary-body">
+        <span class="stats-summary-value">{{ store.totalErrorsCount() }}</span>
+        <span class="stats-summary-badge stats-summary-badge--danger">Cảnh báo lỗi</span>
+      </div>
+    </div>
+
+    <!-- Resolved Tickets KPI -->
+    <div class="stats-summary-card">
+      <div class="stats-summary-header">
+        <span class="stats-summary-title">Ticket đã xử lý</span>
+        <svg lucideCheckCircle class="stats-summary-icon text-emerald-500" [attr.stroke-width]="2"></svg>
+      </div>
+      <div class="stats-summary-body">
+        <span class="stats-summary-value">{{ getResolvedTicketsCount() }}/{{ getTotalTicketsCount() }}</span>
+        <span class="stats-summary-badge stats-summary-badge--success">Tỷ lệ xử lý: {{ getTicketSuccessRate() }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SVG Chart: Errors by Day -->
+  <div class="stats-chart-card">
+    <div class="stats-chart-header">
+      <h3 class="stats-chart-title">Biểu đồ lỗi hệ thống theo ngày (7 ngày qua)</h3>
+      <div class="stats-chart-legend">
+        <span class="legend-color"></span>
+        <span class="legend-text">Lượng lỗi ghi nhận</span>
+      </div>
+    </div>
+    
+    <div class="stats-chart-wrapper">
+      <svg viewBox="0 0 500 150" class="stats-chart-svg" aria-label="Biểu đồ lỗi theo ngày">
+        <!-- Grid Lines -->
+        <line x1="20" y1="20" x2="480" y2="20" stroke="#f1f5f9" stroke-width="1"></line>
+        <line x1="20" y1="65" x2="480" y2="65" stroke="#f1f5f9" stroke-width="1"></line>
+        <line x1="20" y1="110" x2="480" y2="110" stroke="#f1f5f9" stroke-width="1"></line>
+        <line x1="20" y1="130" x2="480" y2="130" stroke="#e2e8f0" stroke-width="1.5"></line>
+
+        <!-- Chart Path Area -->
+        <polyline
+          fill="none"
+          stroke="#E11D48"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          [attr.points]="chartPointsString"
+        ></polyline>
+
+        <!-- Points Circles and Values -->
+        @for (d of dailyErrors; track d.date; let idx = $index) {
+          @let posX = 20 + (idx * 460) / 6;
+          @let posY = 130 - (d.count * 110) / chartMaxVal;
+          <circle
+            [attr.cx]="posX"
+            [attr.cy]="posY"
+            r="4.5"
+            fill="#FFFFFF"
+            stroke="#E11D48"
+            stroke-width="2.5"
+          ></circle>
+          <text
+            [attr.x]="posX"
+            [attr.y]="posY - 10"
+            text-anchor="middle"
+            fill="#374151"
+            font-size="9"
+            font-weight="bold"
+          >{{ d.count }}</text>
+          <text
+            [attr.x]="posX"
+            [attr.y]="145"
+            text-anchor="middle"
+            fill="#6B7280"
+            font-size="8"
+            font-weight="semibold"
+          >{{ d.date }}</text>
+        }
+      </svg>
+    </div>
+  </div>
+
+  <!-- Table Columns -->
+  <div class="stats-table-columns">
+    <!-- Top Failed APIs -->
+    <div class="stats-table-card">
+      <div class="stats-table-header">
+        <svg lucideLink class="stats-table-icon" [attr.stroke-width]="2"></svg>
+        <h3 class="stats-table-title">API lỗi nhiều nhất</h3>
+      </div>
+      <div class="stats-table-wrapper">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th scope="col" class="stats-th">API Endpoint</th>
+              <th scope="col" class="stats-th text-center">Mã Lỗi</th>
+              <th scope="col" class="stats-th text-right">Số Lần Lỗi</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (api of topApiErrors; track api.endpoint) {
+              <tr class="stats-tr">
+                <td class="stats-td stats-td--endpoint">{{ api.endpoint }}</td>
+                <td class="stats-td text-center">
+                  <span class="stats-badge-status stats-badge-status--danger">{{ api.status }}</span>
+                </td>
+                <td class="stats-td stats-td--count text-right">{{ api.count }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top Users encountering errors -->
+    <div class="stats-table-card">
+      <div class="stats-table-header">
+        <svg lucideUsers class="stats-table-icon" [attr.stroke-width]="2"></svg>
+        <h3 class="stats-table-title">Top user gặp lỗi</h3>
+      </div>
+      <div class="stats-table-wrapper">
+        <table class="stats-table">
+          <thead>
+            <tr>
+              <th scope="col" class="stats-th">Email Tài Khoản</th>
+              <th scope="col" class="stats-th text-center">Vai Trò</th>
+              <th scope="col" class="stats-th text-right">Số Lần Lỗi</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of topUsersWithErrors; track user.email) {
+              <tr class="stats-tr">
+                <td class="stats-td stats-td--email">{{ user.email }}</td>
+                <td class="stats-td text-center">
+                  <span class="stats-badge-role">{{ user.role }}</span>
+                </td>
+                <td class="stats-td stats-td--count text-right">{{ user.count }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

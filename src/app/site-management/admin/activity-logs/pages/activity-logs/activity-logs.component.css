@@ -1,0 +1,73 @@
+@import "tailwindcss" reference;
+
+.audit-container {
+  @apply flex flex-col gap-6;
+}
+
+.audit-header-row {
+  @apply flex items-center justify-between gap-4 flex-shrink-0;
+}
+
+.audit-search-wrapper {
+  @apply relative flex-1 max-w-xl;
+}
+
+.audit-search-icon {
+  @apply absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none;
+}
+
+.audit-search-input {
+  @apply w-full pl-10 pr-4 py-2.5 bg-[#F9FAFB] hover:bg-white focus:bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-full text-sm outline-none focus:ring-1 focus:ring-[#4F46E5] transition;
+}
+
+.audit-table-card {
+  @apply bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-sm;
+}
+
+.audit-table-wrapper {
+  @apply overflow-x-auto;
+}
+
+.audit-table {
+  @apply w-full border-collapse text-left;
+}
+
+.audit-th {
+  @apply px-4 py-3.5 bg-[#F9FAFB] text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-[#E5E7EB];
+}
+
+.audit-tr {
+  @apply border-b border-[#E5E7EB] hover:bg-[#F9FAFB] transition;
+}
+
+.audit-td {
+  @apply px-4 py-3.5 text-xs text-gray-950 font-medium;
+}
+
+.audit-td--time {
+  @apply text-gray-500 font-mono;
+}
+
+.audit-td--operator {
+  @apply font-semibold text-gray-900;
+}
+
+.audit-td--action {
+  @apply text-[#4F46E5] font-bold;
+}
+
+.audit-td--target {
+  @apply text-gray-600 max-w-xs truncate font-semibold;
+}
+
+.audit-td--ip {
+  @apply font-mono text-gray-400 text-[11px];
+}
+
+.audit-empty-state {
+  @apply text-center py-16 text-gray-400 text-xs font-medium w-full;
+}
+
+/* Premium Admin Console surface overrides */
+.activity-container { color: #111827; }
+

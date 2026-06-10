@@ -64,6 +64,16 @@ export class CustomerTableComponent {
     this.pageChange.emit({ page: this.page() - 1, size: this.size() });
   }
 
+  protected failedImages = new Set<string>();
+
+  protected onImageError(customerId: string): void {
+    this.failedImages.add(customerId);
+  }
+
+  protected isImageFailed(customerId: string): boolean {
+    return this.failedImages.has(customerId);
+  }
+
   protected nextPage(): void {
     if (this.page() + 1 >= this.totalPages() || this.loading()) {
       return;

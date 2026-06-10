@@ -61,4 +61,14 @@ export class MessageTimelineComponent {
       url: attachment.url,
     });
   }
+
+  protected failedImages = new Set<string>();
+
+  protected onImageError(id: string): void {
+    this.failedImages.add(id);
+  }
+
+  protected isImageFailed(id: string): boolean {
+    return this.failedImages.has(id);
+  }
 }

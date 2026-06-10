@@ -1,0 +1,113 @@
+<div class="admin-profile-page">
+  <a id="admin-profile-back-dashboard" routerLink="/admin/dashboard" class="admin-back-link">
+    <svg lucideArrowLeft [attr.stroke-width]="2"></svg>
+    Quay lại trang chủ admin
+  </a>
+
+  <section class="admin-profile-card">
+    <div class="admin-profile-cover"></div>
+
+    <div class="admin-profile-identity">
+      <div class="admin-avatar-frame">
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()" alt="Ảnh đại diện admin" referrerpolicy="no-referrer" />
+        } @else {
+          <span>{{ accountInitials() }}</span>
+        }
+        <button
+          id="admin-profile-avatar-upload"
+          type="button"
+          class="admin-avatar-upload"
+          aria-label="Cập nhật ảnh đại diện admin"
+          (click)="triggerFileInput(fileInput)"
+        >
+          <svg lucideCamera [attr.stroke-width]="2"></svg>
+        </button>
+        <input #fileInput type="file" accept="image/*" class="admin-hidden-input" (change)="onFileSelected($event)" />
+      </div>
+
+      <div class="admin-identity-panel">
+        <div class="admin-identity-copy">
+          <span class="admin-role-chip">ADMIN ACCOUNT</span>
+          <h2>{{ displayName() }}</h2>
+          <p>{{ adminEmail() }}</p>
+        </div>
+      </div>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="admin-profile-form">
+      <div class="admin-form-grid">
+        <section class="admin-form-section">
+          <div class="admin-section-heading">
+            <svg lucideUser [attr.stroke-width]="2"></svg>
+            <div>
+              <h3>Thông tin cá nhân</h3>
+              <p>Dữ liệu hiển thị cho tài khoản quản trị.</p>
+            </div>
+          </div>
+
+          <label class="admin-field">
+            <span>Họ và tên <strong>*</strong></span>
+            <input id="admin-profile-full-name" type="text" formControlName="fullName" placeholder="Nhập họ và tên" />
+          </label>
+
+          <label class="admin-field">
+            <span>Số điện thoại</span>
+            <div class="admin-input-icon">
+              <svg lucidePhone [attr.stroke-width]="2"></svg>
+              <input id="admin-profile-phone" type="text" formControlName="phoneNumber" placeholder="Nhập số điện thoại" />
+            </div>
+          </label>
+
+          <label class="admin-field">
+            <span>Ngày sinh</span>
+            <div class="admin-input-icon">
+              <svg lucideCalendar [attr.stroke-width]="2"></svg>
+              <input id="admin-profile-birthday" type="date" formControlName="dateOfBirth" />
+            </div>
+          </label>
+        </section>
+
+        <section class="admin-form-section">
+          <div class="admin-section-heading">
+            <svg lucideShield [attr.stroke-width]="2"></svg>
+            <div>
+              <h3>Thông tin tài khoản</h3>
+              <p>Email đăng nhập và địa chỉ liên hệ.</p>
+            </div>
+          </div>
+
+          <label class="admin-field">
+            <span>Email đăng nhập</span>
+            <div class="admin-input-icon admin-input-readonly">
+              <svg lucideMail [attr.stroke-width]="2"></svg>
+              <input id="admin-profile-email" type="email" [value]="adminEmail()" readonly />
+            </div>
+          </label>
+
+          <label class="admin-field">
+            <span>Địa chỉ liên hệ</span>
+            <div class="admin-input-icon admin-textarea-icon">
+              <svg lucideMapPin [attr.stroke-width]="2"></svg>
+              <textarea id="admin-profile-address" rows="5" formControlName="address" placeholder="Nhập địa chỉ liên hệ"></textarea>
+            </div>
+          </label>
+        </section>
+      </div>
+
+      <div class="admin-form-footer">
+        <button
+          id="admin-profile-save-button"
+          type="submit"
+          class="admin-primary-button"
+          [disabled]="profileForm.invalid || adminProfileStore.isSaving()"
+        >
+          @if (adminProfileStore.isSaving()) {
+            <svg lucideLoader2 class="admin-spin" [attr.stroke-width]="2"></svg>
+          }
+          Lưu thay đổi
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

@@ -1,0 +1,664 @@
+@import "tailwindcss" reference;
+
+.accounts-shell {
+  @apply flex flex-col gap-6 text-[#111827];
+}
+
+.accounts-eyebrow {
+  @apply inline-flex items-center gap-2 rounded-full bg-[#FFFBEB] border border-[#FEF3C7] px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-[#D97706];
+}
+
+.accounts-primary-btn svg,
+.accounts-refresh-icon-btn svg,
+.accounts-icon-btn svg,
+.view-toggle-btn svg,
+.profile-action-btn svg {
+  @apply h-4 w-4;
+}
+
+.accounts-primary-btn,
+.dialog-primary-btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border-none bg-[#FFC700] px-5 py-2.5 text-sm font-semibold text-[#111827] shadow-sm transition-all duration-200 hover:bg-[#FFD633] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] cursor-pointer;
+}
+
+.accounts-primary-btn {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+/* ==================== METRICS VISUALS ==================== */
+.accounts-metrics-grid {
+  @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-4;
+}
+
+.metric-card {
+  @apply flex items-start gap-4 rounded-xl p-4 shadow-sm border bg-white transition-all duration-300 hover:shadow-md;
+}
+
+.metric-card--total {
+  @apply bg-[#F8FAFC] border-[#E2E8F0];
+}
+
+.metric-card--total .metric-card__icon {
+  @apply flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-700;
+}
+
+.metric-card--active {
+  @apply bg-[#F0FDF4] border-[#DCFCE7];
+}
+
+.metric-card--active .metric-card__icon {
+  @apply flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700;
+}
+
+.metric-card--locked {
+  @apply bg-[#FFF1F2] border-[#FFE4E6];
+}
+
+.metric-card--locked .metric-card__icon {
+  @apply flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-700;
+}
+
+.metric-card--internal {
+  @apply bg-[#EEF2FF] border-[#E0E7FF];
+}
+
+.metric-card--internal .metric-card__icon {
+  @apply flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700;
+}
+
+.metric-card__content {
+  @apply flex-1 min-w-0;
+}
+
+.metric-card__icon svg {
+  @apply h-5 w-5;
+}
+
+.metric-card__label {
+  @apply text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7280];
+}
+
+.metric-card__value {
+  @apply mt-1 block text-2xl font-bold text-[#1E293B];
+}
+
+.metric-progress-wrapper {
+  @apply mt-2 flex flex-col gap-1;
+}
+
+.metric-progress-bar {
+  @apply h-1.5 w-full rounded-full bg-[#E5E7EB] overflow-hidden;
+}
+
+.metric-progress-fill {
+  @apply h-full transition-all duration-500 ease-out;
+}
+
+.metric-progress-fill--total {
+  @apply bg-slate-400;
+}
+
+.metric-progress-fill--active {
+  @apply bg-emerald-500;
+}
+
+.metric-progress-fill--locked {
+  @apply bg-rose-500;
+}
+
+.metric-progress-fill--internal {
+  @apply bg-indigo-500;
+}
+
+.metric-progress-text {
+  @apply text-[10px] font-medium text-[#6B7280];
+}
+
+/* ==================== TOOLBAR & VIEW TOGGLE ==================== */
+.accounts-panel {
+  @apply overflow-hidden rounded-2xl bg-white shadow-sm border border-[#E5E7EB];
+}
+
+.accounts-toolbar {
+  @apply flex flex-col gap-4 py-2 xl:flex-row xl:items-center xl:justify-between;
+}
+
+.toolbar-left {
+  @apply flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 min-w-0;
+}
+
+.toolbar-right {
+  @apply flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-shrink-0;
+}
+
+.accounts-search {
+  @apply relative min-w-0 w-full xl:max-w-xs;
+}
+
+.accounts-search__icon {
+  @apply pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6B7280];
+}
+
+.accounts-search__input {
+  @apply h-11 w-full rounded-full border border-[#E5E7EB] bg-[#F9FAFB] pl-10 pr-4 text-sm text-[#111827] transition-all focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5] focus-visible:outline-none;
+}
+
+.accounts-filters {
+  @apply flex flex-col gap-3 sm:flex-row sm:items-center;
+}
+
+.accounts-refresh-icon-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 2.5rem !important; /* h-10 = 40px */
+  width: 2.5rem !important;  /* w-10 = 40px */
+  border-radius: 9999px !important;
+  border: 1px solid #E5E7EB !important;
+  background-color: #F9FAFB !important;
+  color: #374151 !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+  transition: all 0.2s ease !important;
+}
+
+.accounts-refresh-icon-btn:hover:not(:disabled) {
+  background-color: #F3F4F6 !important;
+  color: #111827 !important;
+}
+
+.accounts-refresh-icon-btn:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+.dialog-secondary-btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-5 py-2.5 text-sm font-medium text-[#374151] transition-all hover:bg-[#F3F4F6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] cursor-pointer;
+}
+
+.accounts-view-toggles {
+  @apply flex items-center rounded-full bg-[#F3F4F6] p-1 border border-[#E5E7EB];
+  flex-shrink: 0 !important;
+}
+
+.view-toggle-btn {
+  @apply flex h-9 w-9 items-center justify-center rounded-full border-none bg-transparent text-[#6B7280] transition-all duration-200 cursor-pointer focus-visible:outline-none;
+}
+
+.view-toggle-btn:hover {
+  @apply text-[#111827];
+}
+
+.view-toggle-btn--active {
+  @apply bg-white text-[#4F46E5] shadow-sm;
+}
+
+/* ==================== TABLE VIEW STYLES ==================== */
+.account-identity,
+.role-target {
+  @apply flex min-w-64 items-center gap-3;
+}
+
+.account-avatar {
+  @apply h-10 w-10 flex-shrink-0 rounded-full object-cover ring-1 ring-[#E5E7EB];
+}
+
+.account-avatar--fallback {
+  @apply flex items-center justify-center text-xs font-semibold text-white;
+}
+
+.account-copy {
+  @apply flex min-w-0 flex-col;
+}
+
+.account-copy strong {
+  @apply truncate text-sm font-semibold text-[#111827];
+}
+
+.account-copy span {
+  @apply truncate text-xs text-[#6B7280];
+}
+
+.accounts-date-cell {
+  @apply whitespace-nowrap font-mono text-xs text-[#6B7280];
+}
+
+.accounts-table__actions-heading {
+  @apply text-right;
+}
+
+.accounts-row-actions {
+  @apply flex items-center justify-end gap-2;
+}
+
+.accounts-icon-btn {
+  @apply inline-flex h-9 w-9 items-center justify-center rounded-full border-none bg-transparent p-0 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5] cursor-pointer;
+}
+
+.accounts-icon-btn--edit {
+  @apply text-indigo-600 hover:bg-indigo-50;
+}
+
+.accounts-icon-btn--lock {
+  @apply text-rose-600 hover:bg-rose-50;
+}
+
+.accounts-icon-btn--unlock {
+  @apply text-emerald-600 hover:bg-emerald-50;
+}
+
+.accounts-empty {
+  @apply flex flex-col items-center justify-center gap-2 py-14 text-center text-[#6B7280];
+}
+
+.accounts-empty svg {
+  @apply h-10 w-10 text-[#9CA3AF];
+}
+
+.accounts-empty strong {
+  @apply text-sm font-semibold text-[#111827];
+}
+
+.accounts-empty span {
+  @apply text-xs;
+}
+
+/* ==================== CARD VIEW STYLES ==================== */
+.accounts-grid-wrapper {
+  @apply p-6 bg-[#F9FAFB];
+}
+
+.accounts-grid-loading {
+  @apply flex flex-col items-center justify-center gap-3 py-16 text-[#6B7280];
+}
+
+.accounts-grid-loading svg {
+  @apply h-8 w-8 text-[#4F46E5];
+}
+
+.accounts-card-grid {
+  @apply grid gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+.account-profile-card {
+  @apply relative flex flex-col rounded-xl overflow-hidden bg-white border border-[#E5E7EB] shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1;
+}
+
+.account-profile-card--inactive {
+  @apply border-dashed border-[#D1D5DB] opacity-80;
+}
+
+.profile-card-header {
+  @apply h-16 w-full relative flex items-center px-4 transition-all duration-300;
+}
+
+.profile-card-tag {
+  @apply absolute top-3 right-3 scale-90 origin-top-right;
+}
+
+.profile-card-avatar-wrap {
+  @apply -mt-10 self-center relative z-10;
+}
+
+.profile-card-avatar {
+  @apply h-20 w-20 rounded-full object-cover border-4 border-white shadow-sm ring-1 ring-black/5;
+}
+
+.profile-card-avatar--fallback {
+  @apply h-20 w-20 rounded-full border-4 border-white shadow-sm flex items-center justify-center text-lg font-bold text-white ring-1 ring-black/5;
+}
+
+.profile-card-body {
+  @apply p-4 flex-1 flex flex-col items-center text-center gap-3;
+}
+
+.profile-card-name {
+  @apply text-base font-bold text-[#111827] line-clamp-1 w-full px-2;
+}
+
+.profile-card-info-item {
+  @apply flex items-center justify-center gap-2 text-xs text-[#6B7280] w-full px-2;
+}
+
+.profile-card-info-item svg {
+  @apply h-3.5 w-3.5 flex-shrink-0 text-[#9CA3AF];
+}
+
+.profile-card-info-item span {
+  @apply truncate;
+}
+
+.profile-card-footer {
+  @apply border-t border-[#F3F4F6] bg-[#F9FAFB] px-4 py-3 flex items-center justify-between;
+}
+
+.profile-card-status {
+  @apply flex items-center gap-1.5 text-xs font-semibold text-[#374151];
+}
+
+.status-indicator {
+  @apply h-2 w-2 rounded-full bg-rose-500;
+}
+
+.status-indicator--active {
+  @apply bg-emerald-500;
+}
+
+.profile-card-actions {
+  @apply flex items-center gap-1.5;
+}
+
+.profile-action-btn {
+  @apply inline-flex h-8 w-8 items-center justify-center rounded-full border-none bg-white p-0 text-[#4F46E5] shadow-sm transition hover:bg-indigo-50 focus-visible:outline-none cursor-pointer;
+}
+
+.profile-action-btn--lock {
+  @apply text-rose-600 hover:bg-rose-50;
+}
+
+.profile-action-btn--unlock {
+  @apply text-emerald-600 hover:bg-emerald-50;
+}
+
+/* ==================== DIALOG & FORM STYLES ==================== */
+.accounts-form,
+.role-dialog-body {
+  @apply flex flex-col gap-4;
+}
+
+.form-field {
+  @apply flex flex-col gap-1.5;
+}
+
+.form-field span {
+  @apply text-xs font-medium text-[#374151];
+}
+
+.form-field input {
+  @apply h-11 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-4 text-sm text-[#111827] transition-all focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5];
+}
+
+.form-error {
+  @apply text-xs text-[#E11D48] mt-0.5 px-4;
+}
+
+.dialog-actions {
+  @apply mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end;
+}
+
+:host ::ng-deep .accounts-dropdown .p-select,
+:host ::ng-deep .accounts-dialog-dropdown,
+:host ::ng-deep .accounts-password,
+:host ::ng-deep .accounts-password .p-password-input {
+  @apply w-full;
+}
+
+:host ::ng-deep .accounts-dropdown {
+  @apply min-w-36 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] text-sm shadow-none transition focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5];
+  width: auto !important;
+  flex-shrink: 0 !important;
+}
+
+:host ::ng-deep .accounts-dropdown .p-select {
+  @apply border-none bg-transparent h-10 w-full flex items-center;
+}
+
+:host ::ng-deep .accounts-dropdown .p-select-label {
+  @apply text-sm text-[#374151] pl-4;
+}
+
+:host ::ng-deep .accounts-dialog-dropdown {
+  @apply rounded-full border border-[#E5E7EB] bg-[#F9FAFB] text-sm h-11 w-full flex items-center shadow-none transition focus-within:border-[#4F46E5] focus-within:bg-white focus-within:ring-1 focus-within:ring-[#4F46E5];
+}
+
+:host ::ng-deep .accounts-dialog-dropdown .p-select {
+  @apply border-none bg-transparent w-full h-full flex items-center;
+}
+
+:host ::ng-deep .accounts-dialog-dropdown .p-select-label {
+  @apply pl-4 text-sm text-[#111827];
+}
+
+:host ::ng-deep .accounts-password {
+  @apply w-full rounded-full;
+}
+
+:host ::ng-deep .accounts-password .p-password-input {
+  @apply h-11 rounded-full border border-[#E5E7EB] bg-[#F9FAFB] px-4 text-sm text-[#111827] transition focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5] w-full;
+}
+
+:host ::ng-deep .accounts-table .p-datatable-thead > tr > th {
+  @apply border-b border-[#E5E7EB] bg-[#F9FAFB] px-6 py-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7280];
+}
+
+:host ::ng-deep .accounts-table .p-datatable-tbody > tr > td {
+  @apply border-b border-[#F3F4F6] px-6 py-5 align-middle;
+}
+
+:host ::ng-deep .accounts-table .p-datatable-tbody > tr:hover {
+  @apply bg-[#F8FAFC];
+}
+
+/* ==================== PRIMENG PAGINATOR CUSTOM REDESIGN ==================== */
+:host ::ng-deep .accounts-paginator {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  border-top: 1px solid #E5E7EB !important;
+  background-color: #ffffff !important;
+  padding: 1rem 1.5rem !important;
+  border-bottom-left-radius: 1rem !important;
+  border-bottom-right-radius: 1rem !important;
+}
+
+:host ::ng-deep .accounts-paginator .p-paginator-current {
+  margin-right: auto !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  color: #6B7280 !important;
+  order: 1 !important;
+}
+
+:host ::ng-deep .accounts-paginator .p-paginator-first {
+  order: 2 !important;
+}
+:host ::ng-deep .accounts-paginator .p-paginator-prev {
+  order: 3 !important;
+}
+:host ::ng-deep .accounts-paginator .p-paginator-pages {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.25rem !important;
+  order: 4 !important;
+}
+:host ::ng-deep .accounts-paginator .p-paginator-next {
+  order: 5 !important;
+}
+:host ::ng-deep .accounts-paginator .p-paginator-last {
+  order: 6 !important;
+}
+
+:host ::ng-deep .accounts-paginator .p-paginator-rpp-dropdown,
+:host ::ng-deep .accounts-paginator .p-select {
+  margin-left: auto !important;
+  order: 7 !important;
+}
+
+:host ::ng-deep .accounts-paginator .p-paginator-page,
+:host ::ng-deep .accounts-paginator .p-paginator-first,
+:host ::ng-deep .accounts-paginator .p-paginator-prev,
+:host ::ng-deep .accounts-paginator .p-paginator-next,
+:host ::ng-deep .accounts-paginator .p-paginator-last {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 2.25rem !important;
+  width: 2.25rem !important;
+  border-radius: 9999px !important;
+  border: none !important;
+  background-color: transparent !important;
+  color: #6B7280 !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  padding: 0 !important;
+}
+
+:host ::ng-deep .accounts-paginator .p-paginator-page:hover:not(.p-disabled),
+:host ::ng-deep .accounts-paginator .p-paginator-first:hover:not(.p-disabled),
+:host ::ng-deep .accounts-paginator .p-paginator-prev:hover:not(.p-disabled),
+:host ::ng-deep .accounts-paginator .p-paginator-next:hover:not(.p-disabled),
+:host ::ng-deep .accounts-paginator .p-paginator-last:hover:not(.p-disabled) {
+  background-color: #F3F4F6 !important;
+  color: #111827 !important;
+}
+
+:host ::ng-deep .accounts-paginator .p-paginator-page.p-paginator-page-selected {
+  background-color: #4F46E5 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+:host ::ng-deep .accounts-paginator .p-disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+:host ::ng-deep .accounts-paginator .p-select {
+  border-radius: 9999px !important;
+  border: 1px solid #E5E7EB !important;
+  background-color: #F9FAFB !important;
+  height: 2.25rem !important;
+  width: 6.5rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding-left: 0.5rem !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+:host ::ng-deep .accounts-paginator .p-select:focus-within {
+  border-color: #4F46E5 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 1px #4F46E5 !important;
+}
+
+:host ::ng-deep .accounts-paginator .p-select-label {
+  font-size: 0.75rem !important;
+  color: #374151 !important;
+  padding: 0 0.5rem !important;
+}
+
+:host ::ng-deep .accounts-dialog .p-dialog {
+  @apply w-[min(92vw,32rem)] rounded-2xl overflow-hidden;
+}
+
+/* Wide Dialog configuration for split layout */
+:host ::ng-deep .accounts-dialog--wide .p-dialog {
+  @apply w-[min(96vw,56rem)];
+}
+
+:host ::ng-deep .accounts-dialog .p-dialog-header {
+  @apply border-b border-[#E5E7EB] bg-[#F9FAFB] px-6 py-4 text-base font-semibold text-[#111827];
+}
+
+:host ::ng-deep .accounts-dialog .p-dialog-content {
+  @apply px-6 py-5;
+}
+
+:host ::ng-deep .p-tag {
+  @apply rounded-full px-2.5 py-1 text-xs font-medium border border-transparent;
+}
+
+:host ::ng-deep .p-tag-success {
+  @apply bg-emerald-50 text-emerald-700 border-emerald-200/50;
+}
+
+:host ::ng-deep .p-tag-danger {
+  @apply bg-rose-50 text-rose-700 border-rose-200/50;
+}
+
+:host ::ng-deep .p-tag-warn {
+  @apply bg-amber-50 text-amber-700 border-amber-200/50;
+}
+
+:host ::ng-deep .p-tag-info {
+  @apply bg-blue-50 text-blue-700 border-blue-200/50;
+}
+
+:host ::ng-deep .role-tag-admin {
+  background-color: #F3E8FF !important;
+  color: #7C3AED !important;
+  border-color: #E9D5FF !important;
+}
+
+/* ==================== SPLIT DIALOG & LIVE PREVIEW ==================== */
+.dialog-split-container {
+  @apply grid gap-6 md:grid-cols-2;
+}
+
+.live-preview-panel {
+  @apply flex flex-col gap-4 rounded-xl border border-dashed border-[#D1D5DB] bg-[#F9FAFB] p-5 items-center justify-center min-h-[320px] md:min-h-0;
+}
+
+.preview-title {
+  @apply text-xs font-semibold uppercase tracking-[0.16em] text-[#6B7280] w-full text-left;
+}
+
+.preview-card-wrapper {
+  @apply w-full max-w-[280px] mt-2 flex items-center justify-center;
+}
+
+.account-profile-card--preview {
+  @apply w-full shadow-md pointer-events-none border-[#D1D5DB];
+}
+
+.preview-badge-role {
+  @apply absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider bg-black/30 text-white rounded-full px-2 py-0.5;
+}
+
+.preview-active-status {
+  @apply text-emerald-600 font-semibold;
+}
+
+/* ==================== RESPONSIVE RULES ==================== */
+@media (max-width: 768px) {
+  .toolbar-left,
+  .toolbar-right {
+    @apply w-full;
+  }
+  
+  .accounts-toolbar {
+    @apply p-0 gap-3;
+  }
+  
+  .accounts-primary-btn,
+  .accounts-refresh-icon-btn,
+  .dialog-primary-btn,
+  .dialog-secondary-btn {
+    @apply w-full;
+  }
+
+  .accounts-filters {
+    @apply w-full flex-wrap;
+  }
+
+  :host ::ng-deep .accounts-dropdown {
+    @apply w-full;
+  }
+
+  .dialog-split-container {
+    @apply grid-cols-1;
+  }
+
+  .live-preview-panel {
+    @apply order-first;
+  }
+}

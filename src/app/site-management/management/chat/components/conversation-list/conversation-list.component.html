@@ -35,11 +35,13 @@
         }
 
         <span class="relative shrink-0">
-          @if (conversation.customer.avatarUrl) {
+          @if (conversation.customer.avatarUrl && !isImageFailed(conversation.id)) {
             <img
               class="h-10 w-10 rounded-[5px] bg-[#f0edec] object-cover"
               [src]="conversation.customer.avatarUrl"
               [alt]="conversation.customer.fullName"
+              referrerpolicy="no-referrer"
+              (error)="onImageError(conversation.id)"
             />
           } @else {
             <span

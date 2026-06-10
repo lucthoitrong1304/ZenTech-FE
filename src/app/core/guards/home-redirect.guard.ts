@@ -10,6 +10,9 @@ export const homeRedirectGuard: CanActivateFn = () => {
   const session = authStorageService.getSession();
 
   if (authStorageService.isAuthenticated() && session) {
+    if (hasRole(session.roles, Role.ADMIN)) {
+      return router.createUrlTree(['/admin/dashboard']);
+    }
     if (
       hasRole(session.roles, Role.OWNER) ||
       hasRole(session.roles, Role.MANAGER) ||

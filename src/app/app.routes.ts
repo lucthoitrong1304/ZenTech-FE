@@ -30,6 +30,20 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'checkout',
+    loadComponent: () =>
+      import('./site-management/cart/pages/checkout-page/checkout-page.component').then(
+        m => m.CheckoutPageComponent
+      )
+  },
+  {
+    path: 'checkout/result',
+    loadComponent: () =>
+      import('./site-management/cart/pages/checkout-result-page/checkout-result-page.component').then(
+        m => m.CheckoutResultPageComponent
+      )
+  },
+  {
     path: 'reset-password',
     loadComponent: () => import('./site-management/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },
@@ -56,6 +70,10 @@ export const routes: Routes = [
   {
     path: 'management',
     loadChildren: () => import('./site-management/management/management.routes').then(m => m.managementRoutes)
+  },
+  {
+    path: 'admin',
+    loadChildren: () => import('./site-management/admin/admin.routes').then(m => m.adminRoutes)
   },
   { // Keep global error route untouched
     path: 'error',

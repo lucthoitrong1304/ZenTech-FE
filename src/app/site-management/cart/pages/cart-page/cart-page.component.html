@@ -74,11 +74,15 @@
       }
     </section>
 
-    <app-cart-summary
-      [itemCount]="cartStore.itemCount()"
-      [subtotal]="cartStore.subtotal()"
-      [total]="cartStore.total()"
-      (checkout)="onCheckout()"
-    />
+    <div class="grid h-fit gap-5 lg:sticky lg:top-28">
+      <app-cart-summary
+        [itemCount]="cartStore.itemCount()"
+        [subtotal]="cartStore.subtotal()"
+        [total]="cartStore.total()"
+        [canCheckout]="!cartStore.isEmpty()"
+        checkoutLabel="Thanh toán"
+        (checkout)="goToCheckout()"
+      />
+    </div>
   </main>
 </div>

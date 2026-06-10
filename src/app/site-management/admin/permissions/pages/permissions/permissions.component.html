@@ -1,0 +1,56 @@
+<div class="perm-container">
+  <!-- Info Warning Card -->
+  <div class="perm-alert-card">
+    <svg lucideShieldAlert class="perm-alert-icon" [attr.stroke-width]="2"></svg>
+    <div class="perm-alert-text">
+      <strong>Lưu ý về thiết lập quyền hệ thống:</strong>
+      Phân quyền quản trị hệ thống (ADMIN) mặc định được kích hoạt toàn quyền và không thể sửa đổi để tránh lỗi hệ thống (System Lockout).
+      Mọi thay đổi đối với các vai trò khác sẽ được áp dụng ngay lập tức trong bộ nhớ và ghi nhận vào Nhật ký hoạt động.
+    </div>
+  </div>
+
+  <!-- Permission Matrix Card -->
+  <div class="perm-grid-card">
+    <div class="perm-table-wrapper">
+      <table class="perm-table">
+        <thead>
+          <tr>
+            <th scope="col" class="perm-th perm-th--module">Chức năng hệ thống / Module</th>
+            @for (role of roleColumns; track role) {
+              <th scope="col" class="perm-th text-center">{{ role }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (perm of store.permissions(); track perm.id) {
+            <tr class="perm-tr">
+              <!-- Module Description -->
+              <td class="perm-td perm-td--module">
+                <div class="perm-name-block">
+                  <span class="perm-module-name">{{ perm.moduleName }}</span>
+                  <span class="perm-module-desc">{{ perm.description }}</span>
+                </div>
+              </td>
+
+              <!-- Role Permission Checks -->
+              @for (role of roleColumns; track role) {
+                <td class="perm-td text-center">
+                  <div class="perm-checkbox-wrapper">
+                    <input
+                      type="checkbox"
+                      [checked]="perm.rolesAllowed[role]"
+                      [disabled]="role === AdminAccountRole.ADMIN"
+                      (change)="handleToggle(perm.id, role)"
+                      class="perm-checkbox"
+                      [attr.aria-label]="'Quyền ' + perm.moduleName + ' cho vai trò ' + role"
+                    />
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

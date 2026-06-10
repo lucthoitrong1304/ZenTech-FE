@@ -1,0 +1,939 @@
+<div class="management-inventory-page">
+  <section class="inventory-command">
+    <div class="inventory-command__copy">
+      <span class="inventory-command__kicker">Inventory Control Center</span>
+      <h1>Quản lý kho hàng</h1>
+      <p>Giám sát tồn kho, nhật ký nhập xuất và cảnh báo thiếu hàng theo thời gian thực.</p>
+    </div>
+
+    <div class="inventory-command__actions">
+      <div class="inventory-mode-selector" aria-label="Chọn chế độ quản lý kho">
+        <button
+          type="button"
+          class="inventory-mode-btn"
+          [class.inventory-mode-btn--active]="store.activeTab() === 'stock'"
+          (click)="setTab('stock')"
+        >
+          Tồn kho
+        </button>
+        <button
+          type="button"
+          class="inventory-mode-btn"
+          [class.inventory-mode-btn--active]="store.activeTab() === 'logs'"
+          (click)="setTab('logs')"
+        >
+          Nhật ký
+        </button>
+      </div>
+
+
+      <button type="button" class="inventory-command__primary-action" (click)="exportExcel()">
+        <svg lucideDownload [attr.stroke-width]="2.2"></svg>
+        <span>Xuất báo cáo</span>
+      </button>
+    </div>
+  </section>
+  <!-- Stats Header Section -->
+  <section class="inventory-stats-grid">
+    @if (store.activeTab() === 'stock') {
+      <!-- Stat 1: Total Items -->
+      <article class="metric-card metric-card--total">
+        <div class="metric-card__icon">
+          <svg lucideWarehouse class="stat-icon"></svg>
+        </div>
+        <div class="metric-card__content">
+          <p class="metric-card__label">Tổng mặt hàng</p>
+          <strong class="metric-card__value">{{ store.stats().totalItems }}</strong>
+          <div class="metric-progress-wrapper">
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--total" style="width: 100%"></div>
+            </div>
+            <span class="metric-progress-text">Biến thể trong hệ thống</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Stat 2: Out of stock -->
+      <article class="metric-card metric-card--locked">
+        <div class="metric-card__icon">
+          <svg lucidePackage class="stat-icon"></svg>
+        </div>
+        <div class="metric-card__content">
+          <p class="metric-card__label">Hết hàng</p>
+          <strong class="metric-card__value" [class.text-rose-600]="store.stats().outOfStockCount > 0">
+            {{ store.stats().outOfStockCount }}
+          </strong>
+          <div class="metric-progress-wrapper">
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--danger" [style.width.%]="getOutOfStockPercentage()"></div>
+            </div>
+            <span class="metric-progress-text">{{ getOutOfStockPercentage() }}% cần nhập hàng gấp</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Stat 3: Low stock -->
+      <article class="metric-card metric-card--warning">
+        <div class="metric-card__icon">
+          <svg lucideTriangleAlert class="stat-icon"></svg>
+        </div>
+        <div class="metric-card__content">
+          <p class="metric-card__label">Sắp hết hàng</p>
+          <strong class="metric-card__value" [class.text-amber-500]="store.stats().lowStockCount > 0">
+            {{ store.stats().lowStockCount }}
+          </strong>
+          <div class="metric-progress-wrapper">
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--warning" [style.width.%]="getLowStockPercentage()"></div>
+            </div>
+            <span class="metric-progress-text">{{ getLowStockPercentage() }}% dưới 10 sản phẩm</span>
+          </div>
+        </div>
+      </article>
+    } @else {
+      <!-- Transaction Stats 1: Total Imports -->
+      <article class="metric-card metric-card--total bg-emerald-50/20 border-emerald-100/50">
+        <div class="metric-card__icon bg-emerald-100/50 text-emerald-600">
+          <svg lucideTrendingUp class="stat-icon"></svg>
+        </div>
+        <div class="metric-card__content">
+          <p class="metric-card__label text-emerald-800/60">Tổng lượng nhập</p>
+          <strong class="metric-card__value text-emerald-600">+{{ store.logsStats().totalImports }}</strong>
+          <div class="metric-progress-wrapper">
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--success" [style.width.%]="getImportPercentage()"></div>
+            </div>
+            <span class="metric-progress-text">{{ getImportPercentage() }}% tổng lượng hàng luân chuyển</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Transaction Stats 2: Total Exports -->
+      <article class="metric-card metric-card--locked bg-rose-50/20 border-rose-100/50">
+        <div class="metric-card__icon bg-rose-100/50 text-rose-600">
+          <svg lucideTrendingDown class="stat-icon"></svg>
+        </div>
+        <div class="metric-card__content">
+          <p class="metric-card__label text-rose-800/60">Tổng lượng xuất</p>
+          <strong class="metric-card__value text-rose-600">-{{ store.logsStats().totalExports }}</strong>
+          <div class="metric-progress-wrapper">
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--danger" [style.width.%]="getExportPercentage()"></div>
+            </div>
+            <span class="metric-progress-text">{{ getExportPercentage() }}% tổng lượng hàng luân chuyển</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Transaction Stats 3: Total Count -->
+      <article class="metric-card metric-card--warning bg-amber-50/20 border-amber-100/50">
+        <div class="metric-card__icon bg-amber-100/50 text-amber-600">
+          <svg lucideHistory class="stat-icon"></svg>
+        </div>
+        <div class="metric-card__content">
+          <p class="metric-card__label text-amber-800/60">Tổng giao dịch</p>
+          <strong class="metric-card__value text-amber-600">{{ store.logsStats().totalCount }}</strong>
+          <div class="metric-progress-wrapper">
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--warning" style="width: 100%"></div>
+            </div>
+            <span class="metric-progress-text">Bản ghi nhật ký phát sinh trong kỳ</span>
+          </div>
+        </div>
+      </article>
+    }
+
+    <!-- Stat 4: AI Status Cyber Card (Clickable & Premium design) -->
+    <article
+      class="metric-card metric-card--ai"
+      role="button"
+      tabindex="0"
+      aria-label="Mở báo cáo phân tích AI tồn kho"
+      (click)="openAiRecommend()"
+      (keydown.enter)="openAiRecommend()"
+      (keydown.space)="openAiRecommend()"
+    >
+      <div class="metric-card__icon">
+        <svg lucideSparkles class="stat-icon"></svg>
+      </div>
+      <div class="metric-card__content">
+        <div class="ai-status-header">
+          <p class="metric-card__label">Giám sát AI</p>
+          <span class="ai-live-indicator">
+            <span class="indicator-dot"></span>
+            <span class="indicator-text">Sẵn sàng</span>
+          </span>
+        </div>
+        <strong class="metric-card__value">TỰ ĐỘNG</strong>
+        <div class="metric-progress-wrapper">
+          <span class="metric-progress-text">Xem đề xuất nhập hàng thông minh</span>
+          <div class="ai-action-link">
+            <span>Mở phân tích AI</span>
+            <svg lucideChevronRight class="hint-arrow"></svg>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <div class="inventory-tabs-bar">
+    <button
+      type="button"
+      class="inventory-tab-link"
+      [class.inventory-tab-link--active]="store.activeTab() === 'stock'"
+      (click)="setTab('stock')"
+    >
+      <svg lucideWarehouse></svg>
+      <span>Kho hàng & tồn kho</span>
+    </button>
+    <button
+      type="button"
+      class="inventory-tab-link"
+      [class.inventory-tab-link--active]="store.activeTab() === 'logs'"
+      (click)="setTab('logs')"
+    >
+      <svg lucideHistory></svg>
+      <span>Nhật ký nhập/xuất</span>
+    </button>
+  </div>
+
+  <div class="inventory-copilot-layout">
+    <div class="inventory-main-data-col">
+  <!-- Filters & Actions Toolbar -->
+  <div class="toolbar-container">
+    <!-- Top Row: Search & Actions -->
+    <div class="toolbar-row toolbar-row--top">
+      <div class="search-box">
+        <svg lucideSearch class="search-icon"></svg>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Tìm kiếm sản phẩm, biến thể..."
+          [ngModel]="searchVal()"
+          (ngModelChange)="handleSearch($event)"
+        />
+        @if (searchVal()) {
+          <button type="button" class="search-clear-btn" (click)="clearSearch()">
+            <svg lucideX class="clear-icon"></svg>
+          </button>
+        }
+      </div>
+
+      <div class="toolbar-actions">
+        @if (store.activeTab() === 'stock') {
+          <div class="inventory-view-toggles">
+            <button
+              type="button"
+              class="view-toggle-btn"
+              [class.view-toggle-btn--active]="viewMode() === 'card'"
+              (click)="toggleViewMode('card')"
+              title="Xem dạng thẻ"
+            >
+              <svg lucideLayoutGrid></svg>
+            </button>
+            <button
+              type="button"
+              class="view-toggle-btn"
+              [class.view-toggle-btn--active]="viewMode() === 'table'"
+              (click)="toggleViewMode('table')"
+              title="Xem dạng bảng"
+            >
+              <svg lucideLayoutList></svg>
+            </button>
+          </div>
+        }
+        <button
+          type="button"
+          class="btn-action-export btn-action-export--pdf"
+          (click)="exportPdf()"
+          [title]="store.activeTab() === 'stock' ? 'In PDF tồn kho' : 'In báo cáo PDF'"
+        >
+          <svg lucidePrinter class="action-icon"></svg>
+          <span>In PDF</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Subtle divider line between Search/Actions and Filters -->
+    <div class="toolbar-divider"></div>
+
+    <!-- Bottom Row: Filter Dropdowns -->
+    <div class="toolbar-row toolbar-row--filters">
+      @if (store.activeTab() === 'stock') {
+        <p-select
+          inputId="inventory-status-filter"
+          styleClass="inventory-dropdown"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel"
+          [options]="stockStatusOptions"
+          [ngModel]="store.stockQuery().stockStatus"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="store.setStockFilter($event.value)"
+        />
+
+        <p-select
+          inputId="inventory-sort-filter"
+          styleClass="inventory-dropdown"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel"
+          [options]="sortOptions"
+          [ngModel]="store.stockQuery().sort"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="store.setSort($event.value)"
+        />
+      } @else {
+        <!-- Logs Filters (Only on Logs Tab) -->
+        <p-select
+          inputId="inventory-date-filter"
+          styleClass="inventory-dropdown inventory-dropdown--date"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel"
+          [options]="dateFilterOptions"
+          [ngModel]="selectedDateFilter()"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="handleDateFilterChange($event.value)"
+        />
+
+        @if (selectedDateFilter() === InventoryDateFilterOption.CUSTOM) {
+          <div class="custom-date-range">
+            <svg lucideCalendar class="date-range-icon"></svg>
+            <p-datepicker
+              [ngModel]="customStartDate()"
+              (ngModelChange)="handleCustomStartDateChange($event)"
+              dateFormat="dd/mm/yy"
+              placeholder="Chọn ngày bắt đầu"
+              styleClass="inventory-datepicker"
+              appendTo="body"
+              [showIcon]="false"
+            ></p-datepicker>
+            <span class="custom-date-separator">đến</span>
+            <p-datepicker
+              [ngModel]="customEndDate()"
+              (ngModelChange)="handleCustomEndDateChange($event)"
+              dateFormat="dd/mm/yy"
+              placeholder="Chọn ngày kết thúc"
+              styleClass="inventory-datepicker"
+              appendTo="body"
+              [showIcon]="false"
+            ></p-datepicker>
+          </div>
+        }
+
+        <p-select
+          inputId="inventory-type-filter"
+          styleClass="inventory-dropdown"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel"
+          [options]="transactionTypeOptions"
+          [ngModel]="store.logsQuery().type"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="store.setTypeFilter($event.value)"
+        />
+
+        <p-select
+          inputId="inventory-reason-filter"
+          styleClass="inventory-dropdown"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel"
+          [options]="reasonFilterOptions"
+          [ngModel]="store.logsQuery().reason || 'all'"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="store.setReasonFilter($event.value)"
+        />
+
+        <p-select
+          inputId="inventory-staff-filter"
+          styleClass="inventory-dropdown inventory-dropdown--staff"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel inventory-filter-panel--staff"
+          [options]="staffOptions"
+          [ngModel]="store.logsQuery().employeeId || ''"
+          optionLabel="label"
+          optionValue="value"
+          (onChange)="store.setEmployeeFilter($event.value || null)"
+          placeholder="Nhân viên"
+        >
+          <ng-template #selectedItem let-option>
+            <div class="staff-filter-option staff-filter-option--selected">
+              @if (option?.avatarUrl) {
+                <img class="staff-avatar-img" [src]="option.avatarUrl" [alt]="option.label" referrerpolicy="no-referrer" />
+              } @else {
+                <div class="staff-avatar-placeholder staff-avatar-placeholder--small">
+                  {{ (option?.label || 'T').charAt(0).toUpperCase() }}
+                </div>
+              }
+              <span class="staff-filter-name">{{ option?.label || 'Tất cả nhân viên' }}</span>
+            </div>
+          </ng-template>
+          <ng-template #item let-option>
+            <div class="staff-filter-option">
+              @if (option.avatarUrl) {
+                <img class="staff-avatar-img" [src]="option.avatarUrl" [alt]="option.label" referrerpolicy="no-referrer" />
+              } @else {
+                <div class="staff-avatar-placeholder staff-avatar-placeholder--small">
+                  {{ option.label.charAt(0).toUpperCase() }}
+                </div>
+              }
+              <div class="staff-filter-copy">
+                <span class="staff-filter-name">{{ option.label }}</span>
+                <span class="staff-filter-email">{{ option.email }}</span>
+              </div>
+            </div>
+          </ng-template>
+        </p-select>
+      }
+    </div>
+  </div>
+
+  <!-- BẢNG DỮ LIỆU TỒN KHO -->
+  @if (store.activeTab() === 'stock') {
+    <article class="data-panel">
+      <!-- 1. Table View Mode -->
+      @if (viewMode() === 'table') {
+        <p-table
+          [value]="store.stockItems()"
+          [loading]="store.loadingStock()"
+          styleClass="inventory-p-table inventory-p-table--stock"
+          responsiveLayout="scroll"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Hình ảnh</th>
+              <th>Sản phẩm</th>
+              <th>Biến thể</th>
+              <th>Giá gốc / Giá bán</th>
+              <th class="text-center">Số lượng</th>
+              <th>Trạng thái</th>
+              <th class="text-right">Hành động</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr>
+              <td>
+                @if (item.representativeImageUrl) {
+                  <img class="product-image" [src]="item.representativeImageUrl" [alt]="item.productName" loading="lazy" />
+                } @else {
+                  <div class="product-image product-image--placeholder">
+                    {{ item.productName.charAt(0).toUpperCase() }}
+                  </div>
+                }
+              </td>
+              <td>
+                <span class="product-title-text">{{ item.productName }}</span>
+              </td>
+              <td>
+                <span class="variant-badge" [style.border-color]="item.colorCode || '#E5E7EB'">
+                  {{ item.variantName || 'Mặc định' }}
+                </span>
+              </td>
+              <td>
+                <div class="price-group">
+                  @if (item.salePrice) {
+                    <span class="original-price">{{ item.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+                    <strong class="sale-price">{{ item.salePrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                  } @else {
+                    <strong>{{ item.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                  }
+                </div>
+              </td>
+              <td class="text-center font-bold">
+                <span [class.text-rose-600]="item.stockQuantity <= 0" [class.text-amber-500]="item.stockQuantity > 0 && item.stockQuantity < 10">
+                  {{ item.stockQuantity }}
+                </span>
+              </td>
+              <td>
+                <p-tag [value]="getStatusLabel(item.stockQuantity)" [severity]="item.stockQuantity <= 0 ? 'danger' : item.stockQuantity < 10 ? 'warn' : 'success'" />
+              </td>
+              <td class="text-right">
+                <div class="flex justify-end w-full">
+                  <button
+                    type="button"
+                    class="btn-action-quick"
+                    (click)="openAdjust(item)"
+                  >
+                    <svg lucidePlus class="action-icon"></svg>
+                    <span>Cập nhật kho</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7">
+                <div class="empty-state">
+                  <svg lucidePackage class="empty-icon"></svg>
+                  <h3>Không tìm thấy sản phẩm</h3>
+                  <p>Thử đổi bộ lọc hoặc xóa từ khóa tìm kiếm.</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+
+      <!-- 2. Grid Card View Mode -->
+      @if (viewMode() === 'card') {
+        @if (store.loadingStock()) {
+          <div class="inventory-card-grid">
+            @for (_ of [1, 2, 3, 4]; track $index) {
+              <div class="card-skeleton">
+                <div class="skeleton-media"></div>
+                <div class="skeleton-line skeleton-line--title"></div>
+                <div class="skeleton-line skeleton-line--badge"></div>
+                <div class="skeleton-line skeleton-line--stock"></div>
+                <div class="skeleton-line skeleton-line--price"></div>
+                <div class="skeleton-btn"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="inventory-card-grid">
+            @for (item of store.stockItems(); track item.variantId) {
+              <article class="inventory-product-card" [class.card--low]="item.stockQuantity > 0 && item.stockQuantity < 10" [class.card--out]="item.stockQuantity <= 0">
+                <div class="card-image-wrap">
+                  @if (item.representativeImageUrl) {
+                    <img class="card-img" [src]="item.representativeImageUrl" [alt]="item.productName" loading="lazy" />
+                  } @else {
+                    <div class="card-img-placeholder">
+                      {{ item.productName.charAt(0).toUpperCase() }}
+                    </div>
+                  }
+                  <p-tag 
+                    [value]="getStatusLabel(item.stockQuantity)" 
+                    [severity]="item.stockQuantity <= 0 ? 'danger' : item.stockQuantity < 10 ? 'warn' : 'success'"
+                    class="card-status-badge"
+                  />
+                </div>
+                
+                <div class="card-body">
+                  <h3 class="card-title" [title]="item.productName">{{ item.productName }}</h3>
+                  
+                  <div class="card-variant-wrap">
+                    <span class="variant-badge" [style.border-color]="item.colorCode || '#E5E7EB'">
+                      {{ item.variantName || 'Mặc định' }}
+                    </span>
+                  </div>
+
+                  <div class="card-stock-info">
+                    <div class="stock-label-group">
+                      <span class="stock-lbl">Tồn kho</span>
+                      <strong class="stock-val" [class.text-rose-600]="item.stockQuantity <= 0" [class.text-amber-500]="item.stockQuantity > 0 && item.stockQuantity < 10">
+                        {{ item.stockQuantity }} chiếc
+                      </strong>
+                    </div>
+                    <!-- Custom progress bar indicator -->
+                    <div class="stock-progress-bar">
+                      <div 
+                        class="stock-progress-fill" 
+                        [class.fill--danger]="item.stockQuantity <= 0"
+                        [class.fill--warning]="item.stockQuantity > 0 && item.stockQuantity < 10"
+                        [class.fill--success]="item.stockQuantity >= 10"
+                        [style.width.%]="item.stockQuantity >= 20 ? 100 : (item.stockQuantity / 20) * 100"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div class="card-price-group">
+                    @if (item.salePrice) {
+                      <span class="original-price">{{ item.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+                      <strong class="sale-price">{{ item.salePrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                    } @else {
+                      <strong>{{ item.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                    }
+                  </div>
+                </div>
+
+                <div class="card-footer">
+                  <button
+                    type="button"
+                    class="btn-action-quick"
+                    (click)="openAdjust(item)"
+                  >
+                    <svg lucidePlus class="action-icon"></svg>
+                    <span>Cập nhật kho</span>
+                  </button>
+                </div>
+              </article>
+            } @empty {
+              <div class="empty-state-card-wrapper">
+                <div class="empty-state">
+                  <svg lucidePackage class="empty-icon"></svg>
+                  <h3>Không tìm thấy sản phẩm</h3>
+                  <p>Thử đổi bộ lọc hoặc xóa từ khóa tìm kiếm.</p>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- Pagination Stock using PrimeNG Paginator -->
+      @if (store.totalElements() > 0 && !store.loadingStock()) {
+        <p-paginator
+          styleClass="inventory-paginator"
+          [first]="store.stockQuery().page * store.stockQuery().size"
+          [rows]="store.stockQuery().size"
+          [totalRecords]="store.totalElements()"
+          (onPageChange)="handlePageChange($event)"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Hiển thị {first} - {last} trong số {totalRecords} mặt hàng"
+        />
+      }
+    </article>
+  }
+
+  <!-- BẢNG NHẬT KÝ NHẬP XUẤT KHO -->
+  @if (store.activeTab() === 'logs') {
+    <article class="data-panel">
+      <p-table
+        [value]="store.logs()"
+        [loading]="store.loadingLogs()"
+        styleClass="inventory-p-table inventory-p-table--logs"
+        responsiveLayout="scroll"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Thời gian</th>
+            <th>Sản phẩm & Biến thể</th>
+            <th>Giao dịch</th>
+            <th class="text-center">Số lượng</th>
+            <th>Lý do</th>
+            <th>Người thực hiện</th>
+            <th>Ghi chú</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-log>
+          <tr>
+            <td class="font-mono text-xs text-slate-500">
+              {{ log.createdAt | date: 'dd/MM/yyyy HH:mm:ss' }}
+            </td>
+            <td>
+              <div class="log-product-info">
+                <span class="product-title-text">{{ log.productName }}</span>
+                <small class="text-slate-400 font-medium">Biến thể: {{ log.variantName || 'Mặc định' }}</small>
+              </div>
+            </td>
+            <td>
+              <span
+                class="tx-type-badge"
+                [class.tx-type-badge--import]="log.type === 'IMPORT'"
+                [class.tx-type-badge--export]="log.type === 'EXPORT'"
+              >
+                @if (log.type === 'IMPORT') {
+                  <svg lucideTrendingUp class="tx-type-icon"></svg>
+                } @else {
+                  <svg lucideTrendingDown class="tx-type-icon"></svg>
+                }
+                {{ getTxTypeLabel(log.type) }}
+              </span>
+            </td>
+            <td class="text-center font-bold">
+              <span [class.text-green-600]="log.type === 'IMPORT'" [class.text-rose-600]="log.type === 'EXPORT'">
+                {{ log.type === 'IMPORT' ? '+' : '-' }}{{ log.quantity }}
+              </span>
+            </td>
+            <td>
+              <span class="reason-badge" [class]="getTxReasonClass(log.reason)">
+                {{ getTxReasonLabel(log.reason) }}
+              </span>
+            </td>
+            <td>
+              <div class="flex items-center gap-2">
+                @if (log.createdByAvatar) {
+                  <img class="staff-avatar-img" [src]="log.createdByAvatar" [alt]="log.createdByName" referrerpolicy="no-referrer" />
+                } @else {
+                  <div class="staff-avatar-placeholder">
+                    {{ (log.createdByName || 'H').charAt(0).toUpperCase() }}
+                  </div>
+                }
+                <div class="staff-cell-copy">
+                  <span class="font-medium text-slate-700">{{ log.createdByName || 'Hệ thống' }}</span>
+                  @if (log.createdByEmail) {
+                    <small class="staff-cell-email">{{ log.createdByEmail }}</small>
+                  }
+                </div>
+              </div>
+            </td>
+            <td>
+              @if (log.note) {
+                <span
+                  class="log-note cursor-pointer hover:text-[#4F46E5] hover:underline transition-colors block truncate"
+                  (click)="notePopover.toggle($event)"
+                >
+                  {{ log.note }}
+                </span>
+                <p-popover #notePopover styleClass="inventory-note-popover">
+                  <div class="inventory-note-popover-content">
+                    <div class="inventory-note-popover-header">
+                      <span class="inventory-note-popover-title">Chi tiết ghi chú</span>
+                      <button
+                        class="inventory-note-copy-btn"
+                        (click)="copyToClipboard(log.note); notePopover.toggle($event)"
+                        title="Sao chép"
+                      >
+                        <svg lucideCopy class="h-3.5 w-3.5"></svg>
+                      </button>
+                    </div>
+                    <div class="inventory-note-popover-body">
+                      {{ log.note }}
+                    </div>
+                  </div>
+                </p-popover>
+              } @else {
+                <span class="text-xs text-[#9CA3AF]">---</span>
+              }
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <svg lucideHistory class="empty-icon"></svg>
+                <h3>Không có nhật ký giao dịch</h3>
+                <p>Chưa có giao dịch nhập xuất nào được ghi nhận.</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <!-- Pagination Logs using PrimeNG Paginator -->
+      @if (store.totalElements() > 0 && !store.loadingLogs()) {
+        <p-paginator
+          styleClass="inventory-paginator"
+          [first]="store.logsQuery().page * store.logsQuery().size"
+          [rows]="store.logsQuery().size"
+          [totalRecords]="store.totalElements()"
+          (onPageChange)="handlePageChange($event)"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Hiển thị {first} - {last} trong số {totalRecords} bản ghi"
+        />
+      }
+    </article>
+  }
+
+    </div>
+  </div>
+
+  <!-- Dialog điều chỉnh kho -->
+  <app-inventory-adjust-dialog
+    [visible]="store.dialogVisible()"
+    [item]="store.selectedItem()"
+    [saving]="store.saving()"
+    [errorMessage]="store.errorMessage()"
+    (close)="closeDialog()"
+    (submitAdjust)="onAdjustSubmit($event)"
+  ></app-inventory-adjust-dialog>
+
+  <!-- Dialog Giám sát AI -->
+  <app-inventory-ai-dialog
+    [visible]="store.aiDialogVisible()"
+    [loading]="store.loadingAiRecommend()"
+    [content]="store.aiRecommendationText()"
+    (close)="closeAiDialog()"
+  ></app-inventory-ai-dialog>
+
+  <!-- Hidden Printable Report Area -->
+  @if (store.activeTab() === 'logs') {
+    <div class="print-report-container">
+    <section class="print-cover-band">
+      <div class="print-brand-mark">ZT</div>
+      <div class="print-company-info">
+        <h3>ZENTECH GAMING GEAR</h3>
+        <p>Hệ thống bán lẻ thiết bị công nghệ cao cấp</p>
+      </div>
+      <div class="print-report-meta text-right">
+        <p><strong>Mẫu số:</strong> B02-KHO</p>
+        <p><strong>Ngày in:</strong> {{ printDate | date: 'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+    </section>
+
+    <section class="print-title-block">
+      <p class="print-kicker">BÁO CÁO QUẢN TRỊ KHO</p>
+      <h1>BÁO CÁO NHẬT KÝ NHẬP XUẤT KHO</h1>
+      <p>Thời gian lập báo cáo: {{ printDate | date: 'dd/MM/yyyy HH:mm:ss' }}</p>
+    </section>
+
+    <section class="print-summary-grid">
+      <div class="print-summary-card print-summary-card--import">
+        <span>Tổng lượng nhập</span>
+        <strong>+{{ store.logsStats().totalImports }}</strong>
+      </div>
+      <div class="print-summary-card print-summary-card--export">
+        <span>Tổng lượng xuất</span>
+        <strong>-{{ store.logsStats().totalExports }}</strong>
+      </div>
+      <div class="print-summary-card print-summary-card--count">
+        <span>Tổng giao dịch</span>
+        <strong>{{ store.logsStats().totalCount }}</strong>
+      </div>
+    </section>
+
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th class="print-cell-center" style="width: 5%">STT</th>
+          <th style="width: 14%">Thời gian</th>
+          <th style="width: 26%">Sản phẩm & Biến thể</th>
+          <th class="print-cell-center" style="width: 10%">Giao dịch</th>
+          <th class="print-cell-center" style="width: 9%">SL</th>
+          <th style="width: 13%">Lý do</th>
+          <th style="width: 13%">Người thực hiện</th>
+          <th style="width: 10%">Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (log of store.logs(); track log.id; let i = $index) {
+          <tr>
+            <td class="print-cell-center print-index">{{ i + 1 }}</td>
+            <td class="print-date-cell">{{ log.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <div class="print-product-name">{{ log.productName }}</div>
+              <div class="print-variant-name">{{ log.variantName || 'Mặc định' }}</div>
+            </td>
+            <td class="print-cell-center">
+              <span [class]="log.type === 'IMPORT' ? 'print-badge print-badge--import' : 'print-badge print-badge--export'">
+                {{ log.type === 'IMPORT' ? 'Nhập kho' : 'Xuất kho' }}
+              </span>
+            </td>
+            <td [class]="log.type === 'IMPORT' ? 'print-qty print-qty--import' : 'print-qty print-qty--export'">
+              {{ log.type === 'IMPORT' ? '+' : '-' }}{{ log.quantity }}
+            </td>
+            <td>{{ getTxReasonLabel(log.reason) }}</td>
+            <td>
+              <div class="print-staff-name">{{ log.createdByName || 'Hệ thống' }}</div>
+            </td>
+            <td class="print-email-cell">{{ log.createdByEmail || '---' }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="print-empty-cell">Không có dữ liệu trong khoảng thời gian báo cáo.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <section class="print-footer-note">
+      <p>Báo cáo được tạo tự động từ hệ thống quản lý kho ZenTech.</p>
+      <p>Vui lòng đối chiếu với chứng từ nhập/xuất thực tế khi cần kiểm kê.</p>
+    </section>
+
+    <div class="print-footer">
+      <div class="print-signature-box">
+        <p class="print-signature-title">Người lập biểu</p>
+        <div class="print-signature-line"></div>
+        <p class="print-signature-hint">Ký, ghi rõ họ tên</p>
+      </div>
+      <div class="print-signature-box">
+        <p class="print-signature-title">Thủ kho</p>
+        <div class="print-signature-line"></div>
+        <p class="print-signature-hint">Ký, ghi rõ họ tên</p>
+      </div>
+    </div>
+    </div>
+  }
+
+  @if (store.activeTab() === 'stock') {
+    <div class="print-report-container">
+      <section class="print-cover-band">
+        <div class="print-brand-mark">ZT</div>
+        <div class="print-company-info">
+          <h3>ZENTECH GAMING GEAR</h3>
+          <p>Hệ thống bán lẻ thiết bị công nghệ cao cấp</p>
+        </div>
+        <div class="print-report-meta text-right">
+          <p><strong>Mẫu số:</strong> B01-KHO</p>
+          <p><strong>Ngày in:</strong> {{ printDate | date: 'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+      </section>
+
+      <section class="print-title-block">
+        <p class="print-kicker">BÁO CÁO QUẢN TRỊ KHO</p>
+        <h1>BÁO CÁO THỐNG KÊ TỒN KHO HIỆN TẠI</h1>
+        <p>Thời gian lập báo cáo: {{ printDate | date: 'dd/MM/yyyy HH:mm:ss' }}</p>
+      </section>
+
+      <section class="print-summary-grid">
+        <div class="print-summary-card print-summary-card--count">
+          <span>Tổng mặt hàng</span>
+          <strong>{{ store.stats().totalItems }}</strong>
+        </div>
+        <div class="print-summary-card print-summary-card--export">
+          <span>Sắp hết hàng</span>
+          <strong>{{ store.stats().lowStockCount }}</strong>
+        </div>
+        <div class="print-summary-card print-summary-card--export">
+          <span>Hết hàng</span>
+          <strong>{{ store.stats().outOfStockCount }}</strong>
+        </div>
+      </section>
+
+      <table class="print-table print-table--stock">
+        <thead>
+          <tr>
+            <th class="print-cell-center" style="width: 5%">STT</th>
+            <th style="width: 29%">Sản phẩm & Biến thể</th>
+            <th class="print-cell-center" style="width: 8%">Màu</th>
+            <th class="print-cell-center" style="width: 12%">Giá gốc</th>
+            <th class="print-cell-center" style="width: 12%">Giá bán</th>
+            <th class="print-cell-center" style="width: 10%">Tồn kho</th>
+            <th class="print-cell-center" style="width: 12%">Trạng thái</th>
+            <th class="print-cell-center" style="width: 12%">Giá trị tồn</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of store.stockItems(); track item.variantId; let i = $index) {
+            <tr>
+              <td class="print-cell-center print-index">{{ i + 1 }}</td>
+              <td>
+                <div class="print-product-name">{{ item.productName }}</div>
+                <div class="print-variant-name">{{ item.variantName || 'Mặc định' }}</div>
+              </td>
+              <td class="print-cell-center">{{ item.colorCode || '---' }}</td>
+              <td class="print-cell-center">{{ item.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</td>
+              <td class="print-cell-center">{{ (item.salePrice || item.originalPrice) | currency: 'VND' : 'symbol' : '1.0-0' }}</td>
+              <td class="print-qty print-qty--count">{{ item.stockQuantity }}</td>
+              <td class="print-cell-center">
+                <span [class]="getPrintStockStatusClass(item.stockQuantity)">
+                  {{ getStatusLabel(item.stockQuantity) }}
+                </span>
+              </td>
+              <td class="print-cell-center print-inventory-value">
+                {{ ((item.salePrice || item.originalPrice) * item.stockQuantity) | currency: 'VND' : 'symbol' : '1.0-0' }}
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="print-empty-cell">Không có dữ liệu tồn kho trong báo cáo.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <section class="print-footer-note">
+        <p>Báo cáo chỉ phản ánh dữ liệu tồn kho đang hiển thị theo bộ lọc hiện tại.</p>
+        <p>Để kiểm kê toàn bộ kho, vui lòng bỏ bộ lọc và tăng số dòng hiển thị nếu cần.</p>
+      </section>
+
+      <div class="print-footer">
+        <div class="print-signature-box">
+          <p class="print-signature-title">Người lập biểu</p>
+          <div class="print-signature-line"></div>
+          <p class="print-signature-hint">Ký, ghi rõ họ tên</p>
+        </div>
+        <div class="print-signature-box">
+          <p class="print-signature-title">Thủ kho</p>
+          <div class="print-signature-line"></div>
+          <p class="print-signature-hint">Ký, ghi rõ họ tên</p>
+        </div>
+      </div>
+    </div>
+  }
+</div>
