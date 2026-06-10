@@ -1,4 +1,38 @@
 <div class="management-inventory-page">
+  <section class="inventory-command">
+    <div class="inventory-command__copy">
+      <span class="inventory-command__kicker">Inventory Control Center</span>
+      <h1>Quản lý kho hàng</h1>
+      <p>Giám sát tồn kho, nhật ký nhập xuất và cảnh báo thiếu hàng theo thời gian thực.</p>
+    </div>
+
+    <div class="inventory-command__actions">
+      <div class="inventory-mode-selector" aria-label="Chọn chế độ quản lý kho">
+        <button
+          type="button"
+          class="inventory-mode-btn"
+          [class.inventory-mode-btn--active]="store.activeTab() === 'stock'"
+          (click)="setTab('stock')"
+        >
+          Tồn kho
+        </button>
+        <button
+          type="button"
+          class="inventory-mode-btn"
+          [class.inventory-mode-btn--active]="store.activeTab() === 'logs'"
+          (click)="setTab('logs')"
+        >
+          Nhật ký
+        </button>
+      </div>
+
+
+      <button type="button" class="inventory-command__primary-action" (click)="exportExcel()">
+        <svg lucideDownload [attr.stroke-width]="2.2"></svg>
+        <span>Xuất báo cáo</span>
+      </button>
+    </div>
+  </section>
   <!-- Stats Header Section -->
   <section class="inventory-stats-grid">
     @if (store.activeTab() === 'stock') {
@@ -66,7 +100,10 @@
           <p class="metric-card__label text-emerald-800/60">Tổng lượng nhập</p>
           <strong class="metric-card__value text-emerald-600">+{{ store.logsStats().totalImports }}</strong>
           <div class="metric-progress-wrapper">
-            <span class="metric-progress-text">Sản phẩm nhập kho trong kỳ</span>
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--success" [style.width.%]="getImportPercentage()"></div>
+            </div>
+            <span class="metric-progress-text">{{ getImportPercentage() }}% tổng lượng hàng luân chuyển</span>
           </div>
         </div>
       </article>
@@ -80,7 +117,10 @@
           <p class="metric-card__label text-rose-800/60">Tổng lượng xuất</p>
           <strong class="metric-card__value text-rose-600">-{{ store.logsStats().totalExports }}</strong>
           <div class="metric-progress-wrapper">
-            <span class="metric-progress-text">Sản phẩm xuất kho trong kỳ</span>
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--danger" [style.width.%]="getExportPercentage()"></div>
+            </div>
+            <span class="metric-progress-text">{{ getExportPercentage() }}% tổng lượng hàng luân chuyển</span>
           </div>
         </div>
       </article>
@@ -94,14 +134,25 @@
           <p class="metric-card__label text-amber-800/60">Tổng giao dịch</p>
           <strong class="metric-card__value text-amber-600">{{ store.logsStats().totalCount }}</strong>
           <div class="metric-progress-wrapper">
-            <span class="metric-progress-text">Số bản ghi nhật ký phát sinh</span>
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--warning" style="width: 100%"></div>
+            </div>
+            <span class="metric-progress-text">Bản ghi nhật ký phát sinh trong kỳ</span>
           </div>
         </div>
       </article>
     }
 
     <!-- Stat 4: AI Status Cyber Card (Clickable & Premium design) -->
-    <article class="metric-card metric-card--ai" (click)="openAiRecommend()">
+    <article
+      class="metric-card metric-card--ai"
+      role="button"
+      tabindex="0"
+      aria-label="Mở báo cáo phân tích AI tồn kho"
+      (click)="openAiRecommend()"
+      (keydown.enter)="openAiRecommend()"
+      (keydown.space)="openAiRecommend()"
+    >
       <div class="metric-card__icon">
         <svg lucideSparkles class="stat-icon"></svg>
       </div>
@@ -110,14 +161,14 @@
           <p class="metric-card__label">Giám sát AI</p>
           <span class="ai-live-indicator">
             <span class="indicator-dot"></span>
-            <span class="indicator-text">LIVE</span>
+            <span class="indicator-text">Sẵn sàng</span>
           </span>
         </div>
         <strong class="metric-card__value">TỰ ĐỘNG</strong>
         <div class="metric-progress-wrapper">
           <span class="metric-progress-text">Xem đề xuất nhập hàng thông minh</span>
           <div class="ai-action-link">
-            <span>Chạy phân tích AI</span>
+            <span>Mở phân tích AI</span>
             <svg lucideChevronRight class="hint-arrow"></svg>
           </div>
         </div>
@@ -125,52 +176,95 @@
     </article>
   </section>
 
-  <!-- Navigation Tabs -->
-  <div class="tabs-container">
+  <div class="inventory-tabs-bar">
     <button
       type="button"
-      class="tab-btn"
-      [class.active]="store.activeTab() === 'stock'"
+      class="inventory-tab-link"
+      [class.inventory-tab-link--active]="store.activeTab() === 'stock'"
       (click)="setTab('stock')"
     >
-      <svg lucideWarehouse class="tab-icon"></svg>
-      <span>Tồn kho hiện tại</span>
+      <svg lucideWarehouse></svg>
+      <span>Kho hàng & tồn kho</span>
     </button>
     <button
       type="button"
-      class="tab-btn"
-      [class.active]="store.activeTab() === 'logs'"
+      class="inventory-tab-link"
+      [class.inventory-tab-link--active]="store.activeTab() === 'logs'"
       (click)="setTab('logs')"
     >
-      <svg lucideHistory class="tab-icon"></svg>
+      <svg lucideHistory></svg>
       <span>Nhật ký nhập/xuất</span>
     </button>
   </div>
 
+  <div class="inventory-copilot-layout">
+    <div class="inventory-main-data-col">
   <!-- Filters & Actions Toolbar -->
   <div class="toolbar-container">
-    <div class="search-box">
-      <svg lucideSearch class="search-icon"></svg>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Tìm kiếm sản phẩm, biến thể..."
-        [ngModel]="searchVal()"
-        (ngModelChange)="handleSearch($event)"
-      />
-      @if (searchVal()) {
-        <button type="button" class="search-clear-btn" (click)="clearSearch()">
-          <svg lucideX class="clear-icon"></svg>
+    <!-- Top Row: Search & Actions -->
+    <div class="toolbar-row toolbar-row--top">
+      <div class="search-box">
+        <svg lucideSearch class="search-icon"></svg>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Tìm kiếm sản phẩm, biến thể..."
+          [ngModel]="searchVal()"
+          (ngModelChange)="handleSearch($event)"
+        />
+        @if (searchVal()) {
+          <button type="button" class="search-clear-btn" (click)="clearSearch()">
+            <svg lucideX class="clear-icon"></svg>
+          </button>
+        }
+      </div>
+
+      <div class="toolbar-actions">
+        @if (store.activeTab() === 'stock') {
+          <div class="inventory-view-toggles">
+            <button
+              type="button"
+              class="view-toggle-btn"
+              [class.view-toggle-btn--active]="viewMode() === 'card'"
+              (click)="toggleViewMode('card')"
+              title="Xem dạng thẻ"
+            >
+              <svg lucideLayoutGrid></svg>
+            </button>
+            <button
+              type="button"
+              class="view-toggle-btn"
+              [class.view-toggle-btn--active]="viewMode() === 'table'"
+              (click)="toggleViewMode('table')"
+              title="Xem dạng bảng"
+            >
+              <svg lucideLayoutList></svg>
+            </button>
+          </div>
+        }
+        <button
+          type="button"
+          class="btn-action-export btn-action-export--pdf"
+          (click)="exportPdf()"
+          [title]="store.activeTab() === 'stock' ? 'In PDF tồn kho' : 'In báo cáo PDF'"
+        >
+          <svg lucidePrinter class="action-icon"></svg>
+          <span>In PDF</span>
         </button>
-      }
+      </div>
     </div>
 
-    <div class="filters-group">
-      <!-- Stock Filters (Only on Stock Tab) -->
+    <!-- Subtle divider line between Search/Actions and Filters -->
+    <div class="toolbar-divider"></div>
+
+    <!-- Bottom Row: Filter Dropdowns -->
+    <div class="toolbar-row toolbar-row--filters">
       @if (store.activeTab() === 'stock') {
         <p-select
           inputId="inventory-status-filter"
           styleClass="inventory-dropdown"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel"
           [options]="stockStatusOptions"
           [ngModel]="store.stockQuery().stockStatus"
           optionLabel="label"
@@ -181,59 +275,21 @@
         <p-select
           inputId="inventory-sort-filter"
           styleClass="inventory-dropdown"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel"
           [options]="sortOptions"
           [ngModel]="store.stockQuery().sort"
           optionLabel="label"
           optionValue="value"
           (onChange)="store.setSort($event.value)"
         />
-
-        <!-- View Mode Toggles (aligned with Admin Accounts) -->
-        <div class="inventory-view-toggles">
-          <button
-            type="button"
-            class="view-toggle-btn"
-            [class.view-toggle-btn--active]="viewMode() === 'card'"
-            (click)="toggleViewMode('card')"
-            title="Xem dạng thẻ"
-          >
-            <svg lucideLayoutGrid></svg>
-          </button>
-          <button
-            type="button"
-            class="view-toggle-btn"
-            [class.view-toggle-btn--active]="viewMode() === 'table'"
-            (click)="toggleViewMode('table')"
-            title="Xem dạng bảng"
-          >
-            <svg lucideLayoutList></svg>
-          </button>
-        </div>
-
-        <button
-          type="button"
-          class="btn-action-export"
-          (click)="exportExcel()"
-          title="Xuất Excel tồn kho"
-        >
-          <svg lucideDownload class="action-icon"></svg>
-          <span>Xuất Excel</span>
-        </button>
-
-        <button
-          type="button"
-          class="btn-action-export btn-action-export--pdf"
-          (click)="exportPdf()"
-          title="In PDF tồn kho"
-        >
-          <svg lucidePrinter class="action-icon"></svg>
-          <span>In PDF</span>
-        </button>
       } @else {
         <!-- Logs Filters (Only on Logs Tab) -->
         <p-select
           inputId="inventory-date-filter"
-          styleClass="inventory-dropdown"
+          styleClass="inventory-dropdown inventory-dropdown--date"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel"
           [options]="dateFilterOptions"
           [ngModel]="selectedDateFilter()"
           optionLabel="label"
@@ -241,29 +297,36 @@
           (onChange)="handleDateFilterChange($event.value)"
         />
 
-        @if (selectedDateFilter() === 'custom') {
+        @if (selectedDateFilter() === InventoryDateFilterOption.CUSTOM) {
           <div class="custom-date-range">
-            <input
-              type="date"
-              class="custom-date-input"
+            <svg lucideCalendar class="date-range-icon"></svg>
+            <p-datepicker
               [ngModel]="customStartDate()"
               (ngModelChange)="handleCustomStartDateChange($event)"
-              aria-label="Ngày bắt đầu"
-            />
+              dateFormat="dd/mm/yy"
+              placeholder="Chọn ngày bắt đầu"
+              styleClass="inventory-datepicker"
+              appendTo="body"
+              [showIcon]="false"
+            ></p-datepicker>
             <span class="custom-date-separator">đến</span>
-            <input
-              type="date"
-              class="custom-date-input"
+            <p-datepicker
               [ngModel]="customEndDate()"
               (ngModelChange)="handleCustomEndDateChange($event)"
-              aria-label="Ngày kết thúc"
-            />
+              dateFormat="dd/mm/yy"
+              placeholder="Chọn ngày kết thúc"
+              styleClass="inventory-datepicker"
+              appendTo="body"
+              [showIcon]="false"
+            ></p-datepicker>
           </div>
         }
 
         <p-select
           inputId="inventory-type-filter"
           styleClass="inventory-dropdown"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel"
           [options]="transactionTypeOptions"
           [ngModel]="store.logsQuery().type"
           optionLabel="label"
@@ -274,6 +337,8 @@
         <p-select
           inputId="inventory-reason-filter"
           styleClass="inventory-dropdown"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel"
           [options]="reasonFilterOptions"
           [ngModel]="store.logsQuery().reason || 'all'"
           optionLabel="label"
@@ -284,6 +349,8 @@
         <p-select
           inputId="inventory-staff-filter"
           styleClass="inventory-dropdown inventory-dropdown--staff"
+          appendTo="body"
+          panelStyleClass="inventory-filter-panel inventory-filter-panel--staff"
           [options]="staffOptions"
           [ngModel]="store.logsQuery().employeeId || ''"
           optionLabel="label"
@@ -319,27 +386,6 @@
             </div>
           </ng-template>
         </p-select>
-
-        <!-- Action Export Buttons -->
-        <button
-          type="button"
-          class="btn-action-export"
-          (click)="exportExcel()"
-          title="Xuất file Excel"
-        >
-          <svg lucideDownload class="action-icon"></svg>
-          <span>Xuất Excel</span>
-        </button>
-
-        <button
-          type="button"
-          class="btn-action-export btn-action-export--pdf"
-          (click)="exportPdf()"
-          title="In báo cáo PDF"
-        >
-          <svg lucidePrinter class="action-icon"></svg>
-          <span>In PDF</span>
-        </button>
       }
     </div>
   </div>
@@ -404,14 +450,16 @@
                 <p-tag [value]="getStatusLabel(item.stockQuantity)" [severity]="item.stockQuantity <= 0 ? 'danger' : item.stockQuantity < 10 ? 'warn' : 'success'" />
               </td>
               <td class="text-right">
-                <button
-                  type="button"
-                  class="btn-action-quick"
-                  (click)="openAdjust(item)"
-                >
-                  <svg lucidePlus class="action-icon"></svg>
-                  <span>Cập nhật kho</span>
-                </button>
+                <div class="flex justify-end w-full">
+                  <button
+                    type="button"
+                    class="btn-action-quick"
+                    (click)="openAdjust(item)"
+                  >
+                    <svg lucidePlus class="action-icon"></svg>
+                    <span>Cập nhật kho</span>
+                  </button>
+                </div>
               </td>
             </tr>
           </ng-template>
@@ -613,14 +661,33 @@
               </div>
             </td>
             <td>
-              <span
-                class="log-note"
-                [pTooltip]="log.note || ''"
-                tooltipPosition="top"
-                [tooltipDisabled]="!log.note"
-              >
-                {{ log.note || '---' }}
-              </span>
+              @if (log.note) {
+                <span
+                  class="log-note cursor-pointer hover:text-[#4F46E5] hover:underline transition-colors block truncate"
+                  (click)="notePopover.toggle($event)"
+                >
+                  {{ log.note }}
+                </span>
+                <p-popover #notePopover styleClass="inventory-note-popover">
+                  <div class="inventory-note-popover-content">
+                    <div class="inventory-note-popover-header">
+                      <span class="inventory-note-popover-title">Chi tiết ghi chú</span>
+                      <button
+                        class="inventory-note-copy-btn"
+                        (click)="copyToClipboard(log.note); notePopover.toggle($event)"
+                        title="Sao chép"
+                      >
+                        <svg lucideCopy class="h-3.5 w-3.5"></svg>
+                      </button>
+                    </div>
+                    <div class="inventory-note-popover-body">
+                      {{ log.note }}
+                    </div>
+                  </div>
+                </p-popover>
+              } @else {
+                <span class="text-xs text-[#9CA3AF]">---</span>
+              }
             </td>
           </tr>
         </ng-template>
@@ -651,6 +718,9 @@
       }
     </article>
   }
+
+    </div>
+  </div>
 
   <!-- Dialog điều chỉnh kho -->
   <app-inventory-adjust-dialog
@@ -779,14 +849,14 @@
           <p>Hệ thống bán lẻ thiết bị công nghệ cao cấp</p>
         </div>
         <div class="print-report-meta text-right">
-          <p><strong>Mẫu số:</strong> B01-TK</p>
+          <p><strong>Mẫu số:</strong> B01-KHO</p>
           <p><strong>Ngày in:</strong> {{ printDate | date: 'dd/MM/yyyy HH:mm' }}</p>
         </div>
       </section>
 
       <section class="print-title-block">
         <p class="print-kicker">BÁO CÁO QUẢN TRỊ KHO</p>
-        <h1>BÁO CÁO TỒN KHO HIỆN TẠI</h1>
+        <h1>BÁO CÁO THỐNG KÊ TỒN KHO HIỆN TẠI</h1>
         <p>Thời gian lập báo cáo: {{ printDate | date: 'dd/MM/yyyy HH:mm:ss' }}</p>
       </section>
 
