@@ -69,6 +69,7 @@
                 type="button"
                 class="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#1c1b1b] px-6 text-xs font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#765b00] disabled:cursor-not-allowed disabled:opacity-60"
                 [disabled]="voucher.status !== 'active'"
+                (click)="copyVoucherCode(voucher.code)"
               >
                 @if (voucher.actionLabel.includes('Copy')) {
                   <svg lucideCopy class="h-4 w-4" [attr.stroke-width]="2"></svg>

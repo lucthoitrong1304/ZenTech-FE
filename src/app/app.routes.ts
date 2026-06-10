@@ -30,6 +30,13 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'checkout/result',
+    loadComponent: () =>
+      import('./site-management/cart/pages/checkout-result-page/checkout-result-page.component').then(
+        m => m.CheckoutResultPageComponent
+      )
+  },
+  {
     path: 'reset-password',
     loadComponent: () => import('./site-management/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
   },
