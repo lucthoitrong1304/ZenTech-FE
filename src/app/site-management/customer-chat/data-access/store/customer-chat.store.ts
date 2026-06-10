@@ -720,6 +720,9 @@ export const CustomerChatStore = signalStore(
                     attachments,
                   };
 
+                  patchState(store, {
+                    aiResponding: store.session()?.status === 'BOT_CONSULTING',
+                  });
                   websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
                   patchState(
                     store,
