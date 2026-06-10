@@ -30,6 +30,13 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'checkout',
+    loadComponent: () =>
+      import('./site-management/cart/pages/checkout-page/checkout-page.component').then(
+        m => m.CheckoutPageComponent
+      )
+  },
+  {
     path: 'checkout/result',
     loadComponent: () =>
       import('./site-management/cart/pages/checkout-result-page/checkout-result-page.component').then(
