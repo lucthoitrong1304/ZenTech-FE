@@ -277,7 +277,9 @@ describe('CustomerChatStore', () => {
   });
 
   it('uploads pending files and publishes one attachment message when sending', () => {
-    const { store, chatService, websocketService } = configureStore();
+    const { store, chatService, websocketService } = configureStore({
+      conversations: [createConversation('conversation-1', { status: ConversationStatus.BOT_CONSULTING })],
+    });
     const file = new File(['demo'], 'layout.png', { type: 'image/png' });
 
     store.loadSession();
@@ -299,10 +301,13 @@ describe('CustomerChatStore', () => {
         },
       ],
     });
+    expect(store.aiResponding()).toBe(true);
   });
 
   it('allows sending a file-only pending message', () => {
-    const { store, websocketService } = configureStore();
+    const { store, websocketService } = configureStore({
+      conversations: [createConversation('conversation-1', { status: ConversationStatus.BOT_CONSULTING })],
+    });
     const file = new File(['demo'], 'layout.png', { type: 'image/png' });
 
     store.loadSession();
@@ -322,6 +327,7 @@ describe('CustomerChatStore', () => {
         },
       ],
     });
+    expect(store.aiResponding()).toBe(true);
   });
 
   it('keeps pending uploads scoped to their conversation when switching conversations', () => {
@@ -342,7 +348,10 @@ describe('CustomerChatStore', () => {
   });
 
   it('marks pending uploads failed and does not publish when upload fails', () => {
-    const { store, websocketService } = configureStore({ uploadFails: true });
+    const { store, websocketService } = configureStore({
+      uploadFails: true,
+      conversations: [createConversation('conversation-1', { status: ConversationStatus.BOT_CONSULTING })],
+    });
     const file = new File(['demo'], 'layout.png', { type: 'image/png' });
 
     store.loadSession();
@@ -352,6 +361,7 @@ describe('CustomerChatStore', () => {
     expect(store.uploads()[0].status).toBe('FAILED');
     expect(store.uploads()[0].progress).toBe(100);
     expect(websocketService.publish).not.toHaveBeenCalled();
+    expect(store.aiResponding()).toBe(false);
   });
 
   it('opens and closes the shared content sidebar', () => {
@@ -407,6 +417,7 @@ function createConversation(
     staffEmail?: string | null;
     staffEmailField?: 'email' | 'accountEmail' | 'userEmail' | 'participantEmail';
     nestedStaffAccountEmail?: string | null;
+    status?: ConversationStatus;
   } = {}
 ): ConversationResponse {
   const staffEmailField = options.staffEmailField ?? 'email';
@@ -422,7 +433,7 @@ function createConversation(
     customerId: 'customer-1',
     customerName: 'Ban',
     customerEmail: 'ban@example.com',
-    status: ConversationStatus.AGENT_HANDLING,
+    status: options.status ?? ConversationStatus.AGENT_HANDLING,
     title: 'Product Support',
     createdAt: '2026-05-24T02:00:00.000Z',
     updatedAt: '2026-05-24T02:03:00.000Z',

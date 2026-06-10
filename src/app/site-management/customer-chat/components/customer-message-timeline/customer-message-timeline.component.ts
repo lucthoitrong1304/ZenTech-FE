@@ -15,6 +15,25 @@ import {
   imports: [CommonModule, LucideBot, LucideFileText, LucideImage, LucideUserRound, LucidePhone, MarkdownComponent],
   templateUrl: './customer-message-timeline.component.html',
   styles: [`
+    :host .ai-message > div > div:last-child {
+      position: relative;
+      overflow: hidden;
+    }
+
+    :host .ai-message > div > div:last-child::before {
+      content: '';
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 3px;
+      background: #ffc700;
+    }
+
+    :host ::ng-deep .customer-ai-markdown {
+      color: #1f2937;
+      font-size: 0.925rem;
+      line-height: 1.65;
+    }
+
     :host ::ng-deep .customer-ai-markdown p {
       margin: 0 0 0.625rem;
     }
@@ -25,23 +44,46 @@ import {
 
     :host ::ng-deep .customer-ai-markdown ul,
     :host ::ng-deep .customer-ai-markdown ol {
-      margin: 0.25rem 0 0.625rem;
-      padding-left: 1.25rem;
+      margin: 0.35rem 0 0.85rem;
+      padding-left: 1.15rem;
+    }
+
+    :host ::ng-deep .customer-ai-markdown ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    :host ::ng-deep .customer-ai-markdown ul li {
+      position: relative;
+      padding-left: 1.1rem;
+    }
+
+    :host ::ng-deep .customer-ai-markdown ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.72em;
+      width: 0.35rem;
+      height: 0.35rem;
+      border-radius: 999px;
+      background: #ffc700;
+      box-shadow: 0 0 0 2px rgba(255, 199, 0, 0.2);
     }
 
     :host ::ng-deep .customer-ai-markdown li + li {
-      margin-top: 0.25rem;
+      margin-top: 0.38rem;
     }
 
     :host ::ng-deep .customer-ai-markdown strong {
-      font-weight: 800;
+      color: #111827;
+      font-weight: 750;
     }
 
     :host ::ng-deep .customer-ai-markdown code {
       border-radius: 0.25rem;
-      background: rgba(22, 163, 74, 0.1);
+      background: rgba(255, 199, 0, 0.16);
       padding: 0.1rem 0.3rem;
-      color: #166534;
+      color: #6b4d00;
       font-size: 0.92em;
     }
   `],
