@@ -17,6 +17,8 @@ import {
   LucideLayoutList,
   LucideDownload,
   LucidePrinter,
+  LucideCalendar,
+  LucideCopy,
 } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
@@ -24,6 +26,8 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
+import { DatePicker } from 'primeng/datepicker';
+import { PopoverModule } from 'primeng/popover';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { ManagementInventoryStore } from '../../data-access/store/management-inventory.store';
 import { InventoryAdjustDialogComponent } from '../../components/inventory-adjust-dialog/inventory-adjust-dialog.component';
@@ -83,6 +87,10 @@ enum InventoryDateFilterOption {
     LucideLayoutList,
     LucideDownload,
     LucidePrinter,
+    LucideCalendar,
+    DatePicker,
+    PopoverModule,
+    LucideCopy,
   ],
   templateUrl: './management-inventory-page.component.html',
   styleUrl: './management-inventory-page.component.css',
@@ -111,6 +119,22 @@ export class ManagementInventoryPageComponent {
     const total = this.store.stats().totalItems;
     if (total === 0) return 0;
     return Math.round((this.store.stats().lowStockCount / total) * 100);
+  }
+
+  protected getImportPercentage(): number {
+    const totalImports = this.store.logsStats().totalImports;
+    const totalExports = this.store.logsStats().totalExports;
+    const totalVolume = totalImports + totalExports;
+    if (totalVolume === 0) return 0;
+    return Math.round((totalImports / totalVolume) * 100);
+  }
+
+  protected getExportPercentage(): number {
+    const totalImports = this.store.logsStats().totalImports;
+    const totalExports = this.store.logsStats().totalExports;
+    const totalVolume = totalImports + totalExports;
+    if (totalVolume === 0) return 0;
+    return Math.round((totalExports / totalVolume) * 100);
   }
 
   protected readonly stockStatusOptions = [
@@ -155,8 +179,8 @@ export class ManagementInventoryPageComponent {
   // Search input binding
   protected searchVal = signal<string>('');
   protected selectedDateFilter = signal<InventoryDateFilterOption>(InventoryDateFilterOption.ALL);
-  protected customStartDate = signal<string>('');
-  protected customEndDate = signal<string>('');
+  protected customStartDate = signal<Date | null>(null);
+  protected customEndDate = signal<Date | null>(null);
   protected printDate = new Date();
 
   // Re-export options for template binding
@@ -164,6 +188,7 @@ export class ManagementInventoryPageComponent {
   protected readonly TransactionTypeFilterOption = TransactionTypeFilterOption;
   protected readonly InventoryTransactionType = InventoryTransactionType;
   protected readonly InventoryTransactionReason = InventoryTransactionReason;
+  protected readonly InventoryDateFilterOption = InventoryDateFilterOption;
 
   get staffOptions(): InventoryStaffFilterOption[] {
     const staff = this.store.activeStaffList();
@@ -273,13 +298,13 @@ export class ManagementInventoryPageComponent {
     this.store.setDateFilter(startDate, endDate);
   }
 
-  protected handleCustomStartDateChange(value: string): void {
+  protected handleCustomStartDateChange(value: Date | null): void {
     this.customStartDate.set(value);
     this.selectedDateFilter.set(InventoryDateFilterOption.CUSTOM);
     this.applyCustomDateFilter();
   }
 
-  protected handleCustomEndDateChange(value: string): void {
+  protected handleCustomEndDateChange(value: Date | null): void {
     this.customEndDate.set(value);
     this.selectedDateFilter.set(InventoryDateFilterOption.CUSTOM);
     this.applyCustomDateFilter();
@@ -288,8 +313,21 @@ export class ManagementInventoryPageComponent {
   private applyCustomDateFilter(): void {
     const startValue = this.customStartDate();
     const endValue = this.customEndDate();
-    const startDate = startValue ? new Date(`${startValue}T00:00:00`).toISOString() : null;
-    const endDate = endValue ? new Date(`${endValue}T23:59:59`).toISOString() : null;
+    
+    let startDate: string | null = null;
+    if (startValue) {
+      const d = new Date(startValue);
+      d.setHours(0, 0, 0, 0);
+      startDate = d.toISOString();
+    }
+    
+    let endDate: string | null = null;
+    if (endValue) {
+      const d = new Date(endValue);
+      d.setHours(23, 59, 59, 999);
+      endDate = d.toISOString();
+    }
+    
     this.store.setDateFilter(startDate, endDate);
   }
 
@@ -844,6 +882,28 @@ export class ManagementInventoryPageComponent {
 
   protected closeAiDialog(): void {
     this.store.closeAiDialog();
+  }
+
+  protected copyToClipboard(text: string): void {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.toastService.success('Đã sao chép ghi chú vào bộ nhớ tạm!');
+      }).catch(() => {
+        this.toastService.error('Không thể sao chép ghi chú.');
+      });
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        this.toastService.success('Đã sao chép ghi chú vào bộ nhớ tạm!');
+      } catch (err) {
+        this.toastService.error('Không thể sao chép ghi chú.');
+      }
+      document.body.removeChild(textarea);
+    }
   }
 
   protected handlePageChange(event: PaginatorState): void {

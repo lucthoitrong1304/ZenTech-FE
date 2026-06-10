@@ -21,7 +21,7 @@ import { ManagementEmployeeService } from '../../../employees/data-access/servic
 
 const DEFAULT_STOCK_QUERY: InventoryQuery = {
   page: 0,
-  size: 5,
+  size: 8,
   sort: 'productName,asc',
   keyword: '',
   stockStatus: StockStatusOption.ALL,
@@ -30,7 +30,7 @@ const DEFAULT_STOCK_QUERY: InventoryQuery = {
 
 const DEFAULT_LOGS_QUERY: InventoryQuery = {
   page: 0,
-  size: 5,
+  size: 8,
   sort: 'createdAt,desc',
   keyword: '',
   stockStatus: StockStatusOption.ALL,
