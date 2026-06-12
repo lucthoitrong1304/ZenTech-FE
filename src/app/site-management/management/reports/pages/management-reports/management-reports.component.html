@@ -56,17 +56,28 @@
   @if (showCustomDatePanel) {
     <div class="reports-custom-date-panel animate-slide-down">
       <div class="reports-date-fields">
-        <div class="reports-date-field-group">
-          <label>Ngày bắt đầu</label>
-          <input 
-            type="date" 
-            [(ngModel)]="customStartDate">
-        </div>
-        <div class="reports-date-field-group">
-          <label>Ngày kết thúc</label>
-          <input 
-            type="date" 
-            [(ngModel)]="customEndDate">
+        <div class="custom-date-range-wrapper">
+          <label class="custom-date-range-label">Khoảng thời gian báo cáo</label>
+          <div class="custom-date-range">
+            <svg lucideCalendar class="date-range-icon"></svg>
+            <p-datepicker
+              [(ngModel)]="customStartDate"
+              dateFormat="dd/mm/yy"
+              placeholder="Chọn ngày bắt đầu"
+              styleClass="reports-datepicker"
+              appendTo="body"
+              [showIcon]="false"
+            ></p-datepicker>
+            <span class="custom-date-separator">đến</span>
+            <p-datepicker
+              [(ngModel)]="customEndDate"
+              dateFormat="dd/mm/yy"
+              placeholder="Chọn ngày kết thúc"
+              styleClass="reports-datepicker"
+              appendTo="body"
+              [showIcon]="false"
+            ></p-datepicker>
+          </div>
         </div>
         <button 
           type="button" 
@@ -523,22 +534,20 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (product of store.products(); track product.productName + product.variantName) {
-                    @if (product.stockRemaining < 5) {
-                      <tr class="table-hover-row cursor-pointer group" (click)="openProductDetails(product)">
-                        <td>
-                          <div class="flex items-center">
-                            <span class="text-indigo-600 font-semibold group-hover:text-indigo-700 group-hover:underline">{{ product.productName }}</span>
-                          </div>
-                        </td>
-                        <td><span class="variant-pill">{{ product.variantName }}</span></td>
-                        <td><strong>{{ product.stockRemaining }} chiếc</strong></td>
-                        <td><span class="stock-status stock-status--alert">Sắp hết hàng</span></td>
-                      </tr>
-                    }
+                  @for (product of store.inventoryStats()?.lowStockProducts || []; track product.productName + product.variantName) {
+                    <tr class="table-hover-row cursor-pointer group" (click)="openProductDetails(product)">
+                      <td>
+                        <div class="flex items-center">
+                          <span class="text-indigo-600 font-semibold group-hover:text-indigo-700 group-hover:underline">{{ product.productName }}</span>
+                        </div>
+                      </td>
+                      <td><span class="variant-pill">{{ product.variantName }}</span></td>
+                      <td><strong>{{ product.stockRemaining }} chiếc</strong></td>
+                      <td><span class="stock-status stock-status--alert">Sắp hết hàng</span></td>
+                    </tr>
                   } @empty {
                     <tr>
-                      <td colspan="4" class="table-empty-row">Không có dữ liệu sản phẩm trong kỳ này.</td>
+                      <td colspan="4" class="table-empty-row">Không có sản phẩm sắp hết hàng.</td>
                     </tr>
                   }
                 </tbody>

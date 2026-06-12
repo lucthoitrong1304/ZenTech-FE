@@ -90,10 +90,10 @@ export class ReportsService {
       const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       startDate = start.toISOString();
     } else if (period === ReportPeriod.Last7Days) {
-      const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
       startDate = start.toISOString();
     } else if (period === ReportPeriod.Last30Days) {
-      const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
       startDate = start.toISOString();
     } else if (period === ReportPeriod.Custom && customStart && customEnd) {
       startDate = new Date(customStart).toISOString();
