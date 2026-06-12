@@ -5,6 +5,7 @@ import { marked } from 'marked';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ChartModule } from 'primeng/chart';
+import { DatePicker } from 'primeng/datepicker';
 import {
   LucideChartBar,
   LucideDownload,
@@ -15,6 +16,7 @@ import {
   LucideCheck,
   LucidePackage,
   LucideBot,
+  LucideCalendar,
 } from '@lucide/angular';
 import { ReportsStore } from '../../data-access/store/reports.store';
 import { ReportPeriod, ReportsTab, IProductReport, ICustomerSegment } from '../../data-access/models/reports.model';
@@ -59,6 +61,7 @@ interface ChartData {
     FormsModule,
     DialogModule,
     ChartModule,
+    DatePicker,
     LucideChartBar,
     LucideDownload,
     LucideUsers,
@@ -68,6 +71,7 @@ interface ChartData {
     LucideCheck,
     LucidePackage,
     LucideBot,
+    LucideCalendar,
   ],
   providers: [ReportsStore],
   templateUrl: './management-reports.component.html',
@@ -83,8 +87,8 @@ export class ManagementReportsPageComponent implements OnInit {
   protected activeSubTab: 'revenue' | 'products' | 'customers' | 'inventory' = 'revenue';
   
   // Custom date selection
-  protected customStartDate = '';
-  protected customEndDate = '';
+  protected customStartDate: Date | null = null;
+  protected customEndDate: Date | null = null;
   protected showCustomDatePanel = false;
   
   // Drill-down dialog states
@@ -217,8 +221,8 @@ export class ManagementReportsPageComponent implements OnInit {
     const today = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
-    this.customStartDate = this.formatDateToYMD(thirtyDaysAgo);
-    this.customEndDate = this.formatDateToYMD(today);
+    this.customStartDate = thirtyDaysAgo;
+    this.customEndDate = today;
 
     // Load initial reports data on mount
     this.store.loadAllReports(this.store.period());
@@ -258,11 +262,19 @@ export class ManagementReportsPageComponent implements OnInit {
   protected applyCustomDates(): void {
     if (!this.customStartDate || !this.customEndDate) return;
     this.showCustomDatePanel = false;
+
+    // Normalize to start of customStartDate and end of customEndDate
+    const start = new Date(this.customStartDate);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(this.customEndDate);
+    end.setHours(23, 59, 59, 999);
+
     this.store.dispatch({ type: ReportsEvent.PeriodChanged, payload: ReportPeriod.Custom });
     this.store.loadAllReports({
       period: ReportPeriod.Custom,
-      startDate: new Date(this.customStartDate).toISOString(),
-      endDate: new Date(this.customEndDate).toISOString(),
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
     });
   }
 

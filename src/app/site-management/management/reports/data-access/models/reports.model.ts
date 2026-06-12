@@ -86,6 +86,7 @@ export interface IInventoryStats {
   totalItemsInStock: number;
   lowStockVariations: number;
   deadStockVariations: number;
+  lowStockProducts?: IProductReport[];
 }
 
 export interface IAIAnalyzeResponse {
