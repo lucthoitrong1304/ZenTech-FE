@@ -2,12 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideSearch, LucideX } from '@lucide/angular';
+import { Select } from 'primeng/select';
 import { CouponType, ManagementCouponQuery } from '../../data-access/models/marketing.models';
 
 @Component({
   selector: 'app-coupon-toolbar',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideSearch, LucideX],
+  imports: [CommonModule, FormsModule, Select, LucideSearch, LucideX],
   templateUrl: './coupon-toolbar.component.html',
   styleUrl: './coupon-toolbar.component.css',
 })
@@ -42,17 +43,11 @@ export class CouponToolbarComponent {
     this.keywordChange.emit(value);
   }
 
-  protected onTypeChange(value: string): void {
-    this.typeChange.emit(value as ManagementCouponQuery['type']);
+  protected onTypeChange(value: ManagementCouponQuery['type']): void {
+    this.typeChange.emit(value);
   }
 
-  protected onActiveChange(value: string): void {
-    let parsed: ManagementCouponQuery['active'] = 'all';
-    if (value === 'true') {
-      parsed = true;
-    } else if (value === 'false') {
-      parsed = false;
-    }
-    this.activeChange.emit(parsed);
+  protected onActiveChange(value: ManagementCouponQuery['active']): void {
+    this.activeChange.emit(value);
   }
 }

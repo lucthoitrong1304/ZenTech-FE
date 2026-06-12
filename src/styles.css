@@ -272,3 +272,115 @@ app-site-header {
   z-index: 50;
   display: block;
 }
+
+/* ==========================================================================
+   GLOBAL PRIMENG CONFIRM DIALOG CUSTOM CUSTOMIZATION
+   ========================================================================== */
+.zt-confirm-dialog {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+.zt-confirm-dialog.p-dialog {
+  border: 0 !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  box-shadow: 0 20px 50px rgba(17, 24, 39, 0.15) !important;
+  overflow: hidden !important;
+  max-width: 440px !important;
+  width: 100% !important;
+}
+
+.zt-confirm-dialog.p-dialog .p-dialog-header {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 199, 0, 0.12), transparent 28%),
+    #ffffff !important;
+  padding: 24px 24px 12px !important;
+  border-bottom: 0 !important;
+}
+
+.zt-confirm-dialog.p-dialog .p-dialog-title {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #111827 !important;
+}
+
+.zt-confirm-dialog.p-dialog .p-dialog-close-button {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 999px !important;
+  color: #9ca3af !important;
+  background: transparent !important;
+  border: 0 !important;
+  transition: all 0.15s ease !important;
+}
+
+.zt-confirm-dialog.p-dialog .p-dialog-close-button:hover {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+.zt-confirm-dialog.p-dialog .p-dialog-content {
+  padding: 0 24px 20px !important;
+  background: #ffffff !important;
+  color: #4b5563 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+}
+
+.zt-confirm-dialog.p-dialog .p-dialog-content-icon {
+  font-size: 20px !important;
+  color: #e11d48 !important;
+}
+
+.zt-confirm-dialog.p-dialog .p-dialog-footer {
+  background: #f9fafb !important;
+  padding: 14px 24px !important;
+  border-top: 1px solid #e5e7eb !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+}
+
+/* Custom buttons */
+.zt-confirm-dialog.p-dialog .p-dialog-footer button {
+  height: 40px !important;
+  padding: 0 20px !important;
+  border-radius: 999px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  transition: all 0.15s ease !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Reject Button (No) */
+.zt-confirm-dialog.p-dialog .p-confirm-dialog-reject button,
+.zt-confirm-dialog.p-dialog .p-confirmdialog-reject-button button,
+.zt-confirm-dialog.p-dialog .p-dialog-footer p-button:first-child button {
+  background: #ffffff !important;
+  color: #374151 !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.zt-confirm-dialog.p-dialog .p-confirm-dialog-reject button:hover,
+.zt-confirm-dialog.p-dialog .p-confirmdialog-reject-button button:hover,
+.zt-confirm-dialog.p-dialog .p-dialog-footer p-button:first-child button:hover {
+  background: #f9fafb !important;
+  border-color: #d1d5db !important;
+}
+
+/* Accept Button (Yes) */
+.zt-confirm-dialog.p-dialog .p-confirm-dialog-accept button,
+.zt-confirm-dialog.p-dialog .p-confirmdialog-accept-button button,
+.zt-confirm-dialog.p-dialog .p-dialog-footer p-button:last-child button {
+  background: #4f46e5 !important;
+  color: #ffffff !important;
+  border: 0 !important;
+}
+
+.zt-confirm-dialog.p-dialog .p-confirm-dialog-accept button:hover,
+.zt-confirm-dialog.p-dialog .p-confirmdialog-accept-button button:hover,
+.zt-confirm-dialog.p-dialog .p-dialog-footer p-button:last-child button:hover {
+  background: #4338ca !important;
+}

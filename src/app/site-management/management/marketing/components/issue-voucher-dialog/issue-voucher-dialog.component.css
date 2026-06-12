@@ -1,7 +1,9 @@
 @import "tailwindcss" reference;
 
 :host ::ng-deep .issue-p-dialog {
-  @apply rounded-2xl border-0 shadow-2xl bg-white max-w-[500px] w-full mx-4;
+  @apply border-0 bg-white max-w-[500px] w-full mx-4;
+  border-radius: 18px;
+  box-shadow: 0 30px 90px rgba(17, 24, 39, 0.22);
 }
 
 :host ::ng-deep .issue-p-dialog .p-dialog-content {
@@ -10,10 +12,14 @@
 
 .dialog-wrapper {
   @apply flex flex-col w-full bg-white;
+  overflow: hidden;
 }
 
 .dialog-header {
-  @apply flex items-start justify-between p-6 border-b border-[#E5E7EB] bg-[#F9FAFB] rounded-t-2xl;
+  @apply flex items-start justify-between p-6 border-b border-[#E5E7EB];
+  background:
+    radial-gradient(circle at 8% 0%, rgba(255, 199, 0, 0.12), transparent 28%),
+    linear-gradient(145deg, #ffffff 0%, #f9fafb 100%);
 }
 
 .dialog-header h2 {
@@ -45,19 +51,34 @@
 }
 
 .form-group {
-  @apply flex flex-col gap-1.5;
+  @apply flex flex-col gap-2;
 }
 
 .form-label {
-  @apply text-xs font-bold text-[#374151] uppercase tracking-wider;
+  @apply text-[11px] font-black text-[#374151] uppercase;
+  letter-spacing: 0.04em;
 }
 
 .form-input {
-  @apply px-4 py-2.5 rounded-lg border border-[#E5E7EB] text-sm text-[#111827] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition-all;
+  @apply w-full border border-[#E5E7EB] bg-[#F9FAFB] px-4 text-sm font-semibold text-[#111827] transition-all focus:outline-none focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5];
+  height: 48px;
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92);
 }
 
 .form-select {
-  @apply px-4 py-2.5 rounded-lg border border-[#E5E7EB] text-sm text-[#111827] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] cursor-pointer transition-all;
+  @apply w-full border border-[#E5E7EB] bg-[#F9FAFB] px-4 pr-11 text-sm font-semibold text-[#111827] transition-all cursor-pointer focus:outline-none focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5];
+  height: 48px;
+  border-radius: 16px;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #6b7280 50%),
+    linear-gradient(135deg, #6b7280 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 21px,
+    calc(100% - 16px) 21px;
+  background-repeat: no-repeat;
+  background-size: 6px 6px, 6px 6px;
 }
 
 .radio-group {
@@ -65,7 +86,19 @@
 }
 
 .radio-label {
-  @apply flex items-center gap-2.5 cursor-pointer select-none text-sm text-[#374151] font-semibold relative;
+  @apply flex items-center gap-3 cursor-pointer select-none text-sm text-[#374151] font-semibold relative;
+  min-height: 44px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #f9fafb;
+  padding: 10px 12px;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.radio-label:hover {
+  border-color: #c7d2fe;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.08);
 }
 
 .radio-label input {
@@ -74,6 +107,7 @@
 
 .radio-checkmark {
   @apply relative w-5 h-5 bg-white border border-[#E5E7EB] rounded-full transition-all;
+  flex-shrink: 0;
 }
 
 .radio-label:hover input ~ .radio-checkmark {
@@ -98,7 +132,8 @@
 }
 
 .bulk-warning-alert {
-  @apply flex items-start gap-2.5 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800;
+  @apply flex items-start gap-2.5 p-3.5 bg-amber-50 border border-amber-200 text-sm text-amber-800;
+  border-radius: 16px;
 }
 
 .warning-icon {
@@ -114,7 +149,7 @@
 }
 
 .btn-cancel {
-  @apply px-5 py-2.5 rounded-full border border-[#E5E7EB] bg-white text-sm font-semibold text-[#374151] hover:bg-[#F9FAFB] disabled:opacity-50 disabled:cursor-not-allowed transition-all;
+  @apply px-5 py-2.5 rounded-full border border-[#E5E7EB] bg-white text-sm font-bold text-[#374151] hover:bg-[#F9FAFB] disabled:opacity-50 disabled:cursor-not-allowed transition-all;
 }
 
 .btn-save {
@@ -135,15 +170,19 @@
 }
 
 .inline-search-input {
-  @apply w-full pl-10 pr-4 py-2.5 bg-[#F9FAFB] border border-[#E5E7EB] rounded-full text-sm text-[#111827] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition-all;
+  @apply w-full pl-10 pr-4 bg-[#F9FAFB] border border-[#E5E7EB] text-sm font-semibold text-[#111827] focus:outline-none focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5] transition-all;
+  height: 46px;
+  border-radius: 16px;
 }
 
 .inline-customer-list {
-  @apply max-h-[180px] overflow-y-auto border border-[#E5E7EB] rounded-xl bg-white flex flex-col py-1 shadow-inner;
+  @apply max-h-[180px] overflow-y-auto border border-[#E5E7EB] bg-white flex flex-col py-1;
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 12px 28px rgba(17, 24, 39, 0.045);
 }
 
 .inline-customer-item {
-  @apply flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-[#F9FAFB] border-b border-gray-50 last:border-0 transition-all;
+  @apply flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-[#F9FAFB] border-b border-gray-50 last:border-0 transition-all;
 }
 
 .inline-customer-item.selected {

@@ -11,6 +11,7 @@ import {
   LucideSearch,
   LucideX,
 } from '@lucide/angular';
+import { Select } from 'primeng/select';
 import { filter, take } from 'rxjs';
 import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
@@ -19,7 +20,7 @@ import { CouponTableComponent } from '../../components/coupon-table/coupon-table
 import { CouponToolbarComponent } from '../../components/coupon-toolbar/coupon-toolbar.component';
 import { CustomerVoucherTableComponent } from '../../components/customer-voucher-table/customer-voucher-table.component';
 import { IssueVoucherDialogComponent } from '../../components/issue-voucher-dialog/issue-voucher-dialog.component';
-import { ManagementCoupon } from '../../data-access/models/marketing.models';
+import { CustomerVoucherStatus, ManagementCoupon } from '../../data-access/models/marketing.models';
 import { MarketingStore } from '../../data-access/store/marketing.store';
 
 @Component({
@@ -37,6 +38,7 @@ import { MarketingStore } from '../../data-access/store/marketing.store';
     LucideTrendingUp,
     LucideSearch,
     LucideX,
+    Select,
     CouponToolbarComponent,
     CouponTableComponent,
     CustomerVoucherTableComponent,
@@ -51,6 +53,12 @@ export class MarketingPageComponent {
   protected readonly store = inject(MarketingStore);
   private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
+  protected readonly voucherStatusOptions = [
+    { label: 'Táº¥t cáº£ tráº¡ng thÃ¡i', value: 'all' },
+    { label: 'Sáºµn cÃ³ (ChÆ°a sá»­ dá»¥ng)', value: CustomerVoucherStatus.AVAILABLE },
+    { label: 'ÄÃ£ sá»­ dá»¥ng', value: CustomerVoucherStatus.USED },
+    { label: 'ÄÃ£ háº¿t háº¡n', value: CustomerVoucherStatus.EXPIRED },
+  ];
 
   constructor() {
     this.store.loadAll();

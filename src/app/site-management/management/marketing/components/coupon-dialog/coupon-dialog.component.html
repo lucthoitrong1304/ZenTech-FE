@@ -146,26 +146,40 @@
             <div class="form-row-grid">
               <div class="form-group">
                 <label for="startAt" class="form-label">Thời gian bắt đầu</label>
-                <input
+                <p-datepicker
                   id="startAt"
-                  type="datetime-local"
-                  [ngModel]="draft()!.startAt"
-                  (ngModelChange)="updateValue('startAt', $event)"
-                  name="startAt"
-                  class="form-input"
-                />
+                  [ngModel]="startAtDate()"
+                  (ngModelChange)="updateDateTimeValue('startAt', $event)"
+                  [showTime]="true"
+                  hourFormat="24"
+                  dateFormat="dd/mm/yy"
+                  [showIcon]="true"
+                  iconDisplay="input"
+                  styleClass="marketing-datepicker"
+                  panelStyleClass="marketing-datepicker-panel"
+                  appendTo="body"
+                  placeholder="Chọn thời gian bắt đầu"
+                  [ngModelOptions]="{standalone: true}"
+                ></p-datepicker>
               </div>
 
               <div class="form-group">
                 <label for="endAt" class="form-label">Thời gian kết thúc</label>
-                <input
+                <p-datepicker
                   id="endAt"
-                  type="datetime-local"
-                  [ngModel]="draft()!.endAt"
-                  (ngModelChange)="updateValue('endAt', $event)"
-                  name="endAt"
-                  class="form-input"
-                />
+                  [ngModel]="endAtDate()"
+                  (ngModelChange)="updateDateTimeValue('endAt', $event)"
+                  [showTime]="true"
+                  hourFormat="24"
+                  dateFormat="dd/mm/yy"
+                  [showIcon]="true"
+                  iconDisplay="input"
+                  styleClass="marketing-datepicker"
+                  panelStyleClass="marketing-datepicker-panel"
+                  appendTo="body"
+                  placeholder="Chọn thời gian kết thúc"
+                  [ngModelOptions]="{standalone: true}"
+                ></p-datepicker>
               </div>
             </div>
 

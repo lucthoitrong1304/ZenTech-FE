@@ -14,7 +14,13 @@
     </div>
     <div class="flex items-center justify-between gap-4">
       <span class="font-semibold text-[#4f4632]">Estimated Shipping</span>
-      <span class="text-lg font-black uppercase text-[#4b41e1]">Free</span>
+      @if (shippingFee() > 0) {
+        <span class="text-lg font-black tabular-nums">
+          {{ shippingFee() | currency: 'VND' : 'symbol' : '1.0-0' }}
+        </span>
+      } @else {
+        <span class="text-lg font-black uppercase text-[#4b41e1]">Free</span>
+      }
     </div>
     @if (discount() > 0) {
       <div class="flex items-center justify-between gap-4">

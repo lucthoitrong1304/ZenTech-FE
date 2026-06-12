@@ -12,6 +12,7 @@ import { LucideArrowRight, LucideShieldCheck, LucideTruck } from '@lucide/angula
 export class CartSummaryComponent {
   readonly itemCount = input(0);
   readonly subtotal = input(0);
+  readonly shippingFee = input(0);
   readonly discount = input(0);
   readonly total = input(0);
   readonly canCheckout = input(true);

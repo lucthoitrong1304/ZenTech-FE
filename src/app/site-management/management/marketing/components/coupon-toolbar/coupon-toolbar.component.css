@@ -1,23 +1,30 @@
 @import "tailwindcss" reference;
 
 .coupon-toolbar {
-  @apply flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-[#F9FAFB] p-4 rounded-xl border border-[#E5E7EB];
+  @apply flex flex-col xl:flex-row xl:items-center justify-between gap-4;
+  padding: 18px;
+  border: 1px solid rgba(229, 231, 235, 0.88);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.045);
 }
 
 .search-box {
-  @apply relative flex-1 min-w-[280px];
+  @apply relative flex-1 min-w-0;
 }
 
 .search-icon {
-  @apply absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#6B7280];
+  @apply absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280];
 }
 
 .search-input {
-  @apply w-full pl-11 pr-4 py-2.5 rounded-full border border-[#E5E7EB] bg-white text-sm text-[#111827] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition-all;
+  @apply w-full rounded-full border border-[#E5E7EB] bg-[#F9FAFB] pl-10 pr-4 text-sm text-[#111827] transition-all focus:outline-none focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5];
+  height: 44px;
 }
 
 .filters-container {
-  @apply flex flex-wrap items-center gap-4;
+  @apply flex flex-wrap items-center gap-2.5;
+  min-width: 0;
 }
 
 .filter-select-group {
@@ -25,11 +32,100 @@
 }
 
 .filter-label {
-  @apply text-xs font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap;
+  @apply text-[10px] font-black text-[#6B7280] uppercase whitespace-nowrap;
+  letter-spacing: 0.04em;
 }
 
 .filter-select {
-  @apply px-4 py-2.5 rounded-full border border-[#E5E7EB] bg-white text-sm text-[#111827] focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] cursor-pointer transition-all;
+  @apply rounded-full border border-[#E5E7EB] bg-white px-4 text-xs font-semibold text-[#374151] transition-all cursor-pointer focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5];
+  height: 44px;
+  padding-right: 42px;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #6b7280 50%),
+    linear-gradient(135deg, #6b7280 50%, transparent 50%);
+  background-position:
+    calc(100% - 22px) 19px,
+    calc(100% - 16px) 19px;
+  background-repeat: no-repeat;
+  background-size: 6px 6px, 6px 6px;
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.035);
+}
+
+.filter-select:hover {
+  border-color: #c7d2fe;
+}
+
+:host ::ng-deep .marketing-filter-select {
+  min-width: 184px !important;
+  height: 44px !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.035) !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+}
+
+:host ::ng-deep .marketing-filter-select:hover,
+:host ::ng-deep .marketing-filter-select.p-focus {
+  border-color: #c7d2fe !important;
+  box-shadow: 0 12px 26px rgba(79, 70, 229, 0.08) !important;
+}
+
+:host ::ng-deep .marketing-filter-select .p-select-label {
+  display: flex !important;
+  align-items: center !important;
+  height: 100% !important;
+  padding: 0 0 0 20px !important;
+  color: #374151 !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+}
+
+:host ::ng-deep .marketing-filter-select .p-select-dropdown {
+  width: 42px !important;
+  color: #6b7280 !important;
+}
+
+::ng-deep .marketing-filter-panel {
+  overflow: hidden !important;
+  min-width: 214px !important;
+  border: 1px solid rgba(199, 210, 254, 0.9) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96)) !important;
+  box-shadow:
+    0 22px 50px rgba(17, 24, 39, 0.12),
+    0 8px 18px rgba(79, 70, 229, 0.08) !important;
+  backdrop-filter: blur(14px);
+}
+
+::ng-deep .marketing-filter-panel .p-select-list {
+  padding: 8px !important;
+}
+
+::ng-deep .marketing-filter-panel .p-select-option {
+  min-height: 38px !important;
+  margin: 2px 0 !important;
+  border-radius: 12px !important;
+  color: #374151 !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
+}
+
+::ng-deep .marketing-filter-panel .p-select-option:hover {
+  background: #eef2ff !important;
+  color: #4338ca !important;
+  transform: translateX(2px);
+}
+
+::ng-deep .marketing-filter-panel .p-select-option.p-select-option-selected,
+::ng-deep .marketing-filter-panel .p-select-option.p-highlight,
+::ng-deep .marketing-filter-panel .p-select-option[aria-selected='true'] {
+  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.22) !important;
 }
 
 .button-group {
@@ -37,13 +133,37 @@
 }
 
 .btn-apply {
-  @apply px-5 py-2.5 rounded-full bg-[#4F46E5] text-white text-sm font-semibold hover:bg-[#4338CA] transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply rounded-full bg-[#4F46E5] px-5 text-white text-xs font-black uppercase transition-all hover:bg-[#4338CA] disabled:opacity-50 disabled:cursor-not-allowed;
+  min-height: 44px;
 }
 
 .btn-reset {
-  @apply flex items-center gap-1.5 px-4 py-2.5 rounded-full border border-[#E5E7EB] hover:bg-red-50 hover:text-red-600 text-sm font-semibold transition-all;
+  @apply flex items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-white px-4 text-xs font-bold text-[#374151] transition-all hover:bg-rose-50 hover:text-rose-600;
+  min-height: 44px;
 }
 
 .reset-icon {
   @apply w-4 h-4;
+}
+
+@media (max-width: 640px) {
+  .filters-container,
+  .filter-select-group,
+  .filter-select,
+  .button-group,
+  .btn-apply,
+  .btn-reset {
+    width: 100%;
+  }
+
+  :host ::ng-deep .marketing-filter-select {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .filter-select-group {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 6px;
+  }
 }

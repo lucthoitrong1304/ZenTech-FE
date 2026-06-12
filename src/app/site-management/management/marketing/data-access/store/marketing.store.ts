@@ -1,4 +1,5 @@
 import { computed, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { removeEntity, setAllEntities, updateEntity, withEntities } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
@@ -596,7 +597,7 @@ export const MarketingStore = signalStore(
                   loadStats();
                 },
                 error: (err: unknown) => {
-                  const errorMsg = (err as Error)?.message || 'Không thể cập nhật mã giảm giá.';
+                  const errorMsg = getErrorMessage(err, 'Không thể cập nhật mã giảm giá.');
                   handleEvent({ type: MarketingEventType.SaveFailed, error: errorMsg });
                 },
               }),
@@ -611,7 +612,7 @@ export const MarketingStore = signalStore(
                   loadStats();
                 },
                 error: (err: unknown) => {
-                  const errorMsg = (err as Error)?.message || 'Không thể tạo mã giảm giá.';
+                  const errorMsg = getErrorMessage(err, 'Không thể tạo mã giảm giá.');
                   handleEvent({ type: MarketingEventType.SaveFailed, error: errorMsg });
                 },
               }),
@@ -674,7 +675,7 @@ export const MarketingStore = signalStore(
                 loadStats();
               },
               error: (err: unknown) => {
-                const errorMsg = (err as Error)?.message || 'Không thể phát hành voucher.';
+                const errorMsg = getErrorMessage(err, 'Không thể phát hành voucher.');
                 handleEvent({ type: MarketingEventType.IssueVoucherFailed, error: errorMsg });
               },
             }),
@@ -694,7 +695,7 @@ export const MarketingStore = signalStore(
                 loadStats();
               },
               error: (err: unknown) => {
-                const errorMsg = (err as Error)?.message || 'Không thể thu hồi voucher.';
+                const errorMsg = getErrorMessage(err, 'Không thể thu hồi voucher.');
                 handleEvent({ type: MarketingEventType.VoucherRevokeFailed, error: errorMsg });
               },
             }),
@@ -808,3 +809,10 @@ export const MarketingStore = signalStore(
     };
   })
 );
+
+function getErrorMessage(err: unknown, fallback: string): string {
+  if (err instanceof HttpErrorResponse) {
+    return err.error?.message || err.message || fallback;
+  }
+  return (err as Error)?.message || fallback;
+}

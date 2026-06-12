@@ -14,30 +14,32 @@
   <div class="filters-container">
     <div class="filter-select-group">
       <label for="typeFilter" class="filter-label">Loại ưu đãi</label>
-      <select
-        id="typeFilter"
+      <p-select
+        inputId="typeFilter"
+        styleClass="marketing-filter-select"
+        panelStyleClass="marketing-filter-panel"
+        appendTo="body"
+        [options]="couponTypes"
         [ngModel]="couponType()"
-        (ngModelChange)="onTypeChange($event)"
-        class="filter-select"
-      >
-        @for (opt of couponTypes; track opt.value) {
-          <option [value]="opt.value">{{ opt.label }}</option>
-        }
-      </select>
+        optionLabel="label"
+        optionValue="value"
+        (onChange)="onTypeChange($event.value)"
+      ></p-select>
     </div>
 
     <div class="filter-select-group">
       <label for="activeFilter" class="filter-label">Trạng thái</label>
-      <select
-        id="activeFilter"
+      <p-select
+        inputId="activeFilter"
+        styleClass="marketing-filter-select marketing-filter-select--status"
+        panelStyleClass="marketing-filter-panel"
+        appendTo="body"
+        [options]="activeOptions"
         [ngModel]="activeStatus()"
-        (ngModelChange)="onActiveChange($event)"
-        class="filter-select"
-      >
-        @for (opt of activeOptions; track opt.value) {
-          <option [value]="opt.value">{{ opt.label }}</option>
-        }
-      </select>
+        optionLabel="label"
+        optionValue="value"
+        (onChange)="onActiveChange($event.value)"
+      ></p-select>
     </div>
 
     <div class="button-group">
