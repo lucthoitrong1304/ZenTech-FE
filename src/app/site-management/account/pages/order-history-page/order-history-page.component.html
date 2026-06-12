@@ -182,6 +182,25 @@
           </div>
         </div>
 
+        @if (detail.coupons.length > 0) {
+          <div class="rounded-xl border border-[#d7d2ff] bg-[#f4f2ff] p-4">
+            <h3 class="font-black text-sm text-[#1c1b1b] mb-3">Voucher đã áp dụng</h3>
+            <div class="grid gap-3">
+              @for (coupon of detail.coupons; track coupon.orderCouponId) {
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white px-4 py-3">
+                  <div>
+                    <p class="font-mono text-sm font-black text-[#3323cc]">{{ coupon.couponCode }}</p>
+                    <p class="mt-1 text-xs font-bold text-[#81765f]">{{ couponTypeLabel(coupon) }}</p>
+                  </div>
+                  <span class="text-sm font-black tabular-nums text-emerald-700">
+                    -{{ coupon.appliedAmount | currency: 'VND' : 'symbol' : '1.0-0' }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <!-- Financial Summary -->
         <div class="bg-[#fcf9f8] p-5 rounded-xl border border-[#e5e7eb] space-y-2">
           <div class="flex justify-between text-sm font-semibold text-[#4f4632]">

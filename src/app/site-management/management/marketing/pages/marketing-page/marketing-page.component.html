@@ -158,16 +158,16 @@
           </div>
 
           <div class="v-filter-item">
-            <select
+            <p-select
+              styleClass="marketing-filter-select marketing-filter-select--voucher"
+              panelStyleClass="marketing-filter-panel"
+              appendTo="body"
+              [options]="voucherStatusOptions"
               [ngModel]="store.vouchersQuery().status"
-              (ngModelChange)="store.setVoucherStatus($event)"
-              class="v-filter-select"
-            >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="AVAILABLE">Sẵn có (Chưa sử dụng)</option>
-              <option value="USED">Đã sử dụng</option>
-              <option value="EXPIRED">Đã hết hạn</option>
-            </select>
+              optionLabel="label"
+              optionValue="value"
+              (onChange)="store.setVoucherStatus($event.value)"
+            ></p-select>
           </div>
 
           <div class="v-buttons">

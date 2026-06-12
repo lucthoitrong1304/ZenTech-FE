@@ -8,11 +8,19 @@
 }
 
 .table-container {
-  @apply w-full bg-white rounded-2xl shadow-sm border border-[#E5E7EB] overflow-hidden;
+  @apply w-full overflow-hidden;
+  border: 1px solid rgba(229, 231, 235, 0.88);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 199, 0, 0.09), transparent 28%),
+    radial-gradient(circle at 92% 8%, rgba(79, 70, 229, 0.1), transparent 30%),
+    rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 46px rgba(17, 24, 39, 0.065);
 }
 
 .table-loading {
-  @apply flex flex-col items-center justify-center py-16 gap-3 text-sm text-[#6B7280];
+  @apply flex flex-col items-center justify-center gap-3 text-sm text-[#6B7280];
+  min-height: 280px;
 }
 
 .spinner {
@@ -20,15 +28,17 @@
 }
 
 .table-empty {
-  @apply flex flex-col items-center justify-center py-16 px-4 text-center;
+  @apply flex flex-col items-center justify-center px-4 text-center;
+  min-height: 280px;
 }
 
 .empty-icon {
-  @apply w-12 h-12 text-[#9CA3AF] mb-3;
+  @apply w-12 h-12 mb-3;
+  color: #4f46e5;
 }
 
 .table-empty h3 {
-  @apply text-base font-semibold text-[#111827] mb-1;
+  @apply text-base font-bold text-[#111827] mb-1;
 }
 
 .table-empty p {
@@ -40,6 +50,7 @@
   display: block;
   max-width: 100%;
   -webkit-overflow-scrolling: touch;
+  background: rgba(255, 255, 255, 0.74);
 }
 
 .voucher-grid-table {
@@ -47,15 +58,22 @@
 }
 
 .voucher-grid-table th {
-  @apply bg-[#F9FAFB] border-b border-[#E5E7EB] px-6 py-4 text-xs font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap;
+  @apply border-b border-[#E5E7EB] px-6 py-4 text-xs font-bold text-[#6B7280] uppercase whitespace-nowrap;
+  background: rgba(249, 250, 251, 0.9);
+  letter-spacing: 0.06em;
 }
 
 .voucher-grid-table td {
-  @apply px-6 py-4 border-b border-[#E5E7EB] align-middle whitespace-nowrap;
+  @apply px-6 py-4 align-middle whitespace-nowrap;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.72);
 }
 
 .voucher-grid-table tr {
-  @apply hover:bg-[#F9FAFB] transition-colors;
+  transition: background 0.18s ease;
+}
+
+.voucher-grid-table tbody tr:hover {
+  background: rgba(238, 242, 255, 0.52);
 }
 
 .customer-info {
@@ -63,7 +81,7 @@
 }
 
 .customer-info strong {
-  @apply text-[#111827] font-semibold text-sm;
+  @apply text-[#111827] font-bold text-sm;
 }
 
 .customer-info small {
@@ -71,11 +89,14 @@
 }
 
 .code-badge {
-  @apply inline-flex px-3 py-1 rounded-md bg-[#F3F4F6] text-sm font-mono font-bold text-[#111827] border border-[#E5E7EB];
+  @apply inline-flex items-center px-3 py-1 text-sm font-mono font-bold text-[#111827];
+  border: 1px solid rgba(199, 210, 254, 0.88);
+  border-radius: 999px;
+  background: #eef2ff;
 }
 
 .type-badge {
-  @apply inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  @apply inline-flex px-3 py-1 rounded-full text-xs font-bold;
 }
 
 .percentage-badge {
@@ -91,7 +112,7 @@
 }
 
 .discount-val {
-  @apply text-sm font-semibold text-[#111827];
+  @apply text-sm font-bold text-[#111827];
 }
 
 .date-val {
@@ -107,7 +128,7 @@
 }
 
 .status-badge {
-  @apply inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  @apply inline-flex px-3 py-1 rounded-full text-xs font-bold;
 }
 
 .status-available {
@@ -123,7 +144,8 @@
 }
 
 .table-pagination {
-  @apply flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-[#E5E7EB] bg-[#F9FAFB];
+  @apply flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-[#E5E7EB];
+  background: rgba(249, 250, 251, 0.88);
 }
 
 .pagination-info {
@@ -135,7 +157,7 @@
 }
 
 .btn-page {
-  @apply px-4 py-2 rounded-full border border-[#E5E7EB] bg-white text-xs font-semibold text-[#374151] hover:bg-[#F9FAFB] disabled:opacity-50 disabled:cursor-not-allowed transition-all;
+  @apply px-4 py-2 rounded-full border border-[#E5E7EB] bg-white text-xs font-bold text-[#374151] hover:bg-[#EEF2FF] hover:text-[#4338CA] disabled:opacity-50 disabled:cursor-not-allowed transition-all;
 }
 
 .page-current {
@@ -143,7 +165,16 @@
 }
 
 .btn-action-revoke {
-  @apply inline-flex items-center justify-center p-1.5 rounded-full text-gray-400 hover:bg-rose-50 hover:text-rose-600 focus:outline-none transition-all cursor-pointer;
+  @apply inline-flex items-center justify-center rounded-full text-gray-400 hover:bg-rose-50 hover:text-rose-600 focus:outline-none transition-all cursor-pointer;
+  width: 34px;
+  height: 34px;
+  border: 1px solid transparent;
+}
+
+.btn-action-revoke:hover {
+  transform: translateY(-1px);
+  border-color: rgba(254, 205, 211, 0.9);
+  box-shadow: 0 10px 22px rgba(225, 29, 72, 0.08);
 }
 
 .btn-icon {
@@ -152,4 +183,15 @@
 
 .no-action {
   @apply text-xs text-[#9CA3AF] select-none;
+}
+
+@media (max-width: 640px) {
+  .table-pagination {
+    align-items: stretch;
+  }
+
+  .pagination-buttons {
+    justify-content: space-between;
+    width: 100%;
+  }
 }

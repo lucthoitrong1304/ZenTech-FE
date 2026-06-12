@@ -203,6 +203,7 @@
       <app-cart-summary
         [itemCount]="cartStore.itemCount()"
         [subtotal]="cartStore.subtotal()"
+        [shippingFee]="shippingFeePreview()"
         [discount]="discountPreview()"
         [total]="payableTotal()"
         [canCheckout]="!cartStore.isEmpty() && !!selectedAddressId() && !checkoutSubmitting()"

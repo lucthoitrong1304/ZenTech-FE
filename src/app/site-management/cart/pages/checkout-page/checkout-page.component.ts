@@ -24,6 +24,8 @@ import { CartStore } from '../../data-access/store/cart.store';
   styleUrl: './checkout-page.component.css',
 })
 export class CheckoutPageComponent {
+  private static readonly DEFAULT_SHIPPING_FEE = 25000;
+
   private readonly authSessionStore = inject(AuthSessionStore);
   private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly accountService = inject(AccountService);
@@ -253,11 +255,18 @@ export class CheckoutPageComponent {
     if (voucher.couponType === 'FIXED_AMOUNT') {
       return Math.min(voucher.discountValue, subtotal);
     }
+    if (voucher.couponType === 'FREE_SHIPPING') {
+      return this.shippingFeePreview();
+    }
     return 0;
   }
 
+  protected shippingFeePreview(): number {
+    return this.cartStore.isEmpty() ? 0 : CheckoutPageComponent.DEFAULT_SHIPPING_FEE;
+  }
+
   protected payableTotal(): number {
-    return Math.max(0, this.cartStore.total() - this.discountPreview());
+    return Math.max(0, this.cartStore.subtotal() + this.shippingFeePreview() - this.discountPreview());
   }
 
   protected onLogout(): void {

@@ -14,8 +14,8 @@ export class ConfirmService {
       this.confirmationService.confirm({
         header: data.title,
         message: data.content,
-        acceptLabel: 'Yes',
-        rejectLabel: 'No',
+        acceptLabel: 'Xác nhận',
+        rejectLabel: 'Hủy',
         accept: () => {
           observer.next(true);
           observer.complete();

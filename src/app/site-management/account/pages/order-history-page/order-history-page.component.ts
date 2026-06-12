@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
 import { LucideSearch, LucidePackage, LucideMapPin, LucideCreditCard } from '@lucide/angular';
-import { OrderFilter } from '../../data-access/models/account.models';
+import { CustomerOrderCouponResponse, OrderFilter } from '../../data-access/models/account.models';
 import { AccountStore } from '../../data-access/store/account.store';
 
 @Component({
@@ -49,6 +49,25 @@ export class OrderHistoryPageComponent {
       default:
         return 'bg-[#e2dfff] text-[#3323cc]';
     }
+  }
+
+  protected couponTypeLabel(coupon: CustomerOrderCouponResponse): string {
+    switch (coupon.couponType) {
+      case 'PERCENTAGE':
+        return `Giảm ${coupon.discountValue}%`;
+      case 'FIXED_AMOUNT':
+        return `Giảm ${this.formatCurrency(coupon.discountValue)}`;
+      case 'FREE_SHIPPING':
+        return 'Miễn phí vận chuyển';
+      default:
+        return coupon.couponType;
+    }
+  }
+
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
+      .format(value)
+      .replace(/\s/g, '');
   }
 }
 
