@@ -4,7 +4,7 @@
       <svg lucideSearch class="audit-search-icon" [attr.stroke-width]="2"></svg>
       <input
         type="text"
-        placeholder="Tìm theo tên, email, IP, hành động, đối tượng, tóm tắt..."
+        placeholder="Tìm kiếm..."
         [value]="searchText()"
         (input)="handleSearchInput($event)"
         class="audit-search-input"
@@ -93,7 +93,13 @@
                   </div>
                 </td>
                 <td class="audit-td">
-                  <span class="audit-chip audit-chip--area">{{ areaLabel(act.area) }}</span>
+                  <span class="audit-chip"
+                        [class.audit-chip--area-admin]="act.area === 'ADMIN'"
+                        [class.audit-chip--area-management]="act.area === 'MANAGEMENT'"
+                        [class.audit-chip--area-customer]="act.area === 'CUSTOMER'"
+                        [class.audit-chip--area-system]="act.area === 'SYSTEM'">
+                    {{ areaLabel(act.area) }}
+                  </span>
                 </td>
                 <td class="audit-td">
                   <span class="audit-chip" [class.audit-chip--critical]="act.severity === 'CRITICAL'" [class.audit-chip--security]="act.severity === 'SECURITY'" [class.audit-chip--important]="act.severity === 'IMPORTANT'">
