@@ -42,6 +42,12 @@ interface AdminState {
   ticketFilter: TicketStatus | 'ALL';
   accountSearch: string;
   activitySearch: string;
+  activityArea: string;
+  activitySeverity: string;
+  activityModule: string;
+  activityAction: string;
+  activityModulesList: string[];
+  activityActionsList: string[];
 }
 
 const mockLogs: SystemLog[] = [
@@ -382,7 +388,13 @@ const initialState: AdminState = {
   incidentFilter: 'ALL',
   ticketFilter: 'ALL',
   accountSearch: '',
-  activitySearch: ''
+  activitySearch: '',
+  activityArea: 'ALL',
+  activitySeverity: 'ALL',
+  activityModule: 'ALL',
+  activityAction: 'ALL',
+  activityModulesList: [],
+  activityActionsList: []
 };
 
 export const AdminStore = signalStore(
@@ -501,11 +513,19 @@ export const AdminStore = signalStore(
     };
 
     return {
-      loadActivityLogs: rxMethod<{ page: number; size: number; search: string }>(
+      loadActivityLogs: rxMethod<{
+        page: number;
+        size: number;
+        search: string;
+        area: string;
+        severity: string;
+        module: string;
+        action: string;
+      }>(
         pipe(
           tap(() => patchState(store, { isLoadingActivityLogs: true })),
-          switchMap(({ page, size, search }) =>
-            adminLogsService.getActivityLogs(page, size, search).pipe(
+          switchMap(({ page, size, search, area, severity, module, action }) =>
+            adminLogsService.getActivityLogs(page, size, search, area, severity, module, action).pipe(
               tap((response) => {
                 const res = response.data;
                 const mappedLogs = res.content.map(log => ({
@@ -524,6 +544,28 @@ export const AdminStore = signalStore(
                 console.error(err);
                 toastService.error('Không thể tải nhật ký hoạt động');
                 patchState(store, { isLoadingActivityLogs: false });
+                return EMPTY;
+              })
+            )
+          )
+        )
+      ),
+
+      loadActivityLogMetadata: rxMethod<void>(
+        pipe(
+          switchMap(() =>
+            forkJoin([
+              adminLogsService.getActivityLogModules(),
+              adminLogsService.getActivityLogActions()
+            ]).pipe(
+              tap(([modulesRes, actionsRes]) => {
+                patchState(store, {
+                  activityModulesList: modulesRes.data,
+                  activityActionsList: actionsRes.data
+                });
+              }),
+              catchError((err) => {
+                console.error('Failed to load activity logs metadata', err);
                 return EMPTY;
               })
             )
@@ -630,17 +672,93 @@ export const AdminStore = signalStore(
 
       setActivitySearch(search: string) {
         patchState(store, { activitySearch: search, activityPage: 0 });
-        this.loadActivityLogs({ page: 0, size: store.activitySize(), search });
+        this.loadActivityLogs({
+          page: 0,
+          size: store.activitySize(),
+          search,
+          area: store.activityArea(),
+          severity: store.activitySeverity(),
+          module: store.activityModule(),
+          action: store.activityAction()
+        });
       },
 
       setActivityPage(page: number) {
         patchState(store, { activityPage: page });
-        this.loadActivityLogs({ page, size: store.activitySize(), search: store.activitySearch() });
+        this.loadActivityLogs({
+          page,
+          size: store.activitySize(),
+          search: store.activitySearch(),
+          area: store.activityArea(),
+          severity: store.activitySeverity(),
+          module: store.activityModule(),
+          action: store.activityAction()
+        });
       },
 
       setActivitySize(size: number) {
         patchState(store, { activitySize: size, activityPage: 0 });
-        this.loadActivityLogs({ page: 0, size, search: store.activitySearch() });
+        this.loadActivityLogs({
+          page: 0,
+          size,
+          search: store.activitySearch(),
+          area: store.activityArea(),
+          severity: store.activitySeverity(),
+          module: store.activityModule(),
+          action: store.activityAction()
+        });
+      },
+
+      setActivityArea(area: string) {
+        patchState(store, { activityArea: area, activityPage: 0 });
+        this.loadActivityLogs({
+          page: 0,
+          size: store.activitySize(),
+          search: store.activitySearch(),
+          area,
+          severity: store.activitySeverity(),
+          module: store.activityModule(),
+          action: store.activityAction()
+        });
+      },
+
+      setActivitySeverity(severity: string) {
+        patchState(store, { activitySeverity: severity, activityPage: 0 });
+        this.loadActivityLogs({
+          page: 0,
+          size: store.activitySize(),
+          search: store.activitySearch(),
+          area: store.activityArea(),
+          severity,
+          module: store.activityModule(),
+          action: store.activityAction()
+        });
+      },
+
+      setActivityModule(module: string) {
+        patchState(store, { activityModule: module, activityPage: 0 });
+        this.loadActivityLogs({
+          page: 0,
+          size: store.activitySize(),
+          search: store.activitySearch(),
+          area: store.activityArea(),
+          severity: store.activitySeverity(),
+          module,
+          action: store.activityAction()
+        });
+      },
+
+      setActivityAction(action: string) {
+        patchState(store, { activityAction: action, activityPage: 0 });
+        this.loadActivityLogs({
+          page: 0,
+          size: store.activitySize(),
+          search: store.activitySearch(),
+          area: store.activityArea(),
+          severity: store.activitySeverity(),
+          module: store.activityModule(),
+          action
+        });
       },
 
       appendLog(logItem: SystemLog) {

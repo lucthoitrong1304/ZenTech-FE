@@ -13,28 +13,28 @@
     </div>
 
     <div class="audit-filter-row">
-      <select class="audit-filter-select" [ngModel]="areaFilter()" (ngModelChange)="changeAreaFilter($event)" aria-label="Lọc khu vực">
+      <select class="audit-filter-select" [ngModel]="store.activityArea()" (ngModelChange)="changeAreaFilter($event)" aria-label="Lọc khu vực">
         <option value="ALL">Tất cả khu vực</option>
         @for (area of areaOptions; track area) {
           <option [value]="area">{{ areaLabel(area) }}</option>
         }
       </select>
 
-      <select class="audit-filter-select" [ngModel]="severityFilter()" (ngModelChange)="changeSeverityFilter($event)" aria-label="Lọc mức độ">
+      <select class="audit-filter-select" [ngModel]="store.activitySeverity()" (ngModelChange)="changeSeverityFilter($event)" aria-label="Lọc mức độ">
         <option value="ALL">Tất cả mức độ</option>
         @for (severity of severityOptions; track severity) {
           <option [value]="severity">{{ severityLabel(severity) }}</option>
         }
       </select>
 
-      <select class="audit-filter-select" [ngModel]="moduleFilter()" (ngModelChange)="changeModuleFilter($event)" aria-label="Lọc module">
+      <select class="audit-filter-select" [ngModel]="store.activityModule()" (ngModelChange)="changeModuleFilter($event)" aria-label="Lọc module">
         <option value="ALL">Tất cả module</option>
         @for (module of moduleOptions(); track module) {
           <option [value]="module">{{ module }}</option>
         }
       </select>
 
-      <select class="audit-filter-select" [ngModel]="actionFilter()" (ngModelChange)="changeActionFilter($event)" aria-label="Lọc hành động">
+      <select class="audit-filter-select" [ngModel]="store.activityAction()" (ngModelChange)="changeActionFilter($event)" aria-label="Lọc hành động">
         <option value="ALL">Tất cả hành động</option>
         @for (action of actionOptions(); track action) {
           <option [value]="action">{{ actionNameLabel(action) }}</option>
@@ -155,14 +155,14 @@
           <h3 class="modal-title">Chi tiết nhật ký hoạt động</h3>
         </div>
         <button (click)="closeDetail()" class="modal-close-btn" aria-label="Đóng">
-          <svg lucideX class="w-5 h-5"></svg>
+          <svg lucideX class="modal-close-icon"></svg>
         </button>
       </div>
 
       <div class="modal-body">
         <section class="modal-operator-card">
           <div class="operator-cell">
-            <div class="operator-avatar-wrapper !w-11 !h-11 !text-sm">
+            <div class="operator-avatar-wrapper modal-operator-avatar">
               @if (log.operatorAvatar) {
                 <img [src]="log.operatorAvatar" [alt]="log.operatorFullName" class="operator-avatar-img" />
               } @else {
@@ -171,8 +171,8 @@
             </div>
             <div class="operator-info">
               <span class="modal-label">Người thực hiện</span>
-              <span class="operator-name !text-sm">{{ log.operatorFullName }}</span>
-              <span class="operator-email !text-xs">{{ log.operatorEmail }}</span>
+              <span class="operator-name modal-operator-name">{{ log.operatorFullName }}</span>
+              <span class="operator-email modal-operator-email">{{ log.operatorEmail }}</span>
             </div>
           </div>
           <span class="audit-chip" [class.audit-chip--critical]="log.severity === 'CRITICAL'" [class.audit-chip--security]="log.severity === 'SECURITY'" [class.audit-chip--important]="log.severity === 'IMPORTANT'">
@@ -211,7 +211,7 @@
           </div>
           <div class="modal-row">
             <span class="modal-label">IP</span>
-            <span class="modal-value font-mono">{{ log.ipAddress }}</span>
+            <span class="modal-value modal-value--ip">{{ log.ipAddress }}</span>
           </div>
           <div class="modal-row">
             <span class="modal-label">Thời gian</span>

@@ -43,32 +43,21 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
   private readonly ngZone = inject(NgZone);
   protected readonly searchText = signal('');
   protected readonly selectedLog = signal<ActivityLog | null>(null);
-  protected readonly areaFilter = signal<ActivityFilter>('ALL');
-  protected readonly severityFilter = signal<ActivityFilter>('ALL');
-  protected readonly actionFilter = signal<ActivityFilter>('ALL');
-  protected readonly moduleFilter = signal<ActivityFilter>('ALL');
   protected readonly pendingRealtimeCount = signal(0);
 
   protected readonly areaOptions = Object.values(ActivityArea);
   protected readonly severityOptions = Object.values(ActivitySeverity);
 
   protected readonly moduleOptions = computed(() => {
-    const modules = new Set(this.store.filteredActivityLogs().map(log => log.module).filter(Boolean) as string[]);
-    return Array.from(modules).sort();
+    return this.store.activityModulesList();
   });
 
   protected readonly actionOptions = computed(() => {
-    const actions = new Set(this.store.filteredActivityLogs().map(log => log.action).filter(Boolean));
-    return Array.from(actions).sort();
+    return this.store.activityActionsList();
   });
 
   protected readonly displayedActivityLogs = computed(() => {
-    return this.store.filteredActivityLogs().filter(log => {
-      return this.matchesFilter(this.areaFilter(), log.area)
-        && this.matchesFilter(this.severityFilter(), log.severity)
-        && this.matchesFilter(this.actionFilter(), log.action)
-        && this.matchesFilter(this.moduleFilter(), log.module);
-    });
+    return this.store.filteredActivityLogs();
   });
 
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -76,10 +65,15 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.searchText.set(this.store.activitySearch());
+    this.store.loadActivityLogMetadata();
     this.store.loadActivityLogs({
       page: this.store.activityPage(),
       size: this.store.activitySize(),
-      search: this.store.activitySearch()
+      search: this.store.activitySearch(),
+      area: this.store.activityArea(),
+      severity: this.store.activitySeverity(),
+      module: this.store.activityModule(),
+      action: this.store.activityAction()
     });
     this.startRealtimeActivityLogs();
   }
@@ -104,22 +98,22 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
   }
 
   protected changeAreaFilter(value: string): void {
-    this.areaFilter.set(value);
+    this.store.setActivityArea(value);
     this.pendingRealtimeCount.set(0);
   }
 
   protected changeSeverityFilter(value: string): void {
-    this.severityFilter.set(value);
+    this.store.setActivitySeverity(value);
     this.pendingRealtimeCount.set(0);
   }
 
   protected changeActionFilter(value: string): void {
-    this.actionFilter.set(value);
+    this.store.setActivityAction(value);
     this.pendingRealtimeCount.set(0);
   }
 
   protected changeModuleFilter(value: string): void {
-    this.moduleFilter.set(value);
+    this.store.setActivityModule(value);
     this.pendingRealtimeCount.set(0);
   }
 
@@ -142,7 +136,11 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     this.store.loadActivityLogs({
       page: this.store.activityPage(),
       size: this.store.activitySize(),
-      search: this.store.activitySearch()
+      search: this.store.activitySearch(),
+      area: this.store.activityArea(),
+      severity: this.store.activitySeverity(),
+      module: this.store.activityModule(),
+      action: this.store.activityAction()
     });
   }
 
@@ -360,10 +358,10 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
   private shouldPrependRealtimeLog(log: ActivityLog): boolean {
     return this.store.activityPage() === 0
       && this.matchesSearch(log)
-      && this.matchesFilter(this.areaFilter(), log.area)
-      && this.matchesFilter(this.severityFilter(), log.severity)
-      && this.matchesFilter(this.actionFilter(), log.action)
-      && this.matchesFilter(this.moduleFilter(), log.module);
+      && this.matchesFilter(this.store.activityArea(), log.area)
+      && this.matchesFilter(this.store.activitySeverity(), log.severity)
+      && this.matchesFilter(this.store.activityAction(), log.action)
+      && this.matchesFilter(this.store.activityModule(), log.module);
   }
 
   private matchesSearch(log: ActivityLog): boolean {
