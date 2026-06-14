@@ -54,7 +54,7 @@ export class AuthService {
     const request: TokenRefreshRequest = { refreshToken };
 
     return this.apiService.postText<TokenRefreshRequest>(`${this.authBaseUrl}/logout`, request, {
-      context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
+      context: new HttpContext().set(SKIP_GLOBAL_ERROR, true),
     });
   }
 

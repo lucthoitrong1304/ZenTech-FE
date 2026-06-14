@@ -1,24 +1,62 @@
 <div class="audit-container">
-  <!-- Search Bar -->
   <div class="audit-header-row">
     <div class="audit-search-wrapper">
       <svg lucideSearch class="audit-search-icon" [attr.stroke-width]="2"></svg>
       <input
         type="text"
-        placeholder="Tìm kiếm theo email, hành động, đối tượng tác động..."
+        placeholder="Tìm theo tên, email, IP, hành động, đối tượng, tóm tắt..."
         [value]="searchText()"
         (input)="handleSearchInput($event)"
         class="audit-search-input"
         aria-label="Tìm kiếm nhật ký hoạt động"
       />
     </div>
+
+    <div class="audit-filter-row">
+      <select class="audit-filter-select" [ngModel]="areaFilter()" (ngModelChange)="changeAreaFilter($event)" aria-label="Lọc khu vực">
+        <option value="ALL">Tất cả khu vực</option>
+        @for (area of areaOptions; track area) {
+          <option [value]="area">{{ areaLabel(area) }}</option>
+        }
+      </select>
+
+      <select class="audit-filter-select" [ngModel]="severityFilter()" (ngModelChange)="changeSeverityFilter($event)" aria-label="Lọc mức độ">
+        <option value="ALL">Tất cả mức độ</option>
+        @for (severity of severityOptions; track severity) {
+          <option [value]="severity">{{ severityLabel(severity) }}</option>
+        }
+      </select>
+
+      <select class="audit-filter-select" [ngModel]="moduleFilter()" (ngModelChange)="changeModuleFilter($event)" aria-label="Lọc module">
+        <option value="ALL">Tất cả module</option>
+        @for (module of moduleOptions(); track module) {
+          <option [value]="module">{{ module }}</option>
+        }
+      </select>
+
+      <select class="audit-filter-select" [ngModel]="actionFilter()" (ngModelChange)="changeActionFilter($event)" aria-label="Lọc hành động">
+        <option value="ALL">Tất cả hành động</option>
+        @for (action of actionOptions(); track action) {
+          <option [value]="action">{{ actionNameLabel(action) }}</option>
+        }
+      </select>
+    </div>
   </div>
 
-  <!-- Audit Logs Table Card -->
+  @if (pendingRealtimeCount() > 0) {
+    <button type="button" class="audit-live-banner" (click)="refreshRealtimeLogs()">
+      Có {{ pendingRealtimeCount() }} nhật ký mới, bấm để tải lại
+    </button>
+  }
+
   <div class="audit-table-card">
-    @if (store.filteredActivityLogs().length === 0) {
+    @if (store.isLoadingActivityLogs()) {
+      <div class="audit-loading-state">
+        <p>Đang tải nhật ký hoạt động...</p>
+      </div>
+    } @else if (displayedActivityLogs().length === 0) {
       <div class="audit-empty-state">
-        <p>Không tìm thấy nhật ký hoạt động nào phù hợp.</p>
+        <p>Không tìm thấy nhật ký hoạt động phù hợp.</p>
       </div>
     } @else {
       <div class="audit-table-wrapper">
@@ -26,44 +64,203 @@
           <thead>
             <tr>
               <th scope="col" class="audit-th">Thời gian</th>
-              <th scope="col" class="audit-th">Quản trị viên / Nhân viên</th>
+              <th scope="col" class="audit-th">Người thực hiện</th>
+              <th scope="col" class="audit-th">Khu vực</th>
+              <th scope="col" class="audit-th">Mức độ</th>
               <th scope="col" class="audit-th">Hành động</th>
-              <th scope="col" class="audit-th">Đối tượng tác động</th>
-              <th scope="col" class="audit-th">Địa chỉ IP</th>
+              <th scope="col" class="audit-th">Đối tượng</th>
+              <th scope="col" class="audit-th">Tóm tắt</th>
+              <th scope="col" class="audit-th">IP</th>
             </tr>
           </thead>
           <tbody>
-            @for (act of store.filteredActivityLogs(); track act.id) {
-              <tr class="audit-tr">
-                <!-- Time Column -->
-                <td class="audit-td audit-td--time">
-                  {{ act.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}
+            @for (act of displayedActivityLogs(); track act.id) {
+              <tr class="audit-tr" (click)="openDetail(act)">
+                <td class="audit-td audit-td--time">{{ act.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</td>
+                <td class="audit-td">
+                  <div class="operator-cell">
+                    <div class="operator-avatar-wrapper">
+                      @if (act.operatorAvatar) {
+                        <img [src]="act.operatorAvatar" [alt]="act.operatorFullName" class="operator-avatar-img" />
+                      } @else {
+                        <span>{{ getInitials(act.operatorFullName) }}</span>
+                      }
+                    </div>
+                    <div class="operator-info">
+                      <span class="operator-name">{{ act.operatorFullName }}</span>
+                      <span class="operator-email">{{ act.operatorEmail }}</span>
+                    </div>
+                  </div>
                 </td>
-
-                <!-- Operator Column -->
-                <td class="audit-td audit-td--operator">
-                  {{ act.operatorEmail }}
+                <td class="audit-td">
+                  <span class="audit-chip audit-chip--area">{{ areaLabel(act.area) }}</span>
                 </td>
-
-                <!-- Action Column -->
-                <td class="audit-td audit-td--action">
-                  <span class="action-highlight">{{ act.action }}</span>
+                <td class="audit-td">
+                  <span class="audit-chip" [class.audit-chip--critical]="act.severity === 'CRITICAL'" [class.audit-chip--security]="act.severity === 'SECURITY'" [class.audit-chip--important]="act.severity === 'IMPORTANT'">
+                    {{ severityLabel(act.severity) }}
+                  </span>
                 </td>
-
-                <!-- Target Column -->
-                <td class="audit-td audit-td--target">
-                  {{ act.target }}
-                </td>
-
-                <!-- IP Column -->
-                <td class="audit-td audit-td--ip">
-                  {{ act.ipAddress }}
-                </td>
+                <td class="audit-td audit-td--action">{{ actionLabel(act) }}</td>
+                <td class="audit-td audit-td--target">{{ targetLabel(act) }}</td>
+                <td class="audit-td audit-td--summary">{{ summary(act) }}</td>
+                <td class="audit-td audit-td--ip">{{ act.ipAddress }}</td>
               </tr>
             }
           </tbody>
         </table>
       </div>
+
+      <div class="audit-pagination-footer">
+        <div class="pagination-info">
+          Hiển thị <strong>{{ startRecordIndex }}</strong> - <strong>{{ endRecordIndex }}</strong> trên tổng số <strong>{{ store.totalActivityLogs() }}</strong> bản ghi
+        </div>
+
+        <div class="pagination-controls">
+          <div class="pagination-size-selector">
+            <span class="size-label">Số dòng:</span>
+            <select [value]="store.activitySize()" (change)="changeSize($event)" class="size-select" aria-label="Số dòng trên mỗi trang">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+
+          <div class="pagination-buttons">
+            <button [disabled]="store.activityPage() === 0" (click)="changePage(store.activityPage() - 1)" class="pagination-btn" aria-label="Trang trước">
+              <svg lucideChevronLeft class="pagination-btn-icon"></svg>
+            </button>
+            <span class="pagination-current-page">Trang {{ store.activityPage() + 1 }} / {{ totalPages }}</span>
+            <button [disabled]="store.activityPage() >= totalPages - 1" (click)="changePage(store.activityPage() + 1)" class="pagination-btn" aria-label="Trang sau">
+              <svg lucideChevronRight class="pagination-btn-icon"></svg>
+            </button>
+          </div>
+        </div>
+      </div>
     }
   </div>
 </div>
+
+@if (selectedLog(); as log) {
+  <div class="modal-backdrop" (click)="closeDetail()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-heading">
+          <p class="modal-kicker">{{ areaLabel(log.area) }} / {{ severityLabel(log.severity) }}</p>
+          <h3 class="modal-title">Chi tiết nhật ký hoạt động</h3>
+        </div>
+        <button (click)="closeDetail()" class="modal-close-btn" aria-label="Đóng">
+          <svg lucideX class="w-5 h-5"></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <section class="modal-operator-card">
+          <div class="operator-cell">
+            <div class="operator-avatar-wrapper !w-11 !h-11 !text-sm">
+              @if (log.operatorAvatar) {
+                <img [src]="log.operatorAvatar" [alt]="log.operatorFullName" class="operator-avatar-img" />
+              } @else {
+                <span>{{ getInitials(log.operatorFullName || '') }}</span>
+              }
+            </div>
+            <div class="operator-info">
+              <span class="modal-label">Người thực hiện</span>
+              <span class="operator-name !text-sm">{{ log.operatorFullName }}</span>
+              <span class="operator-email !text-xs">{{ log.operatorEmail }}</span>
+            </div>
+          </div>
+          <span class="audit-chip" [class.audit-chip--critical]="log.severity === 'CRITICAL'" [class.audit-chip--security]="log.severity === 'SECURITY'" [class.audit-chip--important]="log.severity === 'IMPORTANT'">
+            {{ severityLabel(log.severity) }}
+          </span>
+        </section>
+
+        <section class="modal-info-grid">
+          <div class="modal-row">
+            <span class="modal-label">Khu vực</span>
+            <span class="modal-value">{{ areaLabel(log.area) }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">Mức độ</span>
+            <span class="modal-value modal-value--action">{{ severityLabel(log.severity) }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">Hành động</span>
+            <span class="modal-value">{{ actionLabel(log) }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">Module</span>
+            <span class="modal-value">{{ log.module || 'N/A' }}</span>
+          </div>
+        </section>
+
+        <div class="modal-row">
+          <span class="modal-label">Tóm tắt</span>
+          <div class="modal-value--mono">{{ summary(log) }}</div>
+        </div>
+
+        <section class="modal-info-grid">
+          <div class="modal-row">
+            <span class="modal-label">Đối tượng</span>
+            <span class="modal-value">{{ targetLabel(log) }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">IP</span>
+            <span class="modal-value font-mono">{{ log.ipAddress }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">Thời gian</span>
+            <span class="modal-value">{{ log.timestamp | date:'HH:mm:ss - dd/MM/yyyy' }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">ID nhật ký</span>
+            <span class="modal-value modal-value--id">{{ log.id }}</span>
+          </div>
+        </section>
+
+        <div class="modal-row">
+          <span class="modal-label">Metadata đã được ẩn dữ liệu nhạy cảm</span>
+          <pre class="modal-value--mono modal-value--metadata">{{ prettyMetadata(log.metadata) }}</pre>
+        </div>
+
+        <div class="modal-row">
+          <span class="modal-label">Thiết bị & trình duyệt</span>
+          @let browser = browserInfo(log.userAgent);
+          <section class="browser-info-grid">
+            <div class="browser-info-item">
+              <span class="brand-icon" [ngClass]="browser.browserIconClass">{{ browser.browserIcon }}</span>
+              <div>
+                <span class="browser-info-label">Trình duyệt</span>
+                <strong class="browser-info-value">{{ browser.browser }}</strong>
+              </div>
+            </div>
+            <div class="browser-info-item">
+              <span class="brand-icon" [ngClass]="browser.osIconClass">{{ browser.osIcon }}</span>
+              <div>
+                <span class="browser-info-label">Hệ điều hành</span>
+                <strong class="browser-info-value">{{ browser.os }}</strong>
+              </div>
+            </div>
+            <div class="browser-info-item">
+              <span class="brand-icon" [ngClass]="browser.deviceIconClass">{{ browser.deviceIcon }}</span>
+              <div>
+                <span class="browser-info-label">Thiết bị</span>
+                <strong class="browser-info-value">{{ browser.device }}</strong>
+              </div>
+            </div>
+            <div class="browser-info-item">
+              <span class="brand-icon brand-icon--engine">WK</span>
+              <div>
+                <span class="browser-info-label">Engine</span>
+                <strong class="browser-info-value">{{ browser.engine }}</strong>
+              </div>
+            </div>
+          </section>
+          <details class="user-agent-details">
+            <summary>Chuỗi user-agent gốc</summary>
+            <div class="modal-value--mono modal-value--user-agent">{{ browser.raw }}</div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -14,7 +14,7 @@ import {
   LucideSparkles
 } from '@lucide/angular';
 import { AdminStore } from '../../../data-access/store/admin.store';
-import { LogLevel, LogServiceCategory, SystemLog } from '../../../data-access/models/admin.models';
+import { ActivityArea, ActivitySeverity, LogLevel, LogServiceCategory, SystemLog } from '../../../data-access/models/admin.models';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { WebsocketService } from '../../../../../core/services/websocket.service';
 
@@ -264,12 +264,14 @@ export class LogsComponent implements OnInit, OnDestroy {
   protected openLogDetails(log: SystemLog): void {
     this.selectedIssueReturn.set(null);
     this.selectedLog.set(log);
+    this.auditLogDetailView(log);
   }
 
   protected openRelatedLogDetails(issue: LogIssue, log: SystemLog): void {
     this.selectedIssueReturn.set(issue);
     this.selectedIssue.set(null);
     this.selectedLog.set(log);
+    this.auditLogDetailView(log);
   }
 
   protected backToIssueDetails(): void {
@@ -666,7 +668,35 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   protected handleClearLogs(): void {
     if (confirm('Bạn có chắc chắn muốn xóa toàn bộ logs hiện tại không?')) {
+      this.store.recordActivityLog({
+        action: 'CLEAR_LOG',
+        area: ActivityArea.ADMIN,
+        severity: ActivitySeverity.SECURITY,
+        module: 'LOG',
+        targetType: 'LOG',
+        targetLabel: 'Danh sách log hiển thị',
+        summary: 'Admin xóa danh sách log đang hiển thị'
+      });
       this.store.clearLogs();
     }
+  }
+
+  private auditLogDetailView(log: SystemLog): void {
+    this.store.recordActivityLog({
+      action: 'VIEW_LOG_DETAIL',
+      area: ActivityArea.ADMIN,
+      severity: ActivitySeverity.SECURITY,
+      module: 'LOG',
+      targetType: 'LOG',
+      targetId: log.id,
+      targetLabel: log.traceId || log.id,
+      summary: `Admin xem chi tiết log ${log.level} của ${log.category}`,
+      metadata: JSON.stringify({
+        level: log.level,
+        category: log.category,
+        traceId: log.traceId,
+        message: log.message
+      })
+    });
   }
 }

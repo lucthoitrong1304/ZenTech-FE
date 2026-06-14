@@ -18,7 +18,9 @@ import {
   AdminAccountRole,
   AdminAccount,
   ActivityLog,
-  PermissionItem
+  ActivityLogRecordPayload,
+  PermissionItem,
+  PaginatedResult
 } from '../models/admin.models';
 
 interface AdminState {
@@ -29,6 +31,10 @@ interface AdminState {
   tickets: SupportTicket[];
   accounts: AdminAccount[];
   activityLogs: ActivityLog[];
+  totalActivityLogs: number;
+  activityPage: number;
+  activitySize: number;
+  isLoadingActivityLogs: boolean;
   permissions: PermissionItem[];
   logFilter: LogLevel | 'ALL';
   logSearch: string;
@@ -260,6 +266,7 @@ const mockActivityLogs: ActivityLog[] = [
   {
     id: 'ACT-001',
     operatorEmail: 'admin@zentech.local',
+    operatorFullName: 'Lục Nhật Bạch',
     action: 'Thay đổi ma trận phân quyền',
     target: 'Quyền module Giám sát Hệ thống của MANAGER',
     ipAddress: '192.168.1.100',
@@ -268,6 +275,7 @@ const mockActivityLogs: ActivityLog[] = [
   {
     id: 'ACT-002',
     operatorEmail: 'owner@zentech.local',
+    operatorFullName: 'Trần Thế Minh',
     action: 'Cập nhật giá sản phẩm',
     target: 'Bàn phím cơ Keychron K8 Pro (2,500,000đ -> 2,350,000đ)',
     ipAddress: '27.72.105.12',
@@ -276,6 +284,7 @@ const mockActivityLogs: ActivityLog[] = [
   {
     id: 'ACT-003',
     operatorEmail: 'admin@zentech.local',
+    operatorFullName: 'Lục Nhật Bạch',
     action: 'Khóa tài khoản người dùng',
     target: 'khoatk123@gmail.com',
     ipAddress: '192.168.1.100',
@@ -284,6 +293,7 @@ const mockActivityLogs: ActivityLog[] = [
   {
     id: 'ACT-004',
     operatorEmail: 'manager@zentech.local',
+    operatorFullName: 'Nguyễn Văn Nam',
     action: 'Phân ca làm việc tuần mới',
     target: 'Tuần 23 - Bộ phận Kinh doanh',
     ipAddress: '192.168.1.112',
@@ -361,7 +371,11 @@ const initialState: AdminState = {
   incidents: mockIncidents,
   tickets: mockTickets,
   accounts: mockAccounts,
-  activityLogs: mockActivityLogs,
+  activityLogs: [],
+  totalActivityLogs: 0,
+  activityPage: 0,
+  activitySize: 10,
+  isLoadingActivityLogs: false,
   permissions: mockPermissions,
   logFilter: 'ALL',
   logSearch: '',
@@ -450,17 +464,7 @@ export const AdminStore = signalStore(
     }),
 
     filteredActivityLogs: computed(() => {
-      let result = activityLogs();
-      const searchVal = activitySearch().toLowerCase().trim();
-
-      if (searchVal) {
-        result = result.filter(act =>
-          act.operatorEmail.toLowerCase().includes(searchVal) ||
-          act.action.toLowerCase().includes(searchVal) ||
-          act.target.toLowerCase().includes(searchVal)
-        );
-      }
-      return result.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      return activityLogs();
     }),
 
     unresolvedIncidentsCount: computed(() => {
@@ -485,6 +489,7 @@ export const AdminStore = signalStore(
       const newAudit: ActivityLog = {
         id: `ACT-${Math.floor(100 + Math.random() * 900)}`,
         operatorEmail: 'admin@zentech.local',
+        operatorFullName: 'Lục Nhật Bạch',
         action,
         target,
         ipAddress: '192.168.1.50',
@@ -496,6 +501,36 @@ export const AdminStore = signalStore(
     };
 
     return {
+      loadActivityLogs: rxMethod<{ page: number; size: number; search: string }>(
+        pipe(
+          tap(() => patchState(store, { isLoadingActivityLogs: true })),
+          switchMap(({ page, size, search }) =>
+            adminLogsService.getActivityLogs(page, size, search).pipe(
+              tap((response) => {
+                const res = response.data;
+                const mappedLogs = res.content.map(log => ({
+                  ...log,
+                  timestamp: new Date(log.timestamp)
+                }));
+                patchState(store, {
+                  activityLogs: mappedLogs,
+                  totalActivityLogs: res.totalElements,
+                  activityPage: res.page,
+                  activitySize: res.size,
+                  isLoadingActivityLogs: false
+                });
+              }),
+              catchError((err) => {
+                console.error(err);
+                toastService.error('Không thể tải nhật ký hoạt động');
+                patchState(store, { isLoadingActivityLogs: false });
+                return EMPTY;
+              })
+            )
+          )
+        )
+      ),
+
       loadLogs: rxMethod<{ level: string; search: string; traceId: string }>(
         pipe(
           tap(() => patchState(store, { isLoadingLogs: true })),
@@ -552,6 +587,25 @@ export const AdminStore = signalStore(
         });
       },
 
+      recordActivityLog(payload: ActivityLogRecordPayload) {
+        adminLogsService.recordActivityLog(payload).subscribe({
+          error: (err) => console.error(err)
+        });
+      },
+
+      prependRealtimeActivityLog(logItem: ActivityLog) {
+        patchState(store, (state) => {
+          if (state.activityLogs.some(log => log.id === logItem.id)) {
+            return state;
+          }
+
+          return {
+            activityLogs: [logItem, ...state.activityLogs].slice(0, state.activitySize),
+            totalActivityLogs: state.totalActivityLogs + 1
+          };
+        });
+      },
+
       setLogFilter(filter: LogLevel | 'ALL') {
         patchState(store, { logFilter: filter });
         this.loadLogs({ level: filter, search: store.logSearch(), traceId: '' });
@@ -575,7 +629,18 @@ export const AdminStore = signalStore(
       },
 
       setActivitySearch(search: string) {
-        patchState(store, { activitySearch: search });
+        patchState(store, { activitySearch: search, activityPage: 0 });
+        this.loadActivityLogs({ page: 0, size: store.activitySize(), search });
+      },
+
+      setActivityPage(page: number) {
+        patchState(store, { activityPage: page });
+        this.loadActivityLogs({ page, size: store.activitySize(), search: store.activitySearch() });
+      },
+
+      setActivitySize(size: number) {
+        patchState(store, { activitySize: size, activityPage: 0 });
+        this.loadActivityLogs({ page: 0, size, search: store.activitySearch() });
       },
 
       appendLog(logItem: SystemLog) {

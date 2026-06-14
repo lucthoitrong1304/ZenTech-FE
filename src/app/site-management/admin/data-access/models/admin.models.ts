@@ -102,10 +102,48 @@ export interface AdminAccount {
 export interface ActivityLog {
   id: string;
   operatorEmail: string;
+  operatorFullName: string;
+  operatorAvatar?: string;
+  area?: ActivityArea;
+  module?: string;
   action: string;
+  actionLabel?: string;
+  severity?: ActivitySeverity;
+  targetType?: string;
+  targetId?: string;
+  targetLabel?: string;
   target: string;
+  summary?: string;
+  metadata?: string;
   ipAddress: string;
+  userAgent?: string;
   timestamp: Date;
+}
+
+export enum ActivityArea {
+  CUSTOMER = 'CUSTOMER',
+  MANAGEMENT = 'MANAGEMENT',
+  ADMIN = 'ADMIN',
+  SYSTEM = 'SYSTEM',
+}
+
+export enum ActivitySeverity {
+  INFO = 'INFO',
+  IMPORTANT = 'IMPORTANT',
+  SECURITY = 'SECURITY',
+  CRITICAL = 'CRITICAL',
+}
+
+export interface ActivityLogRecordPayload {
+  action: string;
+  area: ActivityArea;
+  severity: ActivitySeverity;
+  module?: string;
+  targetType?: string;
+  targetId?: string;
+  targetLabel?: string;
+  summary?: string;
+  metadata?: string;
 }
 
 export interface PermissionItem {
@@ -113,4 +151,19 @@ export interface PermissionItem {
   moduleName: string;
   description: string;
   rolesAllowed: Record<AdminAccountRole, boolean>;
+}
+
+export interface PaginatedResult<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  page: number;
+  last: boolean;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
 }
