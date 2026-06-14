@@ -362,3 +362,24 @@
 .user-agent-details .modal-value--user-agent {
   @apply mt-2 border-0 bg-white;
 }
+
+.modal-close-icon {
+  @apply w-5 h-5;
+}
+
+.modal-operator-avatar {
+  @apply !w-11 !h-11 !text-sm;
+}
+
+.modal-operator-name {
+  @apply !text-sm;
+}
+
+.modal-operator-email {
+  @apply !text-xs;
+}
+
+.modal-value--ip {
+  @apply font-mono;
+}
+

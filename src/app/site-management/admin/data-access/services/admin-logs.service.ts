@@ -28,15 +28,31 @@ export class AdminLogsService {
   }
 
   /**
-   * Lấy danh sách activity logs từ MySQL thông qua Backend (Phân trang)
+   * Lấy danh sách activity logs từ MySQL thông qua Backend (Phân trang và lọc)
    */
   getActivityLogs(
     page: number = 0,
     size: number = 10,
-    search: string = ''
+    search: string = '',
+    area?: string,
+    severity?: string,
+    module?: string,
+    action?: string
   ): Observable<ApiResponse<PaginatedResult<ActivityLog>>> {
-    const url = `${this.activityLogsUrl}?page=${page}&size=${size}&search=${encodeURIComponent(search)}`;
+    let url = `${this.activityLogsUrl}?page=${page}&size=${size}&search=${encodeURIComponent(search)}`;
+    if (area && area !== 'ALL') url += `&area=${area}`;
+    if (severity && severity !== 'ALL') url += `&severity=${severity}`;
+    if (module && module !== 'ALL') url += `&module=${encodeURIComponent(module)}`;
+    if (action && action !== 'ALL') url += `&action=${action}`;
     return this.apiService.get<ApiResponse<PaginatedResult<ActivityLog>>>(url);
+  }
+
+  getActivityLogModules(): Observable<ApiResponse<string[]>> {
+    return this.apiService.get<ApiResponse<string[]>>(`${this.activityLogsUrl}/modules`);
+  }
+
+  getActivityLogActions(): Observable<ApiResponse<string[]>> {
+    return this.apiService.get<ApiResponse<string[]>>(`${this.activityLogsUrl}/actions`);
   }
 
   recordActivityLog(payload: ActivityLogRecordPayload): Observable<ApiResponse<void>> {
