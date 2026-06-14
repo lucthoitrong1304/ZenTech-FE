@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../../core/api/api.service';
 import { environment } from '../../../../../environments/environment';
-import { SystemLog } from '../models/admin.models';
+import { SystemLog, ActivityLog, ActivityLogRecordPayload, PaginatedResult, ApiResponse } from '../models/admin.models';
 import { HttpContext } from '@angular/common/http';
 import { SKIP_AUTH_TOKEN, SKIP_CLIENT_LOG } from '../../../../core/tokens/api-context.token';
 
@@ -10,6 +10,7 @@ import { SKIP_AUTH_TOKEN, SKIP_CLIENT_LOG } from '../../../../core/tokens/api-co
 export class AdminLogsService {
   private readonly apiService = inject(ApiService);
   private readonly adminLogsUrl = `${environment.apiBaseUrl}/admin/logs`;
+  private readonly activityLogsUrl = `${environment.apiBaseUrl}/admin/activity-logs`;
   private readonly explainLogUrl = `${environment.apiBaseUrl}/admin/logs/explain`;
   private readonly clientLogUrl = `${environment.apiBaseUrl}/logs/client`;
 
@@ -24,6 +25,25 @@ export class AdminLogsService {
   ): Observable<SystemLog[]> {
     const url = `${this.adminLogsUrl}?level=${level}&search=${encodeURIComponent(search)}&traceId=${traceId}&limit=${limit}`;
     return this.apiService.get<SystemLog[]>(url);
+  }
+
+  /**
+   * Lấy danh sách activity logs từ MySQL thông qua Backend (Phân trang)
+   */
+  getActivityLogs(
+    page: number = 0,
+    size: number = 10,
+    search: string = ''
+  ): Observable<ApiResponse<PaginatedResult<ActivityLog>>> {
+    const url = `${this.activityLogsUrl}?page=${page}&size=${size}&search=${encodeURIComponent(search)}`;
+    return this.apiService.get<ApiResponse<PaginatedResult<ActivityLog>>>(url);
+  }
+
+  recordActivityLog(payload: ActivityLogRecordPayload): Observable<ApiResponse<void>> {
+    return this.apiService.post<ActivityLogRecordPayload, ApiResponse<void>>(
+      `${this.activityLogsUrl}/record`,
+      payload
+    );
   }
 
   /**
