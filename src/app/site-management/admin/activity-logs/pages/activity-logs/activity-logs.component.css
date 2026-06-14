@@ -84,8 +84,20 @@
   @apply inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-[10px] font-bold uppercase text-gray-600 whitespace-nowrap;
 }
 
-.audit-chip--area {
-  @apply border-sky-100 bg-sky-50 text-sky-700;
+.audit-chip--area-admin {
+  @apply border-purple-200 bg-purple-50 text-purple-700;
+}
+
+.audit-chip--area-management {
+  @apply border-sky-200 bg-sky-50 text-sky-700;
+}
+
+.audit-chip--area-customer {
+  @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+}
+
+.audit-chip--area-system {
+  @apply border-slate-300 bg-slate-50 text-slate-600;
 }
 
 .audit-chip--important {

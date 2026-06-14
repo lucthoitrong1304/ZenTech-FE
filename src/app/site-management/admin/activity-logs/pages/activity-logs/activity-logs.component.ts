@@ -223,7 +223,19 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
       ARCHIVE_LOG: 'Lưu trữ log',
       CREATE_INCIDENT: 'Tạo sự cố',
       UPDATE_INCIDENT: 'Cập nhật sự cố',
-      RESOLVE_INCIDENT: 'Xử lý sự cố'
+      RESOLVE_INCIDENT: 'Xử lý sự cố',
+      CREATE_PRODUCT_GROUP: 'Tạo nhóm sản phẩm',
+      UPDATE_PRODUCT_GROUP: 'Cập nhật nhóm sản phẩm',
+      DELETE_PRODUCT_GROUP: 'Xóa nhóm sản phẩm',
+      CREATE_AI_AGENT: 'Tạo AI agent',
+      UPDATE_AI_AGENT: 'Cập nhật AI agent',
+      DELETE_AI_AGENT: 'Xóa AI agent',
+      CHANGE_AI_AGENT_ROLE: 'Thay đổi vai trò AI agent',
+      CREATE_AI_DATASET: 'Tạo bộ dữ liệu AI',
+      UPDATE_AI_DATASET: 'Cập nhật bộ dữ liệu AI',
+      DELETE_AI_DATASET: 'Xóa bộ dữ liệu AI',
+      UPLOAD_AI_DOCUMENT: 'Tải lên tài liệu AI',
+      DELETE_AI_DOCUMENT: 'Xóa tài liệu AI'
     };
     return labels[action] || fallback || this.toTitleCase(action);
   }
