@@ -117,6 +117,7 @@ export interface ActivityLog {
   metadata?: string;
   ipAddress: string;
   userAgent?: string;
+  traceId?: string;
   timestamp: Date;
 }
 

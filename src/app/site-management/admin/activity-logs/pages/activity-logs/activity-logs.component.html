@@ -1,149 +1,520 @@
 <div class="audit-container">
-  <div class="audit-header-row">
-    <div class="audit-search-wrapper">
-      <svg lucideSearch class="audit-search-icon" [attr.stroke-width]="2"></svg>
-      <input
-        type="text"
-        placeholder="Tìm kiếm..."
-        [value]="searchText()"
-        (input)="handleSearchInput($event)"
-        class="audit-search-input"
-        aria-label="Tìm kiếm nhật ký hoạt động"
-      />
-    </div>
-
-    <div class="audit-filter-row">
-      <select class="audit-filter-select" [ngModel]="store.activityArea()" (ngModelChange)="changeAreaFilter($event)" aria-label="Lọc khu vực">
-        <option value="ALL">Tất cả khu vực</option>
-        @for (area of areaOptions; track area) {
-          <option [value]="area">{{ areaLabel(area) }}</option>
-        }
-      </select>
-
-      <select class="audit-filter-select" [ngModel]="store.activitySeverity()" (ngModelChange)="changeSeverityFilter($event)" aria-label="Lọc mức độ">
-        <option value="ALL">Tất cả mức độ</option>
-        @for (severity of severityOptions; track severity) {
-          <option [value]="severity">{{ severityLabel(severity) }}</option>
-        }
-      </select>
-
-      <select class="audit-filter-select" [ngModel]="store.activityModule()" (ngModelChange)="changeModuleFilter($event)" aria-label="Lọc module">
-        <option value="ALL">Tất cả module</option>
-        @for (module of moduleOptions(); track module) {
-          <option [value]="module">{{ module }}</option>
-        }
-      </select>
-
-      <select class="audit-filter-select" [ngModel]="store.activityAction()" (ngModelChange)="changeActionFilter($event)" aria-label="Lọc hành động">
-        <option value="ALL">Tất cả hành động</option>
-        @for (action of actionOptions(); track action) {
-          <option [value]="action">{{ actionNameLabel(action) }}</option>
-        }
-      </select>
-    </div>
-  </div>
-
-  @if (pendingRealtimeCount() > 0) {
-    <button type="button" class="audit-live-banner" (click)="refreshRealtimeLogs()">
-      Có {{ pendingRealtimeCount() }} nhật ký mới, bấm để tải lại
+  <div class="audit-view-switch">
+    <button
+      type="button"
+      class="audit-view-btn"
+      [class.audit-view-btn--active]="viewMode() === 'TABLE'"
+      (click)="switchView('TABLE')"
+    >
+      Bảng audit
     </button>
-  }
-
-  <div class="audit-table-card">
-    @if (store.isLoadingActivityLogs()) {
-      <div class="audit-loading-state">
-        <p>Đang tải nhật ký hoạt động...</p>
-      </div>
-    } @else if (displayedActivityLogs().length === 0) {
-      <div class="audit-empty-state">
-        <p>Không tìm thấy nhật ký hoạt động phù hợp.</p>
-      </div>
-    } @else {
-      <div class="audit-table-wrapper">
-        <table class="audit-table">
-          <thead>
-            <tr>
-              <th scope="col" class="audit-th">Thời gian</th>
-              <th scope="col" class="audit-th">Người thực hiện</th>
-              <th scope="col" class="audit-th">Khu vực</th>
-              <th scope="col" class="audit-th">Mức độ</th>
-              <th scope="col" class="audit-th">Hành động</th>
-              <th scope="col" class="audit-th">Đối tượng</th>
-              <th scope="col" class="audit-th">Tóm tắt</th>
-              <th scope="col" class="audit-th">IP</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (act of displayedActivityLogs(); track act.id) {
-              <tr class="audit-tr" (click)="openDetail(act)">
-                <td class="audit-td audit-td--time">{{ act.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</td>
-                <td class="audit-td">
-                  <div class="operator-cell">
-                    <div class="operator-avatar-wrapper">
-                      @if (act.operatorAvatar) {
-                        <img [src]="act.operatorAvatar" [alt]="act.operatorFullName" class="operator-avatar-img" />
-                      } @else {
-                        <span>{{ getInitials(act.operatorFullName) }}</span>
-                      }
-                    </div>
-                    <div class="operator-info">
-                      <span class="operator-name">{{ act.operatorFullName }}</span>
-                      <span class="operator-email">{{ act.operatorEmail }}</span>
-                    </div>
-                  </div>
-                </td>
-                <td class="audit-td">
-                  <span class="audit-chip"
-                        [class.audit-chip--area-admin]="act.area === 'ADMIN'"
-                        [class.audit-chip--area-management]="act.area === 'MANAGEMENT'"
-                        [class.audit-chip--area-customer]="act.area === 'CUSTOMER'"
-                        [class.audit-chip--area-system]="act.area === 'SYSTEM'">
-                    {{ areaLabel(act.area) }}
-                  </span>
-                </td>
-                <td class="audit-td">
-                  <span class="audit-chip" [class.audit-chip--critical]="act.severity === 'CRITICAL'" [class.audit-chip--security]="act.severity === 'SECURITY'" [class.audit-chip--important]="act.severity === 'IMPORTANT'">
-                    {{ severityLabel(act.severity) }}
-                  </span>
-                </td>
-                <td class="audit-td audit-td--action">{{ actionLabel(act) }}</td>
-                <td class="audit-td audit-td--target">{{ targetLabel(act) }}</td>
-                <td class="audit-td audit-td--summary">{{ summary(act) }}</td>
-                <td class="audit-td audit-td--ip">{{ act.ipAddress }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <div class="audit-pagination-footer">
-        <div class="pagination-info">
-          Hiển thị <strong>{{ startRecordIndex }}</strong> - <strong>{{ endRecordIndex }}</strong> trên tổng số <strong>{{ store.totalActivityLogs() }}</strong> bản ghi
-        </div>
-
-        <div class="pagination-controls">
-          <div class="pagination-size-selector">
-            <span class="size-label">Số dòng:</span>
-            <select [value]="store.activitySize()" (change)="changeSize($event)" class="size-select" aria-label="Số dòng trên mỗi trang">
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-            </select>
-          </div>
-
-          <div class="pagination-buttons">
-            <button [disabled]="store.activityPage() === 0" (click)="changePage(store.activityPage() - 1)" class="pagination-btn" aria-label="Trang trước">
-              <svg lucideChevronLeft class="pagination-btn-icon"></svg>
-            </button>
-            <span class="pagination-current-page">Trang {{ store.activityPage() + 1 }} / {{ totalPages }}</span>
-            <button [disabled]="store.activityPage() >= totalPages - 1" (click)="changePage(store.activityPage() + 1)" class="pagination-btn" aria-label="Trang sau">
-              <svg lucideChevronRight class="pagination-btn-icon"></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    }
+    <button
+      type="button"
+      class="audit-view-btn"
+      [class.audit-view-btn--active]="viewMode() === 'TIMELINE'"
+      (click)="switchView('TIMELINE')"
+    >
+      Timeline user
+    </button>
   </div>
+
+  @if (viewMode() === 'TABLE') {
+    <div class="audit-header-row">
+      <div class="audit-search-wrapper">
+        <svg lucideSearch class="audit-search-icon" [attr.stroke-width]="2"></svg>
+        <input
+          type="text"
+          placeholder="Tìm kiếm..."
+          [value]="searchText()"
+          (input)="handleSearchInput($event)"
+          class="audit-search-input"
+          aria-label="Tìm kiếm nhật ký hoạt động"
+        />
+      </div>
+
+      <div class="audit-filter-row">
+        <select class="audit-filter-select" [ngModel]="store.activityTimeRange()" (ngModelChange)="changeTimeRangeFilter($event)" aria-label="Lọc thời gian">
+          @for (range of timeRangeOptions; track range.value) {
+            <option [value]="range.value">{{ range.label }}</option>
+          }
+        </select>
+
+        <select class="audit-filter-select" [ngModel]="store.activityArea()" (ngModelChange)="changeAreaFilter($event)" aria-label="Lọc khu vực">
+          <option value="ALL">Tất cả khu vực</option>
+          @for (area of areaOptions; track area) {
+            <option [value]="area">{{ areaLabel(area) }}</option>
+          }
+        </select>
+
+        <select class="audit-filter-select" [ngModel]="store.activitySeverity()" (ngModelChange)="changeSeverityFilter($event)" aria-label="Lọc mức độ">
+          <option value="ALL">Tất cả mức độ</option>
+          @for (severity of severityOptions; track severity) {
+            <option [value]="severity">{{ severityLabel(severity) }}</option>
+          }
+        </select>
+
+        <select class="audit-filter-select" [ngModel]="store.activityModule()" (ngModelChange)="changeModuleFilter($event)" aria-label="Lọc module">
+          <option value="ALL">Tất cả module</option>
+          @for (module of moduleOptions(); track module) {
+            <option [value]="module">{{ module }}</option>
+          }
+        </select>
+
+        <select class="audit-filter-select" [ngModel]="store.activityAction()" (ngModelChange)="changeActionFilter($event)" aria-label="Lọc hành động">
+          <option value="ALL">Tất cả hành động</option>
+          @for (action of actionOptions(); track action) {
+            <option [value]="action">{{ actionNameLabel(action) }}</option>
+          }
+        </select>
+      </div>
+
+      @if (store.activityTimeRange() === 'CUSTOM') {
+        <div class="audit-custom-date-row">
+          <label class="audit-date-field">
+            <span>Từ ngày</span>
+            <input type="date" [value]="store.activityFrom()" (input)="changeCustomFrom($event)" aria-label="Lọc từ ngày" />
+          </label>
+          <label class="audit-date-field">
+            <span>Đến ngày</span>
+            <input type="date" [value]="store.activityTo()" (input)="changeCustomTo($event)" aria-label="Lọc đến ngày" />
+          </label>
+        </div>
+      }
+    </div>
+
+    @if (pendingRealtimeCount() > 0) {
+      <button type="button" class="audit-live-banner" (click)="refreshRealtimeLogs()">
+        Có {{ pendingRealtimeCount() }} nhật ký mới, bấm để tải lại
+      </button>
+    }
+
+    <div class="audit-table-card">
+      @if (store.isLoadingActivityLogs()) {
+        <div class="audit-loading-state">
+          <p>Đang tải nhật ký hoạt động...</p>
+        </div>
+      } @else if (displayedActivityLogs().length === 0) {
+        <div class="audit-empty-state">
+          <p>Không tìm thấy nhật ký hoạt động phù hợp.</p>
+        </div>
+      } @else {
+        <div class="audit-table-wrapper">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th scope="col" class="audit-th">Thời gian</th>
+                <th scope="col" class="audit-th">Người thực hiện</th>
+                <th scope="col" class="audit-th">Khu vực</th>
+                <th scope="col" class="audit-th">Mức độ</th>
+                <th scope="col" class="audit-th">Hành động</th>
+                <th scope="col" class="audit-th">Đối tượng</th>
+                <th scope="col" class="audit-th">Tóm tắt</th>
+                <th scope="col" class="audit-th">Trace</th>
+                <th scope="col" class="audit-th">IP</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (act of displayedActivityLogs(); track act.id) {
+                <tr class="audit-tr" (click)="openDetail(act)">
+                  <td class="audit-td audit-td--time">{{ act.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</td>
+                  <td class="audit-td">
+                    <button type="button" class="operator-button" (click)="openTimelineForLog(act, $event)" title="Xem timeline user">
+                      <span class="operator-cell">
+                        <span class="operator-avatar-wrapper">
+                          @if (act.operatorAvatar) {
+                            <img [src]="act.operatorAvatar" [alt]="act.operatorFullName" class="operator-avatar-img" />
+                          } @else {
+                            <span>{{ getInitials(act.operatorFullName) }}</span>
+                          }
+                        </span>
+                        <span class="operator-info">
+                          <span class="operator-name">{{ act.operatorFullName }}</span>
+                          <span class="operator-email">{{ act.operatorEmail }}</span>
+                        </span>
+                      </span>
+                    </button>
+                  </td>
+                  <td class="audit-td">
+                    <span class="audit-chip"
+                          [class.audit-chip--area-admin]="act.area === 'ADMIN'"
+                          [class.audit-chip--area-management]="act.area === 'MANAGEMENT'"
+                          [class.audit-chip--area-customer]="act.area === 'CUSTOMER'"
+                          [class.audit-chip--area-system]="act.area === 'SYSTEM'">
+                      {{ areaLabel(act.area) }}
+                    </span>
+                  </td>
+                  <td class="audit-td">
+                    <span class="audit-chip" [class.audit-chip--critical]="act.severity === 'CRITICAL'" [class.audit-chip--security]="act.severity === 'SECURITY'" [class.audit-chip--important]="act.severity === 'IMPORTANT'">
+                      {{ severityLabel(act.severity) }}
+                    </span>
+                  </td>
+                  <td class="audit-td audit-td--action">{{ actionLabel(act) }}</td>
+                  <td class="audit-td audit-td--target">{{ targetLabel(act) }}</td>
+                  <td class="audit-td audit-td--summary">{{ summary(act) }}</td>
+                  <td class="audit-td">
+                    @if (act.traceId) {
+                      <a class="trace-link" [href]="traceLogLink(act)" (click)="$event.stopPropagation()">{{ act.traceId }}</a>
+                    } @else {
+                      <span class="audit-muted">N/A</span>
+                    }
+                  </td>
+                  <td class="audit-td audit-td--ip">{{ act.ipAddress }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="audit-pagination-footer">
+          <div class="pagination-info">
+            Hiển thị <strong>{{ startRecordIndex }}</strong> - <strong>{{ endRecordIndex }}</strong> trên tổng số <strong>{{ store.totalActivityLogs() }}</strong> bản ghi
+          </div>
+
+          <div class="pagination-controls">
+            <div class="pagination-size-selector">
+              <span class="size-label">Số dòng:</span>
+              <select [value]="store.activitySize()" (change)="changeSize($event)" class="size-select" aria-label="Số dòng trên mỗi trang">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+
+            <div class="pagination-buttons">
+              <button [disabled]="store.activityPage() === 0" (click)="changePage(store.activityPage() - 1)" class="pagination-btn" aria-label="Trang trước">
+                <svg lucideChevronLeft class="pagination-btn-icon"></svg>
+              </button>
+              <span class="pagination-current-page">Trang {{ store.activityPage() + 1 }} / {{ totalPages }}</span>
+              <button [disabled]="store.activityPage() >= totalPages - 1" (click)="changePage(store.activityPage() + 1)" class="pagination-btn" aria-label="Trang sau">
+                <svg lucideChevronRight class="pagination-btn-icon"></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <section class="timeline-shell">
+      <div class="timeline-filter-panel">
+        <div class="timeline-user-search">
+          <label class="timeline-label" for="timeline-email">User / email</label>
+          <input
+            id="timeline-email"
+            type="text"
+            class="timeline-input"
+            placeholder="owner@gmail.com"
+            [value]="timelineEmail()"
+            (input)="handleTimelineEmailInput($event)"
+          />
+        </div>
+        <div>
+          <label class="timeline-label" for="timeline-range">Thời gian</label>
+          <select id="timeline-range" class="timeline-select" [ngModel]="timelineTimeRange()" (ngModelChange)="changeTimelineTimeRange($event)" aria-label="Lọc thời gian timeline">
+            @for (range of timeRangeOptions; track range.value) {
+              <option [value]="range.value">{{ range.label }}</option>
+            }
+          </select>
+        </div>
+        <select class="timeline-select" [ngModel]="timelineSeverity()" (ngModelChange)="changeTimelineSeverity($event)" aria-label="Lọc mức độ timeline">
+          <option value="ALL">Tất cả mức độ</option>
+          @for (severity of severityOptions; track severity) {
+            <option [value]="severity">{{ severityLabel(severity) }}</option>
+          }
+        </select>
+        <select class="timeline-select" [ngModel]="timelineModule()" (ngModelChange)="changeTimelineModule($event)" aria-label="Lọc module timeline">
+          <option value="ALL">Tất cả module</option>
+          @for (module of moduleOptions(); track module) {
+            <option [value]="module">{{ module }}</option>
+          }
+        </select>
+        <select class="timeline-select" [ngModel]="timelineAction()" (ngModelChange)="changeTimelineAction($event)" aria-label="Lọc hành động timeline">
+          <option value="ALL">Tất cả hành động</option>
+          @for (action of actionOptions(); track action) {
+            <option [value]="action">{{ actionNameLabel(action) }}</option>
+          }
+        </select>
+        <div class="timeline-filter-actions">
+          <button type="button" class="timeline-primary-btn" (click)="applyTimelineFilters()">Xem timeline</button>
+          <button type="button" class="timeline-secondary-btn" (click)="resetTimelineFilters()">Làm mới</button>
+        </div>
+
+        @if (timelineTimeRange() === 'CUSTOM') {
+          <div class="timeline-custom-date-row">
+            <label class="timeline-date-field">
+              <span>Từ ngày</span>
+              <input type="date" [value]="timelineFrom()" (input)="changeTimelineFrom($event)" aria-label="Timeline từ ngày" />
+            </label>
+            <label class="timeline-date-field">
+              <span>Đến ngày</span>
+              <input type="date" [value]="timelineTo()" (input)="changeTimelineTo($event)" aria-label="Timeline đến ngày" />
+            </label>
+          </div>
+        }
+      </div>
+
+      <div class="timeline-stat-grid">
+        <article class="timeline-stat-card">
+          <span>Tổng hành động</span>
+          <strong>{{ timelineStats().total }}</strong>
+        </article>
+        <article class="timeline-stat-card">
+          <span>Lần gần nhất</span>
+          <strong>{{ timelineStats().latest ? (timelineStats().latest | date:'HH:mm dd/MM') : 'N/A' }}</strong>
+        </article>
+        <article class="timeline-stat-card timeline-stat-card--security">
+          <span>Bảo mật</span>
+          <strong>{{ timelineStats().securityCount }}</strong>
+        </article>
+        <article class="timeline-stat-card">
+          <span>IP khác nhau</span>
+          <strong>{{ timelineStats().uniqueIps }}</strong>
+        </article>
+      </div>
+
+      <section class="replay-theater">
+        <div class="replay-stage">
+          <div class="replay-stage-header">
+            <div>
+              <span class="replay-kicker">Journey Replay</span>
+              <h3 class="replay-title">Phim điều tra hành vi</h3>
+            </div>
+            <div class="replay-speed-group">
+              @for (speed of [1, 2, 5]; track speed) {
+                <button
+                  type="button"
+                  class="replay-speed-btn"
+                  [class.replay-speed-btn--active]="replaySpeed() === speed"
+                  (click)="setReplaySpeed(speed)"
+                >
+                  {{ speed }}x
+                </button>
+              }
+            </div>
+          </div>
+
+          @if (replayLog(); as replay) {
+            @let browser = browserInfo(replay.userAgent);
+            <div class="replay-cinema" [ngClass]="replaySceneClass(replay)" [class.replay-cinema--playing]="isReplayPlaying()">
+              <div class="replay-browser">
+                <div class="replay-browser-topbar">
+                  <div class="replay-window-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div class="replay-address-bar">{{ replayRoute(replay) }}</div>
+                  <div class="replay-live-badge">{{ isReplayPlaying() ? 'PLAYING' : 'PAUSED' }}</div>
+                </div>
+
+                <div class="replay-app">
+                  <aside class="replay-app-nav">
+                    <span class="replay-nav-logo">ZT</span>
+                    <span [class.replay-nav-dot--active]="replay.module === 'AUTH'"></span>
+                    <span [class.replay-nav-dot--active]="replay.module === 'ACCOUNT'"></span>
+                    <span [class.replay-nav-dot--active]="replay.module === 'INVENTORY'"></span>
+                    <span [class.replay-nav-dot--active]="replay.module === 'ORDER'"></span>
+                  </aside>
+
+                  <main class="replay-app-canvas">
+                    <div class="replay-scene-header">
+                      <div>
+                        <span class="replay-current-action">{{ actionLabel(replay) }}</span>
+                        <h4>{{ replaySceneTitle(replay) }}</h4>
+                        <p>{{ replaySceneSubtitle(replay) }}</p>
+                      </div>
+                      <div class="replay-current-time">{{ replay.timestamp | date:'HH:mm:ss' }}</div>
+                    </div>
+
+                    <div class="replay-scene-body">
+                      <section class="replay-dashboard-panel replay-dashboard-panel--primary">
+                        <span>{{ replayMiniMetric(replay, 0) }}</span>
+                        <strong>{{ targetLabel(replay) }}</strong>
+                        <div class="replay-panel-bars">
+                          <i></i><i></i><i></i>
+                        </div>
+                      </section>
+                      <section class="replay-dashboard-panel">
+                        <span>{{ replayMiniMetric(replay, 1) }}</span>
+                        <strong>{{ replay.module || 'SYSTEM' }}</strong>
+                        <div class="replay-mini-grid"><i></i><i></i><i></i><i></i></div>
+                      </section>
+                      <section class="replay-dashboard-panel">
+                        <span>{{ replayMiniMetric(replay, 2) }}</span>
+                        <strong>{{ browser.device }}</strong>
+                        <div class="replay-device-chip">
+                          <span class="brand-icon" [ngClass]="browser.browserIconClass">{{ browser.browserIcon }}</span>
+                          {{ browser.browser }}
+                        </div>
+                      </section>
+                    </div>
+
+                    <div class="replay-action-toast" [class.replay-action-toast--risk]="isRiskyTimelineItem(replay)">
+                      <span>{{ riskLabel(replay) }}</span>
+                      <strong>{{ summary(replay) }}</strong>
+                    </div>
+
+                    <span class="replay-click-ripple" [style.left]="replayCursorStyle(replayIndex()).left" [style.top]="replayCursorStyle(replayIndex()).top"></span>
+                    <span class="replay-cursor" [style.left]="replayCursorStyle(replayIndex()).left" [style.top]="replayCursorStyle(replayIndex()).top"></span>
+                  </main>
+                </div>
+              </div>
+
+              <div class="replay-subtitle">
+                <span>{{ replayIndex() + 1 }} / {{ timelineLogs().length }}</span>
+                <strong>{{ summary(replay) }}</strong>
+              </div>
+            </div>
+
+            <div class="replay-controls">
+              <button type="button" class="replay-control-btn" (click)="resetReplay()">Reset</button>
+              <button type="button" class="replay-control-btn" (click)="jumpReplay(-1)">Lùi</button>
+              <button type="button" class="replay-play-btn" (click)="toggleReplay()">
+                {{ isReplayPlaying() ? 'Pause' : 'Play' }}
+              </button>
+              <button type="button" class="replay-control-btn" (click)="jumpReplay(1)">Tiếp</button>
+              <span class="replay-count">{{ replayIndex() + 1 }} / {{ timelineLogs().length }}</span>
+            </div>
+
+            <input
+              type="range"
+              class="replay-range"
+              min="0"
+              [max]="timelineLogs().length - 1"
+              [value]="replayIndex()"
+              (input)="seekReplay($event)"
+              aria-label="Tua hành trình"
+            />
+            <div class="replay-progress-bar">
+              <span [style.width.%]="replayProgress()"></span>
+            </div>
+
+            <div class="replay-filmstrip" aria-label="Các cảnh trong hành trình">
+              @for (step of timelineLogs(); track step.id; let i = $index) {
+                <button
+                  type="button"
+                  class="replay-film-frame"
+                  [class.replay-film-frame--active]="i === replayIndex()"
+                  [class.replay-film-frame--risk]="isRiskyTimelineItem(step)"
+                  (click)="seekReplayTo(i)"
+                >
+                  <span>{{ step.timestamp | date:'HH:mm:ss' }}</span>
+                  <strong>{{ actionLabel(step) }}</strong>
+                </button>
+              }
+            </div>
+          } @else {
+            <div class="replay-empty">
+              Tải timeline hoặc chọn user từ bảng audit để bắt đầu replay.
+            </div>
+          }
+        </div>
+
+        <aside class="replay-side-panel">
+          <div class="replay-side-section">
+            <div class="replay-side-header">
+              <span class="replay-kicker">What Changed?</span>
+              <strong>Diff thay đổi</strong>
+            </div>
+            @if (replayLog(); as replay) {
+              @let rows = diffRows(replay);
+              @if (rows.length > 0) {
+                <div class="diff-table">
+                  @for (row of rows; track row.field) {
+                    <div class="diff-row">
+                      <span class="diff-field">{{ row.field }}</span>
+                      <span class="diff-before">{{ row.before }}</span>
+                      <span class="diff-arrow">→</span>
+                      <span class="diff-after">{{ row.after }}</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="replay-muted">Metadata hiện tại chưa có cặp before/after đủ rõ cho bước này.</p>
+              }
+            }
+          </div>
+
+          <div class="replay-side-section">
+            <div class="replay-side-header">
+              <span class="replay-kicker">AI Behavior Summary</span>
+              <button type="button" class="ai-summary-btn" (click)="generateBehaviorSummary()">Tóm tắt</button>
+            </div>
+            @if (behaviorSummary().length > 0) {
+              <ul class="ai-summary-list">
+                @for (line of behaviorSummary(); track line) {
+                  <li>{{ line }}</li>
+                }
+              </ul>
+            } @else {
+              <p class="replay-muted">Bấm tóm tắt để sinh insight hành trình từ timeline hiện tại.</p>
+            }
+          </div>
+        </aside>
+      </section>
+
+      <div class="timeline-card">
+        @if (isLoadingTimeline()) {
+          <div class="audit-loading-state">
+            <p>Đang dựng timeline hành vi...</p>
+          </div>
+        } @else if (timelineLogs().length === 0) {
+          <div class="audit-empty-state">
+            <p>Chưa có dữ liệu timeline phù hợp. Nhập email hoặc chọn user từ bảng audit để xem chuỗi hành vi.</p>
+          </div>
+        } @else {
+          <div class="timeline-list">
+            @for (group of timelineGroups(); track group.label) {
+              <section class="timeline-day-group">
+                <h3 class="timeline-day-title">{{ group.label }}</h3>
+                @for (log of group.logs; track log.id) {
+                  @let browser = browserInfo(log.userAgent);
+                  <button
+                    type="button"
+                    class="timeline-item"
+                    [class.timeline-item--risk]="isRiskyTimelineItem(log)"
+                    (click)="openDetail(log)"
+                  >
+                    <span class="timeline-dot" [class.timeline-dot--risk]="isRiskyTimelineItem(log)"></span>
+                    <span class="timeline-time">{{ log.timestamp | date:'HH:mm:ss' }}</span>
+                    <span class="timeline-main">
+                      <span class="timeline-item-header">
+                        <strong>{{ actionLabel(log) }}</strong>
+                        <span class="timeline-risk-pill">{{ riskLabel(log) }}</span>
+                      </span>
+                      <span class="timeline-summary">{{ summary(log) }}</span>
+                      <span class="timeline-meta">
+                        {{ log.module || 'N/A' }} • {{ targetLabel(log) }} • {{ log.ipAddress || 'unknown' }} • {{ browser.browser }} / {{ browser.device }}
+                      </span>
+                      @if (log.traceId) {
+                        <span class="timeline-trace">Trace {{ log.traceId }}</span>
+                      }
+                    </span>
+                    <span class="audit-chip" [class.audit-chip--critical]="log.severity === 'CRITICAL'" [class.audit-chip--security]="log.severity === 'SECURITY'" [class.audit-chip--important]="log.severity === 'IMPORTANT'">
+                      {{ severityLabel(log.severity) }}
+                    </span>
+                  </button>
+                }
+              </section>
+            }
+          </div>
+
+          <div class="audit-pagination-footer">
+            <div class="pagination-info">
+              Timeline trang <strong>{{ timelinePage() + 1 }}</strong> / <strong>{{ totalTimelinePages }}</strong>, tổng <strong>{{ totalTimelineLogs() }}</strong> bản ghi
+            </div>
+            <div class="pagination-buttons">
+              <button [disabled]="timelinePage() === 0" (click)="changeTimelinePage(timelinePage() - 1)" class="pagination-btn" aria-label="Timeline trang trước">
+                <svg lucideChevronLeft class="pagination-btn-icon"></svg>
+              </button>
+              <button [disabled]="timelinePage() >= totalTimelinePages - 1" (click)="changeTimelinePage(timelinePage() + 1)" class="pagination-btn" aria-label="Timeline trang sau">
+                <svg lucideChevronRight class="pagination-btn-icon"></svg>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
 </div>
 
 @if (selectedLog(); as log) {
@@ -218,15 +589,40 @@
             <span class="modal-value">{{ log.timestamp | date:'HH:mm:ss - dd/MM/yyyy' }}</span>
           </div>
           <div class="modal-row">
+            <span class="modal-label">Trace ID</span>
+            @if (log.traceId) {
+              <a class="trace-link modal-trace-link" [href]="traceLogLink(log)">{{ log.traceId }}</a>
+            } @else {
+              <span class="modal-value">N/A</span>
+            }
+          </div>
+          <div class="modal-row">
             <span class="modal-label">ID nhật ký</span>
             <span class="modal-value modal-value--id">{{ log.id }}</span>
           </div>
         </section>
 
         <div class="modal-row">
-          <span class="modal-label">Metadata đã được ẩn dữ liệu nhạy cảm</span>
+          <span class="modal-label">Metadata đã ẩn dữ liệu nhạy cảm</span>
           <pre class="modal-value--mono modal-value--metadata">{{ prettyMetadata(log.metadata) }}</pre>
         </div>
+
+        @let modalDiffRows = diffRows(log);
+        @if (modalDiffRows.length > 0) {
+          <div class="modal-row">
+            <span class="modal-label">What Changed?</span>
+            <div class="diff-table diff-table--modal">
+              @for (row of modalDiffRows; track row.field) {
+                <div class="diff-row">
+                  <span class="diff-field">{{ row.field }}</span>
+                  <span class="diff-before">{{ row.before }}</span>
+                  <span class="diff-arrow">→</span>
+                  <span class="diff-after">{{ row.after }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
 
         <div class="modal-row">
           <span class="modal-label">Thiết bị & trình duyệt</span>
@@ -270,3 +666,4 @@
     </div>
   </div>
 }
+
