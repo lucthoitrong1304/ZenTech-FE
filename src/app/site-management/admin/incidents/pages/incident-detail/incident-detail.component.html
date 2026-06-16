@@ -1,0 +1,371 @@
+<div class="detail-container">
+  <!-- Back Button & Title -->
+  <div class="detail-header-nav">
+    <a routerLink="/admin/incidents" class="back-link">
+      <svg lucideArrowLeft [attr.stroke-width]="2"></svg>
+      <span>Danh sách Sự cố</span>
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="detail-loading-state">
+      <div class="tech-spinner"></div>
+      <p>Đang tải chi tiết sự cố hệ thống...</p>
+    </div>
+  } @else if (incident()) {
+    @let inc = incident();
+    <!-- Main Header Panel -->
+    <div class="detail-header-card">
+      <div class="detail-header-main">
+        <div>
+          <span class="detail-badge-id">{{ inc.code }}</span>
+          <h2 class="detail-title">{{ inc.errorMessage || 'Lỗi hệ thống không xác định' }}</h2>
+          <div class="detail-route-info">
+            <span class="http-method-badge">{{ inc.httpMethod }}</span>
+            <code class="api-path-text">{{ inc.apiPath }}</code>
+            <span class="status-code-badge" [class.status-code-error]="inc.statusCode >= 500">
+              HTTP {{ inc.statusCode }}
+            </span>
+          </div>
+
+          <!-- Affected User Profile -->
+          @if (inc.userEmail) {
+            <div class="affected-user-section">
+              <span class="affected-label">Khách hàng bị ảnh hưởng:</span>
+              <div class="affected-profile-card">
+                @if (affectedUserProfile(); as prof) {
+                  @if (prof.imageUrl) {
+                    <img [src]="prof.imageUrl" alt="User Avatar" class="profile-avatar-img" />
+                  } @else {
+                    <div class="profile-avatar-letter" [style.background]="getAvatarGradient(prof.email)">
+                      {{ getInitials(prof.displayName) }}
+                    </div>
+                  }
+                  <div class="profile-info">
+                    <span class="profile-name">{{ prof.displayName }}</span>
+                    <span class="profile-email">{{ prof.email }}</span>
+                  </div>
+                } @else {
+                  <div class="profile-avatar-letter bg-gray-200">
+                    <svg lucideUser class="w-3.5 h-3.5 text-gray-400"></svg>
+                  </div>
+                  <div class="profile-info">
+                    <span class="profile-email">{{ inc.userEmail }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="detail-header-actions">
+          @if (inc.ticketCode) {
+            <div class="linked-ticket-badge">
+              <span class="linked-tck-label">TICKET LIÊN KẾT</span>
+              <a routerLink="/admin/tickets" class="linked-tck-code">{{ inc.ticketCode }}</a>
+            </div>
+          } @else {
+            <button type="button" (click)="toggleTicketForm()" class="btn-create-ticket">
+              <svg lucidePlusCircle [attr.stroke-width]="2"></svg>
+              <span>Tạo Ticket giao việc</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Settings Row -->
+      <div class="detail-settings-row">
+        <!-- Status -->
+        <div class="settings-item">
+          <label for="detail-status" class="settings-label">Trạng thái xử lý</label>
+          <select id="detail-status" [ngModel]="inc.status" (change)="handleStatusChange($event)" class="settings-select">
+            <option [value]="IncidentStatus.OPEN">Đang mở (Open)</option>
+            <option [value]="IncidentStatus.INVESTIGATING">Đang điều tra (Investigating)</option>
+            <option [value]="IncidentStatus.RESOLVED">Đã xử lý (Resolved)</option>
+          </select>
+        </div>
+
+        <!-- Severity -->
+        <div class="settings-item">
+          <label for="detail-severity" class="settings-label">Mức độ nghiêm trọng</label>
+          <select id="detail-severity" [ngModel]="inc.severity" (change)="handleSeverityChange($event)" class="settings-select">
+            <option [value]="IncidentSeverity.LOW">LOW (Thấp)</option>
+            <option [value]="IncidentSeverity.MEDIUM">MEDIUM (Trung bình)</option>
+            <option [value]="IncidentSeverity.HIGH">HIGH (Cao)</option>
+            <option [value]="IncidentSeverity.CRITICAL">CRITICAL (Nghiêm trọng)</option>
+          </select>
+        </div>
+
+        <!-- Assignee -->
+        <div class="settings-item settings-item--assignee-custom relative">
+          <label class="settings-label">Kỹ sư phụ trách</label>
+          
+          <!-- Selector Trigger Button -->
+          <div class="assignee-selector-btn" (click)="isAssigneeDropdownOpen.set(!isAssigneeDropdownOpen())">
+            <div class="assignee-avatar-container">
+              @if (assigneeProfile(); as prof) {
+                @if (prof.imageUrl) {
+                  <img [src]="prof.imageUrl" alt="Assignee Avatar" class="assignee-avatar-img" />
+                } @else {
+                  <div class="assignee-avatar-letter" [style.background]="getAvatarGradient(prof.email)">
+                    {{ getInitials(prof.displayName) }}
+                  </div>
+                }
+              } @else {
+                <div class="assignee-avatar-letter assignee-avatar-letter--empty">
+                  <svg lucideUser class="w-4 h-4 text-gray-400" [attr.stroke-width]="2"></svg>
+                </div>
+              }
+            </div>
+            
+            <div class="assignee-info-wrap">
+              @if (assigneeProfile(); as prof) {
+                <span class="assignee-name-display">{{ prof.displayName }}</span>
+                @if (prof.email && prof.email !== prof.displayName) {
+                  <span class="assignee-email-display">{{ prof.email }}</span>
+                }
+              } @else {
+                <span class="assignee-name-display text-gray-400">Chưa phân công</span>
+              }
+            </div>
+
+            <!-- Chevron Icon -->
+            <svg class="assignee-chevron" [class.assignee-chevron--open]="isAssigneeDropdownOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+
+          <!-- Dropdown List Overlay -->
+          @if (isAssigneeDropdownOpen()) {
+            <div class="assignee-dropdown-overlay" (click)="isAssigneeDropdownOpen.set(false)"></div>
+            
+            <div class="assignee-dropdown-list">
+              <!-- Empty Assignee option -->
+              <div class="assignee-dropdown-item" (click)="selectAssignee(null)">
+                <div class="assignee-avatar-container">
+                  <div class="assignee-avatar-letter assignee-avatar-letter--empty">
+                    <svg lucideUser class="w-4 h-4 text-gray-400" [attr.stroke-width]="2"></svg>
+                  </div>
+                </div>
+                <div class="assignee-info-wrap">
+                  <span class="assignee-name-display text-gray-400">Chưa phân công</span>
+                </div>
+              </div>
+
+              <!-- List of staff accounts -->
+              @for (staff of staffAccounts(); track staff.id) {
+                <div class="assignee-dropdown-item" (click)="selectAssignee(staff.email)" [class.assignee-dropdown-item--active]="inc.assignee === staff.email">
+                  <div class="assignee-avatar-container">
+                    @if (staff.imageUrl) {
+                      <img [src]="staff.imageUrl" alt="Staff Avatar" class="assignee-avatar-img" />
+                    } @else {
+                      <div class="assignee-avatar-letter" [style.background]="getAvatarGradient(staff.email)">
+                        {{ getInitials(staff.displayName) }}
+                      </div>
+                    }
+                  </div>
+                  <div class="assignee-info-wrap">
+                    <span class="assignee-name-display">{{ staff.displayName }}</span>
+                    <span class="assignee-email-display">{{ staff.email }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Ticket Inline Form -->
+    @if (showTicketForm()) {
+      <div class="ticket-form-card">
+        <h3 class="ticket-form-title">Tạo Ticket hỗ trợ kỹ thuật</h3>
+        <div class="ticket-form-body">
+          <div class="form-group">
+            <label for="ticket-title-input" class="form-label">Tiêu đề Ticket</label>
+            <input id="ticket-title-input" type="text" [(ngModel)]="ticketTitle" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label for="ticket-desc-input" class="form-label">Mô tả công việc</label>
+            <textarea id="ticket-desc-input" rows="4" [(ngModel)]="ticketDesc" class="form-textarea"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="ticket-priority-select" class="form-label">Độ ưu tiên</label>
+            <select id="ticket-priority-select" [(ngModel)]="ticketPriority" class="form-select">
+              <option [value]="TicketPriority.LOW">LOW (Thấp)</option>
+              <option [value]="TicketPriority.MEDIUM">MEDIUM (Trung bình)</option>
+              <option [value]="TicketPriority.HIGH">HIGH (Cao)</option>
+              <option [value]="TicketPriority.CRITICAL">CRITICAL (Nghiêm trọng)</option>
+            </select>
+          </div>
+        </div>
+        <div class="ticket-form-footer">
+          <button type="button" (click)="toggleTicketForm()" class="btn-secondary">Hủy</button>
+          <button type="button" (click)="handleCreateTicket()" class="btn-primary">Tạo Ticket</button>
+        </div>
+      </div>
+    }
+
+    <!-- Content Grid -->
+    <div class="detail-grid">
+      
+      <!-- Left Column: User Activities & Loki Logs -->
+      <div class="detail-left-col">
+        <!-- User Activity Timeline -->
+        <div class="tech-section">
+          <div class="section-header">
+            <svg lucideActivity class="section-icon" [attr.stroke-width]="2"></svg>
+            <h3 class="section-title">Hành vi người dùng trước lỗi (Activity Timeline)</h3>
+          </div>
+          
+          <div class="section-body">
+            @if (isLoadingActivity()) {
+              <div class="timeline-loading">Đang tải lịch sử hoạt động...</div>
+            } @else if (userActivityLogs().length === 0) {
+              <div class="timeline-empty">Không có dữ liệu hoạt động của người dùng bị ảnh hưởng.</div>
+            } @else {
+              <div class="activity-timeline">
+                @for (logItem of userActivityLogs(); track logItem.id) {
+                  <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                      <div class="timeline-meta">
+                        <span class="timeline-time">{{ logItem.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</span>
+                        <span class="timeline-area">{{ logItem.area }}</span>
+                      </div>
+                      <h4 class="timeline-action">{{ logItem.action }}</h4>
+                      <p class="timeline-desc">{{ logItem.summary }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Related Loki Logs -->
+        <div class="tech-section">
+          <div class="section-header">
+            <svg lucideFileText class="section-icon" [attr.stroke-width]="2"></svg>
+            <h3 class="section-title">Nhật ký hệ thống liên quan (Loki Logs)</h3>
+          </div>
+          
+          <div class="section-body">
+            @if (store.isLoadingLogs()) {
+              <div class="logs-loading">Đang truy vấn logs từ Loki...</div>
+            } @else if (store.filteredLogs().length === 0) {
+              <div class="logs-empty">Không tìm thấy log liên quan cho traceId: {{ inc.traceId }}.</div>
+            } @else {
+              <div class="logs-list">
+                @for (sysLog of store.filteredLogs(); track sysLog.id) {
+                  <div class="log-item-row" [class]="'log-level-' + sysLog.level.toLowerCase()">
+                    <div class="log-meta">
+                      <span class="log-time">{{ sysLog.timestamp | date:'HH:mm:ss.SSS' }}</span>
+                      <span class="log-level">{{ sysLog.level }}</span>
+                      <span class="log-service">{{ sysLog.category }}</span>
+                    </div>
+                    <p class="log-message">{{ sysLog.message }}</p>
+                    <details class="log-details-accordion">
+                      <summary class="log-details-summary">Xem chi tiết raw log</summary>
+                      <pre class="log-raw-pre"><code>{{ sysLog.details }}</code></pre>
+                    </details>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Stack Trace Accordion -->
+        @if (inc.stackTrace) {
+          <div class="tech-section">
+            <div class="section-header">
+              <svg lucideAlertCircle class="section-icon text-rose-600" [attr.stroke-width]="2"></svg>
+              <h3 class="section-title">Chi tiết Stack Trace</h3>
+            </div>
+            <div class="section-body">
+              <pre class="stacktrace-pre"><code>{{ inc.stackTrace }}</code></pre>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Right Column: AI Analysis -->
+      <div class="detail-right-col">
+        <div class="tech-section ai-analysis-section">
+          <div class="section-header border-emerald-100">
+            <svg lucideCpu class="section-icon text-emerald-600 animate-pulse" [attr.stroke-width]="2"></svg>
+            <h3 class="section-title text-emerald-800">Trí tuệ nhân tạo phân tích (AI Analysis)</h3>
+          </div>
+
+          <div class="section-body">
+            @if (isAnalyzing()) {
+              <div class="ai-analyzing-state">
+                <div class="ai-spinner"></div>
+                <h4 class="ai-status-title">AI đang chẩn đoán lỗi...</h4>
+                <p class="ai-status-desc">Hệ thống đang gửi Logs và Dòng hành vi người dùng sang AI Service để phân tích nguyên nhân gốc.</p>
+              </div>
+            } @else if (inc.aiAnalysis) {
+              @let ai = inc.aiAnalysis;
+              <div class="ai-result-panel">
+                <!-- Summary Card -->
+                <div class="ai-result-card">
+                  <h4 class="ai-card-title">TÓM TẮT SỰ CỐ</h4>
+                  <p class="ai-card-text">{{ ai.summary }}</p>
+                </div>
+
+                <!-- Root Cause -->
+                <div class="ai-result-card">
+                  <h4 class="ai-card-title">NGUYÊN NHÂN GỐC DỰ ĐOÁN</h4>
+                  <p class="ai-card-text font-semibold text-rose-700 bg-rose-50/50 p-3 rounded-lg border border-rose-100">{{ ai.rootCause }}</p>
+                </div>
+
+                <!-- Suggestion / Solution -->
+                <div class="ai-result-card">
+                  <h4 class="ai-card-title">GIẢI PHÁP ĐỀ XUẤT KHẮC PHỤC</h4>
+                  <p class="ai-card-text whitespace-pre-line leading-relaxed text-emerald-800 bg-emerald-50/40 p-3.5 rounded-lg border border-emerald-100">{{ ai.solutionSuggestion }}</p>
+                </div>
+
+                <!-- Footer Metadata -->
+                <div class="ai-result-meta">
+                  <div class="ai-meta-item">
+                    <span>Mức độ nghiêm trọng đề xuất:</span>
+                    <strong class="severity-badge-suggestion" [class]="'severity-' + ai.severitySuggestion.toLowerCase()">
+                      {{ ai.severitySuggestion }}
+                    </strong>
+                  </div>
+                  <div class="ai-meta-item">
+                    <span>Độ tin cậy của AI:</span>
+                    <strong class="text-emerald-600">{{ (ai.confidenceScore * 100) | number:'1.0-1' }}%</strong>
+                  </div>
+                  <div class="ai-meta-item text-[10px] text-gray-400 mt-2">
+                    Phân tích lúc: {{ ai.createdAt | date:'HH:mm dd/MM/yyyy' }}
+                  </div>
+                </div>
+
+                <!-- Re-run Button -->
+                <button type="button" (click)="handleRunAiAnalysis()" class="btn-ai-run mt-4">
+                  <svg lucideCpu [attr.stroke-width]="2"></svg>
+                  <span>Phân tích lại bằng AI</span>
+                </button>
+              </div>
+            } @else {
+              <!-- Empty AI State -->
+              <div class="ai-empty-state">
+                <svg lucideCpu class="ai-empty-icon" [attr.stroke-width]="1.5"></svg>
+                <h4 class="ai-empty-title">Chưa có phân tích lỗi từ AI</h4>
+                <p class="ai-empty-desc">Bấm nút bên dưới để AI tiến hành phân tích log hệ thống, stack trace và hành vi của người dùng trước lỗi.</p>
+                
+                <button type="button" (click)="handleRunAiAnalysis()" class="btn-ai-run">
+                  <svg lucideCpu [attr.stroke-width]="2"></svg>
+                  <span>Chẩn đoán lỗi bằng AI</span>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  }
+</div>

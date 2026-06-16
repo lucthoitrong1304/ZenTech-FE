@@ -68,6 +68,13 @@ export class WebsocketService {
 
       const sub = this.connectionState$.subscribe((connected) => {
         if (connected && this.client && this.client.connected) {
+          if (stompSubscription) {
+            try {
+              stompSubscription.unsubscribe();
+            } catch (e) {
+              // Ignore already closed subscriptions
+            }
+          }
           stompSubscription = this.client.subscribe(destination, (message: IMessage) => {
             try {
               const body = JSON.parse(message.body) as T;

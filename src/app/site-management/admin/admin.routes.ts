@@ -40,6 +40,16 @@ export const adminRoutes: Routes = [
           import('./incidents/pages/incidents/incidents.component').then(m => m.IncidentsComponent)
       },
       {
+        path: 'incidents/:id',
+        data: {
+          eyebrow: 'Giám sát hệ thống',
+          title: 'Chi tiết Sự cố',
+          description: 'Xem chi tiết lỗi, logs liên quan từ Loki, timeline hoạt động của user và phân tích AI.'
+        },
+        loadComponent: () =>
+          import('./incidents/pages/incident-detail/incident-detail.component').then(m => m.IncidentDetailComponent)
+      },
+      {
         path: 'tickets',
         data: {
           eyebrow: 'Giám sát hệ thống',

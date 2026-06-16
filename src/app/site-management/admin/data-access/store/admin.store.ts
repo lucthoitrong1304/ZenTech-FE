@@ -1,9 +1,12 @@
 import { computed, inject } from '@angular/core';
-import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { patchState, signalStore, withComputed, withMethods, withState, withHooks } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, catchError, forkJoin, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, pipe, switchMap, tap, Subscription } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AdminLogsService } from '../services/admin-logs.service';
+import { AdminIncidentsService } from '../../incidents/data-access/services/admin-incidents.service';
+import { AdminTicketsService } from '../../tickets/data-access/services/admin-tickets.service';
+import { WebsocketService } from '../../../../core/services/websocket.service';
 import {
   LogLevel,
   SystemLog,
@@ -48,7 +51,17 @@ interface AdminState {
   activityAction: string;
   activityModulesList: string[];
   activityActionsList: string[];
+  // Advanced filters
+  incidentSearch: string;
+  incidentSeverityFilter: IncidentSeverity | 'ALL';
+  incidentStartDate: string | null;
+  incidentEndDate: string | null;
+  ticketSearch: string;
+  ticketPriorityFilter: TicketPriority | 'ALL';
+  ticketStartDate: string | null;
+  ticketEndDate: string | null;
 }
+
 
 const mockLogs: SystemLog[] = [
   {
@@ -117,105 +130,7 @@ const mockLogs: SystemLog[] = [
   }
 ];
 
-const mockIncidents: SystemIncident[] = [
-  {
-    id: 'INC-001',
-    title: 'Cổng thanh toán Momo mất kết nối',
-    status: IncidentStatus.OPEN,
-    severity: IncidentSeverity.CRITICAL,
-    reportedAt: new Date(Date.now() - 45 * 60 * 1000),
-    assignee: 'Trần Anh Tú',
-    description: 'Khách hàng không thể thanh toán đơn hàng bằng ví điện tử Momo. API trả về mã lỗi 504. Đang kiểm tra lại API key và phía Momo.'
-  },
-  {
-    id: 'INC-002',
-    title: 'Độ trễ phản hồi của AI Chatbot tăng cao',
-    status: IncidentStatus.INVESTIGATING,
-    severity: IncidentSeverity.HIGH,
-    reportedAt: new Date(Date.now() - 1.8 * 60 * 60 * 1000),
-    assignee: 'Lê Nguyễn Hoài Nam',
-    description: 'Hệ thống chat AI trả về kết quả trung bình mất trên 4 giây (so với 1.2 giây bình thường). Đang kiểm tra log của microservice ZenTech-AI.'
-  },
-  {
-    id: 'INC-003',
-    title: 'Bộ nhớ RAM hệ thống quá tải (87%)',
-    status: IncidentStatus.RESOLVED,
-    severity: IncidentSeverity.MEDIUM,
-    reportedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    resolvedAt: new Date(Date.now() - 22 * 60 * 60 * 1000),
-    assignee: 'Nguyễn Văn Hùng',
-    description: 'Hệ thống chạy ngầm rò rỉ bộ nhớ nhẹ. Đã tiến hành khởi động lại tiến trình Node/Java và thực hiện giải phóng cache Redis.'
-  }
-];
-
-const mockTickets: SupportTicket[] = [
-  {
-    id: 'TCK-1024',
-    subject: 'Đơn hàng #12304 chưa chuyển trạng thái',
-    customerName: 'Nguyễn Thị Mai',
-    priority: TicketPriority.HIGH,
-    status: TicketStatus.OPEN,
-    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
-    messages: [
-      {
-        id: 'MSG-001',
-        sender: TicketMessageSender.CUSTOMER,
-        content: 'Chào shop, mình thanh toán chuyển khoản đơn hàng #12304 từ sáng rồi mà đơn hàng vẫn ở trạng thái Chờ xử lý. Shop kiểm tra và xác nhận giúp mình với ạ.',
-        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000)
-      }
-    ]
-  },
-  {
-    id: 'TCK-1025',
-    subject: 'Lỗi áp dụng mã voucher giảm giá ZENTECH50',
-    customerName: 'Phan Thanh Tùng',
-    priority: TicketPriority.MEDIUM,
-    status: TicketStatus.IN_PROGRESS,
-    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
-    messages: [
-      {
-        id: 'MSG-002',
-        sender: TicketMessageSender.CUSTOMER,
-        content: 'Mình nhập mã giảm giá ZENTECH50 mà hệ thống báo không tồn tại mặc dù banner bảo còn hạn. Mong shop xem xét lỗi.',
-        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000)
-      },
-      {
-        id: 'MSG-003',
-        sender: TicketMessageSender.SUPPORT_AGENT,
-        content: 'Chào bạn Tùng, mã giảm giá ZENTECH50 chỉ áp dụng cho đơn hàng từ 500.000đ trở lên ạ. Bạn vui lòng kiểm tra lại giá trị giỏ hàng xem đã đạt yêu cầu chưa nhé.',
-        timestamp: new Date(Date.now() - 5.5 * 60 * 1000)
-      }
-    ]
-  },
-  {
-    id: 'TCK-1026',
-    subject: 'Yêu cầu đổi trả bàn phím cơ bị liệt phím Spacebar',
-    customerName: 'Vũ Hoàng Long',
-    priority: TicketPriority.CRITICAL,
-    status: TicketStatus.RESOLVED,
-    createdAt: new Date(Date.now() - 28 * 60 * 60 * 1000),
-    messages: [
-      {
-        id: 'MSG-004',
-        sender: TicketMessageSender.CUSTOMER,
-        content: 'Bàn phím cơ Dareu EK87 mình nhận ngày hôm qua bị liệt phím Spacebar không gõ được. Shop cho mình đổi cái mới.',
-        timestamp: new Date(Date.now() - 28 * 60 * 60 * 1000)
-      },
-      {
-        id: 'MSG-005',
-        sender: TicketMessageSender.SUPPORT_AGENT,
-        content: 'Dạ shop rất xin lỗi về trải nghiệm này của anh ạ. Shop đã tạo đơn đổi mới sản phẩm, shipper sẽ giao hàng mới đến tận nơi và thu hồi lại sản phẩm lỗi hoàn toàn miễn phí trong vòng 1-2 ngày tới nhé.',
-        timestamp: new Date(Date.now() - 27.5 * 60 * 60 * 1000)
-      },
-      {
-        id: 'MSG-006',
-        sender: TicketMessageSender.CUSTOMER,
-        content: 'Cảm ơn shop nhiều nha, xử lý quá chuyên nghiệp và nhanh chóng.',
-        timestamp: new Date(Date.now() - 27 * 60 * 60 * 1000)
-      }
-    ]
-  }
-];
+// Mock data removed in favor of real API integration
 
 const mockAccounts: AdminAccount[] = [
   {
@@ -374,8 +289,8 @@ const initialState: AdminState = {
   logs: [],
   issueLogs: [],
   isLoadingLogs: false,
-  incidents: mockIncidents,
-  tickets: mockTickets,
+  incidents: [],
+  tickets: [],
   accounts: mockAccounts,
   activityLogs: [],
   totalActivityLogs: 0,
@@ -394,13 +309,27 @@ const initialState: AdminState = {
   activityModule: 'ALL',
   activityAction: 'ALL',
   activityModulesList: [],
-  activityActionsList: []
+  activityActionsList: [],
+  // Initialize advanced filters
+  incidentSearch: '',
+  incidentSeverityFilter: 'ALL',
+  incidentStartDate: null,
+  incidentEndDate: null,
+  ticketSearch: '',
+  ticketPriorityFilter: 'ALL',
+  ticketStartDate: null,
+  ticketEndDate: null
 };
 
 export const AdminStore = signalStore(
   { providedIn: 'root' },
   withState(initialState),
-  withComputed(({ logs, issueLogs, logFilter, logSearch, incidents, incidentFilter, tickets, ticketFilter, accounts, accountSearch, activityLogs, activitySearch }) => ({
+  withComputed(({
+    logs, issueLogs, logFilter, logSearch,
+    incidents, incidentFilter, incidentSearch, incidentSeverityFilter, incidentStartDate, incidentEndDate,
+    tickets, ticketFilter, ticketSearch, ticketPriorityFilter, ticketStartDate, ticketEndDate,
+    accounts, accountSearch, activityLogs, activitySearch
+  }) => ({
     filteredLogs: computed(() => {
       let result = logs();
       const filterVal = logFilter();
@@ -437,10 +366,38 @@ export const AdminStore = signalStore(
     filteredIncidents: computed(() => {
       let result = incidents();
       const filterVal = incidentFilter();
+      const searchVal = incidentSearch().toLowerCase().trim();
+      const severityVal = incidentSeverityFilter();
+      const startVal = incidentStartDate();
+      const endVal = incidentEndDate();
 
       if (filterVal !== 'ALL') {
         result = result.filter(inc => inc.status === filterVal);
       }
+      if (severityVal !== 'ALL') {
+        result = result.filter(inc => inc.severity === severityVal);
+      }
+      if (searchVal) {
+        result = result.filter(inc =>
+          inc.code.toLowerCase().includes(searchVal) ||
+          (inc.errorMessage && inc.errorMessage.toLowerCase().includes(searchVal)) ||
+          (inc.apiPath && inc.apiPath.toLowerCase().includes(searchVal)) ||
+          (inc.serviceName && inc.serviceName.toLowerCase().includes(searchVal)) ||
+          (inc.userEmail && inc.userEmail.toLowerCase().includes(searchVal)) ||
+          (inc.assignee && inc.assignee.toLowerCase().includes(searchVal))
+        );
+      }
+      if (startVal) {
+        const startDate = new Date(startVal);
+        startDate.setHours(0, 0, 0, 0);
+        result = result.filter(inc => new Date(inc.reportedAt).getTime() >= startDate.getTime());
+      }
+      if (endVal) {
+        const endDate = new Date(endVal);
+        endDate.setHours(23, 59, 59, 999);
+        result = result.filter(inc => new Date(inc.reportedAt).getTime() <= endDate.getTime());
+      }
+
       return result.sort((a, b) => {
         if (a.status === IncidentStatus.OPEN && b.status !== IncidentStatus.OPEN) return -1;
         if (a.status !== IncidentStatus.OPEN && b.status === IncidentStatus.OPEN) return 1;
@@ -451,16 +408,45 @@ export const AdminStore = signalStore(
     filteredTickets: computed(() => {
       let result = tickets();
       const filterVal = ticketFilter();
+      const searchVal = ticketSearch().toLowerCase().trim();
+      const priorityVal = ticketPriorityFilter();
+      const startVal = ticketStartDate();
+      const endVal = ticketEndDate();
 
       if (filterVal !== 'ALL') {
         result = result.filter(tck => tck.status === filterVal);
       }
+      if (priorityVal !== 'ALL') {
+        result = result.filter(tck => tck.priority === priorityVal);
+      }
+      if (searchVal) {
+        result = result.filter(tck =>
+          (tck.code && tck.code.toLowerCase().includes(searchVal)) ||
+          tck.id.toLowerCase().includes(searchVal) ||
+          tck.subject.toLowerCase().includes(searchVal) ||
+          tck.customerName.toLowerCase().includes(searchVal) ||
+          (tck.createdByEmail && tck.createdByEmail.toLowerCase().includes(searchVal)) ||
+          (tck.assigneeName && tck.assigneeName.toLowerCase().includes(searchVal))
+        );
+      }
+      if (startVal) {
+        const startDate = new Date(startVal);
+        startDate.setHours(0, 0, 0, 0);
+        result = result.filter(tck => new Date(tck.createdAt).getTime() >= startDate.getTime());
+      }
+      if (endVal) {
+        const endDate = new Date(endVal);
+        endDate.setHours(23, 59, 59, 999);
+        result = result.filter(tck => new Date(tck.createdAt).getTime() <= endDate.getTime());
+      }
+
       return result.sort((a, b) => {
         if (a.status === TicketStatus.OPEN && b.status !== TicketStatus.OPEN) return -1;
         if (a.status !== TicketStatus.OPEN && b.status === TicketStatus.OPEN) return 1;
         return b.createdAt.getTime() - a.createdAt.getTime();
       });
     }),
+
 
     filteredAccounts: computed(() => {
       let result = accounts();
@@ -494,8 +480,14 @@ export const AdminStore = signalStore(
   withMethods((
     store,
     toastService = inject(ToastService),
-    adminLogsService = inject(AdminLogsService)
+    adminLogsService = inject(AdminLogsService),
+    adminIncidentsService = inject(AdminIncidentsService),
+    adminTicketsService = inject(AdminTicketsService),
+    wsService = inject(WebsocketService)
   ) => {
+    let incidentSubscription: Subscription | null = null;
+    let ticketSubscription: Subscription | null = null;
+
     // Helper to log audit actions dynamically
     const logActivity = (action: string, target: string) => {
       const newAudit: ActivityLog = {
@@ -513,6 +505,81 @@ export const AdminStore = signalStore(
     };
 
     return {
+      loadIncidents: rxMethod<{ status?: IncidentStatus }>(
+        pipe(
+          switchMap(({ status }) =>
+            adminIncidentsService.getIncidents(status).pipe(
+              tap((res) => {
+                const mappedIncidents = res.data.map((inc: any) => ({
+                  id: inc.id,
+                  code: inc.code,
+                  title: `Sự cố ${inc.code}: ${inc.errorMessage || 'Lỗi hệ thống'}`,
+                  description: `API: ${inc.httpMethod} ${inc.apiPath} (Mã lỗi: ${inc.statusCode})`,
+                  status: inc.status,
+                  severity: inc.severity,
+                  reportedAt: inc.occurredAt ? new Date(inc.occurredAt) : (inc.createdAt ? new Date(inc.createdAt) : new Date()),
+                  resolvedAt: inc.resolvedAt ? new Date(inc.resolvedAt) : undefined,
+                  assignee: inc.assignee,
+                  traceId: inc.traceId,
+                  serviceName: inc.serviceName,
+                  apiPath: inc.apiPath,
+                  httpMethod: inc.httpMethod,
+                  statusCode: inc.statusCode,
+                  errorMessage: inc.errorMessage,
+                  stackTrace: inc.stackTrace,
+                  aiAnalysis: inc.aiAnalysis,
+                  ticketCode: inc.ticketCode
+                }));
+                patchState(store, { incidents: mappedIncidents });
+              }),
+              catchError((err) => {
+                console.error(err);
+                toastService.error('Không thể tải danh sách sự cố');
+                return EMPTY;
+              })
+            )
+          )
+        )
+      ),
+
+      loadTickets: rxMethod<{ status?: TicketStatus }>(
+        pipe(
+          switchMap(({ status }) =>
+            adminTicketsService.getTickets(status).pipe(
+              tap((res) => {
+                const mappedTickets = res.data.map((tck: any) => ({
+                  id: tck.id,
+                  code: tck.code,
+                  incidentId: tck.incidentId,
+                  incidentCode: tck.incidentCode,
+                  subject: tck.title,
+                  customerName: tck.createdByName || tck.createdByEmail || 'Hệ thống',
+                  priority: tck.priority,
+                  status: tck.status,
+                  createdAt: new Date(tck.createdAt),
+                  resolvedAt: tck.resolvedAt ? new Date(tck.resolvedAt) : undefined,
+                  createdByEmail: tck.createdByEmail,
+                  createdByName: tck.createdByName,
+                  assigneeName: tck.assigneeName,
+                  assigneeEmail: tck.assigneeEmail,
+                  messages: tck.messages ? tck.messages.map((m: any) => ({
+                    id: m.id,
+                    sender: m.sender,
+                    content: m.content,
+                    timestamp: new Date(m.timestamp)
+                  })) : []
+                }));
+                patchState(store, { tickets: mappedTickets });
+              }),
+              catchError((err) => {
+                console.error(err);
+                toastService.error('Không thể tải danh sách Ticket hỗ trợ');
+                return EMPTY;
+              })
+            )
+          )
+        )
+      ),
       loadActivityLogs: rxMethod<{
         page: number;
         size: number;
@@ -662,8 +729,52 @@ export const AdminStore = signalStore(
         patchState(store, { incidentFilter: filter });
       },
 
+      setIncidentSearch(search: string) {
+        patchState(store, { incidentSearch: search });
+      },
+
+      setIncidentSeverityFilter(severity: IncidentSeverity | 'ALL') {
+        patchState(store, { incidentSeverityFilter: severity });
+      },
+
+      setIncidentDateRange(start: string | null, end: string | null) {
+        patchState(store, { incidentStartDate: start, incidentEndDate: end });
+      },
+
+      resetIncidentFilters() {
+        patchState(store, {
+          incidentFilter: 'ALL',
+          incidentSearch: '',
+          incidentSeverityFilter: 'ALL',
+          incidentStartDate: null,
+          incidentEndDate: null
+        });
+      },
+
       setTicketFilter(filter: TicketStatus | 'ALL') {
         patchState(store, { ticketFilter: filter });
+      },
+
+      setTicketSearch(search: string) {
+        patchState(store, { ticketSearch: search });
+      },
+
+      setTicketPriorityFilter(priority: TicketPriority | 'ALL') {
+        patchState(store, { ticketPriorityFilter: priority });
+      },
+
+      setTicketDateRange(start: string | null, end: string | null) {
+        patchState(store, { ticketStartDate: start, ticketEndDate: end });
+      },
+
+      resetTicketFilters() {
+        patchState(store, {
+          ticketFilter: 'ALL',
+          ticketSearch: '',
+          ticketPriorityFilter: 'ALL',
+          ticketStartDate: null,
+          ticketEndDate: null
+        });
       },
 
       setAccountSearch(search: string) {
@@ -778,59 +889,78 @@ export const AdminStore = signalStore(
         toastService.success('Đã xóa sạch nhật ký hệ thống');
       },
 
-      updateIncident(id: string, status: IncidentStatus, severity: IncidentSeverity) {
-        patchState(store, (state) => {
-          const updatedIncidents = state.incidents.map(inc => {
-            if (inc.id === id) {
-              const resolvedAt = status === IncidentStatus.RESOLVED ? new Date() : undefined;
-              return { ...inc, status, severity, resolvedAt };
-            }
-            return inc;
-          });
-          return { incidents: updatedIncidents };
+      updateIncident(id: string, status: IncidentStatus, severity: IncidentSeverity, assignee?: string) {
+        adminIncidentsService.updateIncidentStatus(id, { status, severity, assignee }).subscribe({
+          next: () => {
+            logActivity(`Cập nhật sự cố ${id}`, `Trạng thái: ${status}, Mức độ: ${severity}`);
+            toastService.success(`Đã cập nhật sự cố ${id} thành công`);
+            this.loadIncidents({ status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter() as IncidentStatus });
+          },
+          error: (err) => {
+            console.error(err);
+            toastService.error('Không thể cập nhật sự cố');
+          }
         });
-
-        logActivity(`Cập nhật sự cố ${id}`, `Trạng thái: ${status}, Mức độ: ${severity}`);
-        toastService.success(`Đã cập nhật sự cố ${id} thành công`);
       },
 
       addTicketMessage(ticketId: string, content: string) {
-        patchState(store, (state) => {
-          const updatedTickets = state.tickets.map(tck => {
-            if (tck.id === ticketId) {
-              const newMessage: TicketMessage = {
-                id: `MSG-${Math.floor(1000 + Math.random() * 9000)}`,
-                sender: TicketMessageSender.SUPPORT_AGENT,
-                content,
-                timestamp: new Date()
-              };
-              return {
-                ...tck,
-                status: tck.status === TicketStatus.OPEN ? TicketStatus.IN_PROGRESS : tck.status,
-                messages: [...tck.messages, newMessage]
-              };
-            }
-            return tck;
-          });
-          return { tickets: updatedTickets };
+        adminTicketsService.sendReply(ticketId, content).subscribe({
+          next: () => {
+            logActivity(`Phản hồi Ticket ${ticketId}`, `Nội dung: ${content.substring(0, 30)}...`);
+            this.loadTickets({ status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter() as TicketStatus });
+          },
+          error: (err) => {
+            console.error(err);
+            toastService.error('Không thể gửi phản hồi Ticket');
+          }
         });
-
-        logActivity(`Phản hồi Ticket ${ticketId}`, `Nội dung: ${content.substring(0, 30)}...`);
       },
 
       updateTicketStatus(ticketId: string, status: TicketStatus) {
-        patchState(store, (state) => {
-          const updatedTickets = state.tickets.map(tck => {
-            if (tck.id === ticketId) {
-              return { ...tck, status };
-            }
-            return tck;
-          });
-          return { tickets: updatedTickets };
+        adminTicketsService.updateTicketStatus(ticketId, status).subscribe({
+          next: () => {
+            logActivity(`Cập nhật Ticket ${ticketId}`, `Trạng thái mới: ${status}`);
+            toastService.success(`Đã chuyển trạng thái Ticket thành ${status}`);
+            this.loadTickets({ status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter() as TicketStatus });
+            this.loadIncidents({ status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter() as IncidentStatus });
+          },
+          error: (err) => {
+            console.error(err);
+            toastService.error('Không thể cập nhật trạng thái Ticket');
+          }
         });
+      },
 
-        logActivity(`Cập nhật Ticket ${ticketId}`, `Trạng thái mới: ${status}`);
-        toastService.success(`Đã chuyển trạng thái Ticket thành ${status}`);
+      analyzeIncident(id: string, onSuccess: (analysis: any) => void, onError: () => void) {
+        adminIncidentsService.analyzeIncident(id).subscribe({
+          next: (res) => {
+            logActivity(`Phân tích AI sự cố`, id);
+            toastService.success('Đã hoàn thành phân tích AI');
+            this.loadIncidents({ status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter() as IncidentStatus });
+            onSuccess(res.data);
+          },
+          error: (err) => {
+            console.error(err);
+            toastService.error('Phân tích AI thất bại');
+            onError();
+          }
+        });
+      },
+
+      createTicketFromIncident(payload: { title: string; description: string; priority: string; status: TicketStatus; incidentId: string }, onSuccess: () => void) {
+        adminTicketsService.createTicket(payload).subscribe({
+          next: () => {
+            logActivity(`Tạo Ticket cho sự cố`, payload.incidentId);
+            toastService.success('Đã tạo thành công Ticket hỗ trợ');
+            this.loadTickets({ status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter() as TicketStatus });
+            this.loadIncidents({ status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter() as IncidentStatus });
+            onSuccess();
+          },
+          error: (err) => {
+            console.error(err);
+            toastService.error('Không thể tạo Ticket hỗ trợ');
+          }
+        });
       },
 
       addAccount(fullName: string, email: string, role: AdminAccountRole) {
@@ -886,7 +1016,57 @@ export const AdminStore = signalStore(
 
         logActivity('Thay đổi cấu hình phân quyền', `Quyền ${permissionId} cho vai trò ${role}`);
         toastService.success('Đã cập nhật ma trận phân quyền hệ thống');
+      },
+
+      initWebSocket() {
+        wsService.connect();
+
+        if (incidentSubscription) {
+          incidentSubscription.unsubscribe();
+        }
+        incidentSubscription = wsService.subscribe<any>('/topic/admin.incidents')
+          .subscribe({
+            next: (incident) => {
+              toastService.success(`Hệ thống ghi nhận sự cố mới: ${incident.code}`);
+              const activeFilter = store.incidentFilter();
+              this.loadIncidents({ status: activeFilter === 'ALL' ? undefined : activeFilter as IncidentStatus });
+            },
+            error: (err) => console.error('[Incident WS Error]', err)
+          });
+
+        if (ticketSubscription) {
+          ticketSubscription.unsubscribe();
+        }
+        ticketSubscription = wsService.subscribe<any>('/topic/admin.tickets')
+          .subscribe({
+            next: (ticket) => {
+              const activeFilter = store.ticketFilter();
+              this.loadTickets({ status: activeFilter === 'ALL' ? undefined : activeFilter as TicketStatus });
+              const activeIncFilter = store.incidentFilter();
+              this.loadIncidents({ status: activeIncFilter === 'ALL' ? undefined : activeIncFilter as IncidentStatus });
+            },
+            error: (err) => console.error('[Ticket WS Error]', err)
+          });
+      },
+
+      destroyWebSocket() {
+        if (incidentSubscription) {
+          incidentSubscription.unsubscribe();
+          incidentSubscription = null;
+        }
+        if (ticketSubscription) {
+          ticketSubscription.unsubscribe();
+          ticketSubscription = null;
+        }
       }
     };
+  }),
+  withHooks({
+    onInit(store) {
+      store.initWebSocket();
+    },
+    onDestroy(store) {
+      store.destroyWebSocket();
+    }
   })
 );

@@ -37,11 +37,67 @@
           Đã xử lý
         </button>
       </div>
+
+      <!-- Advanced Ticket Filters -->
+      <div class="tck-advanced-filters">
+        <!-- Search bar -->
+        <div class="tck-search-wrap">
+          <svg lucideSearch class="tck-search-icon" [attr.stroke-width]="2"></svg>
+          <input
+            type="text"
+            [value]="searchVal"
+            (input)="onSearchInput($event)"
+            placeholder="Tìm tên khách, tiêu đề..."
+            class="tck-search-input"
+          />
+        </div>
+
+        <!-- Priority dropdown -->
+        <div class="tck-filter-select-wrap">
+          <select
+            [ngModel]="priorityVal"
+            (change)="onPriorityFilterChange($event)"
+            class="tck-filter-select"
+          >
+            <option value="ALL">Mọi độ ưu tiên</option>
+            <option [value]="TicketPriority.LOW">Thấp (LOW)</option>
+            <option [value]="TicketPriority.MEDIUM">Trung bình</option>
+            <option [value]="TicketPriority.HIGH">Cao (HIGH)</option>
+            <option [value]="TicketPriority.CRITICAL">Nghiêm trọng (CRIT)</option>
+          </select>
+        </div>
+
+        <!-- Date Range Picker -->
+        <div class="tck-dates-wrap">
+          <input
+            type="date"
+            [(ngModel)]="startDateVal"
+            (change)="onDateRangeChange()"
+            class="tck-date-input"
+            title="Từ ngày"
+          />
+          <span class="tck-date-sep">đến</span>
+          <input
+            type="date"
+            [(ngModel)]="endDateVal"
+            (change)="onDateRangeChange()"
+            class="tck-date-input"
+            title="Đến ngày"
+          />
+        </div>
+
+        <!-- Reset Button -->
+        <button type="button" (click)="handleResetFilters()" class="tck-btn-reset">
+          <svg lucideRotateCcw class="reset-icon" [attr.stroke-width]="2"></svg>
+          <span>Đặt lại</span>
+        </button>
+      </div>
     </div>
 
+    <!-- Ticket Cards List -->
     <div class="tck-list">
       @if (store.filteredTickets().length === 0) {
-        <div class="tck-list-empty">Không tìm thấy ticket nào.</div>
+        <div class="tck-list-empty">Không tìm thấy ticket nào phù hợp.</div>
       } @else {
         @for (tck of store.filteredTickets(); track tck.id) {
           <div
@@ -49,18 +105,27 @@
             (click)="selectTicket(tck.id)"
             [class.tck-list-item--active]="selectedTicketId() === tck.id"
           >
-            <div class="tck-list-header">
-              <span class="tck-list-name">{{ tck.customerName }}</span>
-              <span class="tck-list-time">{{ tck.createdAt | date:'HH:mm dd/MM' }}</span>
+            <!-- Avatar mini -->
+            <div class="tck-item-avatar-wrap">
+              <div class="tck-avatar-circle" [style.background]="getAvatarGradient(tck.createdByEmail || tck.customerName)">
+                {{ getInitials(tck.customerName) }}
+              </div>
             </div>
-            <h4 class="tck-list-subject">{{ tck.subject }}</h4>
-            <div class="tck-list-footer">
-              <span class="tck-badge-status" [class]="'status-' + tck.status.toLowerCase()">
-                {{ tck.status === TicketStatus.OPEN ? 'Đang mở' : tck.status === TicketStatus.IN_PROGRESS ? 'Đang xử lý' : tck.status === TicketStatus.RESOLVED ? 'Đã xử lý' : 'Đã đóng' }}
-              </span>
-              <span class="tck-badge-priority" [class]="'priority-' + tck.priority.toLowerCase()">
-                {{ tck.priority }}
-              </span>
+            
+            <div class="tck-item-info">
+              <div class="tck-list-header">
+                <span class="tck-list-name">{{ tck.customerName }}</span>
+                <span class="tck-list-time">{{ tck.createdAt | date:'HH:mm dd/MM' }}</span>
+              </div>
+              <h4 class="tck-list-subject">{{ tck.subject }}</h4>
+              <div class="tck-list-footer">
+                <span class="tck-badge-status" [class]="'status-' + tck.status.toLowerCase()">
+                  {{ tck.status === TicketStatus.OPEN ? 'Đang mở' : tck.status === TicketStatus.IN_PROGRESS ? 'Đang xử lý' : tck.status === TicketStatus.RESOLVED ? 'Đã xử lý' : 'Đã đóng' }}
+                </span>
+                <span class="tck-badge-priority" [class]="'priority-' + tck.priority.toLowerCase()">
+                  {{ tck.priority }}
+                </span>
+              </div>
             </div>
           </div>
         }
@@ -80,15 +145,29 @@
       <div class="tck-chat-wrapper">
         <!-- Chat Header -->
         <div class="tck-chat-header">
-          <div class="tck-chat-title-group">
-            <h3 class="tck-chat-title">{{ activeTck.subject }}</h3>
-            <p class="tck-chat-customer">Khách hàng: {{ activeTck.customerName }} | Mã Ticket: {{ activeTck.id }}</p>
+          <div class="tck-chat-profile">
+            <!-- Header avatar -->
+            <div class="tck-header-avatar" [style.background]="getAvatarGradient(activeTck.createdByEmail || activeTck.customerName)">
+              {{ getInitials(activeTck.customerName) }}
+            </div>
+            
+            <div class="tck-chat-title-group">
+              <h3 class="tck-chat-title">{{ activeTck.subject }}</h3>
+              <p class="tck-chat-customer">
+                Khách hàng: <strong>{{ activeTck.customerName }}</strong>
+                @if (activeTck.createdByEmail) {
+                  <span class="text-gray-400"> ({{ activeTck.createdByEmail }})</span>
+                }
+                | Mã Ticket: {{ activeTck.id }}
+              </p>
+            </div>
           </div>
+          
           <div class="tck-chat-status-area">
             <label for="ticket-status-select" class="tck-status-label">Trạng thái:</label>
             <select
               id="ticket-status-select"
-              [value]="activeTck.status"
+              [ngModel]="activeTck.status"
               (change)="handleStatusChange($event)"
               class="tck-chat-status-select"
             >
@@ -104,19 +183,34 @@
         <div class="tck-chat-history">
           @for (msg of activeTck.messages; track msg.id) {
             <div class="tck-msg" [class.tck-msg--customer]="msg.sender === TicketMessageSender.CUSTOMER" [class.tck-msg--agent]="msg.sender === TicketMessageSender.SUPPORT_AGENT">
+              
+              <!-- Customer Avatar -->
+              @if (msg.sender === TicketMessageSender.CUSTOMER) {
+                <div class="tck-msg-avatar" [style.background]="getAvatarGradient(activeTck.createdByEmail || activeTck.customerName)" title="{{ activeTck.customerName }}">
+                  {{ getInitials(activeTck.customerName) }}
+                </div>
+              }
+              
               <div class="tck-bubble">
                 <div class="tck-bubble-header">
                   <span class="tck-bubble-sender">
                     @if (msg.sender === TicketMessageSender.CUSTOMER) {
                       {{ activeTck.customerName }} (Khách)
                     } @else {
-                      ZenTech Support (Admin)
+                      {{ activeTck.assigneeName || 'ZenTech Support' }} (Admin)
                     }
                   </span>
                 </div>
                 <p class="tck-bubble-content">{{ msg.content }}</p>
                 <span class="tck-bubble-time">{{ msg.timestamp | date:'HH:mm dd/MM/yyyy' }}</span>
               </div>
+
+              <!-- Admin/Agent Avatar -->
+              @if (msg.sender === TicketMessageSender.SUPPORT_AGENT) {
+                <div class="tck-msg-avatar tck-msg-avatar--agent" [style.background]="getAvatarGradient(activeTck.assigneeEmail || 'admin@zentech.local')" title="{{ activeTck.assigneeName || 'ZenTech Staff' }}">
+                  {{ getInitials(activeTck.assigneeName || 'ZenTech Support') }}
+                </div>
+              }
             </div>
           }
         </div>

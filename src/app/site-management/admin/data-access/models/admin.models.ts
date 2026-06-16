@@ -37,6 +37,7 @@ export enum IncidentSeverity {
 
 export interface SystemIncident {
   id: string;
+  code: string;
   title: string;
   status: IncidentStatus;
   severity: IncidentSeverity;
@@ -44,6 +45,18 @@ export interface SystemIncident {
   resolvedAt?: Date;
   assignee: string;
   description: string;
+  traceId?: string;
+  serviceName?: string;
+  apiPath?: string;
+  httpMethod?: string;
+  statusCode?: number;
+  errorMessage?: string;
+  stackTrace?: string;
+  occurredAt?: Date;
+  createdAt?: Date;
+  userEmail?: string;
+  aiAnalysis?: AiAnalysis;
+  ticketCode?: string;
 }
 
 export enum TicketPriority {
@@ -74,13 +87,22 @@ export interface TicketMessage {
 
 export interface SupportTicket {
   id: string;
+  code?: string;
+  incidentId?: string;
+  incidentCode?: string;
   subject: string;
   customerName: string;
   priority: TicketPriority;
   status: TicketStatus;
   createdAt: Date;
+  resolvedAt?: Date;
   messages: TicketMessage[];
+  createdByEmail?: string;
+  createdByName?: string;
+  assigneeName?: string;
+  assigneeEmail?: string;
 }
+
 
 export enum AdminAccountRole {
   ADMIN = 'ADMIN',
@@ -144,6 +166,17 @@ export interface ActivityLogRecordPayload {
   targetLabel?: string;
   summary?: string;
   metadata?: string;
+}
+
+export interface AiAnalysis {
+  id: string;
+  incidentId: string;
+  summary: string;
+  rootCause: string;
+  severitySuggestion: IncidentSeverity;
+  solutionSuggestion: string;
+  confidenceScore: number;
+  createdAt: Date;
 }
 
 export interface PermissionItem {

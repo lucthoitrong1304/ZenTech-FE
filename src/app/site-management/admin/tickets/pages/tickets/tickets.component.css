@@ -47,7 +47,19 @@
 }
 
 .tck-list-item {
-  @apply p-4 cursor-pointer hover:bg-white transition flex flex-col gap-2 border-l-4 border-l-transparent;
+  @apply flex flex-row items-start gap-3 p-4 cursor-pointer hover:bg-white transition border-l-4 border-l-transparent;
+}
+
+.tck-item-avatar-wrap {
+  @apply flex-shrink-0;
+}
+
+.tck-avatar-circle {
+  @apply w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase shadow-xs;
+}
+
+.tck-item-info {
+  @apply flex-1 min-w-0 flex flex-col gap-1.5;
 }
 
 .tck-list-item--active {
@@ -167,15 +179,15 @@
 }
 
 .tck-msg {
-  @apply flex;
+  @apply flex items-end gap-2 max-w-[85%];
 }
 
 .tck-msg--customer {
-  @apply justify-start;
+  @apply self-start;
 }
 
 .tck-msg--agent {
-  @apply justify-end;
+  @apply self-end flex-row-reverse;
 }
 
 .tck-bubble {
@@ -236,4 +248,67 @@
 
 /* Premium Admin Console surface overrides */
 .tickets-container { color: #111827; }
+
+/* Advanced Filters on Ticket page */
+.tck-advanced-filters {
+  @apply flex flex-col gap-2 bg-[#F9FAFB] p-2.5 rounded-xl border border-[#E5E7EB] mt-2;
+}
+
+.tck-search-wrap {
+  @apply flex items-center gap-1.5 bg-white border border-[#E5E7EB] focus-within:border-[#4F46E5] rounded-lg px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-[#4F46E5] transition;
+}
+
+.tck-search-icon {
+  @apply w-3.5 h-3.5 text-gray-400;
+}
+
+.tck-search-input {
+  @apply w-full bg-transparent border-none outline-none text-[11px] text-gray-800 placeholder-gray-400 font-medium;
+}
+
+.tck-filter-select-wrap {
+  @apply w-full;
+}
+
+.tck-filter-select {
+  @apply w-full px-2.5 py-1.5 bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-lg text-[11px] font-semibold text-gray-700 outline-none focus:ring-1 focus:ring-[#4F46E5] transition cursor-pointer;
+}
+
+.tck-dates-wrap {
+  @apply flex items-center justify-between gap-1.5 bg-white border border-[#E5E7EB] rounded-lg px-2.5 py-1.5;
+}
+
+.tck-date-input {
+  @apply bg-transparent border-none outline-none text-[10px] text-gray-600 font-bold cursor-pointer w-[42%] bg-white;
+}
+
+.tck-date-sep {
+  @apply text-[9px] font-bold text-gray-400 uppercase;
+}
+
+.tck-btn-reset {
+  @apply flex items-center justify-center gap-1 py-1.5 border border-[#E5E7EB] hover:bg-white text-gray-600 rounded-lg text-[10px] font-bold transition cursor-pointer outline-none bg-transparent;
+}
+
+.tck-btn-reset svg {
+  @apply w-3 h-3 text-gray-500;
+}
+
+/* Chat Profiles & Header Avatar */
+.tck-chat-profile {
+  @apply flex items-center gap-3 min-w-0;
+}
+
+.tck-header-avatar {
+  @apply w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white uppercase shadow-xs flex-shrink-0;
+}
+
+/* Message Bubble Avatar layout */
+.tck-msg-avatar {
+  @apply w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white uppercase shadow-xs flex-shrink-0 mb-1;
+}
+
+.tck-msg-avatar--agent {
+  @apply border border-emerald-100;
+}
 
