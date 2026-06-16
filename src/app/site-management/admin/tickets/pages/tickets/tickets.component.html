@@ -2,7 +2,15 @@
   <!-- Left Side: Tickets List -->
   <div class="tck-sidebar">
     <div class="tck-sidebar-header">
-      <h3 class="tck-sidebar-title">Danh sách Ticket hỗ trợ</h3>
+      <div class="flex items-center justify-between">
+        <h3 class="tck-sidebar-title">Danh sách Ticket hỗ trợ</h3>
+        @if (hasActiveFilters()) {
+          <button type="button" (click)="handleResetFilters()" class="tck-btn-reset-link" title="Xóa tất cả bộ lọc">
+            <svg lucideRotateCcw class="reset-icon-small" [attr.stroke-width]="2"></svg>
+            <span>Đặt lại</span>
+          </button>
+        }
+      </div>
       <div class="tck-filter-row">
         <button
           type="button"
@@ -52,49 +60,119 @@
           />
         </div>
 
-        <!-- Priority dropdown -->
+        <!-- Assignee dropdown -->
         <div class="tck-filter-select-wrap">
-          <select
-            [ngModel]="priorityVal"
-            (change)="onPriorityFilterChange($event)"
-            class="tck-filter-select"
+          <p-select
+            styleClass="assignee-dropdown-p"
+            [options]="assigneeFilterOptions()"
+            [ngModel]="assigneeVal"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Tất cả người phụ trách"
+            (onChange)="onAssigneeFilterChange($event.value)"
           >
-            <option value="ALL">Mọi độ ưu tiên</option>
-            <option [value]="TicketPriority.LOW">Thấp (LOW)</option>
-            <option [value]="TicketPriority.MEDIUM">Trung bình</option>
-            <option [value]="TicketPriority.HIGH">Cao (HIGH)</option>
-            <option [value]="TicketPriority.CRITICAL">Nghiêm trọng (CRIT)</option>
-          </select>
+            <ng-template #selectedItem let-option>
+              <div class="assignee-filter-option assignee-filter-option--selected">
+                @if (option?.value === 'ALL') {
+                  <span class="assignee-filter-name">Tất cả người phụ trách</span>
+                } @else if (option?.value === 'UNASSIGNED') {
+                  <div class="assignee-avatar-placeholder assignee-avatar-placeholder--small assignee-avatar-placeholder--unassigned">
+                    <svg lucideUser class="assignee-icon" [attr.stroke-width]="2"></svg>
+                  </div>
+                  <span class="assignee-filter-name">Chưa phân công</span>
+                } @else {
+                  @if (option?.imageUrl) {
+                    <img class="assignee-avatar-img" [src]="option.imageUrl" [alt]="option.displayName" referrerpolicy="no-referrer" />
+                  } @else {
+                    <span class="assignee-avatar-placeholder assignee-avatar-placeholder--small" [style.background]="getAvatarGradient(option?.email || '')">
+                      {{ getInitials(option?.displayName || '') }}
+                    </span>
+                  }
+                  <span class="assignee-filter-name">{{ option?.displayName }}</span>
+                }
+              </div>
+            </ng-template>
+            <ng-template #item let-option>
+              <div class="assignee-filter-option">
+                @if (option.value === 'ALL') {
+                  <span class="assignee-filter-name">Tất cả người phụ trách</span>
+                } @else if (option.value === 'UNASSIGNED') {
+                  <div class="assignee-avatar-placeholder assignee-avatar-placeholder--unassigned">
+                    <svg lucideUser class="assignee-icon" [attr.stroke-width]="2"></svg>
+                  </div>
+                  <span class="assignee-filter-name">Chưa phân công</span>
+                } @else {
+                  @if (option.imageUrl) {
+                    <img class="assignee-avatar-img" [src]="option.imageUrl" [alt]="option.displayName" referrerpolicy="no-referrer" />
+                  } @else {
+                    <span class="assignee-avatar-placeholder" [style.background]="getAvatarGradient(option.email)">
+                      {{ getInitials(option.displayName) }}
+                    </span>
+                  }
+                  <div class="assignee-filter-copy">
+                    <span class="assignee-filter-name">{{ option.displayName }}</span>
+                    <span class="assignee-filter-email">{{ option.email }}</span>
+                  </div>
+                }
+              </div>
+            </ng-template>
+          </p-select>
         </div>
 
-        <!-- Date Range Picker -->
-        <div class="tck-dates-wrap">
-          <input
-            type="date"
-            [(ngModel)]="startDateVal"
-            (change)="onDateRangeChange()"
-            class="tck-date-input"
-            title="Từ ngày"
-          />
-          <span class="tck-date-sep">đến</span>
-          <input
-            type="date"
-            [(ngModel)]="endDateVal"
-            (change)="onDateRangeChange()"
-            class="tck-date-input"
-            title="Đến ngày"
-          />
+        <!-- Priority and Date filters side-by-side -->
+        <div class="tck-filters-grid">
+          <!-- Priority dropdown -->
+          <div class="tck-filter-select-wrap">
+            <select
+              [ngModel]="priorityVal"
+              (change)="onPriorityFilterChange($event)"
+              class="tck-filter-select"
+            >
+              <option value="ALL">Mọi độ ưu tiên</option>
+              <option [value]="TicketPriority.LOW">Thấp (LOW)</option>
+              <option [value]="TicketPriority.MEDIUM">Trung bình</option>
+              <option [value]="TicketPriority.HIGH">Cao (HIGH)</option>
+              <option [value]="TicketPriority.CRITICAL">Nghiêm trọng (CRIT)</option>
+            </select>
+          </div>
+
+          <!-- Date Preset Dropdown -->
+          <div class="tck-filter-select-wrap">
+            <p-select
+              styleClass="tck-date-preset-dropdown"
+              [options]="datePresetOptions"
+              [ngModel]="dateFilterVal()"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Thời gian"
+              (onChange)="onDatePresetChange($event.value)"
+            ></p-select>
+          </div>
         </div>
 
-        <!-- Reset Button -->
-        <button type="button" (click)="handleResetFilters()" class="tck-btn-reset">
-          <svg lucideRotateCcw class="reset-icon" [attr.stroke-width]="2"></svg>
-          <span>Đặt lại</span>
-        </button>
+        @if (dateFilterVal() === TicketDateFilterOption.CUSTOM) {
+          <div class="tck-dates-wrap">
+            <input
+              type="date"
+              [(ngModel)]="startDateVal"
+              (change)="onDateRangeChange()"
+              class="tck-date-input"
+              title="Từ ngày"
+            />
+            <span class="tck-date-sep">đến</span>
+            <input
+              type="date"
+              [(ngModel)]="endDateVal"
+              (change)="onDateRangeChange()"
+              class="tck-date-input"
+              title="Đến ngày"
+            />
+          </div>
+        }
       </div>
     </div>
 
-    <!-- Ticket Cards List -->
+  <!-- Ticket Cards List -->
     <div class="tck-list">
       @if (store.filteredTickets().length === 0) {
         <div class="tck-list-empty">Không tìm thấy ticket nào phù hợp.</div>
@@ -107,16 +185,26 @@
           >
             <!-- Avatar mini -->
             <div class="tck-item-avatar-wrap">
-              <div class="tck-avatar-circle" [style.background]="getAvatarGradient(tck.createdByEmail || tck.customerName)">
-                {{ getInitials(tck.customerName) }}
-              </div>
+              @if (tck.createdByEmail && userProfiles()[tck.createdByEmail]?.imageUrl; as imgUrl) {
+                <img [src]="imgUrl" alt="Avatar" class="tck-avatar-img" />
+              } @else {
+                <div class="tck-avatar-circle" [style.background]="getAvatarGradient(tck.createdByEmail || tck.customerName)">
+                  {{ getInitials(tck.createdByEmail && userProfiles()[tck.createdByEmail] ? userProfiles()[tck.createdByEmail].displayName : tck.customerName) }}
+                </div>
+              }
             </div>
             
             <div class="tck-item-info">
               <div class="tck-list-header">
-                <span class="tck-list-name">{{ tck.customerName }}</span>
+                <span class="tck-list-name">
+                  {{ tck.createdByEmail && userProfiles()[tck.createdByEmail] ? userProfiles()[tck.createdByEmail].displayName : tck.customerName }}
+                </span>
                 <span class="tck-list-time">{{ tck.createdAt | date:'HH:mm dd/MM' }}</span>
               </div>
+              
+              @if (tck.createdByEmail) {
+                <span class="tck-list-email">{{ tck.createdByEmail }}</span>
+              }
               <h4 class="tck-list-subject">{{ tck.subject }}</h4>
               <div class="tck-list-footer">
                 <span class="tck-badge-status" [class]="'status-' + tck.status.toLowerCase()">
@@ -147,14 +235,18 @@
         <div class="tck-chat-header">
           <div class="tck-chat-profile">
             <!-- Header avatar -->
-            <div class="tck-header-avatar" [style.background]="getAvatarGradient(activeTck.createdByEmail || activeTck.customerName)">
-              {{ getInitials(activeTck.customerName) }}
-            </div>
+            @if (activeTck.createdByEmail && userProfiles()[activeTck.createdByEmail]?.imageUrl; as imgUrl) {
+              <img [src]="imgUrl" alt="Avatar" class="tck-header-avatar-img" />
+            } @else {
+              <div class="tck-header-avatar" [style.background]="getAvatarGradient(activeTck.createdByEmail || activeTck.customerName)">
+                {{ getInitials(activeTck.createdByEmail && userProfiles()[activeTck.createdByEmail] ? userProfiles()[activeTck.createdByEmail].displayName : activeTck.customerName) }}
+              </div>
+            }
             
             <div class="tck-chat-title-group">
               <h3 class="tck-chat-title">{{ activeTck.subject }}</h3>
               <p class="tck-chat-customer">
-                Khách hàng: <strong>{{ activeTck.customerName }}</strong>
+                Khách hàng: <strong>{{ activeTck.createdByEmail && userProfiles()[activeTck.createdByEmail] ? userProfiles()[activeTck.createdByEmail].displayName : activeTck.customerName }}</strong>
                 @if (activeTck.createdByEmail) {
                   <span class="text-gray-400"> ({{ activeTck.createdByEmail }})</span>
                 }
@@ -186,16 +278,20 @@
               
               <!-- Customer Avatar -->
               @if (msg.sender === TicketMessageSender.CUSTOMER) {
-                <div class="tck-msg-avatar" [style.background]="getAvatarGradient(activeTck.createdByEmail || activeTck.customerName)" title="{{ activeTck.customerName }}">
-                  {{ getInitials(activeTck.customerName) }}
-                </div>
+                @if (activeTck.createdByEmail && userProfiles()[activeTck.createdByEmail]?.imageUrl; as imgUrl) {
+                  <img [src]="imgUrl" alt="Avatar" class="tck-msg-avatar-img" title="{{ activeTck.customerName }}" />
+                } @else {
+                  <div class="tck-msg-avatar" [style.background]="getAvatarGradient(activeTck.createdByEmail || activeTck.customerName)" title="{{ activeTck.customerName }}">
+                    {{ getInitials(activeTck.createdByEmail && userProfiles()[activeTck.createdByEmail] ? userProfiles()[activeTck.createdByEmail].displayName : activeTck.customerName) }}
+                  </div>
+                }
               }
               
               <div class="tck-bubble">
                 <div class="tck-bubble-header">
                   <span class="tck-bubble-sender">
                     @if (msg.sender === TicketMessageSender.CUSTOMER) {
-                      {{ activeTck.customerName }} (Khách)
+                      {{ activeTck.createdByEmail && userProfiles()[activeTck.createdByEmail] ? userProfiles()[activeTck.createdByEmail].displayName : activeTck.customerName }} (Khách)
                     } @else {
                       {{ activeTck.assigneeName || 'ZenTech Support' }} (Admin)
                     }

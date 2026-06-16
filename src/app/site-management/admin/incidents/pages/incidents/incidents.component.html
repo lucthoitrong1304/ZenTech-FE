@@ -1,7 +1,5 @@
 <div class="incidents-container">
-  <!-- Advanced Filters -->
   <div class="incidents-advanced-filters">
-    <!-- Search input -->
     <div class="filter-search-wrap">
       <svg lucideSearch class="search-icon" [attr.stroke-width]="2"></svg>
       <input
@@ -13,7 +11,6 @@
       />
     </div>
 
-    <!-- Severity Selector -->
     <div class="filter-select-wrap">
       <select
         [ngModel]="severityVal"
@@ -28,33 +25,102 @@
       </select>
     </div>
 
-    <!-- Date Range inputs -->
-    <div class="filter-dates-wrap">
-      <input
-        type="date"
-        [(ngModel)]="startDateVal"
-        (change)="onDateRangeChange()"
-        class="filter-date-input"
-        placeholder="Từ ngày"
-      />
-      <span class="date-connector">đến</span>
-      <input
-        type="date"
-        [(ngModel)]="endDateVal"
-        (change)="onDateRangeChange()"
-        class="filter-date-input"
-        placeholder="Đến ngày"
+    <div class="filter-select-wrap filter-select-wrap--assignee">
+      <p-select
+        styleClass="assignee-dropdown-p"
+        [options]="assigneeFilterOptions()"
+        [ngModel]="assigneeVal"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Tất cả người phụ trách"
+        (onChange)="onAssigneeFilterChange($event.value)"
+      >
+        <ng-template #selectedItem let-option>
+          <div class="assignee-filter-option assignee-filter-option--selected">
+            @if (option?.value === 'ALL') {
+              <span class="assignee-filter-name">Tất cả người phụ trách</span>
+            } @else if (option?.value === 'UNASSIGNED') {
+              <div class="assignee-avatar-placeholder assignee-avatar-placeholder--small assignee-avatar-placeholder--unassigned">
+                <svg lucideUser class="assignee-icon" [attr.stroke-width]="2"></svg>
+              </div>
+              <span class="assignee-filter-name">Chưa phân công</span>
+            } @else {
+              @if (option?.imageUrl) {
+                <img class="assignee-avatar-img" [src]="option.imageUrl" [alt]="option.displayName" referrerpolicy="no-referrer" />
+              } @else {
+                <span class="assignee-avatar-placeholder assignee-avatar-placeholder--small" [style.background]="getAvatarGradient(option?.email || '')">
+                  {{ getInitials(option?.displayName || '') }}
+                </span>
+              }
+              <span class="assignee-filter-name">{{ option?.displayName }}</span>
+            }
+          </div>
+        </ng-template>
+        <ng-template #item let-option>
+          <div class="assignee-filter-option">
+            @if (option.value === 'ALL') {
+              <span class="assignee-filter-name">Tất cả người phụ trách</span>
+            } @else if (option.value === 'UNASSIGNED') {
+              <div class="assignee-avatar-placeholder assignee-avatar-placeholder--unassigned">
+                <svg lucideUser class="assignee-icon" [attr.stroke-width]="2"></svg>
+              </div>
+              <span class="assignee-filter-name">Chưa phân công</span>
+            } @else {
+              @if (option.imageUrl) {
+                <img class="assignee-avatar-img" [src]="option.imageUrl" [alt]="option.displayName" referrerpolicy="no-referrer" />
+              } @else {
+                <span class="assignee-avatar-placeholder" [style.background]="getAvatarGradient(option.email)">
+                  {{ getInitials(option.displayName) }}
+                </span>
+              }
+              <div class="assignee-filter-copy">
+                <span class="assignee-filter-name">{{ option.displayName }}</span>
+                <span class="assignee-filter-email">{{ option.email }}</span>
+              </div>
+            }
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+
+    <div class="filter-select-wrap filter-select-wrap--date-preset">
+      <p-select
+        styleClass="date-preset-dropdown-p"
+        [options]="datePresetOptions"
+        [ngModel]="dateFilterVal()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Thời gian"
+        (onChange)="onDatePresetChange($event.value)"
       />
     </div>
 
-    <!-- Reset button -->
+    @if (dateFilterVal() === IncidentDateFilterOption.CUSTOM) {
+      <div class="filter-dates-wrap">
+        <input
+          type="date"
+          [(ngModel)]="startDateVal"
+          (change)="onDateRangeChange()"
+          class="filter-date-input"
+          placeholder="Từ ngày"
+        />
+        <span class="date-connector">đến</span>
+        <input
+          type="date"
+          [(ngModel)]="endDateVal"
+          (change)="onDateRangeChange()"
+          class="filter-date-input"
+          placeholder="Đến ngày"
+        />
+      </div>
+    }
+
     <button type="button" (click)="handleResetFilters()" class="btn-reset">
       <svg lucideRotateCcw class="reset-icon" [attr.stroke-width]="2"></svg>
       <span>Đặt lại</span>
     </button>
   </div>
 
-  <!-- Filters Bar -->
   <div class="incidents-controls">
     <div class="incidents-filter-group">
       <button
@@ -92,7 +158,6 @@
     </div>
   </div>
 
-  <!-- Incidents Cards Grid -->
   <div class="incidents-grid">
     @if (store.filteredIncidents().length === 0) {
       <div class="incidents-empty-state">
@@ -120,8 +185,33 @@
                 <strong>Đã xử lý:</strong> <span>{{ inc.resolvedAt | date:'HH:mm dd/MM/yyyy' }}</span>
               </div>
             }
-            <div class="incidents-meta-item">
-              <strong>Người phụ trách:</strong> <span>{{ inc.assignee || 'Chưa phân công' }}</span>
+            <div class="incidents-meta-item incidents-meta-item--assignee">
+              <strong>Người phụ trách:</strong>
+              @if (getAssigneeProfile(inc); as assignee) {
+                <div class="incident-assignee">
+                  @if (assignee.imageUrl) {
+                    <img class="incident-assignee-avatar" [src]="assignee.imageUrl" [alt]="assignee.displayName" referrerpolicy="no-referrer" />
+                  } @else {
+                    <span class="incident-assignee-avatar incident-assignee-avatar--fallback" [style.background]="getAvatarGradient(assignee.email)">
+                      {{ getInitials(assignee.displayName) }}
+                    </span>
+                  }
+                  <span class="incident-assignee-copy">
+                    <span class="incident-assignee-name">{{ assignee.displayName }}</span>
+                    <span class="incident-assignee-email">{{ assignee.email }}</span>
+                  </span>
+                </div>
+              } @else {
+                <div class="incident-assignee incident-assignee--empty">
+                  <span class="incident-assignee-avatar incident-assignee-avatar--empty">
+                    <svg lucideUser [attr.stroke-width]="2"></svg>
+                  </span>
+                  <span class="incident-assignee-copy">
+                    <span class="incident-assignee-name">Chưa phân công</span>
+                    <span class="incident-assignee-email">Chọn ở trang chi tiết</span>
+                  </span>
+                </div>
+              }
             </div>
           </div>
 

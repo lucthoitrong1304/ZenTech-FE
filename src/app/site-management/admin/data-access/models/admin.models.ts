@@ -55,6 +55,9 @@ export interface SystemIncident {
   occurredAt?: Date;
   createdAt?: Date;
   userEmail?: string;
+  assigneeName?: string;
+  assigneeEmail?: string;
+  assigneeImageUrl?: string | null;
   aiAnalysis?: AiAnalysis;
   ticketCode?: string;
 }

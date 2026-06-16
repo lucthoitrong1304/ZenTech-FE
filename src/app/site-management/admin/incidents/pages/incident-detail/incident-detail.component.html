@@ -97,81 +97,52 @@
         </div>
 
         <!-- Assignee -->
-        <div class="settings-item settings-item--assignee-custom relative">
+        <div class="settings-item">
           <label class="settings-label">Kỹ sư phụ trách</label>
-          
-          <!-- Selector Trigger Button -->
-          <div class="assignee-selector-btn" (click)="isAssigneeDropdownOpen.set(!isAssigneeDropdownOpen())">
-            <div class="assignee-avatar-container">
-              @if (assigneeProfile(); as prof) {
-                @if (prof.imageUrl) {
-                  <img [src]="prof.imageUrl" alt="Assignee Avatar" class="assignee-avatar-img" />
+          <p-select
+            styleClass="detail-assignee-select"
+            [options]="assigneeFilterOptions()"
+            [ngModel]="inc.assignee || 'UNASSIGNED'"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="selectAssignee($event.value === 'UNASSIGNED' ? null : $event.value)"
+          >
+            <ng-template #selectedItem let-option>
+              <div class="assignee-selected-view">
+                @if (option?.value === 'UNASSIGNED') {
+                  <span class="assignee-name-text">Chưa phân công</span>
                 } @else {
-                  <div class="assignee-avatar-letter" [style.background]="getAvatarGradient(prof.email)">
-                    {{ getInitials(prof.displayName) }}
-                  </div>
+                  @if (option?.imageUrl) {
+                    <img class="assignee-avatar" [src]="option.imageUrl" [alt]="option.displayName" referrerpolicy="no-referrer" />
+                  } @else {
+                    <span class="assignee-avatar-fallback" [style.background]="getAvatarGradient(option?.email || '')">
+                      {{ getInitials(option?.displayName || '') }}
+                    </span>
+                  }
+                  <span class="assignee-name-text">{{ option?.displayName }}</span>
                 }
-              } @else {
-                <div class="assignee-avatar-letter assignee-avatar-letter--empty">
-                  <svg lucideUser class="w-4 h-4 text-gray-400" [attr.stroke-width]="2"></svg>
-                </div>
-              }
-            </div>
-            
-            <div class="assignee-info-wrap">
-              @if (assigneeProfile(); as prof) {
-                <span class="assignee-name-display">{{ prof.displayName }}</span>
-                @if (prof.email && prof.email !== prof.displayName) {
-                  <span class="assignee-email-display">{{ prof.email }}</span>
-                }
-              } @else {
-                <span class="assignee-name-display text-gray-400">Chưa phân công</span>
-              }
-            </div>
-
-            <!-- Chevron Icon -->
-            <svg class="assignee-chevron" [class.assignee-chevron--open]="isAssigneeDropdownOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-
-          <!-- Dropdown List Overlay -->
-          @if (isAssigneeDropdownOpen()) {
-            <div class="assignee-dropdown-overlay" (click)="isAssigneeDropdownOpen.set(false)"></div>
-            
-            <div class="assignee-dropdown-list">
-              <!-- Empty Assignee option -->
-              <div class="assignee-dropdown-item" (click)="selectAssignee(null)">
-                <div class="assignee-avatar-container">
-                  <div class="assignee-avatar-letter assignee-avatar-letter--empty">
-                    <svg lucideUser class="w-4 h-4 text-gray-400" [attr.stroke-width]="2"></svg>
-                  </div>
-                </div>
-                <div class="assignee-info-wrap">
-                  <span class="assignee-name-display text-gray-400">Chưa phân công</span>
-                </div>
               </div>
-
-              <!-- List of staff accounts -->
-              @for (staff of staffAccounts(); track staff.id) {
-                <div class="assignee-dropdown-item" (click)="selectAssignee(staff.email)" [class.assignee-dropdown-item--active]="inc.assignee === staff.email">
-                  <div class="assignee-avatar-container">
-                    @if (staff.imageUrl) {
-                      <img [src]="staff.imageUrl" alt="Staff Avatar" class="assignee-avatar-img" />
-                    } @else {
-                      <div class="assignee-avatar-letter" [style.background]="getAvatarGradient(staff.email)">
-                        {{ getInitials(staff.displayName) }}
-                      </div>
-                    }
+            </ng-template>
+            <ng-template #item let-option>
+              <div class="assignee-item-view">
+                @if (option.value === 'UNASSIGNED') {
+                  <span class="assignee-name-text text-gray-400">Chưa phân công</span>
+                } @else {
+                  @if (option.imageUrl) {
+                    <img class="assignee-avatar" [src]="option.imageUrl" [alt]="option.displayName" referrerpolicy="no-referrer" />
+                  } @else {
+                    <span class="assignee-avatar-fallback" [style.background]="getAvatarGradient(option.email)">
+                      {{ getInitials(option.displayName) }}
+                    </span>
+                  }
+                  <div class="assignee-details">
+                    <span class="assignee-name-text">{{ option.displayName }}</span>
+                    <span class="assignee-email-text">{{ option.email }}</span>
                   </div>
-                  <div class="assignee-info-wrap">
-                    <span class="assignee-name-display">{{ staff.displayName }}</span>
-                    <span class="assignee-email-display">{{ staff.email }}</span>
-                  </div>
-                </div>
-              }
-            </div>
-          }
+                }
+              </div>
+            </ng-template>
+          </p-select>
         </div>
       </div>
     </div>
@@ -228,7 +199,7 @@
                 @for (logItem of userActivityLogs(); track logItem.id) {
                   <div class="timeline-item">
                     <div class="timeline-marker"></div>
-                    <div class="timeline-content">
+                    <div class="timeline-content clickable-card" (click)="openActivityLogDetails(logItem)">
                       <div class="timeline-meta">
                         <span class="timeline-time">{{ logItem.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</span>
                         <span class="timeline-area">{{ logItem.area }}</span>
@@ -247,7 +218,7 @@
         <div class="tech-section">
           <div class="section-header">
             <svg lucideFileText class="section-icon" [attr.stroke-width]="2"></svg>
-            <h3 class="section-title">Nhật ký hệ thống liên quan (Loki Logs)</h3>
+            <h3 class="section-title">Nhật ký hệ thống liên quan</h3>
           </div>
           
           <div class="section-body">
@@ -258,14 +229,14 @@
             } @else {
               <div class="logs-list">
                 @for (sysLog of store.filteredLogs(); track sysLog.id) {
-                  <div class="log-item-row" [class]="'log-level-' + sysLog.level.toLowerCase()">
+                  <div class="log-item-row clickable-row" [class]="'log-level-' + sysLog.level.toLowerCase()" (click)="openSystemLogDetails(sysLog)">
                     <div class="log-meta">
                       <span class="log-time">{{ sysLog.timestamp | date:'HH:mm:ss.SSS' }}</span>
                       <span class="log-level">{{ sysLog.level }}</span>
                       <span class="log-service">{{ sysLog.category }}</span>
                     </div>
                     <p class="log-message">{{ sysLog.message }}</p>
-                    <details class="log-details-accordion">
+                    <details class="log-details-accordion" (click)="$event.stopPropagation()">
                       <summary class="log-details-summary">Xem chi tiết raw log</summary>
                       <pre class="log-raw-pre"><code>{{ sysLog.details }}</code></pre>
                     </details>
@@ -369,3 +340,290 @@
     </div>
   }
 </div>
+
+<!-- System Log Detail Modal -->
+@if (selectedSystemLog(); as log) {
+  <div class="logs-modal-backdrop" (click)="closeSystemLogDetails()">
+    <section class="logs-modal-panel" role="dialog" aria-modal="true" aria-labelledby="log-detail-title" (click)="$event.stopPropagation()">
+      <div class="logs-modal-header">
+        <div>
+          <p class="logs-modal-kicker">Chi tiết nhật ký hệ thống</p>
+          <h3 id="log-detail-title" class="logs-modal-title">{{ log.message }}</h3>
+        </div>
+        <button type="button" class="logs-modal-close-btn" (click)="closeSystemLogDetails()" aria-label="Đóng chi tiết log">×</button>
+      </div>
+
+      <div class="logs-modal-meta-row">
+        <span class="logs-level-badge" [class]="'level-' + log.level.toLowerCase()">{{ log.level }}</span>
+        <span class="service-source-tag" [class]="'source-' + log.category.toLowerCase()">{{ log.category }}</span>
+        <span class="logs-modal-time">{{ log.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</span>
+        @if (log.traceId) {
+          <span class="logs-modal-trace-id">{{ log.traceId }}</span>
+        }
+      </div>
+
+      <div class="logs-details-card logs-details-card--modal">
+        <div class="logs-details-header">
+          <h4 class="logs-details-title">Chẩn đoán log</h4>
+          <div class="logs-tab-switcher">
+            <button type="button" (click)="setSystemLogViewMode(log.id, 'structured')" class="logs-tab-btn" [class.logs-tab-btn--active]="getSystemLogViewMode(log.id) === 'structured'">Sơ đồ & Cấu trúc</button>
+            <button type="button" (click)="setSystemLogViewMode(log.id, 'raw')" class="logs-tab-btn" [class.logs-tab-btn--active]="getSystemLogViewMode(log.id) === 'raw'">Raw JSON</button>
+          </div>
+        </div>
+
+        @if (getSystemLogViewMode(log.id) === 'structured') {
+          <div class="logs-trace-graph-panel">
+            <span class="logs-graph-title">Vị trí phát sinh trong chuỗi Request (Distributed Tracing):</span>
+            <div class="logs-trace-timeline">
+              <div class="logs-timeline-node" [class.logs-timeline-node--active]="log.category === 'FRONTEND'">
+                <svg lucideGlobe class="w-4 h-4"></svg>
+                <span>Angular FE</span>
+              </div>
+              <div class="logs-timeline-arrow" [class.logs-timeline-arrow--active]="log.category === 'BACKEND' || log.category === 'AI-SERVICE'"></div>
+              <div class="logs-timeline-node" [class.logs-timeline-node--active]="log.category === 'BACKEND'">
+                <svg lucideTerminal class="w-4 h-4"></svg>
+                <span>Spring Boot BE</span>
+              </div>
+              <div class="logs-timeline-arrow" [class.logs-timeline-arrow--active]="log.category === 'AI-SERVICE'"></div>
+              <div class="logs-timeline-node" [class.logs-timeline-node--active]="log.category === 'AI-SERVICE'">
+                <svg lucideBot class="w-4 h-4"></svg>
+                <span>FastAPI AI Service</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="logs-inspector-section">
+            <button type="button" class="logs-inspector-section-title">
+              <span>⌄</span>
+              <span>Log line</span>
+            </button>
+            <div class="logs-inspector-log-line">{{ log.details || log.message }}</div>
+          </div>
+
+          <div class="logs-inspector-section">
+            <button type="button" class="logs-inspector-section-title">
+              <span>⌄</span>
+              <span>Structured metadata</span>
+            </button>
+            <div class="logs-metadata-list">
+              @for (item of getStructuredMetadata(log); track item.label) {
+                <div class="logs-metadata-row">
+                  <span class="logs-metadata-label">{{ item.label }}</span>
+                  <span class="logs-metadata-value">{{ item.value }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="logs-inspector-section">
+            <button type="button" class="logs-inspector-section-title">
+              <span>⌄</span>
+              <span>Indexed labels</span>
+            </button>
+            <div class="logs-metadata-list">
+              @for (item of getIndexedLabels(log); track item.label) {
+                <div class="logs-metadata-row">
+                  <span class="logs-metadata-label">{{ item.label }}</span>
+                  <span class="logs-metadata-value">{{ item.value }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="logs-inspector-section">
+            <button type="button" class="logs-inspector-section-title">
+              <span>⌄</span>
+              <span>Event timeline</span>
+            </button>
+            <div class="logs-journey-list">
+              @for (journey of getUserJourney(log); track journey.id) {
+                <div class="logs-journey-item" [class.logs-journey-item--current]="journey.isCurrent">
+                  <div class="logs-journey-marker" [class]="'journey-level-' + journey.level.toLowerCase()"></div>
+                  <div class="logs-journey-content">
+                    <div class="logs-journey-header">
+                      <span class="logs-journey-title">{{ journey.title }}</span>
+                      @if (journey.isCurrent) {
+                        <span class="logs-journey-current-badge">Current event</span>
+                      }
+                      <span class="logs-journey-time">{{ journey.time | date:'HH:mm:ss' }}</span>
+                    </div>
+                    <p class="logs-journey-description">{{ journey.description }}</p>
+                    <span class="service-source-tag logs-journey-service" [class]="'source-' + journey.category.toLowerCase()">{{ journey.category }}</span>
+                  </div>
+                </div>
+              } @empty {
+                <p class="logs-journey-empty">Chưa đủ breadcrumb để dựng lại hành vi trước lỗi.</p>
+              }
+            </div>
+          </div>
+
+          @if (log.level === 'ERROR' || log.level === 'WARN' || log.message.toLowerCase().includes('exception')) {
+            <div class="logs-ai-explain-panel">
+              @if (!explanations()[log.id] && !explainingIds()[log.id]) {
+                <div class="logs-ai-explain-prompt">
+                  <span class="logs-ai-explain-msg">Phát hiện log lỗi/cảnh báo hệ thống. Bạn có muốn AI giải thích và gợi ý fix?</span>
+                  <button type="button" (click)="handleExplainLog(log)" class="logs-ai-explain-btn">
+                    <svg lucideSparkles class="w-4 h-4 text-amber-500"></svg>
+                    <span>AI Giải Thích Nhanh</span>
+                  </button>
+                </div>
+              }
+              @if (explainingIds()[log.id]) {
+                <div class="logs-ai-loading">
+                  <svg lucideBot class="w-5 h-5 logs-ai-loading-icon"></svg>
+                  <span>AI đang chẩn đoán chi tiết lỗi và lập phương án khắc phục...</span>
+                </div>
+              }
+              @if (explanations()[log.id]) {
+                <div class="logs-ai-result-box">
+                  <div class="logs-ai-result-header">
+                    <svg lucideSparkles class="w-4 h-4 text-indigo-500"></svg>
+                    <strong>AI Chẩn Đoán Lỗi Hệ Thống:</strong>
+                  </div>
+                  <p class="logs-ai-result-text">{{ explanations()[log.id] }}</p>
+                </div>
+              }
+            </div>
+          }
+        } @else {
+          <div class="logs-details-block">
+            <div class="logs-details-block-header">
+              <strong>Raw Log Line:</strong>
+              <button type="button" (click)="copyToClipboard(log.details, $event)" class="logs-copy-btn">
+                <svg lucideCopy class="w-3.5 h-3.5"></svg>
+                <span>Sao chép log</span>
+              </button>
+            </div>
+            <pre class="logs-details-code"><code>{{ log.details }}</code></pre>
+          </div>
+        }
+      </div>
+    </section>
+  </div>
+}
+
+<!-- Activity Log Detail Modal -->
+@if (selectedActivityLog(); as log) {
+  <div class="modal-backdrop" (click)="closeActivityLogDetails()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-heading">
+          <p class="modal-kicker">{{ areaLabel(log.area) }} / {{ severityLabel(log.severity) }}</p>
+          <h3 class="modal-title">Chi tiết nhật ký hoạt động</h3>
+        </div>
+        <button (click)="closeActivityLogDetails()" class="modal-close-btn" aria-label="Đóng">
+          <svg lucideX class="modal-close-icon"></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <section class="modal-operator-card">
+          <div class="operator-cell">
+            <div class="operator-avatar-wrapper modal-operator-avatar">
+              @if (log.operatorAvatar) {
+                <img [src]="log.operatorAvatar" [alt]="log.operatorFullName" class="operator-avatar-img" />
+              } @else {
+                <span>{{ getInitials(log.operatorFullName || '') }}</span>
+              }
+            </div>
+            <div class="operator-info">
+              <span class="modal-label">Người thực hiện</span>
+              <span class="operator-name modal-operator-name">{{ log.operatorFullName }}</span>
+              <span class="operator-email modal-operator-email">{{ log.operatorEmail }}</span>
+            </div>
+          </div>
+          <span class="audit-chip" [class.audit-chip--critical]="log.severity === 'CRITICAL'" [class.audit-chip--security]="log.severity === 'SECURITY'" [class.audit-chip--important]="log.severity === 'IMPORTANT'">
+            {{ severityLabel(log.severity) }}
+          </span>
+        </section>
+
+        <section class="modal-info-grid">
+          <div class="modal-row">
+            <span class="modal-label">Khu vực</span>
+            <span class="modal-value">{{ areaLabel(log.area) }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">Mức độ</span>
+            <span class="modal-value modal-value--action">{{ severityLabel(log.severity) }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">Hành động</span>
+            <span class="modal-value">{{ actionLabel(log) }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">Module</span>
+            <span class="modal-value">{{ log.module || 'N/A' }}</span>
+          </div>
+        </section>
+
+        <div class="modal-row">
+          <span class="modal-label">Tóm tắt</span>
+          <div class="modal-value--mono">{{ summary(log) }}</div>
+        </div>
+
+        <section class="modal-info-grid">
+          <div class="modal-row">
+            <span class="modal-label">Đối tượng</span>
+            <span class="modal-value">{{ targetLabel(log) }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">IP</span>
+            <span class="modal-value modal-value--ip">{{ log.ipAddress }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">Thời gian</span>
+            <span class="modal-value">{{ log.timestamp | date:'HH:mm:ss - dd/MM/yyyy' }}</span>
+          </div>
+          <div class="modal-row">
+            <span class="modal-label">ID nhật ký</span>
+            <span class="modal-value modal-value--id">{{ log.id }}</span>
+          </div>
+        </section>
+
+        <div class="modal-row">
+          <span class="modal-label">Metadata đã được ẩn dữ liệu nhạy cảm</span>
+          <pre class="modal-value--mono modal-value--metadata">{{ prettyMetadata(log.metadata) }}</pre>
+        </div>
+
+        <div class="modal-row">
+          <span class="modal-label">Thiết bị & trình duyệt</span>
+          @let browser = browserInfo(log.userAgent);
+          <section class="browser-info-grid">
+            <div class="browser-info-item">
+              <span class="brand-icon" [ngClass]="browser.browserIconClass">{{ browser.browserIcon }}</span>
+              <div>
+                <span class="browser-info-label">Trình duyệt</span>
+                <strong class="browser-info-value">{{ browser.browser }}</strong>
+              </div>
+            </div>
+            <div class="browser-info-item">
+              <span class="brand-icon" [ngClass]="browser.osIconClass">{{ browser.osIcon }}</span>
+              <div>
+                <span class="browser-info-label">Hệ điều hành</span>
+                <strong class="browser-info-value">{{ browser.os }}</strong>
+              </div>
+            </div>
+            <div class="browser-info-item">
+              <span class="brand-icon" [ngClass]="browser.deviceIconClass">{{ browser.deviceIcon }}</span>
+              <div>
+                <span class="browser-info-label">Thiết bị</span>
+                <strong class="browser-info-value">{{ browser.device }}</strong>
+              </div>
+            </div>
+            <div class="browser-info-item">
+              <span class="brand-icon brand-icon--engine">WK</span>
+              <div>
+                <span class="browser-info-label">Engine</span>
+                <strong class="browser-info-value">{{ browser.engine }}</strong>
+              </div>
+            </div>
+          </section>
+          <details class="user-agent-details">
+            <summary>Chuỗi user-agent gốc</summary>
+            <div class="modal-value--mono modal-value--user-agent">{{ browser.raw }}</div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+}

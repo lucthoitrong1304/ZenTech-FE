@@ -54,10 +54,12 @@ interface AdminState {
   // Advanced filters
   incidentSearch: string;
   incidentSeverityFilter: IncidentSeverity | 'ALL';
+  incidentAssigneeFilter: string;
   incidentStartDate: string | null;
   incidentEndDate: string | null;
   ticketSearch: string;
   ticketPriorityFilter: TicketPriority | 'ALL';
+  ticketAssigneeFilter: string;
   ticketStartDate: string | null;
   ticketEndDate: string | null;
 }
@@ -313,10 +315,12 @@ const initialState: AdminState = {
   // Initialize advanced filters
   incidentSearch: '',
   incidentSeverityFilter: 'ALL',
+  incidentAssigneeFilter: 'ALL',
   incidentStartDate: null,
   incidentEndDate: null,
   ticketSearch: '',
   ticketPriorityFilter: 'ALL',
+  ticketAssigneeFilter: 'ALL',
   ticketStartDate: null,
   ticketEndDate: null
 };
@@ -326,8 +330,8 @@ export const AdminStore = signalStore(
   withState(initialState),
   withComputed(({
     logs, issueLogs, logFilter, logSearch,
-    incidents, incidentFilter, incidentSearch, incidentSeverityFilter, incidentStartDate, incidentEndDate,
-    tickets, ticketFilter, ticketSearch, ticketPriorityFilter, ticketStartDate, ticketEndDate,
+    incidents, incidentFilter, incidentSearch, incidentSeverityFilter, incidentAssigneeFilter, incidentStartDate, incidentEndDate,
+    tickets, ticketFilter, ticketSearch, ticketPriorityFilter, ticketAssigneeFilter, ticketStartDate, ticketEndDate,
     accounts, accountSearch, activityLogs, activitySearch
   }) => ({
     filteredLogs: computed(() => {
@@ -368,6 +372,7 @@ export const AdminStore = signalStore(
       const filterVal = incidentFilter();
       const searchVal = incidentSearch().toLowerCase().trim();
       const severityVal = incidentSeverityFilter();
+      const assigneeVal = incidentAssigneeFilter();
       const startVal = incidentStartDate();
       const endVal = incidentEndDate();
 
@@ -376,6 +381,11 @@ export const AdminStore = signalStore(
       }
       if (severityVal !== 'ALL') {
         result = result.filter(inc => inc.severity === severityVal);
+      }
+      if (assigneeVal === 'UNASSIGNED') {
+        result = result.filter(inc => !inc.assignee);
+      } else if (assigneeVal !== 'ALL') {
+        result = result.filter(inc => inc.assignee === assigneeVal);
       }
       if (searchVal) {
         result = result.filter(inc =>
@@ -410,6 +420,7 @@ export const AdminStore = signalStore(
       const filterVal = ticketFilter();
       const searchVal = ticketSearch().toLowerCase().trim();
       const priorityVal = ticketPriorityFilter();
+      const assigneeVal = ticketAssigneeFilter();
       const startVal = ticketStartDate();
       const endVal = ticketEndDate();
 
@@ -418,6 +429,11 @@ export const AdminStore = signalStore(
       }
       if (priorityVal !== 'ALL') {
         result = result.filter(tck => tck.priority === priorityVal);
+      }
+      if (assigneeVal === 'UNASSIGNED') {
+        result = result.filter(tck => !tck.assigneeEmail);
+      } else if (assigneeVal !== 'ALL') {
+        result = result.filter(tck => tck.assigneeEmail === assigneeVal);
       }
       if (searchVal) {
         result = result.filter(tck =>
@@ -486,6 +502,7 @@ export const AdminStore = signalStore(
     wsService = inject(WebsocketService)
   ) => {
     let incidentSubscription: Subscription | null = null;
+    let newIncidentSubscription: Subscription | null = null;
     let ticketSubscription: Subscription | null = null;
 
     // Helper to log audit actions dynamically
@@ -737,6 +754,10 @@ export const AdminStore = signalStore(
         patchState(store, { incidentSeverityFilter: severity });
       },
 
+      setIncidentAssigneeFilter(assignee: string) {
+        patchState(store, { incidentAssigneeFilter: assignee });
+      },
+
       setIncidentDateRange(start: string | null, end: string | null) {
         patchState(store, { incidentStartDate: start, incidentEndDate: end });
       },
@@ -746,6 +767,7 @@ export const AdminStore = signalStore(
           incidentFilter: 'ALL',
           incidentSearch: '',
           incidentSeverityFilter: 'ALL',
+          incidentAssigneeFilter: 'ALL',
           incidentStartDate: null,
           incidentEndDate: null
         });
@@ -763,6 +785,10 @@ export const AdminStore = signalStore(
         patchState(store, { ticketPriorityFilter: priority });
       },
 
+      setTicketAssigneeFilter(assignee: string) {
+        patchState(store, { ticketAssigneeFilter: assignee });
+      },
+
       setTicketDateRange(start: string | null, end: string | null) {
         patchState(store, { ticketStartDate: start, ticketEndDate: end });
       },
@@ -772,6 +798,7 @@ export const AdminStore = signalStore(
           ticketFilter: 'ALL',
           ticketSearch: '',
           ticketPriorityFilter: 'ALL',
+          ticketAssigneeFilter: 'ALL',
           ticketStartDate: null,
           ticketEndDate: null
         });
@@ -1027,11 +1054,21 @@ export const AdminStore = signalStore(
         incidentSubscription = wsService.subscribe<any>('/topic/admin.incidents')
           .subscribe({
             next: (incident) => {
-              toastService.success(`Hệ thống ghi nhận sự cố mới: ${incident.code}`);
               const activeFilter = store.incidentFilter();
               this.loadIncidents({ status: activeFilter === 'ALL' ? undefined : activeFilter as IncidentStatus });
             },
             error: (err) => console.error('[Incident WS Error]', err)
+          });
+
+        if (newIncidentSubscription) {
+          newIncidentSubscription.unsubscribe();
+        }
+        newIncidentSubscription = wsService.subscribe<any>('/topic/admin.incidents.new')
+          .subscribe({
+            next: (incident) => {
+              toastService.success(`Hệ thống ghi nhận sự cố mới: ${incident.code}`);
+            },
+            error: (err) => console.error('[New Incident WS Error]', err)
           });
 
         if (ticketSubscription) {
@@ -1053,6 +1090,10 @@ export const AdminStore = signalStore(
         if (incidentSubscription) {
           incidentSubscription.unsubscribe();
           incidentSubscription = null;
+        }
+        if (newIncidentSubscription) {
+          newIncidentSubscription.unsubscribe();
+          newIncidentSubscription = null;
         }
         if (ticketSubscription) {
           ticketSubscription.unsubscribe();
