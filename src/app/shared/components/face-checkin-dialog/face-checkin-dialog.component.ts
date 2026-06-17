@@ -25,7 +25,6 @@ export class FaceCheckinDialogComponent implements OnInit, OnDestroy {
   private faceService = inject(FaceRecognitionService);
 
   status = signal<FaceValidationStatus>('INITIALIZING');
-  hasBlinked = signal<boolean>(false);
   isProcessing = signal<boolean>(false);
 
   // Validation feedback text
@@ -44,16 +43,12 @@ export class FaceCheckinDialogComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (!this.hasBlinked()) {
-      return 'Vui lòng CHỚP MẮT để xác thực...';
-    }
-
-    return 'Giữ yên... Đang xử lý...';
+    return 'Vui lòng nhìn thẳng và giữ yên...';
   });
 
   private detectInterval: any;
   private validDuration = 0; // ms
-  private readonly CAPTURE_DELAY = 1000; // 1.0s cho check-in sau khi blink
+  private readonly CAPTURE_DELAY = 800; // 0.8s giữ yên để xác thực
   private readonly INTERVAL_TIME = 200; // ms
 
   constructor() {
@@ -77,7 +72,6 @@ export class FaceCheckinDialogComponent implements OnInit, OnDestroy {
 
   private resetState() {
     this.status.set('INITIALIZING');
-    this.hasBlinked.set(false);
     this.validDuration = 0;
     this.isProcessing.set(false);
   }
@@ -115,22 +109,10 @@ export class FaceCheckinDialogComponent implements OnInit, OnDestroy {
         const result = await this.faceService.detectFace(this.videoElement.nativeElement);
         this.status.set(result.status);
 
-        if (result.status === 'VALID' && result.descriptor && result.liveness) {
-          if (!this.hasBlinked()) {
-            if (result.liveness.isBlinking) {
-              this.hasBlinked.set(true);
-              this.validDuration = 0; // Reset để bắt đầu đếm thời gian giữ yên
-            }
-          } else {
-            // Sau khi chớp mắt, yêu cầu nhìn thẳng để chụp mẫu đối sánh
-            if (result.liveness.detectedPose === 'STRAIGHT') {
-              this.validDuration += this.INTERVAL_TIME;
-              if (this.validDuration >= this.CAPTURE_DELAY) {
-                this.captureDescriptor(result.descriptor);
-              }
-            } else {
-              this.validDuration = 0;
-            }
+        if (result.status === 'VALID' && result.descriptor) {
+          this.validDuration += this.INTERVAL_TIME;
+          if (this.validDuration >= this.CAPTURE_DELAY) {
+            this.captureDescriptor(result.descriptor);
           }
         } else {
           this.validDuration = 0;
