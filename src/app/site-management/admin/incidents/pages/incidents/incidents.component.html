@@ -229,4 +229,34 @@
       }
     }
   </div>
+
+  @if (store.filteredIncidents().length > 0) {
+    <!-- Pagination Footer -->
+    <div class="incidents-pagination-footer">
+      <div class="pagination-info">
+        Hiển thị <strong>{{ startRecordIndex() }}</strong> - <strong>{{ endRecordIndex() }}</strong> trên tổng số <strong>{{ store.totalIncidents() }}</strong> bản ghi
+      </div>
+
+      <div class="pagination-controls">
+        <div class="pagination-size-selector">
+          <span class="size-label">Số dòng:</span>
+          <select [value]="store.incidentSize()" (change)="changeSize($event)" class="size-select" aria-label="Số dòng trên mỗi trang">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+
+        <div class="pagination-buttons">
+          <button [disabled]="store.incidentPage() === 0" (click)="changePage(store.incidentPage() - 1)" class="pagination-btn" aria-label="Trang trước">
+            <svg lucideChevronLeft class="pagination-btn-icon"></svg>
+          </button>
+          <span class="pagination-current-page">Trang {{ store.incidentPage() + 1 }} / {{ totalPages() }}</span>
+          <button [disabled]="store.incidentPage() >= totalPages() - 1" (click)="changePage(store.incidentPage() + 1)" class="pagination-btn" aria-label="Trang sau">
+            <svg lucideChevronRight class="pagination-btn-icon"></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

@@ -1,16 +1,18 @@
 import { Component, OnInit, inject, signal, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
-  LucideMessageSquare,
-  LucideSend,
   LucideSearch,
   LucideRotateCcw,
-  LucideUser
+  LucideUser,
+  LucideChevronLeft,
+  LucideChevronRight,
+  LucideX
 } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
 import { AdminStore } from '../../../data-access/store/admin.store';
-import { TicketStatus, SupportTicket, TicketMessageSender, TicketPriority, AdminAccountRole } from '../../../data-access/models/admin.models';
+import { TicketStatus, SupportTicket, TicketPriority, AdminAccountRole } from '../../../data-access/models/admin.models';
 import { AccountService } from '../../../accounts/data-access/services/account.service';
 import { AccountSortField, SortDirection } from '../../../accounts/data-access/models/account.model';
 import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
@@ -29,11 +31,13 @@ export enum TicketDateFilterOption {
   imports: [
     CommonModule,
     FormsModule,
-    LucideMessageSquare,
-    LucideSend,
+    RouterLink,
     LucideSearch,
     LucideRotateCcw,
     LucideUser,
+    LucideChevronLeft,
+    LucideChevronRight,
+    LucideX,
     SelectModule
   ],
   templateUrl: './tickets.component.html',
@@ -46,13 +50,10 @@ export class TicketsComponent implements OnInit {
 
   protected readonly TicketStatus = TicketStatus;
   protected readonly TicketPriority = TicketPriority;
-  protected readonly TicketMessageSender = TicketMessageSender;
   protected readonly TicketDateFilterOption = TicketDateFilterOption;
 
   protected readonly activeFilter = signal<TicketStatus | 'ALL'>('ALL');
   protected readonly selectedTicketId = signal<string | null>(null);
-
-  protected replyText = '';
 
   // Advanced Filter values
   protected searchVal = '';
@@ -72,11 +73,11 @@ export class TicketsComponent implements OnInit {
     { label: 'Tùy chọn...', value: TicketDateFilterOption.CUSTOM }
   ];
 
-  protected readonly userProfiles = signal<Record<string, { displayName: string, email: string, imageUrl: string | null }>>({});
+  protected readonly userProfiles = signal<Record<string, { displayName: string; email: string; imageUrl: string | null }>>({});
   private readonly loadedEmails = new Set<string>();
 
   protected readonly assigneeFilterOptions = computed(() => {
-    const options = new Map<string, { email: string, displayName: string, imageUrl: string | null }>();
+    const options = new Map<string, { email: string; displayName: string; imageUrl: string | null }>();
 
     for (const staff of this.staffAccounts()) {
       options.set(staff.email, {
@@ -126,6 +127,62 @@ export class TicketsComponent implements OnInit {
     ];
   });
 
+  protected readonly ticketAssigneeOptions = computed(() => {
+    const options = new Map<string, { email: string; displayName: string; imageUrl: string | null }>();
+
+    for (const staff of this.staffAccounts()) {
+      options.set(staff.email, {
+        email: staff.email,
+        displayName: staff.displayName || staff.email,
+        imageUrl: staff.imageUrl
+      });
+    }
+
+    const profiles = Array.from(options.values()).sort((a, b) => a.displayName.localeCompare(b.displayName));
+    return [
+      { value: 'UNASSIGNED', label: 'Chưa phân công', email: '', displayName: 'Chưa phân công', imageUrl: null, id: null },
+      ...profiles.map(p => {
+        const staff = this.staffAccounts().find((s: any) => s.email === p.email);
+        return {
+          value: p.email,
+          label: p.displayName,
+          email: p.email,
+          displayName: p.displayName,
+          imageUrl: p.imageUrl,
+          id: staff ? staff.id : null
+        };
+      })
+    ];
+  });
+
+  protected readonly totalPages = computed(() => {
+    const total = this.store.totalTickets();
+    const size = this.store.ticketSize();
+    return Math.ceil(total / size) || 1;
+  });
+
+  protected readonly startRecordIndex = computed(() => {
+    const total = this.store.totalTickets();
+    if (total === 0) return 0;
+    return this.store.ticketPage() * this.store.ticketSize() + 1;
+  });
+
+  protected readonly endRecordIndex = computed(() => {
+    const total = this.store.totalTickets();
+    const size = this.store.ticketSize();
+    const page = this.store.ticketPage();
+    return Math.min(total, (page + 1) * size);
+  });
+
+  protected changePage(page: number): void {
+    this.store.setTicketPage(page);
+  }
+
+  protected changeSize(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.store.setTicketSize(parseInt(select.value, 10));
+  }
+
   constructor() {
     effect(() => {
       const tickets = this.store.tickets();
@@ -171,9 +228,6 @@ export class TicketsComponent implements OnInit {
   protected handleFilterChange(filter: TicketStatus | 'ALL'): void {
     this.activeFilter.set(filter);
     this.store.setTicketFilter(filter);
-    this.store.loadTickets({
-      status: filter === 'ALL' ? undefined : filter
-    });
     
     // Clear selection if filtered out
     const activeTicket = this.getSelectedTicket();
@@ -252,7 +306,6 @@ export class TicketsComponent implements OnInit {
     this.dateFilterVal.set(TicketDateFilterOption.ALL);
     this.activeFilter.set('ALL');
     this.store.resetTicketFilters();
-    this.store.loadTickets({});
   }
 
   protected onAssigneeFilterChange(value: string): void {
@@ -262,7 +315,10 @@ export class TicketsComponent implements OnInit {
 
   protected selectTicket(id: string): void {
     this.selectedTicketId.set(id);
-    this.replyText = '';
+  }
+
+  protected closeDetails(): void {
+    this.selectedTicketId.set(null);
   }
 
   protected getSelectedTicket(): SupportTicket | null {
@@ -271,20 +327,39 @@ export class TicketsComponent implements OnInit {
     return this.store.tickets().find(t => t.id === id) || null;
   }
 
-  protected handleSendReply(): void {
-    const ticketId = this.selectedTicketId();
-    if (!ticketId || !this.replyText.trim()) return;
-
-    this.store.addTicketMessage(ticketId, this.replyText.trim());
-    this.replyText = '';
-  }
-
   protected handleStatusChange(event: Event): void {
     const ticketId = this.selectedTicketId();
     if (!ticketId) return;
 
     const select = event.target as HTMLSelectElement;
     this.store.updateTicketStatus(ticketId, select.value as TicketStatus);
+  }
+
+  protected handleAssigneeChange(email: string | null): void {
+    const ticketId = this.selectedTicketId();
+    if (!ticketId) return;
+
+    const selectedOption = this.ticketAssigneeOptions().find(opt => opt.value === (email || 'UNASSIGNED'));
+    const assigneeId = selectedOption ? selectedOption.id : null;
+
+    this.store.updateTicketAssignee(ticketId, assigneeId);
+  }
+
+  protected getAssigneeProfile(email: string | undefined): { displayName: string; email: string; imageUrl: string | null } | null {
+    if (!email) return null;
+    const staff = this.staffAccounts().find((s: any) => s.email === email);
+    if (staff) {
+      return {
+        displayName: staff.displayName || staff.fullName || email.split('@')[0],
+        email: staff.email,
+        imageUrl: staff.imageUrl || null
+      };
+    }
+    return {
+      displayName: email.split('@')[0],
+      email: email,
+      imageUrl: null
+    };
   }
 
   // Avatar generation helpers

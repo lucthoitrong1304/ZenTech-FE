@@ -1,7 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState, withHooks } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, catchError, forkJoin, pipe, switchMap, tap, Subscription } from 'rxjs';
+import { EMPTY, catchError, forkJoin, pipe, switchMap, tap, Subscription, debounceTime } from 'rxjs';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AdminLogsService } from '../services/admin-logs.service';
 import { AdminIncidentsService } from '../../incidents/data-access/services/admin-incidents.service';
@@ -15,8 +15,6 @@ import {
   SystemIncident,
   TicketPriority,
   TicketStatus,
-  TicketMessageSender,
-  TicketMessage,
   SupportTicket,
   AdminAccountRole,
   AdminAccount,
@@ -62,6 +60,15 @@ interface AdminState {
   ticketAssigneeFilter: string;
   ticketStartDate: string | null;
   ticketEndDate: string | null;
+  // Pagination states
+  ticketPage: number;
+  ticketSize: number;
+  totalTickets: number;
+  isLoadingTickets: boolean;
+  incidentPage: number;
+  incidentSize: number;
+  totalIncidents: number;
+  isLoadingIncidents: boolean;
 }
 
 
@@ -322,7 +329,16 @@ const initialState: AdminState = {
   ticketPriorityFilter: 'ALL',
   ticketAssigneeFilter: 'ALL',
   ticketStartDate: null,
-  ticketEndDate: null
+  ticketEndDate: null,
+  // Pagination states
+  ticketPage: 0,
+  ticketSize: 10,
+  totalTickets: 0,
+  isLoadingTickets: false,
+  incidentPage: 0,
+  incidentSize: 10,
+  totalIncidents: 0,
+  isLoadingIncidents: false
 };
 
 export const AdminStore = signalStore(
@@ -368,99 +384,11 @@ export const AdminStore = signalStore(
     }),
 
     filteredIncidents: computed(() => {
-      let result = incidents();
-      const filterVal = incidentFilter();
-      const searchVal = incidentSearch().toLowerCase().trim();
-      const severityVal = incidentSeverityFilter();
-      const assigneeVal = incidentAssigneeFilter();
-      const startVal = incidentStartDate();
-      const endVal = incidentEndDate();
-
-      if (filterVal !== 'ALL') {
-        result = result.filter(inc => inc.status === filterVal);
-      }
-      if (severityVal !== 'ALL') {
-        result = result.filter(inc => inc.severity === severityVal);
-      }
-      if (assigneeVal === 'UNASSIGNED') {
-        result = result.filter(inc => !inc.assignee);
-      } else if (assigneeVal !== 'ALL') {
-        result = result.filter(inc => inc.assignee === assigneeVal);
-      }
-      if (searchVal) {
-        result = result.filter(inc =>
-          inc.code.toLowerCase().includes(searchVal) ||
-          (inc.errorMessage && inc.errorMessage.toLowerCase().includes(searchVal)) ||
-          (inc.apiPath && inc.apiPath.toLowerCase().includes(searchVal)) ||
-          (inc.serviceName && inc.serviceName.toLowerCase().includes(searchVal)) ||
-          (inc.userEmail && inc.userEmail.toLowerCase().includes(searchVal)) ||
-          (inc.assignee && inc.assignee.toLowerCase().includes(searchVal))
-        );
-      }
-      if (startVal) {
-        const startDate = new Date(startVal);
-        startDate.setHours(0, 0, 0, 0);
-        result = result.filter(inc => new Date(inc.reportedAt).getTime() >= startDate.getTime());
-      }
-      if (endVal) {
-        const endDate = new Date(endVal);
-        endDate.setHours(23, 59, 59, 999);
-        result = result.filter(inc => new Date(inc.reportedAt).getTime() <= endDate.getTime());
-      }
-
-      return result.sort((a, b) => {
-        if (a.status === IncidentStatus.OPEN && b.status !== IncidentStatus.OPEN) return -1;
-        if (a.status !== IncidentStatus.OPEN && b.status === IncidentStatus.OPEN) return 1;
-        return b.reportedAt.getTime() - a.reportedAt.getTime();
-      });
+      return incidents();
     }),
 
     filteredTickets: computed(() => {
-      let result = tickets();
-      const filterVal = ticketFilter();
-      const searchVal = ticketSearch().toLowerCase().trim();
-      const priorityVal = ticketPriorityFilter();
-      const assigneeVal = ticketAssigneeFilter();
-      const startVal = ticketStartDate();
-      const endVal = ticketEndDate();
-
-      if (filterVal !== 'ALL') {
-        result = result.filter(tck => tck.status === filterVal);
-      }
-      if (priorityVal !== 'ALL') {
-        result = result.filter(tck => tck.priority === priorityVal);
-      }
-      if (assigneeVal === 'UNASSIGNED') {
-        result = result.filter(tck => !tck.assigneeEmail);
-      } else if (assigneeVal !== 'ALL') {
-        result = result.filter(tck => tck.assigneeEmail === assigneeVal);
-      }
-      if (searchVal) {
-        result = result.filter(tck =>
-          (tck.code && tck.code.toLowerCase().includes(searchVal)) ||
-          tck.id.toLowerCase().includes(searchVal) ||
-          tck.subject.toLowerCase().includes(searchVal) ||
-          tck.customerName.toLowerCase().includes(searchVal) ||
-          (tck.createdByEmail && tck.createdByEmail.toLowerCase().includes(searchVal)) ||
-          (tck.assigneeName && tck.assigneeName.toLowerCase().includes(searchVal))
-        );
-      }
-      if (startVal) {
-        const startDate = new Date(startVal);
-        startDate.setHours(0, 0, 0, 0);
-        result = result.filter(tck => new Date(tck.createdAt).getTime() >= startDate.getTime());
-      }
-      if (endVal) {
-        const endDate = new Date(endVal);
-        endDate.setHours(23, 59, 59, 999);
-        result = result.filter(tck => new Date(tck.createdAt).getTime() <= endDate.getTime());
-      }
-
-      return result.sort((a, b) => {
-        if (a.status === TicketStatus.OPEN && b.status !== TicketStatus.OPEN) return -1;
-        if (a.status !== TicketStatus.OPEN && b.status === TicketStatus.OPEN) return 1;
-        return b.createdAt.getTime() - a.createdAt.getTime();
-      });
+      return tickets();
     }),
 
 
@@ -522,12 +450,28 @@ export const AdminStore = signalStore(
     };
 
     return {
-      loadIncidents: rxMethod<{ status?: IncidentStatus }>(
+      loadIncidents: rxMethod<{
+        page?: number;
+        size?: number;
+        status?: IncidentStatus | 'ALL';
+        severity?: IncidentSeverity | 'ALL';
+        assignee?: string;
+        startDate?: string | null;
+        endDate?: string | null;
+        search?: string;
+      }>(
         pipe(
-          switchMap(({ status }) =>
-            adminIncidentsService.getIncidents(status).pipe(
+          debounceTime(300),
+          tap(() => patchState(store, { isLoadingIncidents: true })),
+          switchMap(({ page, size, status, severity, assignee, startDate, endDate, search }) => {
+            const p = page !== undefined ? page : store.incidentPage();
+            const s = size !== undefined ? size : store.incidentSize();
+            const statusParam = status === 'ALL' ? undefined : status;
+            const severityParam = severity === 'ALL' ? undefined : severity;
+            return adminIncidentsService.getIncidents({ page: p, size: s, status: statusParam, severity: severityParam, assignee, startDate, endDate, search }).pipe(
               tap((res) => {
-                const mappedIncidents = res.data.map((inc: any) => ({
+                const paginated = res.data;
+                const mappedIncidents = paginated.content.map((inc: any) => ({
                   id: inc.id,
                   code: inc.code,
                   title: `Sự cố ${inc.code}: ${inc.errorMessage || 'Lỗi hệ thống'}`,
@@ -547,29 +491,53 @@ export const AdminStore = signalStore(
                   aiAnalysis: inc.aiAnalysis,
                   ticketCode: inc.ticketCode
                 }));
-                patchState(store, { incidents: mappedIncidents });
+                patchState(store, {
+                  incidents: mappedIncidents,
+                  totalIncidents: paginated.totalElements,
+                  incidentPage: paginated.page,
+                  incidentSize: paginated.size,
+                  isLoadingIncidents: false
+                });
               }),
               catchError((err) => {
                 console.error(err);
                 toastService.error('Không thể tải danh sách sự cố');
+                patchState(store, { isLoadingIncidents: false });
                 return EMPTY;
               })
-            )
-          )
+            );
+          })
         )
       ),
 
-      loadTickets: rxMethod<{ status?: TicketStatus }>(
+      loadTickets: rxMethod<{
+        page?: number;
+        size?: number;
+        status?: TicketStatus | 'ALL';
+        priority?: TicketPriority | 'ALL';
+        assigneeEmail?: string;
+        startDate?: string | null;
+        endDate?: string | null;
+        search?: string;
+      }>(
         pipe(
-          switchMap(({ status }) =>
-            adminTicketsService.getTickets(status).pipe(
+          debounceTime(300),
+          tap(() => patchState(store, { isLoadingTickets: true })),
+          switchMap(({ page, size, status, priority, assigneeEmail, startDate, endDate, search }) => {
+            const p = page !== undefined ? page : store.ticketPage();
+            const s = size !== undefined ? size : store.ticketSize();
+            const statusParam = status === 'ALL' ? undefined : status;
+            const priorityParam = priority === 'ALL' ? undefined : priority;
+            return adminTicketsService.getTickets({ page: p, size: s, status: statusParam, priority: priorityParam, assigneeEmail, startDate, endDate, search }).pipe(
               tap((res) => {
-                const mappedTickets = res.data.map((tck: any) => ({
+                const paginated = res.data;
+                const mappedTickets = paginated.content.map((tck: any) => ({
                   id: tck.id,
                   code: tck.code,
                   incidentId: tck.incidentId,
                   incidentCode: tck.incidentCode,
                   subject: tck.title,
+                  description: tck.description,
                   customerName: tck.createdByName || tck.createdByEmail || 'Hệ thống',
                   priority: tck.priority,
                   status: tck.status,
@@ -578,23 +546,24 @@ export const AdminStore = signalStore(
                   createdByEmail: tck.createdByEmail,
                   createdByName: tck.createdByName,
                   assigneeName: tck.assigneeName,
-                  assigneeEmail: tck.assigneeEmail,
-                  messages: tck.messages ? tck.messages.map((m: any) => ({
-                    id: m.id,
-                    sender: m.sender,
-                    content: m.content,
-                    timestamp: new Date(m.timestamp)
-                  })) : []
+                  assigneeEmail: tck.assigneeEmail
                 }));
-                patchState(store, { tickets: mappedTickets });
+                patchState(store, {
+                  tickets: mappedTickets,
+                  totalTickets: paginated.totalElements,
+                  ticketPage: paginated.page,
+                  ticketSize: paginated.size,
+                  isLoadingTickets: false
+                });
               }),
               catchError((err) => {
                 console.error(err);
                 toastService.error('Không thể tải danh sách Ticket hỗ trợ');
+                patchState(store, { isLoadingTickets: false });
                 return EMPTY;
               })
-            )
-          )
+            );
+          })
         )
       ),
       loadActivityLogs: rxMethod<{
@@ -742,24 +711,102 @@ export const AdminStore = signalStore(
         this.loadLogs({ level: store.logFilter(), search, traceId: '' });
       },
 
+      setIncidentPage(page: number) {
+        patchState(store, { incidentPage: page });
+        this.loadIncidents({
+          page,
+          size: store.incidentSize(),
+          status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter(),
+          severity: store.incidentSeverityFilter() === 'ALL' ? undefined : store.incidentSeverityFilter(),
+          assignee: store.incidentAssigneeFilter(),
+          startDate: store.incidentStartDate(),
+          endDate: store.incidentEndDate(),
+          search: store.incidentSearch()
+        });
+      },
+
+      setIncidentSize(size: number) {
+        patchState(store, { incidentSize: size, incidentPage: 0 });
+        this.loadIncidents({
+          page: 0,
+          size,
+          status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter(),
+          severity: store.incidentSeverityFilter() === 'ALL' ? undefined : store.incidentSeverityFilter(),
+          assignee: store.incidentAssigneeFilter(),
+          startDate: store.incidentStartDate(),
+          endDate: store.incidentEndDate(),
+          search: store.incidentSearch()
+        });
+      },
+
       setIncidentFilter(filter: IncidentStatus | 'ALL') {
-        patchState(store, { incidentFilter: filter });
+        patchState(store, { incidentFilter: filter, incidentPage: 0 });
+        this.loadIncidents({
+          page: 0,
+          size: store.incidentSize(),
+          status: filter === 'ALL' ? undefined : filter,
+          severity: store.incidentSeverityFilter() === 'ALL' ? undefined : store.incidentSeverityFilter(),
+          assignee: store.incidentAssigneeFilter(),
+          startDate: store.incidentStartDate(),
+          endDate: store.incidentEndDate(),
+          search: store.incidentSearch()
+        });
       },
 
       setIncidentSearch(search: string) {
-        patchState(store, { incidentSearch: search });
+        patchState(store, { incidentSearch: search, incidentPage: 0 });
+        this.loadIncidents({
+          page: 0,
+          size: store.incidentSize(),
+          status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter(),
+          severity: store.incidentSeverityFilter() === 'ALL' ? undefined : store.incidentSeverityFilter(),
+          assignee: store.incidentAssigneeFilter(),
+          startDate: store.incidentStartDate(),
+          endDate: store.incidentEndDate(),
+          search
+        });
       },
 
       setIncidentSeverityFilter(severity: IncidentSeverity | 'ALL') {
-        patchState(store, { incidentSeverityFilter: severity });
+        patchState(store, { incidentSeverityFilter: severity, incidentPage: 0 });
+        this.loadIncidents({
+          page: 0,
+          size: store.incidentSize(),
+          status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter(),
+          severity: severity === 'ALL' ? undefined : severity,
+          assignee: store.incidentAssigneeFilter(),
+          startDate: store.incidentStartDate(),
+          endDate: store.incidentEndDate(),
+          search: store.incidentSearch()
+        });
       },
 
       setIncidentAssigneeFilter(assignee: string) {
-        patchState(store, { incidentAssigneeFilter: assignee });
+        patchState(store, { incidentAssigneeFilter: assignee, incidentPage: 0 });
+        this.loadIncidents({
+          page: 0,
+          size: store.incidentSize(),
+          status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter(),
+          severity: store.incidentSeverityFilter() === 'ALL' ? undefined : store.incidentSeverityFilter(),
+          assignee,
+          startDate: store.incidentStartDate(),
+          endDate: store.incidentEndDate(),
+          search: store.incidentSearch()
+        });
       },
 
       setIncidentDateRange(start: string | null, end: string | null) {
-        patchState(store, { incidentStartDate: start, incidentEndDate: end });
+        patchState(store, { incidentStartDate: start, incidentEndDate: end, incidentPage: 0 });
+        this.loadIncidents({
+          page: 0,
+          size: store.incidentSize(),
+          status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter(),
+          severity: store.incidentSeverityFilter() === 'ALL' ? undefined : store.incidentSeverityFilter(),
+          assignee: store.incidentAssigneeFilter(),
+          startDate: start,
+          endDate: end,
+          search: store.incidentSearch()
+        });
       },
 
       resetIncidentFilters() {
@@ -769,28 +816,111 @@ export const AdminStore = signalStore(
           incidentSeverityFilter: 'ALL',
           incidentAssigneeFilter: 'ALL',
           incidentStartDate: null,
-          incidentEndDate: null
+          incidentEndDate: null,
+          incidentPage: 0
+        });
+        this.loadIncidents({
+          page: 0,
+          size: store.incidentSize()
+        });
+      },
+
+      setTicketPage(page: number) {
+        patchState(store, { ticketPage: page });
+        this.loadTickets({
+          page,
+          size: store.ticketSize(),
+          status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter(),
+          priority: store.ticketPriorityFilter() === 'ALL' ? undefined : store.ticketPriorityFilter(),
+          assigneeEmail: store.ticketAssigneeFilter(),
+          startDate: store.ticketStartDate(),
+          endDate: store.ticketEndDate(),
+          search: store.ticketSearch()
+        });
+      },
+
+      setTicketSize(size: number) {
+        patchState(store, { ticketSize: size, ticketPage: 0 });
+        this.loadTickets({
+          page: 0,
+          size,
+          status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter(),
+          priority: store.ticketPriorityFilter() === 'ALL' ? undefined : store.ticketPriorityFilter(),
+          assigneeEmail: store.ticketAssigneeFilter(),
+          startDate: store.ticketStartDate(),
+          endDate: store.ticketEndDate(),
+          search: store.ticketSearch()
         });
       },
 
       setTicketFilter(filter: TicketStatus | 'ALL') {
-        patchState(store, { ticketFilter: filter });
+        patchState(store, { ticketFilter: filter, ticketPage: 0 });
+        this.loadTickets({
+          page: 0,
+          size: store.ticketSize(),
+          status: filter === 'ALL' ? undefined : filter,
+          priority: store.ticketPriorityFilter() === 'ALL' ? undefined : store.ticketPriorityFilter(),
+          assigneeEmail: store.ticketAssigneeFilter(),
+          startDate: store.ticketStartDate(),
+          endDate: store.ticketEndDate(),
+          search: store.ticketSearch()
+        });
       },
 
       setTicketSearch(search: string) {
-        patchState(store, { ticketSearch: search });
+        patchState(store, { ticketSearch: search, ticketPage: 0 });
+        this.loadTickets({
+          page: 0,
+          size: store.ticketSize(),
+          status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter(),
+          priority: store.ticketPriorityFilter() === 'ALL' ? undefined : store.ticketPriorityFilter(),
+          assigneeEmail: store.ticketAssigneeFilter(),
+          startDate: store.ticketStartDate(),
+          endDate: store.ticketEndDate(),
+          search
+        });
       },
 
       setTicketPriorityFilter(priority: TicketPriority | 'ALL') {
-        patchState(store, { ticketPriorityFilter: priority });
+        patchState(store, { ticketPriorityFilter: priority, ticketPage: 0 });
+        this.loadTickets({
+          page: 0,
+          size: store.ticketSize(),
+          status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter(),
+          priority: priority === 'ALL' ? undefined : priority,
+          assigneeEmail: store.ticketAssigneeFilter(),
+          startDate: store.ticketStartDate(),
+          endDate: store.ticketEndDate(),
+          search: store.ticketSearch()
+        });
       },
 
       setTicketAssigneeFilter(assignee: string) {
-        patchState(store, { ticketAssigneeFilter: assignee });
+        patchState(store, { ticketAssigneeFilter: assignee, ticketPage: 0 });
+        this.loadTickets({
+          page: 0,
+          size: store.ticketSize(),
+          status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter(),
+          priority: store.ticketPriorityFilter() === 'ALL' ? undefined : store.ticketPriorityFilter(),
+          assigneeEmail: assignee,
+          startDate: store.ticketStartDate(),
+          endDate: store.ticketEndDate(),
+          search: store.ticketSearch()
+        });
       },
 
       setTicketDateRange(start: string | null, end: string | null) {
-        patchState(store, { ticketStartDate: start, ticketEndDate: end });
+        patchState(store, { ticketStartDate: start, ticketEndDate: end, ticketPage: 0 });
+        this.loadTickets({
+          page: 0,
+          size: store.ticketSize(),
+          status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter(),
+          priority: store.ticketPriorityFilter() === 'ALL' ? undefined : store.ticketPriorityFilter(),
+          assigneeEmail: store.ticketAssigneeFilter(),
+          startDate: start,
+          endDate: end,
+          search: store.ticketSearch()
+        });
       },
 
       resetTicketFilters() {
@@ -800,7 +930,12 @@ export const AdminStore = signalStore(
           ticketPriorityFilter: 'ALL',
           ticketAssigneeFilter: 'ALL',
           ticketStartDate: null,
-          ticketEndDate: null
+          ticketEndDate: null,
+          ticketPage: 0
+        });
+        this.loadTickets({
+          page: 0,
+          size: store.ticketSize()
         });
       },
 
@@ -918,9 +1053,12 @@ export const AdminStore = signalStore(
 
       updateIncident(id: string, status: IncidentStatus, severity: IncidentSeverity, assignee?: string) {
         adminIncidentsService.updateIncidentStatus(id, { status, severity, assignee }).subscribe({
-          next: () => {
+          next: (res) => {
             logActivity(`Cập nhật sự cố ${id}`, `Trạng thái: ${status}, Mức độ: ${severity}`);
-            toastService.success(`Đã cập nhật sự cố ${id} thành công`);
+            const msg = res.data?.ticketCode
+              ? `Đã cập nhật sự cố và tự động đồng bộ sang Ticket liên kết!`
+              : `Đã cập nhật sự cố thành công`;
+            toastService.success(msg);
             this.loadIncidents({ status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter() as IncidentStatus });
           },
           error: (err) => {
@@ -930,18 +1068,7 @@ export const AdminStore = signalStore(
         });
       },
 
-      addTicketMessage(ticketId: string, content: string) {
-        adminTicketsService.sendReply(ticketId, content).subscribe({
-          next: () => {
-            logActivity(`Phản hồi Ticket ${ticketId}`, `Nội dung: ${content.substring(0, 30)}...`);
-            this.loadTickets({ status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter() as TicketStatus });
-          },
-          error: (err) => {
-            console.error(err);
-            toastService.error('Không thể gửi phản hồi Ticket');
-          }
-        });
-      },
+
 
       updateTicketStatus(ticketId: string, status: TicketStatus) {
         adminTicketsService.updateTicketStatus(ticketId, status).subscribe({
@@ -954,6 +1081,21 @@ export const AdminStore = signalStore(
           error: (err) => {
             console.error(err);
             toastService.error('Không thể cập nhật trạng thái Ticket');
+          }
+        });
+      },
+
+      updateTicketAssignee(ticketId: string, assigneeId: string | null) {
+        adminTicketsService.updateTicketAssignee(ticketId, assigneeId).subscribe({
+          next: () => {
+            logActivity(`Cập nhật người phụ trách Ticket ${ticketId}`, `ID: ${assigneeId || 'Chưa phân công'}`);
+            toastService.success(`Đã cập nhật người phụ trách Ticket thành công`);
+            this.loadTickets({ status: store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter() as TicketStatus });
+            this.loadIncidents({ status: store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter() as IncidentStatus });
+          },
+          error: (err) => {
+            console.error(err);
+            toastService.error('Không thể cập nhật người phụ trách Ticket');
           }
         });
       },

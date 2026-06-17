@@ -53,8 +53,8 @@ export const adminRoutes: Routes = [
         path: 'tickets',
         data: {
           eyebrow: 'Giám sát hệ thống',
-          title: 'Hỗ trợ khách hàng (Ticket)',
-          description: 'Tiếp nhận, phản hồi và xử lý các ticket yêu cầu hỗ trợ từ người dùng.'
+          title: 'Nhật ký xử lý Ticket',
+          description: 'Theo dõi tiến trình khắc phục sự cố, ghi nhận nhật ký kỹ thuật nội bộ.'
         },
         loadComponent: () =>
           import('./tickets/pages/tickets/tickets.component').then(m => m.TicketsComponent)

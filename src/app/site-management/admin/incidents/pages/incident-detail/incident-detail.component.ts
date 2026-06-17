@@ -358,6 +358,11 @@ export class IncidentDetailComponent implements OnInit {
           resolvedAt: res.data.resolvedAt ? new Date(res.data.resolvedAt) : undefined
         });
         this.store.loadIncidents({});
+        
+        const msg = res.data?.ticketCode
+          ? 'Đã cập nhật trạng thái sự cố và tự động đồng bộ sang Ticket liên kết!'
+          : 'Đã cập nhật trạng thái sự cố thành công!';
+        this.toastService.success(msg);
       }
     });
   }
@@ -376,6 +381,8 @@ export class IncidentDetailComponent implements OnInit {
           severity: res.data.severity
         });
         this.store.loadIncidents({});
+        
+        this.toastService.success('Đã cập nhật mức độ nghiêm trọng sự cố thành công!');
       }
     });
   }
@@ -408,7 +415,7 @@ export class IncidentDetailComponent implements OnInit {
     const newAssignee = email || null;
 
     this.adminIncidentsService.updateIncidentStatus(inc.id, { assignee: newAssignee || '' }).subscribe({
-      next: () => {
+      next: (res) => {
         this.incident.set({
           ...inc,
           assignee: newAssignee
@@ -419,6 +426,11 @@ export class IncidentDetailComponent implements OnInit {
           this.assigneeProfile.set(null);
         }
         this.store.loadIncidents({});
+
+        const msg = res.data?.ticketCode
+          ? 'Đã cập nhật người phụ trách và tự động đồng bộ sang Ticket liên kết!'
+          : 'Đã cập nhật người phụ trách thành công!';
+        this.toastService.success(msg);
       }
     });
   }

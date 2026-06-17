@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { LucideEye, LucideRotateCcw, LucideSearch, LucideUser } from '@lucide/angular';
+import { LucideEye, LucideRotateCcw, LucideSearch, LucideUser, LucideChevronLeft, LucideChevronRight } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
 import { AdminStore } from '../../../data-access/store/admin.store';
 import { IncidentStatus, IncidentSeverity, SystemIncident } from '../../../data-access/models/admin.models';
@@ -33,6 +33,8 @@ export enum IncidentDateFilterOption {
     LucideRotateCcw,
     LucideSearch,
     LucideUser,
+    LucideChevronLeft,
+    LucideChevronRight,
     SelectModule
   ],
   templateUrl: './incidents.component.html',
@@ -65,6 +67,34 @@ export class IncidentsComponent implements OnInit {
     { label: 'Tùy chọn...', value: IncidentDateFilterOption.CUSTOM }
   ];
 
+  protected readonly totalPages = computed(() => {
+    const total = this.store.totalIncidents();
+    const size = this.store.incidentSize();
+    return Math.ceil(total / size) || 1;
+  });
+
+  protected readonly startRecordIndex = computed(() => {
+    const total = this.store.totalIncidents();
+    if (total === 0) return 0;
+    return this.store.incidentPage() * this.store.incidentSize() + 1;
+  });
+
+  protected readonly endRecordIndex = computed(() => {
+    const total = this.store.totalIncidents();
+    const size = this.store.incidentSize();
+    const page = this.store.incidentPage();
+    return Math.min(total, (page + 1) * size);
+  });
+
+  protected changePage(page: number): void {
+    this.store.setIncidentPage(page);
+  }
+
+  protected changeSize(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.store.setIncidentSize(parseInt(select.value, 10));
+  }
+
   ngOnInit(): void {
     this.store.loadIncidents({});
     this.loadStaffAccounts();
@@ -73,10 +103,6 @@ export class IncidentsComponent implements OnInit {
   protected handleFilterChange(filter: IncidentStatus | 'ALL'): void {
     this.activeFilter.set(filter);
     this.store.setIncidentFilter(filter);
-    // Ta vẫn gọi API để tải danh sách tương ứng
-    this.store.loadIncidents({
-      status: filter === 'ALL' ? undefined : filter
-    });
   }
 
   protected onSearchInput(event: Event): void {
@@ -146,7 +172,6 @@ export class IncidentsComponent implements OnInit {
     this.dateFilterVal.set(IncidentDateFilterOption.ALL);
     this.activeFilter.set('ALL');
     this.store.resetIncidentFilters();
-    this.store.loadIncidents({});
   }
 
   protected viewIncidentDetails(incident: SystemIncident): void {

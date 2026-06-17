@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../../../core/api/api.service';
 import { environment } from '../../../../../../environments/environment';
-import { SystemIncident, IncidentStatus, IncidentSeverity, ApiResponse, AiAnalysis } from '../../../data-access/models/admin.models';
+import { SystemIncident, IncidentStatus, IncidentSeverity, PaginatedResult, ApiResponse, AiAnalysis } from '../../../data-access/models/admin.models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminIncidentsService {
@@ -10,14 +10,44 @@ export class AdminIncidentsService {
   private readonly baseUrl = `${environment.apiBaseUrl}/admin/incidents`;
 
   /**
-   * Lấy danh sách sự cố từ MySQL
+   * Lấy danh sách sự cố từ MySQL có phân trang và bộ lọc
    */
-  getIncidents(status?: IncidentStatus): Observable<ApiResponse<SystemIncident[]>> {
-    let url = this.baseUrl;
-    if (status && status !== 'ALL' as any) {
-      url += `?status=${status}`;
+  getIncidents(params: {
+    page: number;
+    size: number;
+    status?: IncidentStatus;
+    severity?: IncidentSeverity;
+    assignee?: string;
+    startDate?: string | null;
+    endDate?: string | null;
+    search?: string;
+  }): Observable<ApiResponse<PaginatedResult<SystemIncident>>> {
+    let url = `${this.baseUrl}?page=${params.page}&size=${params.size}`;
+    
+    if (params.status && params.status !== 'ALL' as any) {
+      url += `&status=${params.status}`;
     }
-    return this.apiService.get<ApiResponse<SystemIncident[]>>(url);
+    if (params.severity && params.severity !== 'ALL' as any) {
+      url += `&severity=${params.severity}`;
+    }
+    if (params.assignee && params.assignee !== 'ALL') {
+      url += `&assignee=${params.assignee}`;
+    }
+    if (params.startDate) {
+      const d = new Date(params.startDate);
+      d.setHours(0, 0, 0, 0);
+      url += `&startDate=${d.toISOString()}`;
+    }
+    if (params.endDate) {
+      const d = new Date(params.endDate);
+      d.setHours(23, 59, 59, 999);
+      url += `&endDate=${d.toISOString()}`;
+    }
+    if (params.search && params.search.trim()) {
+      url += `&search=${encodeURIComponent(params.search.trim())}`;
+    }
+    
+    return this.apiService.get<ApiResponse<PaginatedResult<SystemIncident>>>(url);
   }
 
   /**

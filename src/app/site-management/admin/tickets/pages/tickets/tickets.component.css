@@ -1,93 +1,184 @@
 @import "tailwindcss" reference;
 
-.tck-layout {
-  @apply flex flex-col border border-[#E5E7EB] rounded-2xl overflow-hidden shadow-sm bg-white;
+.tck-container {
+  @apply flex flex-col gap-6;
 }
 
-.tck-sidebar {
-  @apply w-full border-r border-[#E5E7EB] flex flex-col bg-[#F9FAFB] flex-shrink-0;
+.tck-header-row {
+  @apply flex flex-col xl:flex-row xl:items-center justify-between gap-4 flex-shrink-0;
 }
 
-@media (min-width: 768px) {
-  .tck-layout {
-    @apply flex-row h-[calc(100vh-210px)];
-  }
-  
-  .tck-sidebar {
-    @apply w-[410px];
-  }
+.tck-search-section {
+  @apply flex items-center gap-4 flex-1 xl:max-w-xl;
 }
 
-.tck-sidebar-header {
-  @apply p-3 border-b border-[#E5E7EB] flex flex-col gap-2 flex-shrink-0;
+.tck-search-wrapper {
+  @apply relative flex-grow;
 }
 
-.tck-sidebar-title {
-  @apply text-xs font-bold text-gray-500 uppercase tracking-wider;
+.tck-search-icon {
+  @apply absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none;
+}
+
+.tck-search-input {
+  @apply w-full pl-10 pr-4 py-2.5 bg-[#F9FAFB] hover:bg-white focus:bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-full text-sm outline-none focus:ring-1 focus:ring-[#4F46E5] transition;
+}
+
+.tck-btn-reset-link {
+  @apply flex items-center gap-1.5 text-xs font-bold text-[#4F46E5] hover:text-[#4338CA] transition cursor-pointer border-none outline-none bg-transparent p-0 flex-shrink-0;
+}
+
+.reset-icon-small {
+  @apply w-4 h-4 text-[#4F46E5] hover:text-[#4338CA];
 }
 
 .tck-filter-row {
-  @apply flex items-center bg-[#F9FAFB] p-1 border border-[#E5E7EB] rounded-full overflow-x-auto;
+  @apply grid grid-cols-2 lg:grid-cols-4 gap-2 w-full xl:w-auto items-center;
 }
 
-.tck-filter-btn {
-  @apply px-4 py-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 rounded-full border-none outline-none cursor-pointer transition flex-shrink-0;
+.tck-filter-select {
+  @apply bg-white border border-[#E5E7EB] rounded-full text-xs font-semibold px-3 py-2 text-gray-600 focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] outline-none cursor-pointer transition h-[36px];
 }
 
-.tck-filter-btn--active {
-  @apply bg-white text-gray-900 font-bold shadow-sm;
+.tck-custom-dates-row {
+  @apply flex w-full xl:justify-end mt-[-8px] mb-2;
 }
 
-.tck-list {
-  @apply flex-1 overflow-y-auto divide-y divide-[#E5E7EB];
+.tck-dates-wrap {
+  @apply flex items-center justify-between gap-2 bg-white border border-[#E5E7EB] rounded-full px-4 h-[36px] w-full max-w-md;
 }
 
-.tck-list-empty {
-  @apply text-center py-12 text-xs text-gray-400 font-medium;
+.tck-date-input {
+  @apply bg-transparent border-none outline-none text-xs text-gray-600 font-semibold cursor-pointer w-[42%];
 }
 
-.tck-list-item {
-  @apply flex flex-row items-start gap-3 p-4 cursor-pointer hover:bg-white transition border-l-4 border-l-transparent;
+.tck-date-sep {
+  @apply text-[10px] font-bold text-gray-400 uppercase tracking-wider;
 }
 
-.tck-item-avatar-wrap {
-  @apply flex-shrink-0;
+/* Table Card Layout */
+.tck-table-card {
+  @apply bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-sm;
 }
 
-.tck-avatar-circle {
-  @apply w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white uppercase shadow-xs;
+.tck-table-wrapper {
+  @apply overflow-x-auto;
 }
 
-.tck-item-info {
-  @apply flex-1 min-w-0 flex flex-col gap-1.5;
+.tck-table {
+  @apply w-full border-collapse text-left;
 }
 
-.tck-list-item--active {
-  @apply bg-white border-l-[#111827];
+.tck-th {
+  @apply px-4 py-3.5 bg-[#F9FAFB] text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-[#E5E7EB] whitespace-nowrap;
 }
 
-.tck-list-header {
-  @apply flex items-center justify-between;
+.tck-tr {
+  @apply border-b border-[#E5E7EB] hover:bg-[#F9FAFB] cursor-pointer transition duration-150;
 }
 
-.tck-list-name {
-  @apply text-xs font-bold text-gray-800;
+.tck-td {
+  @apply px-4 py-3.5 text-xs text-gray-950 font-medium align-middle;
 }
 
-.tck-list-time {
-  @apply text-[9px] text-gray-400 font-semibold;
+.tck-td--mono {
+  @apply font-mono text-gray-500 whitespace-nowrap;
 }
 
-.tck-list-subject {
-  @apply text-xs font-semibold text-gray-950 truncate max-w-[200px];
+.tck-td--subject {
+  @apply font-semibold text-gray-900 max-w-[280px] truncate;
 }
 
-.tck-list-footer {
+.tck-td--time {
+  @apply text-gray-500 font-mono whitespace-nowrap;
+}
+
+.tck-loading-state,
+.tck-empty-state {
+  @apply text-center py-16 text-gray-400 text-xs font-medium w-full;
+}
+
+.tck-unassigned-text {
+  @apply text-gray-400 font-semibold italic text-[11px];
+}
+
+.tck-muted-text {
+  @apply text-gray-400 text-[11px];
+}
+
+/* Operator avatar & cells */
+.tck-operator-cell {
+  @apply flex items-center gap-3;
+}
+
+.tck-operator-avatar-wrapper {
+  @apply w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xs uppercase flex-shrink-0;
+}
+
+.tck-operator-avatar-wrapper span {
+  @apply w-full h-full flex items-center justify-center text-white;
+}
+
+.tck-operator-avatar-img {
+  @apply w-full h-full object-cover;
+}
+
+.tck-operator-info {
+  @apply flex flex-col min-w-0 leading-tight;
+}
+
+.tck-operator-name {
+  @apply text-xs font-semibold text-gray-900 truncate;
+}
+
+.tck-operator-email {
+  @apply text-[10px] text-gray-400 font-medium truncate max-w-[150px];
+}
+
+/* Pagination Footer */
+.tck-pagination-footer {
+  @apply flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-[#F9FAFB] border-t border-[#E5E7EB] gap-4;
+}
+
+.tck-pagination-info {
+  @apply text-xs text-gray-500 font-medium;
+}
+
+.tck-pagination-controls {
+  @apply flex items-center gap-6;
+}
+
+.tck-pagination-size-selector {
   @apply flex items-center gap-2;
 }
 
+.tck-size-label {
+  @apply text-xs text-gray-500 font-semibold;
+}
+
+.tck-size-select {
+  @apply bg-white border border-[#E5E7EB] rounded-full text-xs font-semibold px-3 py-1.5 focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] outline-none cursor-pointer transition;
+}
+
+.tck-pagination-buttons {
+  @apply flex items-center gap-3;
+}
+
+.tck-pagination-btn {
+  @apply p-1.5 rounded-full border border-[#E5E7EB] bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600 disabled:cursor-not-allowed transition duration-150 cursor-pointer;
+}
+
+.tck-pagination-btn-icon {
+  @apply w-4 h-4;
+}
+
+.tck-pagination-current-page {
+  @apply text-xs text-gray-700 font-bold font-mono;
+}
+
+/* Badges (Status and Priority) */
 .tck-badge-status {
-  @apply text-[8px] font-bold px-1.5 py-0.5 rounded uppercase;
+  @apply text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider inline-block text-center border whitespace-nowrap;
 }
 
 .tck-badge-status.status-open {
@@ -107,7 +198,7 @@
 }
 
 .tck-badge-priority {
-  @apply text-[8px] font-bold px-1.5 py-0.5 rounded uppercase border;
+  @apply text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider inline-block text-center border whitespace-nowrap;
 }
 
 .tck-badge-priority.priority-critical {
@@ -115,192 +206,20 @@
 }
 
 .tck-badge-priority.priority-high {
-  @apply bg-orange-100 text-orange-800 border-none;
+  @apply bg-orange-50 text-orange-800 border-orange-100;
 }
 
 .tck-badge-priority.priority-medium {
-  @apply bg-yellow-100 text-yellow-800 border-none;
+  @apply bg-yellow-50 text-yellow-800 border-yellow-100;
 }
 
 .tck-badge-priority.priority-low {
-  @apply bg-blue-100 text-blue-800 border-none;
+  @apply bg-blue-50 text-blue-800 border-blue-100;
 }
 
-.tck-main-pane {
-  @apply flex-1 flex flex-col bg-white min-w-0;
-}
-
-.tck-empty-view {
-  @apply flex-1 flex flex-col items-center justify-center text-center p-8;
-}
-
-.tck-empty-icon {
-  @apply w-12 h-12 text-gray-300 mb-2;
-}
-
-.tck-empty-text {
-  @apply text-xs text-gray-400 font-medium;
-}
-
-.tck-chat-wrapper {
-  @apply flex-1 flex flex-col h-full overflow-hidden;
-}
-
-.tck-chat-header {
-  @apply p-4 border-b border-[#E5E7EB] bg-[#F9FAFB] flex items-start justify-between flex-shrink-0 flex-wrap gap-4;
-}
-
-.tck-chat-title-group {
-  @apply flex flex-col min-w-0;
-}
-
-.tck-chat-title {
-  @apply text-sm font-bold text-gray-900 leading-snug truncate;
-}
-
-.tck-chat-customer {
-  @apply text-[10px] text-gray-500 mt-1 font-semibold;
-}
-
-.tck-chat-status-area {
-  @apply flex items-center gap-2 flex-shrink-0;
-}
-
-.tck-status-label {
-  @apply text-xs font-semibold text-gray-600;
-}
-
-.tck-chat-status-select {
-  @apply px-2.5 py-1.5 bg-white border border-[#E5E7EB] rounded-lg text-xs outline-none focus:border-[#4F46E5] transition font-medium;
-}
-
-.tck-chat-history {
-  @apply flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-[#F9FAFB];
-}
-
-.tck-msg {
-  @apply flex items-end gap-2 max-w-[85%];
-}
-
-.tck-msg--customer {
-  @apply self-start;
-}
-
-.tck-msg--agent {
-  @apply self-end flex-row-reverse;
-}
-
-.tck-bubble {
-  @apply max-w-[75%] p-4 rounded-2xl shadow-xs;
-}
-
-.tck-msg--customer .tck-bubble {
-  @apply bg-white text-gray-900 border border-[#E5E7EB] rounded-tl-none;
-}
-
-.tck-msg--agent .tck-bubble {
-  @apply bg-[#F0FDF4] text-[#16A34A] border border-emerald-100 rounded-tr-none;
-}
-
-.tck-bubble-header {
-  @apply flex items-center justify-between mb-1;
-}
-
-.tck-bubble-sender {
-  @apply text-[9px] font-bold uppercase tracking-wider text-gray-400;
-}
-
-.tck-msg--agent .tck-bubble-sender {
-  @apply text-emerald-600;
-}
-
-.tck-bubble-content {
-  @apply text-xs leading-relaxed font-medium text-gray-800;
-}
-
-.tck-bubble-time {
-  @apply text-[8px] text-gray-400 font-semibold block mt-2 text-right;
-}
-
-.tck-msg--agent .tck-bubble-time {
-  @apply text-emerald-500;
-}
-
-.tck-chat-input-area {
-  @apply p-4 border-t border-[#E5E7EB] bg-white flex-shrink-0;
-}
-
-.tck-chat-form {
-  @apply flex items-center gap-3;
-}
-
-.tck-chat-input {
-  @apply flex-1 px-4 py-2.5 bg-[#F9FAFB] focus:bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-full text-xs outline-none focus:ring-1 focus:ring-[#4F46E5] transition font-medium;
-}
-
-.tck-chat-send-btn {
-  @apply flex items-center gap-1.5 px-4.5 py-2.5 bg-[#FFC700] hover:bg-[#FFD633] text-[#111827] rounded-full text-xs font-bold transition border-none outline-none cursor-pointer;
-}
-
-.tck-chat-send-btn svg {
-  @apply w-3.5 h-3.5;
-}
-
-/* Premium Admin Console surface overrides */
-.tickets-container { color: #111827; }
-
-/* Advanced Filters on Ticket page */
-.tck-advanced-filters {
-  @apply flex flex-col gap-1.5 bg-[#F9FAFB] p-2 rounded-xl border border-[#E5E7EB] mt-1;
-}
-
-.tck-search-wrap {
-  @apply flex items-center gap-2 bg-white border border-[#E5E7EB] focus-within:border-[#4F46E5] rounded-full px-4 h-[36px] focus-within:ring-1 focus-within:ring-[#4F46E5] transition;
-}
-
-.tck-search-icon {
-  @apply w-4 h-4 text-gray-400;
-}
-
-.tck-search-input {
-  @apply w-full bg-transparent border-none outline-none text-xs text-gray-800 placeholder-gray-400 font-medium;
-}
-
-.tck-filters-grid {
-  @apply grid grid-cols-2 gap-2;
-}
-
-.tck-filter-select-wrap {
-  @apply w-full;
-}
-
-.tck-filter-select {
-  @apply w-full px-4 bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-full text-xs font-semibold text-gray-700 outline-none focus:ring-1 focus:ring-[#4F46E5] transition cursor-pointer h-[36px];
-}
-
-.tck-dates-wrap {
-  @apply flex items-center justify-between gap-2 bg-white border border-[#E5E7EB] rounded-full px-4 h-[36px];
-}
-
-.tck-date-input {
-  @apply bg-transparent border-none outline-none text-xs text-gray-600 font-bold cursor-pointer w-[42%] bg-white;
-}
-
-.tck-date-sep {
-  @apply text-[9px] font-bold text-gray-400 uppercase tracking-wider;
-}
-
-.tck-btn-reset-link {
-  @apply flex items-center gap-1 text-[11px] font-bold text-[#4F46E5] hover:text-[#4338CA] transition cursor-pointer border-none outline-none bg-transparent p-0;
-}
-
-.reset-icon-small {
-  @apply w-3 h-3 text-[#4F46E5] hover:text-[#4338CA];
-}
-
-/* Custom PrimeNG select dropdown styles for assignee filter */
+/* PrimeNG drop-down customizations */
 :host ::ng-deep .assignee-dropdown-p {
-  @apply w-full rounded-full transition focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] flex items-center bg-white;
+  @apply w-full rounded-full transition focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] flex items-center bg-white cursor-pointer;
   height: 36px !important;
   border: 1px solid #E5E7EB !important;
   box-shadow: none !important;
@@ -315,7 +234,31 @@
   @apply pr-3;
 }
 
-/* Custom styles for option layouts */
+:host ::ng-deep .tck-date-preset-dropdown {
+  @apply w-full rounded-full transition focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] flex items-center bg-white cursor-pointer;
+  height: 36px !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .tck-date-preset-dropdown .p-select-label {
+  @apply text-xs font-semibold text-gray-700 pl-4 pr-8 py-0 flex items-center;
+  height: 100% !important;
+}
+
+:host ::ng-deep .tck-date-preset-dropdown .p-select-dropdown {
+  @apply pr-3;
+}
+
+:host ::ng-deep .p-select-overlay {
+  font-family: inherit;
+}
+
+:host ::ng-deep .p-select-option {
+  @apply text-xs font-semibold text-gray-700;
+  padding: 8px 12px !important;
+}
+
 .assignee-filter-option {
   @apply flex min-w-0 items-center gap-2 py-1;
 }
@@ -356,65 +299,176 @@
   @apply truncate text-[10px] font-medium text-[#6B7280];
 }
 
-
-
-/* Chat Profiles & Header Avatar */
-.tck-chat-profile {
-  @apply flex items-center gap-3 min-w-0;
+/* Modal Dialog Styles (Kinetic Monolith details modal) */
+@keyframes tckModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.tck-header-avatar {
-  @apply w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white uppercase shadow-xs flex-shrink-0;
+@keyframes tckModalZoomIn {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
-/* Message Bubble Avatar layout */
-.tck-msg-avatar {
-  @apply w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-white uppercase shadow-xs flex-shrink-0 mb-1;
+.tck-modal-backdrop {
+  @apply fixed inset-0 bg-black/35 backdrop-blur-[3px] flex items-center justify-center z-50 p-4;
+  animation: tckModalFadeIn 0.15s ease-out forwards;
 }
 
-.tck-msg-avatar--agent {
-  @apply border border-emerald-100;
+.tck-modal-content {
+  @apply bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-200 flex flex-col;
+  max-height: min(86vh, 820px);
+  animation: tckModalZoomIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-.tck-list-email {
-  @apply text-[10px] text-gray-400 font-medium truncate;
+.tck-modal-header {
+  @apply sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white;
 }
 
-.tck-avatar-img {
-  @apply w-9 h-9 rounded-full object-cover shadow-xs flex-shrink-0;
+.tck-modal-heading {
+  @apply flex min-w-0 flex-col gap-1;
 }
 
-.tck-header-avatar-img {
-  @apply w-10 h-10 rounded-full object-cover shadow-xs flex-shrink-0;
+.tck-modal-kicker {
+  @apply text-[10px] font-bold uppercase tracking-wider text-gray-400;
 }
 
-.tck-msg-avatar-img {
-  @apply w-7 h-7 rounded-full object-cover shadow-xs flex-shrink-0 mb-1;
+.tck-modal-title {
+  @apply text-base font-bold text-gray-950 truncate max-w-lg;
 }
 
-:host ::ng-deep .tck-date-preset-dropdown {
-  @apply w-full rounded-full transition focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] flex items-center bg-white;
-  height: 36px !important;
+.tck-modal-close-btn {
+  @apply inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition cursor-pointer;
+}
+
+.tck-modal-close-icon {
+  @apply w-5 h-5;
+}
+
+.tck-modal-body {
+  @apply flex flex-col gap-5 overflow-y-auto p-6;
+}
+
+.tck-modal-row {
+  @apply flex flex-col gap-1.5;
+}
+
+.tck-modal-label {
+  @apply text-[10px] font-bold text-gray-400 uppercase tracking-wider;
+}
+
+.tck-modal-value {
+  @apply text-xs text-gray-800 font-semibold leading-relaxed;
+}
+
+.tck-modal-value--mono {
+  @apply font-mono bg-[#F9FAFB] p-3.5 rounded-xl border border-gray-200 text-xs text-gray-800 overflow-x-auto whitespace-pre-wrap break-words;
+}
+
+.tck-modal-value--mono-inline {
+  @apply font-mono bg-gray-50 px-2 py-0.5 rounded border border-gray-200 text-xs text-gray-600 w-fit;
+}
+
+.tck-modal-operator-card {
+  @apply flex items-center justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3;
+}
+
+.tck-modal-info-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+}
+
+.tck-modal-status-select {
+  @apply px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition font-semibold text-gray-800 cursor-pointer h-9 w-full sm:w-48;
+}
+
+/* User profile card in modal */
+.tck-profile-card {
+  @apply flex items-center gap-3 p-2.5 bg-[#F9FAFB] rounded-xl border border-gray-200 mt-1;
+}
+
+.tck-profile-card--unassigned {
+  @apply bg-gray-50/50 border-dashed;
+}
+
+.tck-profile-avatar-img {
+  @apply w-8 h-8 rounded-full object-cover flex-shrink-0 border border-white shadow-xs;
+}
+
+.tck-profile-avatar-placeholder {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-xs flex-shrink-0;
+}
+
+.tck-profile-avatar-placeholder--unassigned {
+  @apply bg-gray-100 border border-gray-200;
+}
+
+.tck-profile-info {
+  @apply flex flex-col min-w-0 leading-tight;
+}
+
+.tck-profile-name {
+  @apply text-xs font-bold text-gray-800 truncate;
+}
+
+.tck-profile-email {
+  @apply text-[10px] text-gray-400 font-semibold truncate;
+}
+
+.tck-linked-incident-link {
+  @apply text-xs font-bold text-[#4F46E5] hover:underline cursor-pointer;
+}
+
+/* Custom styles for PrimeNG assignee select in ticket details */
+:host ::ng-deep .detail-assignee-select {
+  @apply w-full rounded-xl transition focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] flex items-center;
+  height: 54px !important;
   border: 1px solid #E5E7EB !important;
+  background-color: #ffffff !important;
   box-shadow: none !important;
 }
 
-:host ::ng-deep .tck-date-preset-dropdown .p-select-label {
-  @apply text-xs font-semibold text-gray-700 pl-4 pr-8 py-0 flex items-center;
+:host ::ng-deep .detail-assignee-select .p-select-label {
+  @apply text-xs text-gray-700 pl-2.5 pr-8 py-0 flex items-center w-full;
   height: 100% !important;
 }
 
-:host ::ng-deep .tck-date-preset-dropdown .p-select-dropdown {
+:host ::ng-deep .detail-assignee-select .p-select-dropdown {
   @apply pr-3;
 }
 
-/* Override dropdown overlay options text size to match text-xs */
-:host ::ng-deep .p-select-overlay {
-  font-family: inherit;
+/* Custom styles for option items */
+.assignee-selected-view {
+  @apply flex items-center gap-3 w-full;
 }
 
-:host ::ng-deep .p-select-option {
-  @apply text-xs font-semibold text-gray-700;
-  padding: 8px 12px !important;
+.assignee-selected-avatar {
+  @apply w-8 h-8 rounded-full object-cover flex-shrink-0 border border-white shadow-xs;
 }
 
+.assignee-selected-avatar-fallback {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-xs flex-shrink-0;
+}
+
+.assignee-item-view {
+  @apply flex items-center gap-2.5 py-0.5;
+}
+
+.assignee-avatar {
+  @apply w-5 h-5 rounded-full object-cover border border-gray-100;
+}
+
+.assignee-avatar-fallback {
+  @apply w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white uppercase shadow-xs;
+}
+
+.assignee-details {
+  @apply flex flex-col leading-tight min-w-0;
+}
+
+.assignee-name-text {
+  @apply text-xs font-semibold text-[#111827] truncate;
+}
+
+.assignee-email-text {
+  @apply text-[10px] text-gray-500 font-medium truncate;
+}

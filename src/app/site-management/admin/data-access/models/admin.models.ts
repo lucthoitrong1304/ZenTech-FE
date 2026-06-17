@@ -76,30 +76,18 @@ export enum TicketStatus {
   CLOSED = 'CLOSED',
 }
 
-export enum TicketMessageSender {
-  CUSTOMER = 'CUSTOMER',
-  SUPPORT_AGENT = 'SUPPORT_AGENT',
-}
-
-export interface TicketMessage {
-  id: string;
-  sender: TicketMessageSender;
-  content: string;
-  timestamp: Date;
-}
-
 export interface SupportTicket {
   id: string;
   code?: string;
   incidentId?: string;
   incidentCode?: string;
   subject: string;
+  description?: string;
   customerName: string;
   priority: TicketPriority;
   status: TicketStatus;
   createdAt: Date;
   resolvedAt?: Date;
-  messages: TicketMessage[];
   createdByEmail?: string;
   createdByName?: string;
   assigneeName?: string;
