@@ -362,7 +362,7 @@ export class ManagementLayoutComponent {
     this.checkinSubmitting.set(true);
 
     this.profileService
-      .registerFace([Array.from(data.descriptor)])
+      .registerFace(data.descriptors.map(d => Array.from(d)))
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.checkinSubmitting.set(false))

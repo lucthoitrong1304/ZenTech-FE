@@ -107,6 +107,41 @@
                 placeholder="Nhập địa chỉ của bạn"></textarea>
             </div>
           </div>
+
+          <!-- Biometric Authentication -->
+          <div class="mt-6">
+            <h2 class="text-lg font-semibold text-gray-900 border-b border-gray-100 pb-2 flex items-center">
+              <svg lucideScanFace class="mr-2 text-primary w-5 h-5" [attr.stroke-width]="2"></svg>
+              Xác thực khuôn mặt
+            </h2>
+            <div class="mt-4 p-4 rounded-xl border border-gray-200 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-start space-x-3">
+                <div class="p-2 rounded-lg" 
+                     [ngClass]="profileStore.profile()?.hasRegisteredFace ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'">
+                  <i class="pi text-xl" [ngClass]="profileStore.profile()?.hasRegisteredFace ? 'pi-verified' : 'pi-shield'"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-semibold text-gray-900">Nhận diện khuôn mặt</h4>
+                  <p class="text-xs text-gray-500 mt-0.5">
+                    {{ profileStore.profile()?.hasRegisteredFace ? 'Đã đăng ký đặc trưng khuôn mặt thành công.' : 'Chưa đăng ký đặc trưng khuôn mặt.' }}
+                  </p>
+                </div>
+              </div>
+              
+              <div class="flex items-center gap-2">
+                <button type="button" (click)="onRegisterFace()"
+                  class="px-4 py-1.5 text-xs font-semibold rounded-full border border-gray-300 hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-colors shadow-sm cursor-pointer">
+                  {{ profileStore.profile()?.hasRegisteredFace ? 'Đăng ký lại' : 'Đăng ký' }}
+                </button>
+                
+                <button type="button" *ngIf="profileStore.profile()?.hasRegisteredFace" (click)="onDeleteFace()"
+                  class="px-4 py-1.5 text-xs font-semibold rounded-full border border-red-200 hover:bg-red-50 text-red-650 transition-colors shadow-sm cursor-pointer">
+                  Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -122,3 +157,9 @@
     </form>
   </div>
 </div>
+
+<app-face-register-dialog
+  [visible]="registerDialogVisible()"
+  (onClose)="registerDialogVisible.set(false)"
+  (onSuccess)="handleRegisterSuccess($event)"
+/>

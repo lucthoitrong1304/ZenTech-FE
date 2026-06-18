@@ -27,6 +27,10 @@ export class ProfileService {
     });
   }
 
+  deleteFace(): Observable<ApiResponseDto<void>> {
+    return this.apiService.delete<ApiResponseDto<void>>(`${environment.apiBaseUrl}/employees/me/face`);
+  }
+
   requestAvatarUploadPresign(file: File): Observable<any> {
     const payload = {
       originalFilename: file.name,

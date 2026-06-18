@@ -9,12 +9,48 @@
   [style]="{ width: '500px', maxWidth: '90vw' }"
 >
   <div class="flex flex-col items-center justify-center p-4">
+    <!-- Steps Tracker -->
+    <div class="flex items-center justify-between w-full max-w-[360px] px-2 mb-6 mt-1">
+      <div 
+        *ngFor="let p of POSES; let i = index" 
+        class="flex flex-col items-center flex-1 relative"
+      >
+        <!-- Connector Line -->
+        <div 
+          *ngIf="i < POSES.length - 1" 
+          class="absolute top-4 left-1/2 right-[-50%] h-[3px] z-0 transition-colors duration-300"
+          [ngClass]="{
+            'bg-emerald-500': step() > i + 1,
+            'bg-slate-100 dark:bg-slate-800': step() <= i + 1
+          }"
+        ></div>
+        
+        <!-- Step Circle -->
+        <div 
+          class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs z-10 transition-all duration-300"
+          [ngClass]="{
+            'bg-emerald-500 text-white shadow-[0_0_8px_rgba(16,185,129,0.4)]': step() > i + 1,
+            'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900/30 scale-110 shadow-md': step() === i + 1,
+            'bg-slate-50 dark:bg-slate-900 text-slate-400 border border-slate-200 dark:border-slate-800': step() < i + 1
+          }"
+        >
+          <i class="pi pi-check text-[10px]" *ngIf="step() > i + 1"></i>
+          <span *ngIf="step() <= i + 1">{{ i + 1 }}</span>
+        </div>
+        
+        <!-- Short Label -->
+        <span class="text-[9px] mt-1.5 font-medium text-slate-500 dark:text-slate-400 capitalize hidden sm:block whitespace-nowrap">
+          {{ getPoseShortLabel(p.pose) }}
+        </span>
+      </div>
+    </div>
+
     <!-- Instruction Text -->
     <div class="mb-4 text-center">
-      <h3 class="text-lg font-bold text-gray-900">Vui lòng nhìn thẳng vào Camera</h3>
-      <p class="text-sm mt-1" 
+      <h3 class="text-base font-bold text-slate-800 dark:text-slate-100">{{ stepInstruction() }}</h3>
+      <p class="text-sm mt-1 min-h-[20px]" 
          [ngClass]="{
-           'text-red-500 font-semibold': status() !== 'VALID' && status() !== 'INITIALIZING',
+           'text-red-500 font-semibold animate-pulse': status() !== 'VALID' && status() !== 'INITIALIZING',
            'text-blue-600 font-bold': status() === 'VALID',
            'text-gray-500': status() === 'INITIALIZING'
          }">
@@ -23,7 +59,7 @@
     </div>
 
     <!-- Camera Viewport -->
-    <div class="camera-container relative rounded-2xl overflow-hidden bg-gray-100 shadow-inner" style="width: 320px; height: 320px;">
+    <div class="camera-container relative rounded-2xl overflow-hidden bg-slate-900 shadow-inner" style="width: 320px; height: 320px;">
       
       <!-- Video Element -->
       <video 
@@ -40,7 +76,7 @@
              [ngClass]="{
                'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]': status() === 'VALID',
                'border-red-500': status() !== 'VALID' && status() !== 'INITIALIZING',
-               'border-gray-300': status() === 'INITIALIZING'
+               'border-gray-500/30': status() === 'INITIALIZING'
              }">
         </div>
       </div>
@@ -69,8 +105,45 @@
 
       <!-- Scanning Effect -->
       <div class="absolute inset-0 z-20 bg-blue-500/10 pointer-events-none scan-line" *ngIf="status() === 'VALID'"></div>
+
+      <!-- Alignment Radar HUD -->
+      <div 
+        class="absolute top-3 right-3 z-30 w-24 h-24 rounded-full border border-white/20 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-1 shadow-2xl transition-opacity duration-300 pointer-events-none"
+        *ngIf="status() === 'VALID' && step() > 0"
+      >
+        <!-- Grid Ring Lines -->
+        <div class="absolute w-[80px] h-[80px] rounded-full border border-white/10"></div>
+        <div class="absolute w-[50px] h-[50px] rounded-full border border-white/10"></div>
+        <div class="absolute w-[20px] h-[20px] rounded-full border border-white/10"></div>
+        
+        <!-- Crosshair grid axes -->
+        <div class="absolute h-full w-[1px] bg-white/5"></div>
+        <div class="absolute w-full h-[1px] bg-white/5"></div>
+
+        <!-- Target Pose Zone (Green Circle) -->
+        <div 
+          class="absolute w-6 h-6 rounded-full bg-emerald-500/35 border-2 border-emerald-400 transition-all duration-300 ease-out shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+          [style.left.%]="targetX() - 12"
+          [style.top.%]="targetY() - 12"
+        ></div>
+        
+        <!-- User Face Position Pointer (Blue Dot) -->
+        <div 
+          class="absolute w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-[0_0_12px_rgba(59,130,246,0.9)] transition-all duration-150 ease-out flex items-center justify-center"
+          [style.left.%]="currentX() - 8"
+          [style.top.%]="currentY() - 8"
+        >
+          <!-- Pulsing Radar Ring -->
+          <span class="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 animate-ping"></span>
+          <!-- Core Center Dot -->
+          <div class="w-1.5 h-1.5 rounded-full bg-white"></div>
+        </div>
+      </div>
     </div>
     
-    <p class="text-xs text-gray-500 mt-4 text-center">Hệ thống cần 2.5s để ghi nhận đặc trưng khuôn mặt của bạn một cách chính xác nhất.</p>
+    <p class="text-xs text-slate-500 dark:text-slate-400 mt-4 text-center max-w-[340px]">
+      Vui lòng điều chỉnh đầu sao cho <span class="text-blue-500 font-semibold">chấm xanh dương</span> di chuyển khớp vào <span class="text-emerald-500 font-semibold">vùng xanh lá</span> và giữ nguyên 1.0 giây.
+    </p>
   </div>
 </p-dialog>
+
