@@ -188,32 +188,41 @@ export class TicketsComponent implements OnInit {
       const tickets = this.store.tickets();
       if (tickets && tickets.length > 0) {
         for (const tck of tickets) {
-          const email = tck.createdByEmail;
-          if (email && !this.loadedEmails.has(email)) {
-            this.loadedEmails.add(email);
-            this.accountService.getAccounts({
-              page: 0,
-              size: 1,
-              sortField: AccountSortField.CreatedAt,
-              sortDirection: SortDirection.Desc,
-              keyword: email,
-              role: null,
-              active: null
-            }).subscribe({
-              next: (res) => {
-                if (res.data && res.data.content && res.data.content.length > 0) {
-                  const account = res.data.content[0];
-                  this.userProfiles.update(map => ({
-                    ...map,
-                    [email]: {
-                      displayName: account.displayName || email.split('@')[0],
-                      email: account.email,
-                      imageUrl: account.imageUrl || null
-                    }
-                  }));
+          const emails = new Set<string>();
+          if (tck.createdByEmail) {
+            emails.add(tck.createdByEmail);
+          }
+          if (tck.affectedUserEmails && tck.affectedUserEmails.length > 0) {
+            tck.affectedUserEmails.forEach(e => emails.add(e));
+          }
+
+          for (const email of emails) {
+            if (email && !this.loadedEmails.has(email)) {
+              this.loadedEmails.add(email);
+              this.accountService.getAccounts({
+                page: 0,
+                size: 1,
+                sortField: AccountSortField.CreatedAt,
+                sortDirection: SortDirection.Desc,
+                keyword: email,
+                role: null,
+                active: null
+              }).subscribe({
+                next: (res) => {
+                  if (res.data && res.data.content && res.data.content.length > 0) {
+                    const account = res.data.content[0];
+                    this.userProfiles.update(map => ({
+                      ...map,
+                      [email]: {
+                        displayName: account.displayName || email.split('@')[0],
+                        email: account.email,
+                        imageUrl: account.imageUrl || null
+                      }
+                    }));
+                  }
                 }
-              }
-            });
+              });
+            }
           }
         }
       }

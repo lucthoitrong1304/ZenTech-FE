@@ -472,3 +472,28 @@
 .assignee-email-text {
   @apply text-[10px] text-gray-500 font-medium truncate;
 }
+
+/* Avatar stack & multiple affected customers indicator styles */
+.tck-avatar-stack {
+  @apply flex items-center -space-x-2.5 flex-shrink-0;
+}
+
+.tck-stack-avatar-wrapper {
+  @apply w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-indigo-50 border-2 border-white text-indigo-700 font-bold text-[10px] uppercase flex-shrink-0 shadow-sm relative;
+}
+
+.tck-stack-avatar-img {
+  @apply w-full h-full object-cover;
+}
+
+.tck-stack-avatar-text {
+  @apply w-full h-full flex items-center justify-center text-white text-[9px] font-bold;
+}
+
+.tck-stack-avatar-more {
+  @apply bg-rose-600 border-2 border-white text-white font-bold text-[9px] flex items-center justify-center;
+}
+
+.tck-badge-affected {
+  @apply text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-100 whitespace-nowrap inline-flex items-center;
+}

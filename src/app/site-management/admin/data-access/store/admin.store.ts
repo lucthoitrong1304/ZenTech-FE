@@ -592,7 +592,8 @@ export const AdminStore = signalStore(
                   createdByEmail: tck.createdByEmail,
                   createdByName: tck.createdByName,
                   assigneeName: tck.assigneeName,
-                  assigneeEmail: tck.assigneeEmail
+                  assigneeEmail: tck.assigneeEmail,
+                  affectedUserEmails: tck.affectedUserEmails
                 }));
                 patchState(store, {
                   tickets: mappedTickets,

@@ -182,19 +182,48 @@
                 <!-- Column 3: Khách hàng -->
                 <td class="tck-td">
                   <div class="tck-operator-cell">
-                    <div class="tck-operator-avatar-wrapper">
-                      @if (tck.createdByEmail && userProfiles()[tck.createdByEmail]?.imageUrl; as imgUrl) {
-                        <img [src]="imgUrl" [alt]="tck.customerName" class="tck-operator-avatar-img" />
-                      } @else {
-                        <span [style.background]="getAvatarGradient(tck.createdByEmail || tck.customerName)">
-                          {{ getInitials(tck.createdByEmail && userProfiles()[tck.createdByEmail] ? userProfiles()[tck.createdByEmail].displayName : tck.customerName) }}
-                        </span>
-                      }
-                    </div>
+                    @if (tck.affectedUserEmails && tck.affectedUserEmails.length > 1) {
+                      <div class="tck-avatar-stack">
+                        @for (email of tck.affectedUserEmails.slice(0, 2); track email; let idx = $index) {
+                          @let profile = userProfiles()[email];
+                          <div class="tck-stack-avatar-wrapper" [style.z-index]="3 - idx">
+                            @if (profile?.imageUrl; as imgUrl) {
+                              <img [src]="imgUrl" [alt]="profile?.displayName || email" class="tck-stack-avatar-img" />
+                            } @else {
+                              <span class="tck-stack-avatar-text" [style.background]="getAvatarGradient(email)">
+                                {{ getInitials(profile?.displayName || email.split('@')[0]) }}
+                              </span>
+                            }
+                          </div>
+                        }
+                        @if (tck.affectedUserEmails.length > 2) {
+                          <div class="tck-stack-avatar-wrapper tck-stack-avatar-more" [style.z-index]="1">
+                            <span>+{{ tck.affectedUserEmails.length - 2 }}</span>
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <div class="tck-operator-avatar-wrapper">
+                        @if (tck.createdByEmail && userProfiles()[tck.createdByEmail]?.imageUrl; as imgUrl) {
+                          <img [src]="imgUrl" [alt]="tck.customerName" class="tck-operator-avatar-img" />
+                        } @else {
+                          <span [style.background]="getAvatarGradient(tck.createdByEmail || tck.customerName)">
+                            {{ getInitials(tck.createdByEmail && userProfiles()[tck.createdByEmail] ? userProfiles()[tck.createdByEmail].displayName : tck.customerName) }}
+                          </span>
+                        }
+                      </div>
+                    }
                     <div class="tck-operator-info">
-                      <span class="tck-operator-name">
-                        {{ tck.createdByEmail && userProfiles()[tck.createdByEmail] ? userProfiles()[tck.createdByEmail].displayName : tck.customerName }}
-                      </span>
+                      <div class="flex items-center gap-1.5">
+                        <span class="tck-operator-name">
+                          {{ tck.createdByEmail && userProfiles()[tck.createdByEmail] ? userProfiles()[tck.createdByEmail].displayName : tck.customerName }}
+                        </span>
+                        @if (tck.affectedUserEmails && tck.affectedUserEmails.length > 1) {
+                          <span class="tck-badge-affected">
+                            +{{ tck.affectedUserEmails.length - 1 }} người khác
+                          </span>
+                        }
+                      </div>
                       <span class="tck-operator-email">{{ tck.createdByEmail || 'N/A' }}</span>
                     </div>
                   </div>
@@ -326,9 +355,7 @@
         <!-- Description Section -->
         <div class="tck-modal-row">
           <span class="tck-modal-label">Mô tả chi tiết</span>
-          <div class="tck-modal-value--mono">
-            {{ activeTck.description || 'Không có mô tả chi tiết từ sự cố.' }}
-          </div>
+          <div class="tck-modal-value--mono">{{ activeTck.description || 'Không có mô tả chi tiết từ sự cố.' }}</div>
         </div>
 
         <!-- Info Grid -->
@@ -362,20 +389,41 @@
           <!-- Customer Profile -->
           <div class="tck-modal-row">
             <span class="tck-modal-label">Khách hàng bị ảnh hưởng</span>
-            @let customerEmail = activeTck.createdByEmail;
-            @let customerProfile = customerEmail ? userProfiles()[customerEmail] : null;
-            <div class="tck-profile-card">
-              @if (customerProfile?.imageUrl; as imgUrl) {
-                <img [src]="imgUrl" alt="Avatar" class="tck-profile-avatar-img" />
+            <div class="flex flex-col gap-2 mt-1">
+              @if (activeTck.affectedUserEmails && activeTck.affectedUserEmails.length > 0) {
+                @for (email of activeTck.affectedUserEmails; track email) {
+                  @let profile = userProfiles()[email];
+                  <div class="tck-profile-card">
+                    @if (profile?.imageUrl; as imgUrl) {
+                      <img [src]="imgUrl" alt="Avatar" class="tck-profile-avatar-img" />
+                    } @else {
+                      <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(email)">
+                        {{ getInitials(profile?.displayName || email.split('@')[0]) }}
+                      </div>
+                    }
+                    <div class="tck-profile-info">
+                      <span class="tck-profile-name">{{ profile?.displayName || email.split('@')[0] }}</span>
+                      <span class="tck-profile-email">{{ email }}</span>
+                    </div>
+                  </div>
+                }
               } @else {
-                <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(customerEmail || activeTck.customerName)">
-                  {{ getInitials(customerProfile?.displayName || activeTck.customerName) }}
+                @let customerEmail = activeTck.createdByEmail;
+                @let customerProfile = customerEmail ? userProfiles()[customerEmail] : null;
+                <div class="tck-profile-card">
+                  @if (customerProfile?.imageUrl; as imgUrl) {
+                    <img [src]="imgUrl" alt="Avatar" class="tck-profile-avatar-img" />
+                  } @else {
+                    <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(customerEmail || activeTck.customerName)">
+                      {{ getInitials(customerProfile?.displayName || activeTck.customerName) }}
+                    </div>
+                  }
+                  <div class="tck-profile-info">
+                    <span class="tck-profile-name">{{ customerProfile?.displayName || activeTck.customerName }}</span>
+                    <span class="tck-profile-email">{{ customerEmail || 'N/A' }}</span>
+                  </div>
                 </div>
               }
-              <div class="tck-profile-info">
-                <span class="tck-profile-name">{{ customerProfile?.displayName || activeTck.customerName }}</span>
-                <span class="tck-profile-email">{{ customerEmail || 'N/A' }}</span>
-              </div>
             </div>
           </div>
 

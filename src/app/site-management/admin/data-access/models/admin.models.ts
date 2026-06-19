@@ -55,11 +55,17 @@ export interface SystemIncident {
   occurredAt?: Date;
   createdAt?: Date;
   userEmail?: string;
+  affectedUserEmails?: string[];
   assigneeName?: string;
   assigneeEmail?: string;
   assigneeImageUrl?: string | null;
   aiAnalysis?: AiAnalysis;
   ticketCode?: string;
+  occurrences?: {
+    traceId: string;
+    occurredAt: Date;
+    userEmail: string | null;
+  }[];
 }
 
 export enum TicketPriority {
@@ -104,6 +110,7 @@ export interface SupportTicket {
   createdByName?: string;
   assigneeName?: string;
   assigneeEmail?: string;
+  affectedUserEmails?: string[];
 }
 
 

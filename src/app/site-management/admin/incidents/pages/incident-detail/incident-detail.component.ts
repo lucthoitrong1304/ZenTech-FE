@@ -9,7 +9,6 @@ import {
   LucideFileText,
   LucideAlertCircle,
   LucidePlusCircle,
-  LucideUser,
   LucideX,
   LucideGlobe,
   LucideTerminal,
@@ -98,7 +97,6 @@ interface BrowserInfo {
     LucideFileText,
     LucideAlertCircle,
     LucidePlusCircle,
-    LucideUser,
     LucideX,
     LucideGlobe,
     LucideTerminal,
@@ -139,7 +137,10 @@ export class IncidentDetailComponent implements OnInit {
   // Profiles & Staff list
   protected readonly assigneeProfile = signal<any | null>(null);
   protected readonly affectedUserProfile = signal<any | null>(null);
+  protected readonly affectedUserProfiles = signal<any[]>([]);
   protected readonly staffAccounts = signal<AccountSummary[]>([]);
+  protected readonly selectedTraceId = signal<string | null>(null);
+  protected readonly selectedTimelineUserEmail = signal<string | null>(null);
 
   protected readonly assigneeFilterOptions = computed(() => {
     const options = new Map<string, any>();
@@ -186,6 +187,12 @@ export class IncidentDetailComponent implements OnInit {
   protected ticketTitle = '';
   protected ticketDesc = '';
   protected ticketPriority = TicketPriority.MEDIUM;
+  protected readonly ticketPriorityOptions = [
+    { value: TicketPriority.LOW, label: 'LOW (Thấp)' },
+    { value: TicketPriority.MEDIUM, label: 'MEDIUM (Trung bình)' },
+    { value: TicketPriority.HIGH, label: 'HIGH (Cao)' },
+    { value: TicketPriority.CRITICAL, label: 'CRITICAL (Nghiêm trọng)' }
+  ];
 
   ngOnInit(): void {
     this.loadIncidentDetails();
@@ -213,15 +220,31 @@ export class IncidentDetailComponent implements OnInit {
         this.incident.set(mappedInc);
         this.isLoading.set(false);
 
-        // 1. Tải logs liên quan từ Loki bằng traceId
-        if (mappedInc.traceId) {
-          this.store.loadLogs({ level: 'ALL', search: '', traceId: mappedInc.traceId });
+        const occurrencesList = mappedInc.occurrences || [];
+        const traceIdToSelect = occurrencesList.length > 0 ? occurrencesList[0].traceId : (mappedInc.traceId || null);
+        this.selectedTraceId.set(traceIdToSelect);
+
+        const affectedEmailsList = mappedInc.affectedUserEmails || [];
+        const emailToSelect = affectedEmailsList.length > 0 ? affectedEmailsList[0] : (mappedInc.userEmail || null);
+        this.selectedTimelineUserEmail.set(emailToSelect);
+
+        // 1. Tải logs liên quan từ Loki bằng traceId đang chọn
+        if (traceIdToSelect) {
+          this.store.loadLogs({ level: 'ALL', search: '', traceId: traceIdToSelect });
         }
 
-        // 2. Tải activity logs của user liên quan
-        if (mappedInc.userEmail) {
-          this.loadUserActivities(mappedInc.userEmail);
-          this.loadProfile(mappedInc.userEmail, false);
+        // 2. Tải activity logs của user đang chọn
+        if (emailToSelect) {
+          this.loadUserActivities(emailToSelect);
+        }
+
+        // Tải danh sách khách hàng bị ảnh hưởng
+        if (mappedInc.affectedUserEmails && mappedInc.affectedUserEmails.length > 0) {
+          this.loadAffectedUserProfiles(mappedInc.affectedUserEmails);
+        } else if (mappedInc.userEmail) {
+          this.loadAffectedUserProfiles([mappedInc.userEmail]);
+        } else {
+          this.affectedUserProfiles.set([]);
         }
 
         // 3. Tải profile của assignee
@@ -239,6 +262,39 @@ export class IncidentDetailComponent implements OnInit {
     });
   }
 
+  protected selectTraceId(traceId: string): void {
+    this.selectedTraceId.set(traceId);
+    this.store.loadLogs({ level: 'ALL', search: '', traceId: traceId });
+
+    // Đồng bộ: Tìm phiên lỗi có traceId này để tự động chọn và tải timeline của khách hàng tương ứng
+    const inc = this.incident();
+    if (inc && inc.occurrences) {
+      const occ = inc.occurrences.find((o: any) => o.traceId === traceId);
+      if (occ && occ.userEmail) {
+        this.selectedTimelineUserEmail.set(occ.userEmail);
+        this.loadUserActivities(occ.userEmail);
+      } else {
+        this.selectedTimelineUserEmail.set(null);
+        this.userActivityLogs.set([]);
+      }
+    }
+  }
+
+  protected selectTimelineUser(email: string): void {
+    this.selectedTimelineUserEmail.set(email);
+    this.loadUserActivities(email);
+
+    // Đồng bộ: Tìm phiên lỗi mới nhất của khách hàng này để chọn trong dropdown và tải logs Loki tương ứng
+    const inc = this.incident();
+    if (inc && inc.occurrences) {
+      const occ = inc.occurrences.find((o: any) => o.userEmail === email);
+      if (occ && occ.traceId) {
+        this.selectedTraceId.set(occ.traceId);
+        this.store.loadLogs({ level: 'ALL', search: '', traceId: occ.traceId });
+      }
+    }
+  }
+
   private loadUserActivities(email: string): void {
     this.isLoadingActivity.set(true);
     this.adminLogsService.getActivityLogs(0, 15, email).subscribe({
@@ -254,6 +310,61 @@ export class IncidentDetailComponent implements OnInit {
         console.error(err);
         this.isLoadingActivity.set(false);
       }
+    });
+  }
+
+  private loadAffectedUserProfiles(emails: string[]): void {
+    if (!emails || emails.length === 0) {
+      this.affectedUserProfiles.set([]);
+      return;
+    }
+    const profiles: any[] = [];
+    let completed = 0;
+
+    emails.forEach(email => {
+      this.accountService.getAccounts({
+        page: 0,
+        size: 1,
+        sortField: AccountSortField.CreatedAt,
+        sortDirection: SortDirection.Desc,
+        keyword: email,
+        role: null,
+        active: null
+      }).subscribe({
+        next: (res) => {
+          if (res.data && res.data.content && res.data.content.length > 0) {
+            const account = res.data.content[0];
+            profiles.push({
+              displayName: account.displayName || account.email,
+              email: account.email,
+              imageUrl: account.imageUrl || null
+            });
+          } else {
+            profiles.push({
+              displayName: email.includes('@') ? email.split('@')[0] : email,
+              email: email,
+              imageUrl: null
+            });
+          }
+          completed++;
+          if (completed === emails.length) {
+            profiles.sort((a, b) => a.email.localeCompare(b.email));
+            this.affectedUserProfiles.set(profiles);
+          }
+        },
+        error: () => {
+          profiles.push({
+            displayName: email.includes('@') ? email.split('@')[0] : email,
+            email: email,
+            imageUrl: null
+          });
+          completed++;
+          if (completed === emails.length) {
+            profiles.sort((a, b) => a.email.localeCompare(b.email));
+            this.affectedUserProfiles.set(profiles);
+          }
+        }
+      });
     });
   }
 
