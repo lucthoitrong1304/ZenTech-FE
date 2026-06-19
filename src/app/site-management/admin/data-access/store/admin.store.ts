@@ -593,7 +593,8 @@ export const AdminStore = signalStore(
                   createdByName: tck.createdByName,
                   assigneeName: tck.assigneeName,
                   assigneeEmail: tck.assigneeEmail,
-                  affectedUserEmails: tck.affectedUserEmails
+                  affectedUserEmails: tck.affectedUserEmails,
+                  images: tck.images
                 }));
                 patchState(store, {
                   tickets: mappedTickets,
@@ -1205,7 +1206,7 @@ export const AdminStore = signalStore(
         });
       },
 
-      createTicketFromIncident(payload: { title: string; description: string; priority: string; status: TicketStatus; incidentId: string }, onSuccess: () => void) {
+      createTicketFromIncident(payload: { title: string; description: string; priority: string; status: TicketStatus; incidentId: string; assigneeId?: string; images?: string }, onSuccess: () => void) {
         adminTicketsService.createTicket(payload).subscribe({
           next: () => {
             logActivity(`Tạo Ticket cho sự cố`, payload.incidentId);

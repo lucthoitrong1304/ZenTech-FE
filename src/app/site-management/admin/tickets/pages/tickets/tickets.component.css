@@ -369,6 +369,37 @@
   @apply font-mono bg-gray-50 px-2 py-0.5 rounded border border-gray-200 text-xs text-gray-600 w-fit;
 }
 
+/* Rich-text rendered description from p-editor */
+.tck-modal-description {
+  @apply text-xs text-gray-800 leading-relaxed bg-[#F9FAFB] p-3.5 rounded-xl border border-gray-200 overflow-x-auto;
+}
+
+.tck-modal-description p {
+  @apply mb-2 last:mb-0;
+}
+
+.tck-modal-description strong,
+.tck-modal-description b {
+  @apply font-semibold text-gray-900;
+}
+
+.tck-modal-description em,
+.tck-modal-description i {
+  @apply italic;
+}
+
+.tck-modal-description ul {
+  @apply list-disc pl-5 mb-2 space-y-0.5;
+}
+
+.tck-modal-description ol {
+  @apply list-decimal pl-5 mb-2 space-y-0.5;
+}
+
+.tck-modal-description li {
+  @apply text-xs text-gray-700;
+}
+
 .tck-modal-operator-card {
   @apply flex items-center justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3;
 }
@@ -381,13 +412,54 @@
   @apply px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition font-semibold text-gray-800 cursor-pointer h-9 w-full sm:w-48;
 }
 
-/* User profile card in modal */
-.tck-profile-card {
-  @apply flex items-center gap-3 p-2.5 bg-[#F9FAFB] rounded-xl border border-gray-200 mt-1;
+/* User profile — Ranked Impact View */
+.tck-affected-header {
+  @apply flex items-center gap-2 mb-1.5;
 }
 
-.tck-profile-card--unassigned {
-  @apply bg-gray-50/50 border-dashed;
+.tck-affected-count-chip {
+  @apply text-[11px] font-bold bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-full border border-gray-200;
+}
+
+.tck-affected-rank-list {
+  @apply flex flex-col gap-2 overflow-y-auto pr-1;
+  max-height: 220px;
+}
+
+.tck-affected-rank-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.tck-affected-rank-list::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.tck-affected-rank-list::-webkit-scrollbar-thumb {
+  @apply bg-gray-200 rounded-full;
+}
+
+/* Base rank card */
+.tck-rank-card {
+  @apply flex items-center gap-2.5 bg-white px-3 py-2.5 rounded-xl border border-[#E5E7EB] w-full transition-all duration-200;
+}
+
+/* First affected */
+.tck-rank-card.tck-rank-card--first {
+  @apply border-[#E11D48] bg-rose-50/40;
+}
+
+/* Rank badge */
+.tck-rank-badge {
+  @apply w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0 bg-gray-200 text-gray-500;
+}
+
+.tck-rank-badge.tck-rank-badge--first {
+  @apply bg-[#E11D48] text-white;
+}
+
+/* Avatar */
+.tck-profile-card {
+  @apply flex items-center gap-3 p-2.5 bg-[#F9FAFB] rounded-xl border border-gray-200 mt-1;
 }
 
 .tck-profile-avatar-img {
@@ -402,16 +474,25 @@
   @apply bg-gray-100 border border-gray-200;
 }
 
+/* Info */
 .tck-profile-info {
   @apply flex flex-col min-w-0 leading-tight;
+}
+
+.tck-profile-name-row {
+  @apply flex items-center gap-1.5 min-w-0;
 }
 
 .tck-profile-name {
   @apply text-xs font-bold text-gray-800 truncate;
 }
 
+.tck-first-hit-chip {
+  @apply text-[9px] font-black tracking-wider uppercase bg-[#E11D48] text-white px-1.5 py-0.5 rounded-full shrink-0;
+}
+
 .tck-profile-email {
-  @apply text-[10px] text-gray-400 font-semibold truncate;
+  @apply text-xs text-gray-400 font-medium truncate;
 }
 
 .tck-linked-incident-link {
@@ -496,4 +577,31 @@
 
 .tck-badge-affected {
   @apply text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-100 whitespace-nowrap inline-flex items-center;
+}
+
+/* Incident/Ticket images gallery */
+.incident-image-item {
+  @apply relative w-16 h-16 rounded-xl overflow-hidden border border-[#E5E7EB] cursor-pointer shadow-xs hover:border-[#4F46E5] hover:shadow-md transition duration-200;
+}
+
+.incident-image-item img {
+  @apply w-full h-full object-cover;
+}
+
+.image-overlay {
+  @apply absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center transition duration-150;
+}
+
+/* Lightbox Image Preview overlay */
+.lightbox-content {
+  @apply relative max-w-[85vw] max-h-[85vh] flex items-center justify-center;
+  animation: tckModalZoomIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.lightbox-img {
+  @apply max-w-full max-h-[80vh] rounded-xl object-contain shadow-2xl border-4 border-white;
+}
+
+.lightbox-close-btn {
+  @apply absolute -top-10 right-0 w-8 h-8 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center border-none outline-none cursor-pointer transition;
 }

@@ -66,6 +66,7 @@ export interface SystemIncident {
     occurredAt: Date;
     userEmail: string | null;
   }[];
+  images?: string;
 }
 
 export enum TicketPriority {
@@ -111,6 +112,7 @@ export interface SupportTicket {
   assigneeName?: string;
   assigneeEmail?: string;
   affectedUserEmails?: string[];
+  images?: string;
 }
 
 

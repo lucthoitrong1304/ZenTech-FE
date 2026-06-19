@@ -14,15 +14,21 @@ import {
   LucideTerminal,
   LucideBot,
   LucideCopy,
-  LucideSparkles
+  LucideSparkles,
+  LucideUpload,
+  LucideUser,
+  LucideEye
 } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
+import { EditorModule } from 'primeng/editor';
 import { AdminStore } from '../../../data-access/store/admin.store';
 import { AdminIncidentsService } from '../../data-access/services/admin-incidents.service';
 import { AdminLogsService } from '../../../data-access/services/admin-logs.service';
 import { AccountService } from '../../../accounts/data-access/services/account.service';
 import { AccountSortField, SortDirection, AccountSummary, AdminAccountRole } from '../../../accounts/data-access/models/account.model';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { AdminProfileService } from '../../../data-access/services/admin-profile.service';
+import { AdminUploadPresignResponseDto } from '../../../data-access/models/admin-profile.model';
 import {
   IncidentStatus,
   IncidentSeverity,
@@ -103,7 +109,11 @@ interface BrowserInfo {
     LucideBot,
     LucideCopy,
     LucideSparkles,
-    SelectModule
+    LucideUpload,
+    LucideUser,
+    LucideEye,
+    SelectModule,
+    EditorModule
   ],
   templateUrl: './incident-detail.component.html',
   styleUrl: './incident-detail.component.css'
@@ -115,6 +125,7 @@ export class IncidentDetailComponent implements OnInit {
   private readonly adminLogsService = inject(AdminLogsService);
   private readonly accountService = inject(AccountService);
   private readonly toastService = inject(ToastService);
+  private readonly adminProfileService = inject(AdminProfileService);
   
   protected readonly store = inject(AdminStore);
   protected readonly IncidentStatus = IncidentStatus;
@@ -187,6 +198,11 @@ export class IncidentDetailComponent implements OnInit {
   protected ticketTitle = '';
   protected ticketDesc = '';
   protected ticketPriority = TicketPriority.MEDIUM;
+  protected readonly ticketAssigneeEmail = signal<string>('UNASSIGNED');
+  protected readonly uploadedImages = signal<Array<{ fileKey: string; previewUrl: string }>>([]);
+  protected readonly isImageUploading = signal(false);
+  protected readonly selectedLightboxImage = signal<string | null>(null);
+
   protected readonly ticketPriorityOptions = [
     { value: TicketPriority.LOW, label: 'LOW (Thấp)' },
     { value: TicketPriority.MEDIUM, label: 'MEDIUM (Trung bình)' },
@@ -318,7 +334,13 @@ export class IncidentDetailComponent implements OnInit {
       this.affectedUserProfiles.set([]);
       return;
     }
-    const profiles: any[] = [];
+    // Use a map to track profiles by email, preserving original order
+    const profileMap = new Map<string, { displayName: string; email: string; imageUrl: string | null }>();
+    emails.forEach(email => profileMap.set(email, {
+      displayName: email.includes('@') ? email.split('@')[0] : email,
+      email,
+      imageUrl: null
+    }));
     let completed = 0;
 
     emails.forEach(email => {
@@ -334,34 +356,22 @@ export class IncidentDetailComponent implements OnInit {
         next: (res) => {
           if (res.data && res.data.content && res.data.content.length > 0) {
             const account = res.data.content[0];
-            profiles.push({
+            profileMap.set(email, {
               displayName: account.displayName || account.email,
               email: account.email,
               imageUrl: account.imageUrl || null
             });
-          } else {
-            profiles.push({
-              displayName: email.includes('@') ? email.split('@')[0] : email,
-              email: email,
-              imageUrl: null
-            });
           }
           completed++;
           if (completed === emails.length) {
-            profiles.sort((a, b) => a.email.localeCompare(b.email));
-            this.affectedUserProfiles.set(profiles);
+            // Preserve original order from emails array (first affected = first in list)
+            this.affectedUserProfiles.set(emails.map(e => profileMap.get(e)!).filter(Boolean));
           }
         },
         error: () => {
-          profiles.push({
-            displayName: email.includes('@') ? email.split('@')[0] : email,
-            email: email,
-            imageUrl: null
-          });
           completed++;
           if (completed === emails.length) {
-            profiles.sort((a, b) => a.email.localeCompare(b.email));
-            this.affectedUserProfiles.set(profiles);
+            this.affectedUserProfiles.set(emails.map(e => profileMap.get(e)!).filter(Boolean));
           }
         }
       });
@@ -418,6 +428,13 @@ export class IncidentDetailComponent implements OnInit {
         }
       }
     });
+  }
+
+  protected getOccurrenceTimeForEmail(email: string): Date | null {
+    const inc = this.incident();
+    if (!inc || !inc.occurrences) return null;
+    const occ = inc.occurrences.find((o: { traceId: string; occurredAt: Date; userEmail: string | null }) => o.userEmail === email);
+    return occ ? new Date(occ.occurredAt) : null;
   }
 
   protected getInitials(name: string): string {
@@ -575,16 +592,24 @@ export class IncidentDetailComponent implements OnInit {
 
     if (!this.ticketTitle.trim()) return;
 
+    const staff = this.staffAccounts().find((s: any) => s.email === this.ticketAssigneeEmail());
+    const assigneeId = staff ? staff.id : undefined;
+    const images = this.uploadedImages().map(img => img.fileKey).join(',');
+
     const payload = {
       title: this.ticketTitle,
       description: this.ticketDesc,
       priority: this.ticketPriority,
       status: TicketStatus.OPEN,
-      incidentId: inc.id
+      incidentId: inc.id,
+      assigneeId: assigneeId || undefined,
+      images: images || undefined
     };
 
     this.store.createTicketFromIncident(payload, () => {
       this.showTicketForm.set(false);
+      this.uploadedImages.set([]);
+      this.ticketAssigneeEmail.set('UNASSIGNED');
       // Reload để cập nhật mã ticket liên kết
       this.loadIncidentDetails();
     });
@@ -596,7 +621,92 @@ export class IncidentDetailComponent implements OnInit {
 
     this.ticketTitle = `Sửa lỗi sự cố ${inc.code}: ${inc.errorMessage || 'Lỗi hệ thống'}`;
     this.ticketDesc = `Sự cố phát sinh tại API: ${inc.httpMethod} ${inc.apiPath}\nTrạng thái lỗi: ${inc.statusCode}\nThông điệp: ${inc.errorMessage}\n\nVui lòng kiểm tra nguyên nhân gốc và khắc phục.`;
+    this.ticketAssigneeEmail.set('UNASSIGNED');
+    this.uploadedImages.set([]);
     this.showTicketForm.set(!this.showTicketForm());
+  }
+
+  protected onPasteImage(event: ClipboardEvent): void {
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.indexOf('image') !== -1) {
+        const file = item.getAsFile();
+        if (file) {
+          this.uploadImageFile(file);
+        }
+      }
+    }
+  }
+
+  protected onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      for (let i = 0; i < input.files.length; i++) {
+        this.uploadImageFile(input.files[i]);
+      }
+    }
+  }
+
+  protected onDrop(event: DragEvent): void {
+    event.preventDefault();
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      for (let i = 0; i < event.dataTransfer.files.length; i++) {
+        const file = event.dataTransfer.files[i];
+        if (file.type.startsWith('image/')) {
+          this.uploadImageFile(file);
+        }
+      }
+    }
+  }
+
+  protected onDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  private uploadImageFile(file: File): void {
+    this.isImageUploading.set(true);
+    this.adminProfileService.requestTicketAttachmentUploadPresign(file).subscribe({
+      next: (presign: AdminUploadPresignResponseDto) => {
+        this.adminProfileService.uploadToR2(presign, file).subscribe({
+          next: () => {
+            const previewUrl = URL.createObjectURL(file);
+            this.uploadedImages.update(list => [...list, { fileKey: presign.fileKey, previewUrl }]);
+            this.isImageUploading.set(false);
+            this.toastService.success('Đã tải lên hình ảnh đính kèm');
+          },
+          error: (err: unknown) => {
+            console.error('Failed to upload file to R2', err);
+            this.isImageUploading.set(false);
+            this.toastService.error('Tải hình ảnh lên máy chủ lưu trữ thất bại');
+          }
+        });
+      },
+      error: (err: unknown) => {
+        console.error('Failed to request presigned upload URL', err);
+        this.isImageUploading.set(false);
+        this.toastService.error('Yêu cầu cổng tải ảnh thất bại');
+      }
+    });
+  }
+
+  protected removeUploadedImage(fileKey: string): void {
+    this.uploadedImages.update(list => list.filter(img => img.fileKey !== fileKey));
+  }
+
+  protected openLightbox(url: string): void {
+    this.selectedLightboxImage.set(url);
+  }
+
+  protected closeLightbox(): void {
+    this.selectedLightboxImage.set(null);
+  }
+
+  protected getImagesList(imagesStr: string | undefined): string[] {
+    if (!imagesStr) return [];
+    return imagesStr.split(',').map(img => img.trim()).filter(img => !!img);
   }
 
   // System Log detail view handlers

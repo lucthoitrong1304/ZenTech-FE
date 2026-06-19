@@ -388,45 +388,103 @@
   @apply px-5 py-2 bg-[#FFC700] hover:bg-[#FFD633] text-[#111827] rounded-full text-xs font-semibold transition cursor-pointer outline-none border-none;
 }
 
-/* Affected User & Assignee Avatar CSS */
+/* ── Affected User — Ranked Impact View ─────────────────── */
 .affected-user-section {
-  @apply flex flex-col gap-1.5 mt-4 pt-4 border-t border-[#E5E7EB];
+  @apply flex flex-col gap-2 mt-4 pt-4 border-t border-[#E5E7EB];
+}
+
+.affected-header {
+  @apply flex items-center gap-2;
 }
 
 .affected-label {
-  @apply text-[9px] font-bold text-gray-400 tracking-wider uppercase;
+  @apply text-[11px] font-bold text-gray-400 tracking-wider uppercase;
 }
 
-.affected-user-grid {
-  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 mt-2;
+.affected-count-chip {
+  @apply text-[11px] font-bold bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-full border border-gray-200;
 }
 
-.affected-profile-card {
-  @apply flex items-center gap-3 bg-white p-3 rounded-xl border border-[#E5E7EB] shadow-xs w-full cursor-pointer hover:bg-gray-50 hover:border-[#4F46E5] transition-all duration-200;
+/* Scrollable horizontal rank list */
+.affected-rank-list {
+  @apply flex gap-2.5 overflow-x-auto pb-1;
+  scrollbar-width: none;
 }
 
-.affected-profile-card.affected-profile-card--selected {
-  @apply border-[#4F46E5] bg-indigo-50/20 ring-1 ring-[#4F46E5];
+.affected-rank-list::-webkit-scrollbar {
+  display: none;
 }
 
+/* Base rank card */
+.affected-rank-card {
+  @apply flex items-center gap-2.5 bg-white px-3 py-2.5 rounded-xl border border-[#E5E7EB] cursor-pointer transition-all duration-200 shrink-0;
+  min-width: 220px;
+  max-width: 260px;
+}
+
+.affected-rank-card:hover {
+  @apply border-[#4F46E5] shadow-sm;
+}
+
+/* First affected — highlighted */
+.affected-rank-card.affected-rank-card--first {
+  @apply border-[#E11D48] bg-rose-50/40;
+}
+
+.affected-rank-card.affected-rank-card--first:hover {
+  @apply border-[#E11D48] shadow-sm shadow-rose-100;
+}
+
+/* Selected state */
+.affected-rank-card.affected-rank-card--selected {
+  @apply ring-1 ring-[#4F46E5] border-[#4F46E5] bg-indigo-50/30;
+}
+
+.affected-rank-card.affected-rank-card--first.affected-rank-card--selected {
+  @apply ring-1 ring-[#E11D48] border-[#E11D48] bg-rose-50/50;
+}
+
+/* Rank badge */
+.rank-badge {
+  @apply w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0 bg-gray-200 text-gray-500;
+}
+
+.rank-badge.rank-badge--first {
+  @apply bg-[#E11D48] text-white;
+}
+
+/* Avatar */
 .profile-avatar-img {
-  @apply w-8 h-8 rounded-full object-cover border border-[#E5E7EB];
+  @apply w-8 h-8 rounded-full object-cover border border-[#E5E7EB] shrink-0;
 }
 
 .profile-avatar-letter {
-  @apply w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-xs;
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-xs shrink-0;
 }
 
+/* Info block */
 .profile-info {
   @apply flex flex-col min-w-0;
+}
+
+.profile-name-row {
+  @apply flex items-center gap-1.5 min-w-0;
 }
 
 .profile-name {
   @apply text-xs font-bold text-gray-900 truncate;
 }
 
+.first-hit-chip {
+  @apply text-[9px] font-black tracking-wider uppercase bg-[#E11D48] text-white px-1.5 py-0.5 rounded-full shrink-0;
+}
+
 .profile-email {
-  @apply text-[10px] text-gray-500 font-semibold truncate;
+  @apply text-xs text-gray-500 font-medium truncate;
+}
+
+.profile-occ-time {
+  @apply text-[10px] text-gray-400 font-mono truncate mt-0.5;
 }
 
 /* Custom styles for PrimeNG assignee select in incident-detail page */
@@ -1044,5 +1102,115 @@
 
 .operator-email {
   @apply text-[10px] text-gray-400 font-medium;
+}
+
+/* Custom styles for ticket-form-select and priority dots */
+:host ::ng-deep .ticket-form-select {
+  @apply w-full rounded-xl transition focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] flex items-center bg-[#F9FAFB] cursor-pointer;
+  height: 38px !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .ticket-form-select .p-select-label {
+  @apply text-xs font-semibold text-gray-700 pl-3 pr-8 py-0 flex items-center;
+  height: 100% !important;
+}
+
+:host ::ng-deep .ticket-form-select .p-select-dropdown {
+  @apply pr-3;
+}
+
+.priority-dot {
+  @apply w-2 h-2 rounded-full inline-block flex-shrink-0;
+}
+
+.priority-dot--low {
+  @apply bg-blue-500;
+}
+
+.priority-dot--medium {
+  @apply bg-yellow-500;
+}
+
+.priority-dot--high {
+  @apply bg-orange-500;
+}
+
+.priority-dot--critical {
+  @apply bg-rose-600;
+}
+
+/* Attachment dropzone styles */
+.attachment-dropzone {
+  @apply border-2 border-dashed border-gray-200 hover:border-[#4F46E5] bg-gray-50/50 hover:bg-white rounded-xl p-6 flex flex-col items-center justify-center gap-1.5 cursor-pointer transition duration-200;
+}
+
+.dropzone-text {
+  @apply text-xs text-gray-500 font-medium;
+}
+
+.dropzone-subtext {
+  @apply text-[10px] text-gray-400 font-medium;
+}
+
+/* Attachment preview grid */
+.attachment-preview-grid {
+  @apply grid grid-cols-4 sm:grid-cols-6 gap-3 mt-3;
+}
+
+.preview-item {
+  @apply relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-xs bg-gray-50 flex items-center justify-center;
+}
+
+.preview-item--loading {
+  @apply border-dashed border-gray-300;
+}
+
+.preview-img {
+  @apply w-full h-full object-cover;
+}
+
+.preview-remove-btn {
+  @apply absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center cursor-pointer border-none outline-none transition;
+}
+
+.loader-spinner {
+  @apply w-4 h-4 border-2 border-gray-300 border-t-[#4F46E5] rounded-full animate-spin;
+}
+
+/* Incident images gallery */
+.incident-images-section {
+  @apply flex flex-col gap-2 mt-4 pt-4 border-t border-[#E5E7EB];
+}
+
+.incident-images-grid {
+  @apply flex flex-wrap gap-2.5 mt-1;
+}
+
+.incident-image-item {
+  @apply relative w-16 h-16 rounded-xl overflow-hidden border border-[#E5E7EB] cursor-pointer shadow-xs hover:border-[#4F46E5] hover:shadow-md transition duration-200;
+}
+
+.incident-image-item img {
+  @apply w-full h-full object-cover;
+}
+
+.image-overlay {
+  @apply absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center transition duration-150;
+}
+
+/* Lightbox Image Preview overlay */
+.lightbox-content {
+  @apply relative max-w-[85vw] max-h-[85vh] flex items-center justify-center;
+  animation: modalZoomIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.lightbox-img {
+  @apply max-w-full max-h-[80vh] rounded-xl object-contain shadow-2xl border-4 border-white;
+}
+
+.lightbox-close-btn {
+  @apply absolute -top-10 right-0 w-8 h-8 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center border-none outline-none cursor-pointer transition;
 }
 

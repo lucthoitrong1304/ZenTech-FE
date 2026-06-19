@@ -316,7 +316,7 @@
 @if (selectedTicketId() && getSelectedTicket(); as activeTck) {
   <div class="tck-modal-backdrop" (click)="closeDetails()">
     <div class="tck-modal-content" (click)="$event.stopPropagation()">
-      
+
       <!-- Modal Header -->
       <div class="tck-modal-header">
         <div class="tck-modal-heading">
@@ -330,7 +330,7 @@
 
       <!-- Modal Body -->
       <div class="tck-modal-body">
-        
+
         <!-- Status Select row -->
         <div class="tck-modal-operator-card">
           <div class="tck-modal-row">
@@ -355,7 +355,11 @@
         <!-- Description Section -->
         <div class="tck-modal-row">
           <span class="tck-modal-label">Mô tả chi tiết</span>
-          <div class="tck-modal-value--mono">{{ activeTck.description || 'Không có mô tả chi tiết từ sự cố.' }}</div>
+          @if (activeTck.description) {
+            <div class="tck-modal-description" [innerHTML]="activeTck.description"></div>
+          } @else {
+            <div class="tck-modal-value--mono">Không có mô tả chi tiết từ sự cố.</div>
+          }
         </div>
 
         <!-- Info Grid -->
@@ -386,14 +390,23 @@
 
         <!-- Profiles section -->
         <div class="tck-modal-info-grid">
-          <!-- Customer Profile -->
+          <!-- Customer Profile — Ranked Impact View -->
           <div class="tck-modal-row">
-            <span class="tck-modal-label">Khách hàng bị ảnh hưởng</span>
-            <div class="flex flex-col gap-2 mt-1">
+            <div class="tck-affected-header">
+              <span class="tck-modal-label">Khách hàng bị ảnh hưởng</span>
               @if (activeTck.affectedUserEmails && activeTck.affectedUserEmails.length > 0) {
-                @for (email of activeTck.affectedUserEmails; track email) {
+                <span class="tck-affected-count-chip">{{ activeTck.affectedUserEmails.length }} người</span>
+              }
+            </div>
+
+            <div class="tck-affected-rank-list">
+              @if (activeTck.affectedUserEmails && activeTck.affectedUserEmails.length > 0) {
+                @for (email of activeTck.affectedUserEmails; track email; let i = $index) {
                   @let profile = userProfiles()[email];
-                  <div class="tck-profile-card">
+                  <div class="tck-rank-card" [class.tck-rank-card--first]="i === 0">
+                    <!-- Rank badge -->
+                    <div class="tck-rank-badge" [class.tck-rank-badge--first]="i === 0">{{ i + 1 }}</div>
+                    <!-- Avatar -->
                     @if (profile?.imageUrl; as imgUrl) {
                       <img [src]="imgUrl" alt="Avatar" class="tck-profile-avatar-img" />
                     } @else {
@@ -401,8 +414,14 @@
                         {{ getInitials(profile?.displayName || email.split('@')[0]) }}
                       </div>
                     }
+                    <!-- Info -->
                     <div class="tck-profile-info">
-                      <span class="tck-profile-name">{{ profile?.displayName || email.split('@')[0] }}</span>
+                      <div class="tck-profile-name-row">
+                        <span class="tck-profile-name">{{ profile?.displayName || email.split('@')[0] }}</span>
+                        @if (i === 0) {
+                          <span class="tck-first-hit-chip">FIRST HIT</span>
+                        }
+                      </div>
                       <span class="tck-profile-email">{{ email }}</span>
                     </div>
                   </div>
@@ -410,7 +429,8 @@
               } @else {
                 @let customerEmail = activeTck.createdByEmail;
                 @let customerProfile = customerEmail ? userProfiles()[customerEmail] : null;
-                <div class="tck-profile-card">
+                <div class="tck-rank-card tck-rank-card--first">
+                  <div class="tck-rank-badge tck-rank-badge--first">1</div>
                   @if (customerProfile?.imageUrl; as imgUrl) {
                     <img [src]="imgUrl" alt="Avatar" class="tck-profile-avatar-img" />
                   } @else {
@@ -419,7 +439,9 @@
                     </div>
                   }
                   <div class="tck-profile-info">
-                    <span class="tck-profile-name">{{ customerProfile?.displayName || activeTck.customerName }}</span>
+                    <div class="tck-profile-name-row">
+                      <span class="tck-profile-name">{{ customerProfile?.displayName || activeTck.customerName }}</span>
+                    </div>
                     <span class="tck-profile-email">{{ customerEmail || 'N/A' }}</span>
                   </div>
                 </div>
@@ -485,6 +507,26 @@
           </div>
         </div>
 
+        <!-- Attached Images Section -->
+        @if (activeTck.images; as imgStr) {
+          @let imgList = getImagesList(imgStr);
+          @if (imgList.length > 0) {
+            <div class="tck-modal-row">
+              <span class="tck-modal-label">Hình ảnh đính kèm</span>
+              <div class="flex flex-wrap gap-2.5 mt-1">
+                @for (url of imgList; track url) {
+                  <div class="incident-image-item" (click)="openLightbox(url)">
+                    <img [src]="url" alt="Đính kèm ticket" class="w-16 h-16 rounded-xl object-cover border border-gray-200" />
+                    <div class="image-overlay">
+                      <svg lucideEye class="w-4 h-4 text-white"></svg>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        }
+
         <!-- Linked Incident Section -->
         @if (activeTck.incidentCode) {
           <div class="tck-modal-row">
@@ -497,6 +539,18 @@
           </div>
         }
       </div>
+    </div>
+  </div>
+}
+
+<!-- Lightbox Image Preview Overlay -->
+@if (selectedLightboxImage()) {
+  <div class="tck-modal-backdrop" (click)="closeLightbox()">
+    <div class="lightbox-content" (click)="$event.stopPropagation()">
+      <button class="lightbox-close-btn" (click)="closeLightbox()" aria-label="Đóng">
+        <svg lucideX class="w-5 h-5 text-white"></svg>
+      </button>
+      <img [src]="selectedLightboxImage()" alt="Hình ảnh phóng to" class="lightbox-img" />
     </div>
   </div>
 }

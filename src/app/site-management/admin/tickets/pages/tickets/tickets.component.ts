@@ -8,7 +8,8 @@ import {
   LucideUser,
   LucideChevronLeft,
   LucideChevronRight,
-  LucideX
+  LucideX,
+  LucideEye
 } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
 import { AdminStore } from '../../../data-access/store/admin.store';
@@ -38,6 +39,7 @@ export enum TicketDateFilterOption {
     LucideChevronLeft,
     LucideChevronRight,
     LucideX,
+    LucideEye,
     SelectModule
   ],
   templateUrl: './tickets.component.html',
@@ -404,6 +406,21 @@ export class TicketsComponent implements OnInit {
     ];
     const index = Math.abs(hash) % gradients.length;
     return gradients[index];
+  }
+
+  protected readonly selectedLightboxImage = signal<string | null>(null);
+
+  protected openLightbox(url: string): void {
+    this.selectedLightboxImage.set(url);
+  }
+
+  protected closeLightbox(): void {
+    this.selectedLightboxImage.set(null);
+  }
+
+  protected getImagesList(imagesStr: string | undefined): string[] {
+    if (!imagesStr) return [];
+    return imagesStr.split(',').map(img => img.trim()).filter(img => !!img);
   }
 
   private loadStaffAccounts(): void {

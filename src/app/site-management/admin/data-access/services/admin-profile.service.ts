@@ -46,6 +46,20 @@ export class AdminProfileService {
     );
   }
 
+  requestTicketAttachmentUploadPresign(file: File): Observable<AdminUploadPresignResponseDto> {
+    const payload: AdminUploadPresignRequestDto = {
+      originalFilename: file.name,
+      contentType: file.type || 'application/octet-stream',
+      fileSize: file.size,
+      purpose: AdminUploadPurpose.TicketAttachment,
+    };
+
+    return this.apiService.post<AdminUploadPresignRequestDto, AdminUploadPresignResponseDto>(
+      this.uploadPresignUrl,
+      payload
+    );
+  }
+
   uploadToR2(presign: AdminUploadPresignResponseDto, file: File): Observable<string> {
     return this.apiService.putFile(presign.presignedUrl, file, {
       headers: new HttpHeaders(presign.requiredHeaders),
