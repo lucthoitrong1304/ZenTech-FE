@@ -2,7 +2,15 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../../core/api/api.service';
 import { environment } from '../../../../../environments/environment';
-import { SystemLog, ActivityLog, ActivityLogRecordPayload, PaginatedResult, ApiResponse } from '../models/admin.models';
+import {
+  SystemLog,
+  ActivityLog,
+  ActivityLogRecordPayload,
+  ActivityTimelineSummaryRequest,
+  ActivityTimelineSummaryResponse,
+  PaginatedResult,
+  ApiResponse
+} from '../models/admin.models';
 import { HttpContext } from '@angular/common/http';
 import { SKIP_AUTH_TOKEN, SKIP_CLIENT_LOG } from '../../../../core/tokens/api-context.token';
 
@@ -79,6 +87,15 @@ export class AdminLogsService {
 
   getActivityLogActions(): Observable<ApiResponse<string[]>> {
     return this.apiService.get<ApiResponse<string[]>>(`${this.activityLogsUrl}/actions`);
+  }
+
+  summarizeActivityTimeline(
+    payload: ActivityTimelineSummaryRequest
+  ): Observable<ApiResponse<ActivityTimelineSummaryResponse>> {
+    return this.apiService.post<ActivityTimelineSummaryRequest, ApiResponse<ActivityTimelineSummaryResponse>>(
+      `${this.activityLogsUrl}/timeline/summary`,
+      payload
+    );
   }
 
   recordActivityLog(payload: ActivityLogRecordPayload): Observable<ApiResponse<void>> {

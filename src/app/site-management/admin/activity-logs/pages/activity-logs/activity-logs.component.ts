@@ -1,12 +1,18 @@
-﻿import { Component, NgZone, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideChevronLeft, LucideChevronRight, LucideSearch, LucideX } from '@lucide/angular';
+import { LucideChevronLeft, LucideChevronRight, LucidePointer, LucideSearch, LucideX } from '@lucide/angular';
 import { Subscription } from 'rxjs';
 import { AdminStore } from '../../../data-access/store/admin.store';
 import { ActivityArea, ActivityLog, ActivitySeverity } from '../../../data-access/models/admin.models';
 import { AdminLogsService } from '../../../data-access/services/admin-logs.service';
 import { WebsocketService } from '../../../../../core/services/websocket.service';
+import { AccountService } from '../../../accounts/data-access/services/account.service';
+import {
+  AccountSortField,
+  AccountSummary,
+  SortDirection
+} from '../../../accounts/data-access/models/account.model';
 
 type ActivityFilter = 'ALL' | string;
 type ActivityViewMode = 'TABLE' | 'TIMELINE';
@@ -51,6 +57,7 @@ interface BrowserInfo {
     LucideSearch,
     LucideChevronLeft,
     LucideChevronRight,
+    LucidePointer,
     LucideX
   ],
   templateUrl: './activity-logs.component.html',
@@ -59,6 +66,7 @@ interface BrowserInfo {
 export class ActivityLogsComponent implements OnInit, OnDestroy {
   protected readonly store = inject(AdminStore);
   private readonly adminLogsService = inject(AdminLogsService);
+  private readonly accountService = inject(AccountService);
   private readonly wsService = inject(WebsocketService);
   private readonly ngZone = inject(NgZone);
   protected readonly viewMode = signal<ActivityViewMode>('TABLE');
@@ -81,6 +89,11 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
   protected readonly isReplayPlaying = signal(false);
   protected readonly replaySpeed = signal(1);
   protected readonly behaviorSummary = signal<string[]>([]);
+  protected readonly isGeneratingBehaviorSummary = signal(false);
+  protected readonly behaviorSummaryFallback = signal(false);
+  protected readonly timelineAccountOptions = signal<AccountSummary[]>([]);
+  protected readonly isLoadingTimelineAccounts = signal(false);
+  protected readonly isTimelineUserPickerOpen = signal(false);
 
   protected readonly areaOptions = Object.values(ActivityArea);
   protected readonly severityOptions = Object.values(ActivitySeverity);
@@ -141,6 +154,7 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
   });
 
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
+  private accountSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private replayTimer: ReturnType<typeof setInterval> | null = null;
   private wsSubscription: Subscription | null = null;
 
@@ -163,6 +177,9 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.searchTimer) {
       clearTimeout(this.searchTimer);
+    }
+    if (this.accountSearchTimer) {
+      clearTimeout(this.accountSearchTimer);
     }
     this.stopReplay();
     this.stopRealtimeActivityLogs();
@@ -291,25 +308,53 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
 
   protected switchView(mode: ActivityViewMode): void {
     this.viewMode.set(mode);
-    if (mode === 'TIMELINE' && this.timelineLogs().length === 0 && !this.timelineEmail().trim()) {
-      const firstLog = this.displayedActivityLogs()[0];
-      if (firstLog?.operatorEmail) {
-        this.timelineEmail.set(firstLog.operatorEmail);
-      }
-      this.loadTimeline();
+    if (mode === 'TIMELINE') {
+      this.loadTimelineAccounts();
     }
   }
 
   protected openTimelineForLog(log: ActivityLog, event?: Event): void {
     event?.stopPropagation();
     this.timelineEmail.set(log.operatorEmail || '');
+    this.isTimelineUserPickerOpen.set(false);
     this.timelinePage.set(0);
     this.viewMode.set('TIMELINE');
+    this.loadTimelineAccounts(log.operatorEmail || '');
     this.loadTimeline();
   }
 
   protected handleTimelineEmailInput(event: Event): void {
-    this.timelineEmail.set((event.target as HTMLInputElement).value);
+    const value = (event.target as HTMLInputElement).value;
+    this.timelineEmail.set(value);
+    this.isTimelineUserPickerOpen.set(true);
+    if (this.accountSearchTimer) {
+      clearTimeout(this.accountSearchTimer);
+    }
+    this.accountSearchTimer = setTimeout(() => {
+      this.loadTimelineAccounts(value);
+    }, 250);
+  }
+
+  protected openTimelineUserPicker(): void {
+    this.isTimelineUserPickerOpen.set(true);
+    if (this.timelineAccountOptions().length === 0) {
+      this.loadTimelineAccounts(this.timelineEmail());
+    }
+  }
+
+  protected closeTimelineUserPickerSoon(): void {
+    setTimeout(() => this.isTimelineUserPickerOpen.set(false), 160);
+  }
+
+  protected selectTimelineAccount(account: AccountSummary): void {
+    this.timelineEmail.set(account.email);
+    this.isTimelineUserPickerOpen.set(false);
+    this.timelinePage.set(0);
+    this.loadTimeline();
+  }
+
+  protected accountInitials(account: AccountSummary): string {
+    return this.getInitials(account.displayName || account.email);
   }
 
   protected changeTimelineFrom(event: Event): void {
@@ -362,7 +407,31 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     this.timelineModule.set('ALL');
     this.timelineAction.set('ALL');
     this.timelinePage.set(0);
+    this.clearTimeline();
+    this.loadTimelineAccounts();
+  }
+
+  protected showTimelineAllTime(): void {
+    if (!this.timelineEmail().trim()) {
+      return;
+    }
+    this.timelineTimeRange.set('ALL');
+    this.timelineFrom.set('');
+    this.timelineTo.set('');
+    this.timelinePage.set(0);
     this.loadTimeline();
+  }
+
+  protected timelineEmptyTitle(): string {
+    return this.timelineEmail().trim()
+      ? 'Chưa có nhật ký trong bộ lọc hiện tại'
+      : 'Chọn user để bắt đầu timeline';
+  }
+
+  protected timelineEmptyDescription(): string {
+    return this.timelineEmail().trim()
+      ? 'User này chưa có hoạt động phù hợp với thời gian, mức độ, module hoặc hành động đang lọc.'
+      : 'Chọn một user trong danh sách hoặc click user từ Bảng nhật ký để xem chuỗi hành vi.';
   }
 
   protected changeTimelinePage(page: number): void {
@@ -410,9 +479,38 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     const logs = this.timelineLogs();
     if (logs.length === 0) {
       this.behaviorSummary.set(['Chưa có dữ liệu timeline để tóm tắt.']);
+      this.behaviorSummaryFallback.set(true);
       return;
     }
 
+    const dateParams = this.timelineDateParams();
+    this.isGeneratingBehaviorSummary.set(true);
+    this.behaviorSummaryFallback.set(false);
+    this.adminLogsService.summarizeActivityTimeline({
+      email: this.timelineEmail().trim(),
+      from: dateParams.from || undefined,
+      to: dateParams.to || undefined,
+      severity: this.filterValue(this.timelineSeverity()),
+      module: this.filterValue(this.timelineModule()),
+      action: this.filterValue(this.timelineAction()),
+      size: this.timelineSize()
+    }).subscribe({
+      next: (response) => {
+        const summary = response.data;
+        this.behaviorSummary.set(summary.lines?.length ? summary.lines : this.buildLocalBehaviorSummary(logs));
+        this.behaviorSummaryFallback.set(!!summary.fallback);
+        this.isGeneratingBehaviorSummary.set(false);
+      },
+      error: (err) => {
+        console.error('[Activity Timeline Summary Error]', err);
+        this.behaviorSummary.set(this.buildLocalBehaviorSummary(logs));
+        this.behaviorSummaryFallback.set(true);
+        this.isGeneratingBehaviorSummary.set(false);
+      }
+    });
+  }
+
+  private buildLocalBehaviorSummary(logs: ActivityLog[]): string[] {
     const first = logs[0];
     const last = logs[logs.length - 1];
     const modules = this.topValues(logs.map(log => log.module || 'N/A'), 3);
@@ -423,14 +521,22 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     const uniqueIps = new Set(logs.map(log => log.ipAddress).filter(Boolean));
     const userLabel = first.operatorEmail || first.operatorFullName || this.timelineEmail() || 'user này';
 
-    this.behaviorSummary.set([
+    return [
       `${userLabel} có ${logs.length} hành động trong hành trình hiện tại, bắt đầu lúc ${this.formatReplayTime(first.timestamp)} và kết thúc lúc ${this.formatReplayTime(last.timestamp)}.`,
       `Module nổi bật: ${modules || 'chưa rõ'}; hành động lặp lại nhiều: ${actions || 'chưa rõ'}.`,
       `Có ${importantLogs.length} hành động cần chú ý theo mức độ audit, ${uniqueIps.size} IP khác nhau và ${traceCount} trace có thể đối chiếu với system logs.`,
       changedCount > 0
-        ? `Phát hiện ${changedCount} bước có dữ liệu thay đổi trước/sau, nên mở What Changed để kiểm tra bằng chứng.`
+        ? `Phát hiện ${changedCount} bước có dữ liệu thay đổi trước/sau, nên mở So sánh thay đổi để kiểm tra bằng chứng.`
         : 'Chưa thấy metadata before/after đủ rõ để dựng diff thay đổi.'
-    ]);
+    ];
+  }
+
+  protected openTimelineDetail(log: ActivityLog): void {
+    const index = this.timelineLogs().findIndex(item => item.id === log.id);
+    if (index >= 0) {
+      this.replayIndex.set(index);
+    }
+    this.openDetail(log);
   }
 
   protected openDetail(log: ActivityLog): void {
@@ -469,6 +575,18 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     };
     return labels[severity || ''] || 'Thông tin';
   }
+
+  protected roleLabel(role?: string): string {
+    const labels: Record<string, string> = {
+      ADMIN: 'Admin',
+      OWNER: 'Owner',
+      MANAGER: 'Manager',
+      EMPLOYEE: 'Employee',
+      CUSTOMER: 'Customer'
+    };
+    return labels[role || ''] || 'N/A';
+  }
+
   protected actionLabel(log: ActivityLog): string {
     return this.actionNameLabel(log.action, log.actionLabel);
   }
@@ -597,6 +715,24 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     const parsed = this.parseMetadataObject(log.metadata);
     if (!parsed) return [];
     return this.extractChangeRows(parsed).slice(0, 12);
+  }
+
+  protected diffFieldLabel(field: string): string {
+    const labels: Record<string, string> = {
+      stockQuantity: 'Số lượng tồn kho',
+      quantity: 'Số lượng',
+      status: 'Trạng thái',
+      price: 'Giá',
+      name: 'Tên',
+      productName: 'Tên sản phẩm',
+      variantName: 'Tên biến thể',
+      productVariantId: 'Mã biến thể',
+      note: 'Ghi chú',
+      reason: 'Lý do',
+      role: 'Vai trò',
+      active: 'Trạng thái tài khoản'
+    };
+    return labels[field] || this.toReadableFieldName(field);
   }
 
   protected formatReplayTime(value?: Date): string {
@@ -731,6 +867,10 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     return filter === 'ALL' || value === filter;
   }
 
+  private filterValue(value?: string): string | undefined {
+    return value && value !== 'ALL' ? value : undefined;
+  }
+
   private startRealtimeActivityLogs(): void {
     this.stopRealtimeActivityLogs();
     this.wsService.connect();
@@ -777,6 +917,11 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
   }
 
   private loadTimeline(): void {
+    if (!this.timelineEmail().trim()) {
+      this.clearTimeline();
+      return;
+    }
+
     const dateParams = this.timelineDateParams();
     this.isLoadingTimeline.set(true);
     this.adminLogsService.getActivityTimeline({
@@ -801,6 +946,7 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
         this.replayIndex.set(0);
         this.stopReplay();
         this.behaviorSummary.set([]);
+        this.behaviorSummaryFallback.set(false);
         this.isLoadingTimeline.set(false);
       },
       error: (err) => {
@@ -808,6 +954,41 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
         this.timelineLogs.set([]);
         this.totalTimelineLogs.set(0);
         this.isLoadingTimeline.set(false);
+      }
+    });
+  }
+
+  private clearTimeline(): void {
+    this.timelineLogs.set([]);
+    this.totalTimelineLogs.set(0);
+    this.timelinePage.set(0);
+    this.replayIndex.set(0);
+    this.stopReplay();
+    this.behaviorSummary.set([]);
+    this.behaviorSummaryFallback.set(false);
+    this.isGeneratingBehaviorSummary.set(false);
+    this.isLoadingTimeline.set(false);
+  }
+
+  private loadTimelineAccounts(keyword = ''): void {
+    this.isLoadingTimelineAccounts.set(true);
+    this.accountService.getAccounts({
+      page: 0,
+      size: 100,
+      sortField: AccountSortField.CreatedAt,
+      sortDirection: SortDirection.Desc,
+      keyword,
+      role: null,
+      active: null
+    }).subscribe({
+      next: (response) => {
+        this.timelineAccountOptions.set(response.data.content);
+        this.isLoadingTimelineAccounts.set(false);
+      },
+      error: (err) => {
+        console.error('[Timeline Account Picker Load Error]', err);
+        this.timelineAccountOptions.set([]);
+        this.isLoadingTimelineAccounts.set(false);
       }
     });
   }
@@ -960,6 +1141,15 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
       .replace(/payload\./gi, '')
       .replace(/dto\./gi, '')
       .replace(/\.(before|after|old|new|previous|current)$/gi, '');
+  }
+
+  private toReadableFieldName(value: string): string {
+    return value
+      .replace(/[_-]+/g, ' ')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/^./, char => char.toLocaleUpperCase('vi-VN')) || value;
   }
 
   private topValues(values: string[], limit: number): string {
@@ -1160,7 +1350,22 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     if (!trimmed) {
       return trimmed;
     }
-    return trimmed.charAt(0).toLocaleUpperCase('vi-VN') + trimmed.slice(1);
+    const leadingEmail = trimmed.match(/^[^\s@]+@[^\s@]+\.[^\s@]+/);
+    if (leadingEmail) {
+      const email = leadingEmail[0];
+      const rest = trimmed.slice(email.length);
+      return `${email}${this.capitalizeFirstLetter(rest)}`;
+    }
+    return this.capitalizeFirstLetter(trimmed);
+  }
+
+  private capitalizeFirstLetter(value: string): string {
+    const firstLetterIndex = value.search(/\p{L}/u);
+    if (firstLetterIndex === -1) {
+      return value;
+    }
+    return value.slice(0, firstLetterIndex)
+      + value.charAt(firstLetterIndex).toLocaleUpperCase('vi-VN')
+      + value.slice(firstLetterIndex + 1);
   }
 }
-

@@ -104,6 +104,7 @@ export interface ActivityLog {
   operatorEmail: string;
   operatorFullName: string;
   operatorAvatar?: string;
+  operatorRole?: AdminAccountRole;
   area?: ActivityArea;
   module?: string;
   action: string;
@@ -145,6 +146,22 @@ export interface ActivityLogRecordPayload {
   targetLabel?: string;
   summary?: string;
   metadata?: string;
+}
+
+export interface ActivityTimelineSummaryRequest {
+  userId?: string;
+  email?: string;
+  from?: string;
+  to?: string;
+  severity?: string;
+  module?: string;
+  action?: string;
+  size?: number;
+}
+
+export interface ActivityTimelineSummaryResponse {
+  lines: string[];
+  fallback: boolean;
 }
 
 export interface PermissionItem {

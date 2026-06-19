@@ -9,7 +9,7 @@
 }
 
 .audit-view-btn {
-  @apply rounded-full px-4 py-2 text-xs font-bold text-gray-500 transition hover:text-gray-950;
+  @apply cursor-pointer rounded-full px-4 py-2 text-xs font-bold text-gray-500 transition hover:text-gray-950;
 }
 
 .audit-view-btn--active {
@@ -69,8 +69,18 @@
 }
 
 .audit-table {
-  @apply w-full border-collapse text-left;
+  @apply w-full min-w-[1400px] table-fixed border-collapse text-left;
 }
+
+.audit-col-time { width: 112px; }
+.audit-col-operator { width: 300px; }
+.audit-col-area { width: 116px; }
+.audit-col-severity { width: 126px; }
+.audit-col-action { width: 168px; }
+.audit-col-target { width: 250px; }
+.audit-col-summary { width: 298px; }
+.audit-col-trace { width: 118px; }
+.audit-col-ip { width: 112px; }
 
 .audit-th {
   @apply px-3 py-3.5 bg-[#F9FAFB] text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-[#E5E7EB] whitespace-nowrap;
@@ -81,11 +91,19 @@
 }
 
 .audit-td {
-  @apply px-3 py-3.5 text-xs text-gray-950 font-medium align-middle;
+  @apply px-3 py-3 text-xs text-gray-950 font-medium align-middle;
 }
 
 .audit-td--time {
-  @apply text-gray-500 font-mono;
+  @apply w-[112px] whitespace-nowrap font-mono;
+}
+
+.audit-time-main {
+  @apply block text-xs font-bold text-slate-700 leading-tight;
+}
+
+.audit-time-sub {
+  @apply mt-0.5 block text-[11px] font-semibold text-gray-500 leading-tight;
 }
 
 .audit-td--operator {
@@ -93,19 +111,19 @@
 }
 
 .audit-td--action {
-  @apply text-[#4F46E5] font-bold;
+  @apply truncate whitespace-nowrap text-[#4F46E5] font-bold;
 }
 
 .audit-td--target {
-  @apply text-gray-600 max-w-[220px] truncate font-semibold;
+  @apply truncate whitespace-nowrap text-gray-600 font-semibold;
 }
 
 .audit-td--summary {
-  @apply text-gray-700 max-w-[360px] truncate leading-relaxed;
+  @apply truncate whitespace-nowrap text-gray-700;
 }
 
 .audit-td--ip {
-  @apply font-mono text-gray-400 text-[11px];
+  @apply whitespace-nowrap font-mono text-[11px] font-semibold text-gray-500;
 }
 
 .audit-chip {
@@ -142,6 +160,18 @@
 
 .audit-empty-state {
   @apply text-center py-16 text-gray-400 text-xs font-medium w-full;
+}
+
+.timeline-empty-state {
+  @apply flex flex-col items-center justify-center gap-3 px-4;
+}
+
+.timeline-empty-state strong {
+  @apply text-sm font-black text-gray-700;
+}
+
+.timeline-empty-state p {
+  @apply max-w-xl text-xs font-semibold text-gray-400;
 }
 
 /* Premium Admin Console surface overrides */
@@ -193,11 +223,11 @@
 
 /* User Operator Display */
 .operator-cell {
-  @apply flex items-center gap-3;
+  @apply flex min-w-0 items-center gap-3;
 }
 
 .operator-button {
-  @apply block w-full rounded-lg text-left transition hover:bg-indigo-50/70 focus:outline-none focus:ring-2 focus:ring-indigo-200;
+  @apply block w-full min-w-0 cursor-pointer rounded-lg py-1 text-left transition hover:bg-indigo-50/70 focus:outline-none focus:ring-2 focus:ring-indigo-200;
 }
 
 .operator-avatar-wrapper {
@@ -209,15 +239,43 @@
 }
 
 .operator-info {
-  @apply flex flex-col;
+  @apply flex min-w-0 flex-1 flex-col items-start gap-0.5 overflow-visible;
+}
+
+.operator-title-row {
+  @apply flex min-w-0 max-w-full items-center gap-2;
 }
 
 .operator-name {
-  @apply text-xs font-semibold text-gray-900;
+  @apply min-w-0 max-w-36 truncate whitespace-nowrap text-xs font-bold text-gray-900;
 }
 
 .operator-email {
-  @apply text-[10px] text-gray-400 font-medium;
+  @apply block max-w-56 truncate whitespace-nowrap text-[11px] text-gray-500 font-medium leading-4;
+}
+
+.operator-role-chip {
+  @apply inline-flex flex-shrink-0 items-center rounded-full border px-2 py-0.5 text-[9px] font-black uppercase leading-none;
+}
+
+.operator-role-chip--admin {
+  @apply border-purple-200 bg-purple-50 text-purple-700;
+}
+
+.operator-role-chip--owner {
+  @apply border-amber-200 bg-amber-50 text-amber-700;
+}
+
+.operator-role-chip--manager {
+  @apply border-sky-200 bg-sky-50 text-sky-700;
+}
+
+.operator-role-chip--employee {
+  @apply border-blue-200 bg-blue-50 text-blue-700;
+}
+
+.operator-role-chip--customer {
+  @apply border-emerald-200 bg-emerald-50 text-emerald-700;
 }
 
 /* Clickable table rows */
@@ -420,7 +478,7 @@
 }
 
 .trace-link {
-  @apply inline-flex max-w-28 items-center rounded-full border border-indigo-100 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700 transition hover:border-indigo-200 hover:bg-indigo-100;
+  @apply inline-flex max-w-28 truncate whitespace-nowrap rounded-full border border-indigo-100 bg-indigo-50 px-2 py-1 text-[10px] font-bold text-indigo-700 transition hover:border-indigo-200 hover:bg-indigo-100;
 }
 
 .modal-trace-link {
@@ -439,6 +497,50 @@
   @apply min-w-0;
 }
 
+.timeline-user-picker {
+  @apply relative;
+}
+
+.timeline-user-picker-input {
+  @apply pr-9;
+}
+
+.timeline-user-menu {
+  @apply absolute left-0 right-0 top-[calc(100%+8px)] z-30 max-h-80 overflow-y-auto rounded-xl border border-gray-200 bg-white p-1.5 shadow-xl shadow-slate-900/10;
+}
+
+.timeline-user-menu-state {
+  @apply px-3 py-4 text-center text-xs font-semibold text-gray-400;
+}
+
+.timeline-user-option {
+  @apply flex w-full min-w-0 cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-gray-50 focus:bg-gray-50 focus:outline-none;
+}
+
+.timeline-user-avatar {
+  @apply flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-gray-50 text-[11px] font-black uppercase text-gray-600;
+}
+
+.timeline-user-avatar img {
+  @apply h-full w-full object-cover;
+}
+
+.timeline-user-option-info {
+  @apply flex min-w-0 flex-1 flex-col gap-1;
+}
+
+.timeline-user-option-title {
+  @apply flex min-w-0 items-center gap-2;
+}
+
+.timeline-user-option-name {
+  @apply min-w-0 truncate text-xs font-bold text-gray-950;
+}
+
+.timeline-user-option-email {
+  @apply truncate text-[11px] font-medium text-gray-500;
+}
+
 .timeline-label {
   @apply mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-gray-400;
 }
@@ -448,9 +550,13 @@
   @apply h-10 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 text-xs font-semibold text-gray-700 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100;
 }
 
+.timeline-select {
+  @apply cursor-pointer;
+}
+
 .timeline-primary-btn,
 .timeline-secondary-btn {
-  @apply h-10 whitespace-nowrap rounded-lg px-4 text-xs font-bold transition;
+  @apply h-10 cursor-pointer whitespace-nowrap rounded-lg px-4 text-xs font-bold transition;
 }
 
 .timeline-primary-btn {
@@ -532,11 +638,23 @@
 }
 
 .replay-speed-btn {
-  @apply rounded-full px-3 py-1.5 text-[11px] font-black text-gray-500 transition hover:text-gray-950;
+  @apply cursor-pointer rounded-full px-3 py-1.5 text-[11px] font-black text-gray-500 transition hover:text-gray-950;
 }
 
 .replay-speed-btn--active {
   @apply bg-gray-950 text-white shadow-sm hover:text-white;
+}
+
+.replay-empty {
+  @apply mt-4 flex min-h-[180px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 text-center;
+}
+
+.replay-empty strong {
+  @apply text-sm font-black text-gray-700;
+}
+
+.replay-empty span {
+  @apply max-w-xl text-xs font-semibold text-gray-400;
 }
 
 .replay-cinema {
@@ -701,14 +819,13 @@
 }
 
 .replay-cursor {
-  @apply pointer-events-none absolute z-30 h-7 w-7 -translate-x-1 -translate-y-1 rotate-[-18deg];
-  filter: drop-shadow(0 8px 8px rgba(0,0,0,0.25));
+  @apply pointer-events-none absolute z-40 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-gray-950 ring-2 ring-yellow-300/80;
+  filter: drop-shadow(0 10px 12px rgba(0,0,0,0.45)) drop-shadow(0 0 10px rgba(250,204,21,0.5));
   transition: left 0.45s ease, top 0.45s ease;
 }
 
-.replay-cursor::before {
-  content: "";
-  @apply absolute left-0 top-0 h-0 w-0 border-b-[28px] border-r-[18px] border-b-gray-950 border-r-transparent;
+.replay-cursor svg {
+  @apply h-6 w-6;
 }
 
 .replay-click-ripple {
@@ -730,26 +847,39 @@
 }
 
 .replay-filmstrip {
-  @apply mt-4 flex gap-2 overflow-x-auto rounded-xl border border-gray-200 bg-gray-50 p-2;
+  @apply mt-4 grid grid-flow-col auto-cols-[170px] gap-2 overflow-x-auto rounded-xl border border-gray-200 bg-white p-2 shadow-inner;
 }
 
 .replay-film-frame {
-  @apply min-w-[132px] rounded-lg border border-gray-200 bg-white px-3 py-2 text-left transition hover:border-indigo-200 hover:bg-indigo-50;
+  @apply min-h-[86px] rounded-lg border border-gray-200 bg-gradient-to-b from-white to-gray-50 px-3 py-2 text-left shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50;
 }
 
-.replay-film-frame span {
-  @apply block font-mono text-[10px] font-black text-gray-400;
+.replay-frame-index {
+  @apply block text-[9px] font-black uppercase tracking-wider text-indigo-500;
+}
+
+.replay-frame-date {
+  @apply mt-1 block font-mono text-[11px] font-black text-gray-700;
+}
+
+.replay-frame-time {
+  @apply block font-mono text-[10px] font-bold text-gray-400;
 }
 
 .replay-film-frame strong {
-  @apply mt-1 block truncate text-[11px] font-black text-gray-700;
+  @apply mt-2 block truncate text-[11px] font-black text-gray-800;
 }
 
 .replay-film-frame--active {
-  @apply border-gray-950 bg-gray-950 text-white;
+  @apply border-gray-950 bg-gray-950 bg-none text-white shadow-lg shadow-gray-950/20;
 }
 
-.replay-film-frame--active span,
+.replay-film-frame--active .replay-frame-index {
+  @apply text-yellow-300;
+}
+
+.replay-film-frame--active .replay-frame-date,
+.replay-film-frame--active .replay-frame-time,
 .replay-film-frame--active strong {
   @apply text-white;
 }
@@ -782,7 +912,14 @@
 }
 
 .replay-current-time {
-  @apply rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-center font-mono text-xs font-black text-yellow-200;
+  @apply flex min-w-[112px] flex-col rounded-lg border border-white/10 bg-white/10 px-3 py-2 text-right;
+}
+.replay-current-time span {
+  @apply font-mono text-[10px] font-bold text-white/55;
+}
+
+.replay-current-time strong {
+  @apply font-mono text-xs font-black text-yellow-200;
 }
 
 .replay-current-main {
@@ -812,7 +949,7 @@
 .replay-control-btn,
 .replay-play-btn,
 .ai-summary-btn {
-  @apply rounded-lg px-4 py-2 text-xs font-black transition;
+  @apply cursor-pointer rounded-lg px-4 py-2 text-xs font-black transition;
 }
 
 .replay-control-btn {
@@ -822,6 +959,10 @@
 .replay-play-btn,
 .ai-summary-btn {
   @apply bg-gray-950 text-white hover:bg-gray-800;
+}
+
+.ai-summary-btn:disabled {
+  @apply cursor-not-allowed bg-gray-300 text-gray-600 hover:bg-gray-300;
 }
 
 .replay-count {
@@ -840,10 +981,6 @@
   @apply block h-full rounded-full bg-indigo-600 transition-all;
 }
 
-.replay-empty {
-  @apply mt-4 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center text-xs font-semibold text-gray-400;
-}
-
 .replay-side-panel {
   @apply flex flex-col gap-4 p-4;
 }
@@ -858,6 +995,10 @@
 
 .replay-muted {
   @apply mt-3 text-xs font-semibold leading-relaxed text-gray-400;
+}
+
+.replay-muted--summary {
+  @apply rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-amber-700;
 }
 
 .diff-table {
@@ -878,7 +1019,16 @@
 
 .diff-before,
 .diff-after {
-  @apply min-w-0 truncate rounded-md px-2 py-1 font-mono;
+  @apply flex min-w-0 items-center gap-2 rounded-md px-2 py-1 font-mono;
+}
+
+.diff-before > span:last-child,
+.diff-after > span:last-child {
+  @apply min-w-0 truncate;
+}
+
+.diff-value-label {
+  @apply flex-shrink-0 text-[9px] font-black uppercase tracking-wider opacity-60;
 }
 
 .diff-before {
@@ -923,7 +1073,7 @@
 }
 
 .timeline-item {
-  @apply relative grid w-full grid-cols-[72px_1fr_auto] items-start gap-4 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50/30;
+  @apply relative grid w-full cursor-pointer grid-cols-[72px_1fr_auto] items-start gap-4 rounded-xl border border-gray-200 bg-white px-4 py-3 text-left shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50/30;
 }
 
 .timeline-item--risk {

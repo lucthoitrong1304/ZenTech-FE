@@ -6,7 +6,7 @@
       [class.audit-view-btn--active]="viewMode() === 'TABLE'"
       (click)="switchView('TABLE')"
     >
-      Bảng audit
+      Bảng nhật ký
     </button>
     <button
       type="button"
@@ -14,7 +14,7 @@
       [class.audit-view-btn--active]="viewMode() === 'TIMELINE'"
       (click)="switchView('TIMELINE')"
     >
-      Timeline user
+      Timeline người dùng
     </button>
   </div>
 
@@ -100,6 +100,17 @@
       } @else {
         <div class="audit-table-wrapper">
           <table class="audit-table">
+            <colgroup>
+              <col class="audit-col-time" />
+              <col class="audit-col-operator" />
+              <col class="audit-col-area" />
+              <col class="audit-col-severity" />
+              <col class="audit-col-action" />
+              <col class="audit-col-target" />
+              <col class="audit-col-summary" />
+              <col class="audit-col-trace" />
+              <col class="audit-col-ip" />
+            </colgroup>
             <thead>
               <tr>
                 <th scope="col" class="audit-th">Thời gian</th>
@@ -116,7 +127,10 @@
             <tbody>
               @for (act of displayedActivityLogs(); track act.id) {
                 <tr class="audit-tr" (click)="openDetail(act)">
-                  <td class="audit-td audit-td--time">{{ act.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</td>
+                  <td class="audit-td audit-td--time">
+                    <span class="audit-time-main">{{ act.timestamp | date:'HH:mm:ss' }}</span>
+                    <span class="audit-time-sub">{{ act.timestamp | date:'dd/MM/yyyy' }}</span>
+                  </td>
                   <td class="audit-td">
                     <button type="button" class="operator-button" (click)="openTimelineForLog(act, $event)" title="Xem timeline user">
                       <span class="operator-cell">
@@ -128,7 +142,19 @@
                           }
                         </span>
                         <span class="operator-info">
-                          <span class="operator-name">{{ act.operatorFullName }}</span>
+                          <span class="operator-title-row">
+                            <span class="operator-name">{{ act.operatorFullName }}</span>
+                            @if (act.operatorRole) {
+                              <span class="operator-role-chip"
+                                    [class.operator-role-chip--admin]="act.operatorRole === 'ADMIN'"
+                                    [class.operator-role-chip--owner]="act.operatorRole === 'OWNER'"
+                                    [class.operator-role-chip--manager]="act.operatorRole === 'MANAGER'"
+                                    [class.operator-role-chip--employee]="act.operatorRole === 'EMPLOYEE'"
+                                    [class.operator-role-chip--customer]="act.operatorRole === 'CUSTOMER'">
+                                {{ roleLabel(act.operatorRole) }}
+                              </span>
+                            }
+                          </span>
                           <span class="operator-email">{{ act.operatorEmail }}</span>
                         </span>
                       </span>
@@ -198,14 +224,55 @@
       <div class="timeline-filter-panel">
         <div class="timeline-user-search">
           <label class="timeline-label" for="timeline-email">User / email</label>
-          <input
-            id="timeline-email"
-            type="text"
-            class="timeline-input"
-            placeholder="owner@gmail.com"
-            [value]="timelineEmail()"
-            (input)="handleTimelineEmailInput($event)"
-          />
+          <div class="timeline-user-picker" (focusout)="closeTimelineUserPickerSoon()">
+            <input
+              id="timeline-email"
+              type="text"
+              class="timeline-input timeline-user-picker-input"
+              placeholder="Chọn hoặc tìm user..."
+              [value]="timelineEmail()"
+              (focus)="openTimelineUserPicker()"
+              (click)="openTimelineUserPicker()"
+              (input)="handleTimelineEmailInput($event)"
+              autocomplete="off"
+            />
+
+            @if (isTimelineUserPickerOpen()) {
+              <div class="timeline-user-menu">
+                @if (isLoadingTimelineAccounts()) {
+                  <div class="timeline-user-menu-state">Đang tải user...</div>
+                } @else if (timelineAccountOptions().length === 0) {
+                  <div class="timeline-user-menu-state">Không tìm thấy user phù hợp.</div>
+                } @else {
+                  @for (account of timelineAccountOptions(); track account.id) {
+                    <button type="button" class="timeline-user-option" (mousedown)="selectTimelineAccount(account)">
+                      <span class="timeline-user-avatar">
+                        @if (account.imageUrl) {
+                          <img [src]="account.imageUrl" [alt]="account.displayName" />
+                        } @else {
+                          <span>{{ accountInitials(account) }}</span>
+                        }
+                      </span>
+                      <span class="timeline-user-option-info">
+                        <span class="timeline-user-option-title">
+                          <span class="timeline-user-option-name">{{ account.displayName || account.email }}</span>
+                          <span class="operator-role-chip"
+                                [class.operator-role-chip--admin]="account.role === 'ADMIN'"
+                                [class.operator-role-chip--owner]="account.role === 'OWNER'"
+                                [class.operator-role-chip--manager]="account.role === 'MANAGER'"
+                                [class.operator-role-chip--employee]="account.role === 'EMPLOYEE'"
+                                [class.operator-role-chip--customer]="account.role === 'CUSTOMER'">
+                            {{ roleLabel(account.role) }}
+                          </span>
+                        </span>
+                        <span class="timeline-user-option-email">{{ account.email }}</span>
+                      </span>
+                    </button>
+                  }
+                }
+              </div>
+            }
+          </div>
         </div>
         <div>
           <label class="timeline-label" for="timeline-range">Thời gian</label>
@@ -234,7 +301,6 @@
           }
         </select>
         <div class="timeline-filter-actions">
-          <button type="button" class="timeline-primary-btn" (click)="applyTimelineFilters()">Xem timeline</button>
           <button type="button" class="timeline-secondary-btn" (click)="resetTimelineFilters()">Làm mới</button>
         </div>
 
@@ -322,7 +388,7 @@
                         <h4>{{ replaySceneTitle(replay) }}</h4>
                         <p>{{ replaySceneSubtitle(replay) }}</p>
                       </div>
-                      <div class="replay-current-time">{{ replay.timestamp | date:'HH:mm:ss' }}</div>
+                      <div class="replay-current-time"><span>{{ replay.timestamp | date:'dd/MM/yyyy' }}</span><strong>{{ replay.timestamp | date:'HH:mm:ss' }}</strong></div>
                     </div>
 
                     <div class="replay-scene-body">
@@ -354,7 +420,9 @@
                     </div>
 
                     <span class="replay-click-ripple" [style.left]="replayCursorStyle(replayIndex()).left" [style.top]="replayCursorStyle(replayIndex()).top"></span>
-                    <span class="replay-cursor" [style.left]="replayCursorStyle(replayIndex()).left" [style.top]="replayCursorStyle(replayIndex()).top"></span>
+                    <span class="replay-cursor" [style.left]="replayCursorStyle(replayIndex()).left" [style.top]="replayCursorStyle(replayIndex()).top">
+                      <svg lucidePointer [attr.stroke-width]="2.8"></svg>
+                    </span>
                   </main>
                 </div>
               </div>
@@ -397,14 +465,17 @@
                   [class.replay-film-frame--risk]="isRiskyTimelineItem(step)"
                   (click)="seekReplayTo(i)"
                 >
-                  <span>{{ step.timestamp | date:'HH:mm:ss' }}</span>
+                  <span class="replay-frame-index">Bước {{ i + 1 }}</span>
+                  <span class="replay-frame-date">{{ step.timestamp | date:'dd/MM/yyyy' }}</span>
+                  <span class="replay-frame-time">{{ step.timestamp | date:'HH:mm:ss' }}</span>
                   <strong>{{ actionLabel(step) }}</strong>
                 </button>
               }
             </div>
           } @else {
             <div class="replay-empty">
-              Tải timeline hoặc chọn user từ bảng audit để bắt đầu replay.
+              <strong>{{ timelineEmptyTitle() }}</strong>
+              <span>{{ timelineEmptyDescription() }}</span>
             </div>
           }
         </div>
@@ -412,8 +483,8 @@
         <aside class="replay-side-panel">
           <div class="replay-side-section">
             <div class="replay-side-header">
-              <span class="replay-kicker">What Changed?</span>
-              <strong>Diff thay đổi</strong>
+              <span class="replay-kicker">THAY ĐỔI GÌ?</span>
+              <strong>So sánh thay đổi</strong>
             </div>
             @if (replayLog(); as replay) {
               @let rows = diffRows(replay);
@@ -421,25 +492,35 @@
                 <div class="diff-table">
                   @for (row of rows; track row.field) {
                     <div class="diff-row">
-                      <span class="diff-field">{{ row.field }}</span>
-                      <span class="diff-before">{{ row.before }}</span>
-                      <span class="diff-arrow">→</span>
-                      <span class="diff-after">{{ row.after }}</span>
+                      <span class="diff-field">{{ diffFieldLabel(row.field) }}</span>
+                      <span class="diff-before"><span class="diff-value-label">Trước</span><span>{{ row.before }}</span></span>
+                      <span class="diff-arrow">-&gt;</span>
+                      <span class="diff-after"><span class="diff-value-label">Sau</span><span>{{ row.after }}</span></span>
                     </div>
                   }
                 </div>
               } @else {
-                <p class="replay-muted">Metadata hiện tại chưa có cặp before/after đủ rõ cho bước này.</p>
+                <p class="replay-muted">Bước này không có thay đổi dữ liệu để so sánh.</p>
               }
             }
           </div>
 
           <div class="replay-side-section">
             <div class="replay-side-header">
-              <span class="replay-kicker">AI Behavior Summary</span>
-              <button type="button" class="ai-summary-btn" (click)="generateBehaviorSummary()">Tóm tắt</button>
+              <span class="replay-kicker">AI tóm tắt hành vi</span>
+              <button
+                type="button"
+                class="ai-summary-btn"
+                [disabled]="isGeneratingBehaviorSummary() || timelineLogs().length === 0"
+                (click)="generateBehaviorSummary()"
+              >
+                {{ isGeneratingBehaviorSummary() ? 'Đang tóm tắt' : 'Tóm tắt' }}
+              </button>
             </div>
             @if (behaviorSummary().length > 0) {
+              @if (behaviorSummaryFallback()) {
+                <p class="replay-muted replay-muted--summary">AI chưa khả dụng, đang hiển thị tóm tắt dự phòng.</p>
+              }
               <ul class="ai-summary-list">
                 @for (line of behaviorSummary(); track line) {
                   <li>{{ line }}</li>
@@ -458,8 +539,12 @@
             <p>Đang dựng timeline hành vi...</p>
           </div>
         } @else if (timelineLogs().length === 0) {
-          <div class="audit-empty-state">
-            <p>Chưa có dữ liệu timeline phù hợp. Nhập email hoặc chọn user từ bảng audit để xem chuỗi hành vi.</p>
+          <div class="audit-empty-state timeline-empty-state">
+            <strong>{{ timelineEmptyTitle() }}</strong>
+            <p>{{ timelineEmptyDescription() }}</p>
+            @if (timelineEmail().trim() && timelineTimeRange() !== 'ALL') {
+              <button type="button" class="timeline-secondary-btn" (click)="showTimelineAllTime()">Xem tất cả thời gian</button>
+            }
           </div>
         } @else {
           <div class="timeline-list">
@@ -472,7 +557,7 @@
                     type="button"
                     class="timeline-item"
                     [class.timeline-item--risk]="isRiskyTimelineItem(log)"
-                    (click)="openDetail(log)"
+                    (click)="openTimelineDetail(log)"
                   >
                     <span class="timeline-dot" [class.timeline-dot--risk]="isRiskyTimelineItem(log)"></span>
                     <span class="timeline-time">{{ log.timestamp | date:'HH:mm:ss' }}</span>
@@ -542,7 +627,19 @@
             </div>
             <div class="operator-info">
               <span class="modal-label">Người thực hiện</span>
-              <span class="operator-name modal-operator-name">{{ log.operatorFullName }}</span>
+              <span class="operator-title-row">
+                <span class="operator-name modal-operator-name">{{ log.operatorFullName }}</span>
+                @if (log.operatorRole) {
+                  <span class="operator-role-chip"
+                        [class.operator-role-chip--admin]="log.operatorRole === 'ADMIN'"
+                        [class.operator-role-chip--owner]="log.operatorRole === 'OWNER'"
+                        [class.operator-role-chip--manager]="log.operatorRole === 'MANAGER'"
+                        [class.operator-role-chip--employee]="log.operatorRole === 'EMPLOYEE'"
+                        [class.operator-role-chip--customer]="log.operatorRole === 'CUSTOMER'">
+                    {{ roleLabel(log.operatorRole) }}
+                  </span>
+                }
+              </span>
               <span class="operator-email modal-operator-email">{{ log.operatorEmail }}</span>
             </div>
           </div>
@@ -614,10 +711,10 @@
             <div class="diff-table diff-table--modal">
               @for (row of modalDiffRows; track row.field) {
                 <div class="diff-row">
-                  <span class="diff-field">{{ row.field }}</span>
-                  <span class="diff-before">{{ row.before }}</span>
-                  <span class="diff-arrow">→</span>
-                  <span class="diff-after">{{ row.after }}</span>
+                  <span class="diff-field">{{ diffFieldLabel(row.field) }}</span>
+                  <span class="diff-before"><span class="diff-value-label">Trước</span><span>{{ row.before }}</span></span>
+                  <span class="diff-arrow">-&gt;</span>
+                  <span class="diff-after"><span class="diff-value-label">Sau</span><span>{{ row.after }}</span></span>
                 </div>
               }
             </div>
