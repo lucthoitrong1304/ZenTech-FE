@@ -76,6 +76,18 @@ export enum TicketStatus {
   CLOSED = 'CLOSED',
 }
 
+export enum TicketMessageSender {
+  CUSTOMER = 'CUSTOMER',
+  SUPPORT_AGENT = 'SUPPORT_AGENT',
+}
+
+export interface TicketMessage {
+  id: string;
+  sender: TicketMessageSender;
+  content: string;
+  timestamp: Date;
+}
+
 export interface SupportTicket {
   id: string;
   code?: string;
@@ -117,6 +129,7 @@ export interface ActivityLog {
   operatorEmail: string;
   operatorFullName: string;
   operatorAvatar?: string;
+  operatorRole?: AdminAccountRole;
   area?: ActivityArea;
   module?: string;
   action: string;
@@ -130,6 +143,7 @@ export interface ActivityLog {
   metadata?: string;
   ipAddress: string;
   userAgent?: string;
+  traceId?: string;
   timestamp: Date;
 }
 
@@ -168,6 +182,22 @@ export interface AiAnalysis {
   solutionSuggestion: string;
   confidenceScore: number;
   createdAt: Date;
+}
+
+export interface ActivityTimelineSummaryRequest {
+  userId?: string;
+  email?: string;
+  from?: string;
+  to?: string;
+  severity?: string;
+  module?: string;
+  action?: string;
+  size?: number;
+}
+
+export interface ActivityTimelineSummaryResponse {
+  lines: string[];
+  fallback: boolean;
 }
 
 export interface PermissionItem {

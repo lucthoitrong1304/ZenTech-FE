@@ -1,6 +1,7 @@
-import { Component, OnDestroy, OnInit, inject, signal, computed, NgZone } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, inject, signal, computed, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
   LucideSearch,
@@ -118,6 +119,7 @@ export class LogsComponent implements OnInit, OnDestroy {
   protected readonly issuePageSize = 20;
   protected readonly wsService = inject(WebsocketService);
   private readonly ngZone = inject(NgZone);
+  private readonly route = inject(ActivatedRoute);
   private wsSubscription: Subscription | null = null;
 
   // Lưu trạng thái xem chế độ của từng log (structured hoặc raw)
@@ -128,9 +130,10 @@ export class LogsComponent implements OnInit, OnDestroy {
   protected readonly explainingIds = signal<Record<string, boolean>>({});
 
   ngOnInit(): void {
-    // Tải logs lần đầu
-    this.store.loadLogs({ level: 'ALL', search: '', traceId: '' });
-    this.store.loadIssueLogs({ search: '', traceId: '' });
+    const traceId = this.route.snapshot.queryParamMap.get('traceId') || '';
+    this.searchText.set(traceId);
+    this.store.loadLogs({ level: 'ALL', search: traceId, traceId });
+    this.store.loadIssueLogs({ search: traceId, traceId });
     this.startRealtimeLogs();
   }
 
@@ -700,3 +703,4 @@ export class LogsComponent implements OnInit, OnDestroy {
     });
   }
 }
+

@@ -47,6 +47,9 @@ interface AdminState {
   activitySeverity: string;
   activityModule: string;
   activityAction: string;
+  activityTimeRange: string;
+  activityFrom: string;
+  activityTo: string;
   activityModulesList: string[];
   activityActionsList: string[];
   // Advanced filters
@@ -317,6 +320,9 @@ const initialState: AdminState = {
   activitySeverity: 'ALL',
   activityModule: 'ALL',
   activityAction: 'ALL',
+  activityTimeRange: '7D',
+  activityFrom: '',
+  activityTo: '',
   activityModulesList: [],
   activityActionsList: [],
   // Initialize advanced filters
@@ -449,6 +455,46 @@ export const AdminStore = signalStore(
       }));
     };
 
+    const formatDateInput = (date: Date): string => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const startOfLocalDayIso = (dateInput: string): string => new Date(`${dateInput}T00:00:00`).toISOString();
+    const endOfLocalDayIso = (dateInput: string): string => new Date(`${dateInput}T23:59:59.999`).toISOString();
+
+    const getActivityDateParams = () => {
+      const range = store.activityTimeRange();
+
+      if (range === 'ALL') {
+        return { from: '', to: '' };
+      }
+
+      if (range === 'CUSTOM') {
+        return {
+          from: store.activityFrom() ? startOfLocalDayIso(store.activityFrom()) : '',
+          to: store.activityTo() ? endOfLocalDayIso(store.activityTo()) : ''
+        };
+      }
+
+      const today = new Date();
+      const fromDate = new Date(today);
+      if (range === 'TODAY') {
+        return {
+          from: startOfLocalDayIso(formatDateInput(today)),
+          to: endOfLocalDayIso(formatDateInput(today))
+        };
+      }
+
+      fromDate.setDate(today.getDate() - (range === '30D' ? 29 : 6));
+      return {
+        from: startOfLocalDayIso(formatDateInput(fromDate)),
+        to: endOfLocalDayIso(formatDateInput(today))
+      };
+    };
+
     return {
       loadIncidents: rxMethod<{
         page?: number;
@@ -574,11 +620,13 @@ export const AdminStore = signalStore(
         severity: string;
         module: string;
         action: string;
+        from?: string;
+        to?: string;
       }>(
         pipe(
           tap(() => patchState(store, { isLoadingActivityLogs: true })),
-          switchMap(({ page, size, search, area, severity, module, action }) =>
-            adminLogsService.getActivityLogs(page, size, search, area, severity, module, action).pipe(
+          switchMap(({ page, size, search, area, severity, module, action, from, to }) =>
+            adminLogsService.getActivityLogs(page, size, search, area, severity, module, action, from, to).pipe(
               tap((response) => {
                 const res = response.data;
                 const mappedLogs = res.content.map(log => ({
@@ -952,7 +1000,8 @@ export const AdminStore = signalStore(
           area: store.activityArea(),
           severity: store.activitySeverity(),
           module: store.activityModule(),
-          action: store.activityAction()
+          action: store.activityAction(),
+          ...getActivityDateParams()
         });
       },
 
@@ -965,7 +1014,8 @@ export const AdminStore = signalStore(
           area: store.activityArea(),
           severity: store.activitySeverity(),
           module: store.activityModule(),
-          action: store.activityAction()
+          action: store.activityAction(),
+          ...getActivityDateParams()
         });
       },
 
@@ -978,7 +1028,8 @@ export const AdminStore = signalStore(
           area: store.activityArea(),
           severity: store.activitySeverity(),
           module: store.activityModule(),
-          action: store.activityAction()
+          action: store.activityAction(),
+          ...getActivityDateParams()
         });
       },
 
@@ -991,7 +1042,8 @@ export const AdminStore = signalStore(
           area,
           severity: store.activitySeverity(),
           module: store.activityModule(),
-          action: store.activityAction()
+          action: store.activityAction(),
+          ...getActivityDateParams()
         });
       },
 
@@ -1004,7 +1056,8 @@ export const AdminStore = signalStore(
           area: store.activityArea(),
           severity,
           module: store.activityModule(),
-          action: store.activityAction()
+          action: store.activityAction(),
+          ...getActivityDateParams()
         });
       },
 
@@ -1017,7 +1070,8 @@ export const AdminStore = signalStore(
           area: store.activityArea(),
           severity: store.activitySeverity(),
           module,
-          action: store.activityAction()
+          action: store.activityAction(),
+          ...getActivityDateParams()
         });
       },
 
@@ -1030,7 +1084,41 @@ export const AdminStore = signalStore(
           area: store.activityArea(),
           severity: store.activitySeverity(),
           module: store.activityModule(),
-          action
+          action,
+          ...getActivityDateParams()
+        });
+      },
+
+      setActivityTimeRange(range: string) {
+        patchState(store, { activityTimeRange: range, activityPage: 0 });
+        this.loadActivityLogs({
+          page: 0,
+          size: store.activitySize(),
+          search: store.activitySearch(),
+          area: store.activityArea(),
+          severity: store.activitySeverity(),
+          module: store.activityModule(),
+          action: store.activityAction(),
+          ...getActivityDateParams()
+        });
+      },
+
+      setActivityCustomDateRange(from: string, to: string) {
+        patchState(store, {
+          activityTimeRange: 'CUSTOM',
+          activityFrom: from,
+          activityTo: to,
+          activityPage: 0
+        });
+        this.loadActivityLogs({
+          page: 0,
+          size: store.activitySize(),
+          search: store.activitySearch(),
+          area: store.activityArea(),
+          severity: store.activitySeverity(),
+          module: store.activityModule(),
+          action: store.activityAction(),
+          ...getActivityDateParams()
         });
       },
 

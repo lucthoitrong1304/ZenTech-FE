@@ -31,21 +31,24 @@ export class FaceCheckinDialogComponent implements OnInit, OnDestroy {
   feedbackText = computed(() => {
     if (!this.faceService.isReady()) return 'Đang tải AI Model...';
     
-    switch (this.status()) {
-      case 'INITIALIZING': return 'Đang khởi tạo Camera...';
-      case 'NO_FACE': return 'Không tìm thấy khuôn mặt';
-      case 'MULTIPLE_FACES': return 'Chỉ được có một khuôn mặt';
-      case 'TOO_CLOSE': return 'Đưa mặt ra xa hơn';
-      case 'TOO_FAR': return 'Đưa mặt lại gần hơn';
-      case 'NOT_CENTERED': return 'Giữ mặt trong khung';
-      case 'VALID': return 'Đang xử lý...';
-      default: return '';
+    if (this.status() !== 'VALID') {
+      switch (this.status()) {
+        case 'INITIALIZING': return 'Đang khởi tạo Camera...';
+        case 'NO_FACE': return 'Không tìm thấy khuôn mặt';
+        case 'MULTIPLE_FACES': return 'Chỉ được có một khuôn mặt';
+        case 'TOO_CLOSE': return 'Đưa mặt ra xa hơn';
+        case 'TOO_FAR': return 'Đưa mặt lại gần hơn';
+        case 'NOT_CENTERED': return 'Giữ mặt trong khung';
+        default: return '';
+      }
     }
+
+    return 'Vui lòng nhìn thẳng và giữ yên...';
   });
 
   private detectInterval: any;
   private validDuration = 0; // ms
-  private readonly CAPTURE_DELAY = 1000; // 1.0s cho check-in (nhanh hơn đăng ký)
+  private readonly CAPTURE_DELAY = 800; // 0.8s giữ yên để xác thực
   private readonly INTERVAL_TIME = 200; // ms
 
   constructor() {
@@ -99,7 +102,7 @@ export class FaceCheckinDialogComponent implements OnInit, OnDestroy {
   private startDetectionLoop() {
     this.detectInterval = setInterval(async () => {
       if (!this.videoElement?.nativeElement || this.isProcessing()) return;
-      if (this.videoElement.nativeElement.videoWidth === 0) return; // Prevent Box.constructor error when video isn't ready
+      if (this.videoElement.nativeElement.videoWidth === 0) return;
 
       this.isProcessing.set(true);
       try {
