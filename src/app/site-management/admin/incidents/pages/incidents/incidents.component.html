@@ -1,5 +1,126 @@
 <div class="incidents-container">
-  <!-- Filters Bar -->
+  <div class="incidents-advanced-filters">
+    <div class="filter-search-wrap">
+      <svg lucideSearch class="search-icon" [attr.stroke-width]="2"></svg>
+      <input
+        type="text"
+        [value]="searchVal"
+        (input)="onSearchInput($event)"
+        placeholder="Tìm kiếm mã, lỗi, API, email..."
+        class="filter-search-input"
+      />
+    </div>
+
+    <div class="filter-select-wrap">
+      <select
+        [ngModel]="severityVal"
+        (change)="onSeverityFilterChange($event)"
+        class="filter-select"
+      >
+        <option value="ALL">Tất cả mức độ</option>
+        <option [value]="IncidentSeverity.LOW">LOW (Thấp)</option>
+        <option [value]="IncidentSeverity.MEDIUM">MEDIUM (Trung bình)</option>
+        <option [value]="IncidentSeverity.HIGH">HIGH (Cao)</option>
+        <option [value]="IncidentSeverity.CRITICAL">CRITICAL (Nghiêm trọng)</option>
+      </select>
+    </div>
+
+    <div class="filter-select-wrap filter-select-wrap--assignee">
+      <p-select
+        styleClass="assignee-dropdown-p"
+        [options]="assigneeFilterOptions()"
+        [ngModel]="assigneeVal"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Tất cả người phụ trách"
+        (onChange)="onAssigneeFilterChange($event.value)"
+      >
+        <ng-template #selectedItem let-option>
+          <div class="assignee-filter-option assignee-filter-option--selected">
+            @if (option?.value === 'ALL') {
+              <span class="assignee-filter-name">Tất cả người phụ trách</span>
+            } @else if (option?.value === 'UNASSIGNED') {
+              <div class="assignee-avatar-placeholder assignee-avatar-placeholder--small assignee-avatar-placeholder--unassigned">
+                <svg lucideUser class="assignee-icon" [attr.stroke-width]="2"></svg>
+              </div>
+              <span class="assignee-filter-name">Chưa phân công</span>
+            } @else {
+              @if (option?.imageUrl) {
+                <img class="assignee-avatar-img" [src]="option.imageUrl" [alt]="option.displayName" referrerpolicy="no-referrer" />
+              } @else {
+                <span class="assignee-avatar-placeholder assignee-avatar-placeholder--small" [style.background]="getAvatarGradient(option?.email || '')">
+                  {{ getInitials(option?.displayName || '') }}
+                </span>
+              }
+              <span class="assignee-filter-name">{{ option?.displayName }}</span>
+            }
+          </div>
+        </ng-template>
+        <ng-template #item let-option>
+          <div class="assignee-filter-option">
+            @if (option.value === 'ALL') {
+              <span class="assignee-filter-name">Tất cả người phụ trách</span>
+            } @else if (option.value === 'UNASSIGNED') {
+              <div class="assignee-avatar-placeholder assignee-avatar-placeholder--unassigned">
+                <svg lucideUser class="assignee-icon" [attr.stroke-width]="2"></svg>
+              </div>
+              <span class="assignee-filter-name">Chưa phân công</span>
+            } @else {
+              @if (option.imageUrl) {
+                <img class="assignee-avatar-img" [src]="option.imageUrl" [alt]="option.displayName" referrerpolicy="no-referrer" />
+              } @else {
+                <span class="assignee-avatar-placeholder" [style.background]="getAvatarGradient(option.email)">
+                  {{ getInitials(option.displayName) }}
+                </span>
+              }
+              <div class="assignee-filter-copy">
+                <span class="assignee-filter-name">{{ option.displayName }}</span>
+                <span class="assignee-filter-email">{{ option.email }}</span>
+              </div>
+            }
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+
+    <div class="filter-select-wrap filter-select-wrap--date-preset">
+      <p-select
+        styleClass="date-preset-dropdown-p"
+        [options]="datePresetOptions"
+        [ngModel]="dateFilterVal()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Thời gian"
+        (onChange)="onDatePresetChange($event.value)"
+      />
+    </div>
+
+    @if (dateFilterVal() === IncidentDateFilterOption.CUSTOM) {
+      <div class="filter-dates-wrap">
+        <input
+          type="date"
+          [(ngModel)]="startDateVal"
+          (change)="onDateRangeChange()"
+          class="filter-date-input"
+          placeholder="Từ ngày"
+        />
+        <span class="date-connector">đến</span>
+        <input
+          type="date"
+          [(ngModel)]="endDateVal"
+          (change)="onDateRangeChange()"
+          class="filter-date-input"
+          placeholder="Đến ngày"
+        />
+      </div>
+    }
+
+    <button type="button" (click)="handleResetFilters()" class="btn-reset">
+      <svg lucideRotateCcw class="reset-icon" [attr.stroke-width]="2"></svg>
+      <span>Đặt lại</span>
+    </button>
+  </div>
+
   <div class="incidents-controls">
     <div class="incidents-filter-group">
       <button
@@ -37,7 +158,6 @@
     </div>
   </div>
 
-  <!-- Incidents Cards Grid -->
   <div class="incidents-grid">
     @if (store.filteredIncidents().length === 0) {
       <div class="incidents-empty-state">
@@ -47,14 +167,14 @@
       @for (inc of store.filteredIncidents(); track inc.id) {
         <div class="incidents-card">
           <div class="incidents-card-header">
-            <span class="incidents-id">{{ inc.id }}</span>
+            <span class="incidents-id">{{ inc.code }}</span>
             <span class="incidents-severity-badge" [class]="'severity-' + inc.severity.toLowerCase()">
               {{ inc.severity }}
             </span>
           </div>
 
-          <h3 class="incidents-title">{{ inc.title }}</h3>
-          <p class="incidents-desc">{{ inc.description }}</p>
+          <h3 class="incidents-title">Sự cố {{ inc.code }}: {{ inc.errorMessage || 'Lỗi hệ thống' }}</h3>
+          <p class="incidents-desc">API: {{ inc.httpMethod }} {{ inc.apiPath }} (Mã lỗi: {{ inc.statusCode }})</p>
 
           <div class="incidents-meta">
             <div class="incidents-meta-item">
@@ -65,8 +185,33 @@
                 <strong>Đã xử lý:</strong> <span>{{ inc.resolvedAt | date:'HH:mm dd/MM/yyyy' }}</span>
               </div>
             }
-            <div class="incidents-meta-item">
-              <strong>Người phụ trách:</strong> <span>{{ inc.assignee || 'Chưa phân công' }}</span>
+            <div class="incidents-meta-item incidents-meta-item--assignee">
+              <strong>Người phụ trách:</strong>
+              @if (getAssigneeProfile(inc); as assignee) {
+                <div class="incident-assignee">
+                  @if (assignee.imageUrl) {
+                    <img class="incident-assignee-avatar" [src]="assignee.imageUrl" [alt]="assignee.displayName" referrerpolicy="no-referrer" />
+                  } @else {
+                    <span class="incident-assignee-avatar incident-assignee-avatar--fallback" [style.background]="getAvatarGradient(assignee.email)">
+                      {{ getInitials(assignee.displayName) }}
+                    </span>
+                  }
+                  <span class="incident-assignee-copy">
+                    <span class="incident-assignee-name">{{ assignee.displayName }}</span>
+                    <span class="incident-assignee-email">{{ assignee.email }}</span>
+                  </span>
+                </div>
+              } @else {
+                <div class="incident-assignee incident-assignee--empty">
+                  <span class="incident-assignee-avatar incident-assignee-avatar--empty">
+                    <svg lucideUser [attr.stroke-width]="2"></svg>
+                  </span>
+                  <span class="incident-assignee-copy">
+                    <span class="incident-assignee-name">Chưa phân công</span>
+                    <span class="incident-assignee-email">Chọn ở trang chi tiết</span>
+                  </span>
+                </div>
+              }
             </div>
           </div>
 
@@ -75,79 +220,43 @@
               {{ inc.status === IncidentStatus.OPEN ? 'Đang mở' : inc.status === IncidentStatus.INVESTIGATING ? 'Đang điều tra' : 'Đã xử lý' }}
             </span>
 
-            <button type="button" (click)="openEditModal(inc)" class="incidents-edit-btn" aria-label="Xử lý sự cố">
+            <button type="button" (click)="viewIncidentDetails(inc)" class="incidents-edit-btn" aria-label="Xem chi tiết sự cố">
               <svg lucideEye [attr.stroke-width]="2"></svg>
-              <span>Xem & Cập nhật</span>
+              <span>Xem chi tiết</span>
             </button>
           </div>
         </div>
       }
     }
   </div>
-</div>
 
-<!-- Custom Edit Incident Modal -->
-@if (isModalOpen() && selectedIncident()) {
-  <div class="modal-backdrop">
-    <div class="modal-wrapper">
-      <div class="modal-container">
-        <!-- Header -->
-        <div class="modal-header">
-          <h3 class="modal-title">Cập Nhật Sự Cố: {{ selectedIncident()?.id }}</h3>
-          <button type="button" (click)="closeEditModal()" class="modal-close-btn" aria-label="Đóng modal">
-            <svg lucideX [attr.stroke-width]="2"></svg>
+  @if (store.filteredIncidents().length > 0) {
+    <!-- Pagination Footer -->
+    <div class="incidents-pagination-footer">
+      <div class="pagination-info">
+        Hiển thị <strong>{{ startRecordIndex() }}</strong> - <strong>{{ endRecordIndex() }}</strong> trên tổng số <strong>{{ store.totalIncidents() }}</strong> bản ghi
+      </div>
+
+      <div class="pagination-controls">
+        <div class="pagination-size-selector">
+          <span class="size-label">Số dòng:</span>
+          <select [value]="store.incidentSize()" (change)="changeSize($event)" class="size-select" aria-label="Số dòng trên mỗi trang">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+
+        <div class="pagination-buttons">
+          <button [disabled]="store.incidentPage() === 0" (click)="changePage(store.incidentPage() - 1)" class="pagination-btn" aria-label="Trang trước">
+            <svg lucideChevronLeft class="pagination-btn-icon"></svg>
           </button>
-        </div>
-
-        <!-- Body -->
-        <div class="modal-body">
-          <h4 class="modal-body-subject">{{ selectedIncident()?.title }}</h4>
-          <p class="modal-body-desc">{{ selectedIncident()?.description }}</p>
-
-          <hr class="modal-divider" />
-
-          <div class="modal-form">
-            <!-- Status -->
-            <div class="form-group">
-              <label for="incident-status" class="form-label">Trạng thái xử lý</label>
-              <select id="incident-status" [(ngModel)]="editStatus" class="form-select">
-                <option [value]="IncidentStatus.OPEN">Đang mở (Open)</option>
-                <option [value]="IncidentStatus.INVESTIGATING">Đang điều tra (Investigating)</option>
-                <option [value]="IncidentStatus.RESOLVED">Đã xử lý (Resolved)</option>
-              </select>
-            </div>
-
-            <!-- Severity -->
-            <div class="form-group">
-              <label for="incident-severity" class="form-label">Mức độ nghiêm trọng</label>
-              <select id="incident-severity" [(ngModel)]="editSeverity" class="form-select">
-                <option [value]="IncidentSeverity.LOW">LOW (Thấp)</option>
-                <option [value]="IncidentSeverity.MEDIUM">MEDIUM (Trung bình)</option>
-                <option [value]="IncidentSeverity.HIGH">HIGH (Cao)</option>
-                <option [value]="IncidentSeverity.CRITICAL">CRITICAL (Nghiêm trọng)</option>
-              </select>
-            </div>
-
-            <!-- Assignee -->
-            <div class="form-group">
-              <label for="incident-assignee" class="form-label">Người phụ trách xử lý</label>
-              <input
-                id="incident-assignee"
-                type="text"
-                [(ngModel)]="editAssignee"
-                class="form-input"
-                placeholder="Nhập tên kỹ sư phụ trách..."
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="modal-footer">
-          <button type="button" (click)="closeEditModal()" class="btn-secondary">Hủy</button>
-          <button type="button" (click)="handleSaveChanges()" class="btn-primary">Lưu thay đổi</button>
+          <span class="pagination-current-page">Trang {{ store.incidentPage() + 1 }} / {{ totalPages() }}</span>
+          <button [disabled]="store.incidentPage() >= totalPages() - 1" (click)="changePage(store.incidentPage() + 1)" class="pagination-btn" aria-label="Trang sau">
+            <svg lucideChevronRight class="pagination-btn-icon"></svg>
+          </button>
         </div>
       </div>
     </div>
-  </div>
-}
+  }
+</div>

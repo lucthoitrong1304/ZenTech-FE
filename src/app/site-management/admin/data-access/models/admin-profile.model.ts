@@ -2,6 +2,7 @@ import { Role } from '../../../auth/data-access/models/auth.enums';
 
 export enum AdminUploadPurpose {
   EmployeeAvatar = 'EMPLOYEE_AVATAR',
+  TicketAttachment = 'TICKET_ATTACHMENT',
 }
 
 export interface AdminApiResponseDto<T> {

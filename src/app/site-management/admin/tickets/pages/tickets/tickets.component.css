@@ -1,81 +1,184 @@
 @import "tailwindcss" reference;
 
-.tck-layout {
-  @apply flex flex-col border border-[#E5E7EB] rounded-2xl overflow-hidden shadow-sm bg-white;
+.tck-container {
+  @apply flex flex-col gap-6;
 }
 
-.tck-sidebar {
-  @apply w-full border-r border-[#E5E7EB] flex flex-col bg-[#F9FAFB] flex-shrink-0;
+.tck-header-row {
+  @apply flex flex-col xl:flex-row xl:items-center justify-between gap-4 flex-shrink-0;
 }
 
-@media (min-width: 768px) {
-  .tck-layout {
-    @apply flex-row h-[calc(100vh-210px)];
-  }
-  
-  .tck-sidebar {
-    @apply w-80;
-  }
+.tck-search-section {
+  @apply flex items-center gap-4 flex-1 xl:max-w-xl;
 }
 
-.tck-sidebar-header {
-  @apply p-4 border-b border-[#E5E7EB] flex flex-col gap-3 flex-shrink-0;
+.tck-search-wrapper {
+  @apply relative flex-grow;
 }
 
-.tck-sidebar-title {
-  @apply text-xs font-bold text-gray-500 uppercase tracking-wider;
+.tck-search-icon {
+  @apply absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none;
+}
+
+.tck-search-input {
+  @apply w-full pl-10 pr-4 py-2.5 bg-[#F9FAFB] hover:bg-white focus:bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-full text-sm outline-none focus:ring-1 focus:ring-[#4F46E5] transition;
+}
+
+.tck-btn-reset-link {
+  @apply flex items-center gap-1.5 text-xs font-bold text-[#4F46E5] hover:text-[#4338CA] transition cursor-pointer border-none outline-none bg-transparent p-0 flex-shrink-0;
+}
+
+.reset-icon-small {
+  @apply w-4 h-4 text-[#4F46E5] hover:text-[#4338CA];
 }
 
 .tck-filter-row {
-  @apply flex items-center bg-[#E5E7EB] p-0.5 rounded-full overflow-x-auto;
+  @apply grid grid-cols-2 lg:grid-cols-4 gap-2 w-full xl:w-auto items-center;
 }
 
-.tck-filter-btn {
-  @apply px-3 py-1.5 text-[9px] font-bold text-gray-500 hover:text-gray-900 rounded-full border-none outline-none cursor-pointer transition flex-shrink-0;
+.tck-filter-select {
+  @apply bg-white border border-[#E5E7EB] rounded-full text-xs font-semibold px-3 py-2 text-gray-600 focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] outline-none cursor-pointer transition h-[36px];
 }
 
-.tck-filter-btn--active {
-  @apply bg-white text-gray-900 font-bold shadow-xs;
+.tck-custom-dates-row {
+  @apply flex w-full xl:justify-end mt-[-8px] mb-2;
 }
 
-.tck-list {
-  @apply flex-1 overflow-y-auto divide-y divide-[#E5E7EB];
+.tck-dates-wrap {
+  @apply flex items-center justify-between gap-2 bg-white border border-[#E5E7EB] rounded-full px-4 h-[36px] w-full max-w-md;
 }
 
-.tck-list-empty {
-  @apply text-center py-12 text-xs text-gray-400 font-medium;
+.tck-date-input {
+  @apply bg-transparent border-none outline-none text-xs text-gray-600 font-semibold cursor-pointer w-[42%];
 }
 
-.tck-list-item {
-  @apply p-4 cursor-pointer hover:bg-white transition flex flex-col gap-2 border-l-4 border-l-transparent;
+.tck-date-sep {
+  @apply text-[10px] font-bold text-gray-400 uppercase tracking-wider;
 }
 
-.tck-list-item--active {
-  @apply bg-white border-l-[#111827];
+/* Table Card Layout */
+.tck-table-card {
+  @apply bg-white rounded-xl border border-[#E5E7EB] overflow-hidden shadow-sm;
 }
 
-.tck-list-header {
-  @apply flex items-center justify-between;
+.tck-table-wrapper {
+  @apply overflow-x-auto;
 }
 
-.tck-list-name {
-  @apply text-xs font-bold text-gray-800;
+.tck-table {
+  @apply w-full border-collapse text-left;
 }
 
-.tck-list-time {
-  @apply text-[9px] text-gray-400 font-semibold;
+.tck-th {
+  @apply px-4 py-3.5 bg-[#F9FAFB] text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-[#E5E7EB] whitespace-nowrap;
 }
 
-.tck-list-subject {
-  @apply text-xs font-semibold text-gray-950 truncate max-w-[200px];
+.tck-tr {
+  @apply border-b border-[#E5E7EB] hover:bg-[#F9FAFB] cursor-pointer transition duration-150;
 }
 
-.tck-list-footer {
+.tck-td {
+  @apply px-4 py-3.5 text-xs text-gray-950 font-medium align-middle;
+}
+
+.tck-td--mono {
+  @apply font-mono text-gray-500 whitespace-nowrap;
+}
+
+.tck-td--subject {
+  @apply font-semibold text-gray-900 max-w-[280px] truncate;
+}
+
+.tck-td--time {
+  @apply text-gray-500 font-mono whitespace-nowrap;
+}
+
+.tck-loading-state,
+.tck-empty-state {
+  @apply text-center py-16 text-gray-400 text-xs font-medium w-full;
+}
+
+.tck-unassigned-text {
+  @apply text-gray-400 font-semibold italic text-[11px];
+}
+
+.tck-muted-text {
+  @apply text-gray-400 text-[11px];
+}
+
+/* Operator avatar & cells */
+.tck-operator-cell {
+  @apply flex items-center gap-3;
+}
+
+.tck-operator-avatar-wrapper {
+  @apply w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xs uppercase flex-shrink-0;
+}
+
+.tck-operator-avatar-wrapper span {
+  @apply w-full h-full flex items-center justify-center text-white;
+}
+
+.tck-operator-avatar-img {
+  @apply w-full h-full object-cover;
+}
+
+.tck-operator-info {
+  @apply flex flex-col min-w-0 leading-tight;
+}
+
+.tck-operator-name {
+  @apply text-xs font-semibold text-gray-900 truncate;
+}
+
+.tck-operator-email {
+  @apply text-[10px] text-gray-400 font-medium truncate max-w-[150px];
+}
+
+/* Pagination Footer */
+.tck-pagination-footer {
+  @apply flex flex-col sm:flex-row items-center justify-between px-6 py-4 bg-[#F9FAFB] border-t border-[#E5E7EB] gap-4;
+}
+
+.tck-pagination-info {
+  @apply text-xs text-gray-500 font-medium;
+}
+
+.tck-pagination-controls {
+  @apply flex items-center gap-6;
+}
+
+.tck-pagination-size-selector {
   @apply flex items-center gap-2;
 }
 
+.tck-size-label {
+  @apply text-xs text-gray-500 font-semibold;
+}
+
+.tck-size-select {
+  @apply bg-white border border-[#E5E7EB] rounded-full text-xs font-semibold px-3 py-1.5 focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] outline-none cursor-pointer transition;
+}
+
+.tck-pagination-buttons {
+  @apply flex items-center gap-3;
+}
+
+.tck-pagination-btn {
+  @apply p-1.5 rounded-full border border-[#E5E7EB] bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-50 disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-gray-600 disabled:cursor-not-allowed transition duration-150 cursor-pointer;
+}
+
+.tck-pagination-btn-icon {
+  @apply w-4 h-4;
+}
+
+.tck-pagination-current-page {
+  @apply text-xs text-gray-700 font-bold font-mono;
+}
+
+/* Badges (Status and Priority) */
 .tck-badge-status {
-  @apply text-[8px] font-bold px-1.5 py-0.5 rounded uppercase;
+  @apply text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider inline-block text-center border whitespace-nowrap;
 }
 
 .tck-badge-status.status-open {
@@ -95,7 +198,7 @@
 }
 
 .tck-badge-priority {
-  @apply text-[8px] font-bold px-1.5 py-0.5 rounded uppercase border;
+  @apply text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider inline-block text-center border whitespace-nowrap;
 }
 
 .tck-badge-priority.priority-critical {
@@ -103,137 +206,402 @@
 }
 
 .tck-badge-priority.priority-high {
-  @apply bg-orange-100 text-orange-800 border-none;
+  @apply bg-orange-50 text-orange-800 border-orange-100;
 }
 
 .tck-badge-priority.priority-medium {
-  @apply bg-yellow-100 text-yellow-800 border-none;
+  @apply bg-yellow-50 text-yellow-800 border-yellow-100;
 }
 
 .tck-badge-priority.priority-low {
-  @apply bg-blue-100 text-blue-800 border-none;
+  @apply bg-blue-50 text-blue-800 border-blue-100;
 }
 
-.tck-main-pane {
-  @apply flex-1 flex flex-col bg-white min-w-0;
+/* PrimeNG drop-down customizations */
+:host ::ng-deep .assignee-dropdown-p {
+  @apply w-full rounded-full transition focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] flex items-center bg-white cursor-pointer;
+  height: 36px !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: none !important;
 }
 
-.tck-empty-view {
-  @apply flex-1 flex flex-col items-center justify-center text-center p-8;
+:host ::ng-deep .assignee-dropdown-p .p-select-label {
+  @apply text-xs font-semibold text-gray-700 pl-4 pr-8 py-0 flex items-center;
+  height: 100% !important;
 }
 
-.tck-empty-icon {
-  @apply w-12 h-12 text-gray-300 mb-2;
+:host ::ng-deep .assignee-dropdown-p .p-select-dropdown {
+  @apply pr-3;
 }
 
-.tck-empty-text {
-  @apply text-xs text-gray-400 font-medium;
+:host ::ng-deep .tck-date-preset-dropdown {
+  @apply w-full rounded-full transition focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] flex items-center bg-white cursor-pointer;
+  height: 36px !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: none !important;
 }
 
-.tck-chat-wrapper {
-  @apply flex-1 flex flex-col h-full overflow-hidden;
+:host ::ng-deep .tck-date-preset-dropdown .p-select-label {
+  @apply text-xs font-semibold text-gray-700 pl-4 pr-8 py-0 flex items-center;
+  height: 100% !important;
 }
 
-.tck-chat-header {
-  @apply p-4 border-b border-[#E5E7EB] bg-[#F9FAFB] flex items-start justify-between flex-shrink-0 flex-wrap gap-4;
+:host ::ng-deep .tck-date-preset-dropdown .p-select-dropdown {
+  @apply pr-3;
 }
 
-.tck-chat-title-group {
-  @apply flex flex-col min-w-0;
+:host ::ng-deep .p-select-overlay {
+  font-family: inherit;
 }
 
-.tck-chat-title {
-  @apply text-sm font-bold text-gray-900 leading-snug truncate;
+:host ::ng-deep .p-select-option {
+  @apply text-xs font-semibold text-gray-700;
+  padding: 8px 12px !important;
 }
 
-.tck-chat-customer {
-  @apply text-[10px] text-gray-500 mt-1 font-semibold;
+.assignee-filter-option {
+  @apply flex min-w-0 items-center gap-2 py-1;
 }
 
-.tck-chat-status-area {
-  @apply flex items-center gap-2 flex-shrink-0;
+.assignee-filter-option--selected {
+  @apply py-0;
 }
 
-.tck-status-label {
-  @apply text-xs font-semibold text-gray-600;
+.assignee-avatar-img {
+  @apply h-7 w-7 flex-shrink-0 rounded-full object-cover shadow-sm ring-1 ring-white;
 }
 
-.tck-chat-status-select {
-  @apply px-2.5 py-1.5 bg-white border border-[#E5E7EB] rounded-lg text-xs outline-none focus:border-[#4F46E5] transition font-medium;
+.assignee-avatar-placeholder {
+  @apply flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm uppercase;
 }
 
-.tck-chat-history {
-  @apply flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-[#F9FAFB];
+.assignee-avatar-placeholder--small {
+  @apply flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[8px] font-bold text-white shadow-sm uppercase;
 }
 
-.tck-msg {
-  @apply flex;
+.assignee-avatar-placeholder--unassigned {
+  @apply bg-gray-100 text-gray-400 ring-1 ring-gray-200;
 }
 
-.tck-msg--customer {
-  @apply justify-start;
-}
-
-.tck-msg--agent {
-  @apply justify-end;
-}
-
-.tck-bubble {
-  @apply max-w-[75%] p-4 rounded-2xl shadow-xs;
-}
-
-.tck-msg--customer .tck-bubble {
-  @apply bg-white text-gray-900 border border-[#E5E7EB] rounded-tl-none;
-}
-
-.tck-msg--agent .tck-bubble {
-  @apply bg-[#F0FDF4] text-[#16A34A] border border-emerald-100 rounded-tr-none;
-}
-
-.tck-bubble-header {
-  @apply flex items-center justify-between mb-1;
-}
-
-.tck-bubble-sender {
-  @apply text-[9px] font-bold uppercase tracking-wider text-gray-400;
-}
-
-.tck-msg--agent .tck-bubble-sender {
-  @apply text-emerald-600;
-}
-
-.tck-bubble-content {
-  @apply text-xs leading-relaxed font-medium text-gray-800;
-}
-
-.tck-bubble-time {
-  @apply text-[8px] text-gray-400 font-semibold block mt-2 text-right;
-}
-
-.tck-msg--agent .tck-bubble-time {
-  @apply text-emerald-500;
-}
-
-.tck-chat-input-area {
-  @apply p-4 border-t border-[#E5E7EB] bg-white flex-shrink-0;
-}
-
-.tck-chat-form {
-  @apply flex items-center gap-3;
-}
-
-.tck-chat-input {
-  @apply flex-1 px-4 py-2.5 bg-[#F9FAFB] focus:bg-white border border-[#E5E7EB] focus:border-[#4F46E5] rounded-full text-xs outline-none focus:ring-1 focus:ring-[#4F46E5] transition font-medium;
-}
-
-.tck-chat-send-btn {
-  @apply flex items-center gap-1.5 px-4.5 py-2.5 bg-[#FFC700] hover:bg-[#FFD633] text-[#111827] rounded-full text-xs font-bold transition border-none outline-none cursor-pointer;
-}
-
-.tck-chat-send-btn svg {
+.assignee-icon {
   @apply w-3.5 h-3.5;
 }
 
-/* Premium Admin Console surface overrides */
-.tickets-container { color: #111827; }
+.assignee-filter-copy {
+  @apply flex min-w-0 flex-col leading-tight;
+}
 
+.assignee-filter-name {
+  @apply truncate text-xs font-semibold text-[#111827];
+}
+
+.assignee-filter-email {
+  @apply truncate text-[10px] font-medium text-[#6B7280];
+}
+
+/* Modal Dialog Styles (Kinetic Monolith details modal) */
+@keyframes tckModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes tckModalZoomIn {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.tck-modal-backdrop {
+  @apply fixed inset-0 bg-black/35 backdrop-blur-[3px] flex items-center justify-center z-50 p-4;
+  animation: tckModalFadeIn 0.15s ease-out forwards;
+}
+
+.tck-modal-content {
+  @apply bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-200 flex flex-col;
+  max-height: min(86vh, 820px);
+  animation: tckModalZoomIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.tck-modal-header {
+  @apply sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white;
+}
+
+.tck-modal-heading {
+  @apply flex min-w-0 flex-col gap-1;
+}
+
+.tck-modal-kicker {
+  @apply text-[10px] font-bold uppercase tracking-wider text-gray-400;
+}
+
+.tck-modal-title {
+  @apply text-base font-bold text-gray-950 truncate max-w-lg;
+}
+
+.tck-modal-close-btn {
+  @apply inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition cursor-pointer;
+}
+
+.tck-modal-close-icon {
+  @apply w-5 h-5;
+}
+
+.tck-modal-body {
+  @apply flex flex-col gap-5 overflow-y-auto p-6;
+}
+
+.tck-modal-row {
+  @apply flex flex-col gap-1.5;
+}
+
+.tck-modal-label {
+  @apply text-[10px] font-bold text-gray-400 uppercase tracking-wider;
+}
+
+.tck-modal-value {
+  @apply text-xs text-gray-800 font-semibold leading-relaxed;
+}
+
+.tck-modal-value--mono {
+  @apply font-mono bg-[#F9FAFB] p-3.5 rounded-xl border border-gray-200 text-xs text-gray-800 overflow-x-auto whitespace-pre-wrap break-words;
+}
+
+.tck-modal-value--mono-inline {
+  @apply font-mono bg-gray-50 px-2 py-0.5 rounded border border-gray-200 text-xs text-gray-600 w-fit;
+}
+
+/* Rich-text rendered description from p-editor */
+.tck-modal-description {
+  @apply text-xs text-gray-800 leading-relaxed bg-[#F9FAFB] p-3.5 rounded-xl border border-gray-200 overflow-x-auto;
+}
+
+.tck-modal-description p {
+  @apply mb-2 last:mb-0;
+}
+
+.tck-modal-description strong,
+.tck-modal-description b {
+  @apply font-semibold text-gray-900;
+}
+
+.tck-modal-description em,
+.tck-modal-description i {
+  @apply italic;
+}
+
+.tck-modal-description ul {
+  @apply list-disc pl-5 mb-2 space-y-0.5;
+}
+
+.tck-modal-description ol {
+  @apply list-decimal pl-5 mb-2 space-y-0.5;
+}
+
+.tck-modal-description li {
+  @apply text-xs text-gray-700;
+}
+
+.tck-modal-operator-card {
+  @apply flex items-center justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3;
+}
+
+.tck-modal-info-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4;
+}
+
+.tck-modal-status-select {
+  @apply px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition font-semibold text-gray-800 cursor-pointer h-9 w-full sm:w-48;
+}
+
+/* User profile — Ranked Impact View */
+.tck-affected-header {
+  @apply flex items-center gap-2 mb-1.5;
+}
+
+.tck-affected-count-chip {
+  @apply text-[11px] font-bold bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-full border border-gray-200;
+}
+
+.tck-affected-rank-list {
+  @apply flex flex-col gap-2 overflow-y-auto pr-1;
+  max-height: 220px;
+}
+
+.tck-affected-rank-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.tck-affected-rank-list::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.tck-affected-rank-list::-webkit-scrollbar-thumb {
+  @apply bg-gray-200 rounded-full;
+}
+
+/* Base rank card */
+.tck-rank-card {
+  @apply flex items-center gap-2.5 bg-white px-3 py-2.5 rounded-xl border border-[#E5E7EB] w-full transition-all duration-200;
+}
+
+/* First affected */
+.tck-rank-card.tck-rank-card--first {
+  @apply border-[#E11D48] bg-rose-50/40;
+}
+
+/* Rank badge */
+.tck-rank-badge {
+  @apply w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0 bg-gray-200 text-gray-500;
+}
+
+.tck-rank-badge.tck-rank-badge--first {
+  @apply bg-[#E11D48] text-white;
+}
+
+/* Avatar */
+.tck-profile-card {
+  @apply flex items-center gap-3 p-2.5 bg-[#F9FAFB] rounded-xl border border-gray-200 mt-1;
+}
+
+.tck-profile-avatar-img {
+  @apply w-8 h-8 rounded-full object-cover flex-shrink-0 border border-white shadow-xs;
+}
+
+.tck-profile-avatar-placeholder {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-xs flex-shrink-0;
+}
+
+.tck-profile-avatar-placeholder--unassigned {
+  @apply bg-gray-100 border border-gray-200;
+}
+
+/* Info */
+.tck-profile-info {
+  @apply flex flex-col min-w-0 leading-tight;
+}
+
+.tck-profile-name-row {
+  @apply flex items-center gap-1.5 min-w-0;
+}
+
+.tck-profile-name {
+  @apply text-xs font-bold text-gray-800 truncate;
+}
+
+.tck-first-hit-chip {
+  @apply text-[9px] font-black tracking-wider uppercase bg-[#E11D48] text-white px-1.5 py-0.5 rounded-full shrink-0;
+}
+
+.tck-profile-email {
+  @apply text-xs text-gray-400 font-medium truncate;
+}
+
+.tck-linked-incident-link {
+  @apply text-xs font-bold text-[#4F46E5] hover:underline cursor-pointer;
+}
+
+/* Custom styles for PrimeNG assignee select in ticket details */
+:host ::ng-deep .detail-assignee-select {
+  @apply w-full rounded-xl transition focus-within:border-[#4F46E5] focus-within:ring-1 focus-within:ring-[#4F46E5] flex items-center;
+  height: 54px !important;
+  border: 1px solid #E5E7EB !important;
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .detail-assignee-select .p-select-label {
+  @apply text-xs text-gray-700 pl-2.5 pr-8 py-0 flex items-center w-full;
+  height: 100% !important;
+}
+
+:host ::ng-deep .detail-assignee-select .p-select-dropdown {
+  @apply pr-3;
+}
+
+/* Custom styles for option items */
+.assignee-selected-view {
+  @apply flex items-center gap-3 w-full;
+}
+
+.assignee-selected-avatar {
+  @apply w-8 h-8 rounded-full object-cover flex-shrink-0 border border-white shadow-xs;
+}
+
+.assignee-selected-avatar-fallback {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-xs flex-shrink-0;
+}
+
+.assignee-item-view {
+  @apply flex items-center gap-2.5 py-0.5;
+}
+
+.assignee-avatar {
+  @apply w-5 h-5 rounded-full object-cover border border-gray-100;
+}
+
+.assignee-avatar-fallback {
+  @apply w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white uppercase shadow-xs;
+}
+
+.assignee-details {
+  @apply flex flex-col leading-tight min-w-0;
+}
+
+.assignee-name-text {
+  @apply text-xs font-semibold text-[#111827] truncate;
+}
+
+.assignee-email-text {
+  @apply text-[10px] text-gray-500 font-medium truncate;
+}
+
+/* Avatar stack & multiple affected customers indicator styles */
+.tck-avatar-stack {
+  @apply flex items-center -space-x-2.5 flex-shrink-0;
+}
+
+.tck-stack-avatar-wrapper {
+  @apply w-8 h-8 rounded-full overflow-hidden flex items-center justify-center bg-indigo-50 border-2 border-white text-indigo-700 font-bold text-[10px] uppercase flex-shrink-0 shadow-sm relative;
+}
+
+.tck-stack-avatar-img {
+  @apply w-full h-full object-cover;
+}
+
+.tck-stack-avatar-text {
+  @apply w-full h-full flex items-center justify-center text-white text-[9px] font-bold;
+}
+
+.tck-stack-avatar-more {
+  @apply bg-rose-600 border-2 border-white text-white font-bold text-[9px] flex items-center justify-center;
+}
+
+.tck-badge-affected {
+  @apply text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-100 whitespace-nowrap inline-flex items-center;
+}
+
+/* Incident/Ticket images gallery */
+.incident-image-item {
+  @apply relative w-16 h-16 rounded-xl overflow-hidden border border-[#E5E7EB] cursor-pointer shadow-xs hover:border-[#4F46E5] hover:shadow-md transition duration-200;
+}
+
+.incident-image-item img {
+  @apply w-full h-full object-cover;
+}
+
+.image-overlay {
+  @apply absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 flex items-center justify-center transition duration-150;
+}
+
+/* Lightbox Image Preview overlay */
+.lightbox-content {
+  @apply relative max-w-[85vw] max-h-[85vh] flex items-center justify-center;
+  animation: tckModalZoomIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.lightbox-img {
+  @apply max-w-full max-h-[80vh] rounded-xl object-contain shadow-2xl border-4 border-white;
+}
+
+.lightbox-close-btn {
+  @apply absolute -top-10 right-0 w-8 h-8 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center border-none outline-none cursor-pointer transition;
+}

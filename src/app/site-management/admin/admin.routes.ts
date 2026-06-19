@@ -40,11 +40,21 @@ export const adminRoutes: Routes = [
           import('./incidents/pages/incidents/incidents.component').then(m => m.IncidentsComponent)
       },
       {
+        path: 'incidents/:id',
+        data: {
+          eyebrow: 'Giám sát hệ thống',
+          title: 'Chi tiết Sự cố',
+          description: 'Xem chi tiết lỗi, logs liên quan từ Loki, timeline hoạt động của user và phân tích AI.'
+        },
+        loadComponent: () =>
+          import('./incidents/pages/incident-detail/incident-detail.component').then(m => m.IncidentDetailComponent)
+      },
+      {
         path: 'tickets',
         data: {
           eyebrow: 'Giám sát hệ thống',
-          title: 'Hỗ trợ khách hàng (Ticket)',
-          description: 'Tiếp nhận, phản hồi và xử lý các ticket yêu cầu hỗ trợ từ người dùng.'
+          title: 'Nhật ký xử lý Ticket',
+          description: 'Theo dõi tiến trình khắc phục sự cố, ghi nhận nhật ký kỹ thuật nội bộ.'
         },
         loadComponent: () =>
           import('./tickets/pages/tickets/tickets.component').then(m => m.TicketsComponent)
