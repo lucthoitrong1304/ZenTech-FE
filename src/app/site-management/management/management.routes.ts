@@ -62,14 +62,38 @@ export const managementRoutes: Routes = [
       {
         path: 'work-schedules',
         data: {
-          eyebrow: 'Dieu hanh kinh doanh',
-          title: 'Lich lam viec',
-          description: 'Phan ca theo tuan, gan lich hang loat va quan ly gio ca lam viec.',
-          primaryAction: 'Gan ca',
+          eyebrow: 'Điều hành kinh doanh',
+          title: 'Lịch làm việc',
+          description: 'Phân ca theo tuần, gán lịch hàng loạt và quản lý giờ ca làm việc.',
+          primaryAction: 'Gán ca',
         },
         loadComponent: () =>
           import('./work-schedules/pages/work-schedules-page/work-schedules-page.component').then(
             m => m.WorkSchedulesPageComponent
+          ),
+      },
+      {
+        path: 'requests',
+        data: {
+          eyebrow: 'Điều hành kinh doanh',
+          title: 'Yêu cầu & Đề xuất',
+          description: 'Gửi yêu cầu nghỉ phép, đổi ca, và điều chỉnh giờ công.',
+        },
+        loadComponent: () =>
+          import('./pages/requests/requests.component').then(
+            m => m.RequestsComponent
+          ),
+      },
+      {
+        path: 'approvals',
+        data: {
+          eyebrow: 'Điều hành kinh doanh',
+          title: 'Duyệt yêu cầu',
+          description: 'Phê duyệt các yêu cầu nghỉ phép, đổi ca, và chỉnh công từ nhân viên.',
+        },
+        loadComponent: () =>
+          import('./pages/approvals/approvals.component').then(
+            m => m.ApprovalsComponent
           ),
       },
       {
@@ -190,6 +214,18 @@ export const managementRoutes: Routes = [
         loadComponent: () =>
           import('./reports/pages/management-reports/management-reports.component').then(
             m => m.ManagementReportsPageComponent
+          ),
+      },
+      {
+        path: 'pay-periods',
+        data: {
+          eyebrow: 'Quản trị hệ thống',
+          title: 'Quản lý Kỳ công',
+          description: 'Quản lý khóa và mở khóa các kỳ tính công hàng tháng.',
+        },
+        loadComponent: () =>
+          import('./pages/pay-periods/pay-periods.component').then(
+            m => m.PayPeriodsComponent
           ),
       },
       {

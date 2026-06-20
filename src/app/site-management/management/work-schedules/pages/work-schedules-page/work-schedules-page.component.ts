@@ -81,6 +81,11 @@ export class WorkSchedulesPageComponent {
     this.store.setKeyword(readInputValue(event));
   }
 
+  protected onReasonInput(event: Event): void {
+    this.store.setReason(readInputValue(event));
+  }
+
+
   protected onKeywordEnter(event: Event): void {
     event.preventDefault();
     this.store.applyFilters();

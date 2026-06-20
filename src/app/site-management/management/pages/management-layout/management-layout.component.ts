@@ -192,8 +192,10 @@ export class ManagementLayoutComponent {
       title: 'Điều hành kinh doanh',
       items: [
         { label: 'Nhân viên', path: '/management/employees', icon: 'employees' },
-        { label: 'Lich lam viec', path: '/management/work-schedules', icon: 'schedule' },
+        { label: 'Lịch làm việc', path: '/management/work-schedules', icon: 'schedule' },
         { label: 'Báo cáo chấm công', path: '/management/attendance-report', icon: 'reports' },
+        { label: 'Yêu cầu & Đề xuất', path: '/management/requests', icon: 'chat' },
+        { label: 'Duyệt yêu cầu', path: '/management/approvals', icon: 'employees' },
         { label: 'Tư vấn khách hàng', path: '/management/chat', icon: 'chat' },
         { label: 'Đơn hàng', path: '/management/orders', icon: 'orders' },
         {
@@ -214,6 +216,7 @@ export class ManagementLayoutComponent {
       title: 'Quản trị hệ thống',
       items: [
         { label: 'Quản lý AI', path: '/management/ai-management', icon: 'ai' },
+        { label: 'Quản lý Kỳ công', path: '/management/pay-periods', icon: 'schedule' },
         { label: 'Báo cáo & Thống kê', path: '/management/reports', icon: 'reports' },
       ],
     },

@@ -136,13 +136,20 @@
                     class="work-schedules-cell"
                     [class.work-schedules-cell--empty]="!shift"
                     [style.border-left-color]="shift?.colorCode || null"
+                    [style.background-color]="shift ? (shift.colorCode + '13') : null"
                     (click)="store.openAssignModal(employee, date, shift)"
                   >
                     @if (shift) {
-                      <strong>{{ shift.shiftName }}</strong>
+                      <strong [style.color]="shift.colorCode">{{ shift.shiftName }}</strong>
                       <small>{{ getShiftTimeRange(shift) }}</small>
                     } @else {
-                      <strong>Gán ca</strong>
+                      <strong>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Gán ca
+                      </strong>
                       <small>Chưa xếp lịch</small>
                     }
                   </button>
@@ -241,6 +248,11 @@
               }
             </select>
           </label>
+
+          <label class="work-schedules-field">
+            <span>Lý do điều chỉnh (Bắt buộc nếu sửa ngày hôm nay/quá khứ)</span>
+            <input type="text" placeholder="Nhập lý do..." [value]="store.reason()" (input)="onReasonInput($event)" />
+          </label>
         </div>
 
         <footer class="work-schedules-modal__footer">
@@ -301,6 +313,11 @@
             <input type="date" [value]="store.bulkDraft().endDate" (input)="onBulkDateInput('endDate', $event)" />
           </label>
         </div>
+
+        <label class="work-schedules-field">
+          <span>Lý do điều chỉnh (Bắt buộc nếu sửa ngày hôm nay/quá khứ)</span>
+          <input type="text" placeholder="Nhập lý do..." [value]="store.reason()" (input)="onReasonInput($event)" />
+        </label>
       </div>
 
       <footer class="work-schedules-modal__footer">
@@ -353,6 +370,11 @@
             <input type="date" [value]="store.copyDraft().toWeekEndDate" readonly />
           </label>
         </div>
+
+        <label class="work-schedules-field">
+          <span>Lý do điều chỉnh (Bắt buộc nếu sửa ngày hôm nay/quá khứ)</span>
+          <input type="text" placeholder="Nhập lý do..." [value]="store.reason()" (input)="onReasonInput($event)" />
+        </label>
       </div>
 
       <footer class="work-schedules-modal__footer">
