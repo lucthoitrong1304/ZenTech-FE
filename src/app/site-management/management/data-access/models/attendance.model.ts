@@ -17,8 +17,15 @@ export interface AttendanceRecordResponse {
   id: string;
   employeeId: string;
   employeeName: string;
-  checkInTime: string;
-  status: AttendanceStatus;
+  workDate: string;
+  shiftName: string;
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  workingHours: number;
+  lateMinutes: number;
+  earlyMinutes: number;
+  status: string;
+  detailTimes?: string[];
 }
 
 export interface AttendanceStatisticsResponse {
@@ -26,6 +33,11 @@ export interface AttendanceStatisticsResponse {
   totalOnTime: number;
   totalLate: number;
   totalEarly: number;
+  totalWorkingHours: number;
+  totalMissingCheckIn: number;
+  totalMissingCheckOut: number;
+  totalAbsent: number;
+  totalLeave: number;
 }
 
 export interface PageResponse<T> {

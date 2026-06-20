@@ -66,6 +66,7 @@ export interface AssignShiftRequest {
   employeeId: string;
   shiftId: string;
   workDate: string;
+  reason?: string;
 }
 
 export interface BulkShiftUpdateRequest {
@@ -74,6 +75,7 @@ export interface BulkShiftUpdateRequest {
   shiftId: string;
   startDate: string;
   endDate: string;
+  reason?: string;
 }
 
 export interface CopyWeekRequest {
@@ -81,7 +83,9 @@ export interface CopyWeekRequest {
   fromWeekEndDate: string;
   toWeekStartDate: string;
   toWeekEndDate: string;
+  reason?: string;
 }
+
 
 export interface SelectedScheduleCell {
   employeeId: string;

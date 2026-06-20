@@ -60,6 +60,7 @@ interface WorkScheduleState {
   copyDraft: CopyWeekDraft;
   settingsModalOpen: boolean;
   settingsDraft: ShiftSettingsDraft;
+  reason: string;
   errorMessage: string | null;
   successMessage: string | null;
 }
@@ -83,6 +84,7 @@ const INITIAL_STATE: WorkScheduleState = {
   copyDraft: EMPTY_COPY_DRAFT,
   settingsModalOpen: false,
   settingsDraft: { shifts: [], newShift: null },
+  reason: '',
   errorMessage: null,
   successMessage: null,
 };
@@ -200,6 +202,7 @@ export const WorkScheduleStore = signalStore(
               employeeId: cell.employeeId,
               shiftId,
               workDate: cell.workDate,
+              reason: store.reason(),
             })
             .pipe(
               tap({
@@ -245,6 +248,7 @@ export const WorkScheduleStore = signalStore(
               shiftId: draft.shiftId,
               startDate: draft.startDate,
               endDate: draft.endDate,
+              reason: store.reason(),
             })
             .pipe(
               tap({
@@ -282,7 +286,10 @@ export const WorkScheduleStore = signalStore(
 
           patchState(store, { saving: true, errorMessage: null, successMessage: null });
 
-          return workScheduleService.copyWeek(draft).pipe(
+          return workScheduleService.copyWeek({
+            ...draft,
+            reason: store.reason(),
+          }).pipe(
             tap({
               next: () => {
                 patchState(store, {
@@ -483,8 +490,12 @@ export const WorkScheduleStore = signalStore(
         patchState(store, {
           selectedCell: null,
           assignShiftId: '',
+          reason: '',
           assignModalOpen: false,
         });
+      },
+      setReason(reason: string): void {
+        patchState(store, { reason });
       },
       setAssignShift(shiftId: string): void {
         patchState(store, { assignShiftId: shiftId });
@@ -505,7 +516,7 @@ export const WorkScheduleStore = signalStore(
           return;
         }
 
-        patchState(store, { bulkModalOpen: false });
+        patchState(store, { bulkModalOpen: false, reason: '' });
       },
       updateBulkDraft(patch: Partial<BulkAssignDraft>): void {
         patchState(store, {
@@ -533,7 +544,7 @@ export const WorkScheduleStore = signalStore(
           return;
         }
 
-        patchState(store, { copyModalOpen: false });
+        patchState(store, { copyModalOpen: false, reason: '' });
       },
       updateCopyDraft(patch: Partial<CopyWeekDraft>): void {
         patchState(store, {
