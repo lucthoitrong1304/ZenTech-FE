@@ -81,11 +81,17 @@ export const ManagementOrdersStore = signalStore(
       drawerMode,
     }) => ({
       orders: computed(() => orderEntities()),
-      selectedOrder: computed(
-        () =>
+      selectedOrder: computed(() => {
+        const snapshot = selectedOrderSnapshot();
+        if (snapshot && snapshot.items && snapshot.items.length > 0) {
+          return snapshot;
+        }
+        return (
           orderEntities().find(order => order.orderId === selectedOrderId()) ??
-          selectedOrderSnapshot()
-      ),
+          snapshot ??
+          null
+        );
+      }),
       detailDrawerOpen: computed(() => drawerMode() === 'detail'),
       editDrawerOpen: computed(() => drawerMode() === 'edit'),
       hasOrders: computed(() => orderEntities().length > 0),

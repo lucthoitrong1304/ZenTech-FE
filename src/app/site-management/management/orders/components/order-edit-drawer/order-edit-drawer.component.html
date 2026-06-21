@@ -67,20 +67,9 @@
                     <h4>{{ item.productName }}</h4>
                     <p>{{ item.variantName || 'Phiên bản tiêu chuẩn' }}</p>
                   </div>
-                  <div class="order-edit-item__quantity">
-                    <button type="button" (click)="setQuantity(item.orderItemId, getDraftQuantity(item.orderItemId) - 1)">
-                      <svg lucideMinus [attr.stroke-width]="2"></svg>
-                    </button>
-                    <input
-                      type="number"
-                      min="1"
-                      [value]="getDraftQuantity(item.orderItemId)"
-                      (input)="setQuantity(item.orderItemId, +$any($event.target).value)"
-                    />
-                    <button type="button" (click)="setQuantity(item.orderItemId, getDraftQuantity(item.orderItemId) + 1)">
-                      <svg lucidePlus [attr.stroke-width]="2"></svg>
-                    </button>
-                  </div>
+                  <span class="order-edit-item__quantity">
+                    x{{ getDraftQuantity(item.orderItemId) }}
+                  </span>
                   <strong>{{ item.unitPrice * getDraftQuantity(item.orderItemId) | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
                 </article>
               }
