@@ -216,35 +216,9 @@
 }
 
 .order-edit-item__quantity {
-  display: grid;
-  grid-template-columns: 30px 38px 30px;
-  overflow: hidden;
-  border: 1px solid rgba(210, 197, 171, 0.2);
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-.order-edit-item__quantity button,
-.order-edit-item__quantity input {
-  width: 100%;
-  min-height: 32px;
-  border: 0;
-  background: transparent;
-  color: #4f4632;
-  font: inherit;
-}
-
-.order-edit-item__quantity button {
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-}
-
-.order-edit-item__quantity input {
-  padding: 0;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 950;
+  color: rgba(79, 70, 50, 0.8);
+  font-size: 13px;
+  font-weight: 850;
 }
 
 .order-edit-summary {
