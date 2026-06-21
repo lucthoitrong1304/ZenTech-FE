@@ -23,17 +23,27 @@ export const adminRoutes: Routes = [
         path: 'logs',
         data: {
           eyebrow: 'Giám sát hệ thống',
-          title: 'Nhật ký hệ thống (Logs)',
+          title: 'Logs',
           description: 'Theo dõi, tìm kiếm và phân tích các log hoạt động của server và database.'
         },
         loadComponent: () =>
           import('./logs/pages/logs/logs.component').then(m => m.LogsComponent)
       },
       {
+        path: 'issues',
+        data: {
+          eyebrow: 'Giám sát hệ thống',
+          title: 'Issues',
+          description: 'Theo dõi các nhóm lỗi kỹ thuật tự động gom nhóm từ hệ thống logs.'
+        },
+        loadComponent: () =>
+          import('./issues/pages/issues/issues.component').then(m => m.IssuesComponent)
+      },
+      {
         path: 'incidents',
         data: {
           eyebrow: 'Giám sát hệ thống',
-          title: 'Quản lý sự cố',
+          title: 'Incidents',
           description: 'Kiểm tra và xử lý các sự cố kỹ thuật của hệ thống và API.'
         },
         loadComponent: () =>
@@ -43,7 +53,7 @@ export const adminRoutes: Routes = [
         path: 'incidents/:id',
         data: {
           eyebrow: 'Giám sát hệ thống',
-          title: 'Chi tiết Sự cố',
+          title: 'Incident Details',
           description: 'Xem chi tiết lỗi, logs liên quan từ Loki, timeline hoạt động của user và phân tích AI.'
         },
         loadComponent: () =>
@@ -53,7 +63,7 @@ export const adminRoutes: Routes = [
         path: 'tickets',
         data: {
           eyebrow: 'Giám sát hệ thống',
-          title: 'Nhật ký xử lý Ticket',
+          title: 'Tickets',
           description: 'Theo dõi tiến trình khắc phục sự cố, ghi nhận nhật ký kỹ thuật nội bộ.'
         },
         loadComponent: () =>

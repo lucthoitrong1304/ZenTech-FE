@@ -359,31 +359,43 @@ export const AdminStore = signalStore(
     filteredLogs: computed(() => {
       let result = logs();
       const filterVal = logFilter();
-      const searchVal = logSearch().toLowerCase().trim();
+      const searchVal = logSearch().trim().toLowerCase();
 
       if (filterVal !== 'ALL') {
         result = result.filter(log => log.level === filterVal);
       }
       if (searchVal) {
-        result = result.filter(log =>
-          log.message.toLowerCase().includes(searchVal) ||
-          log.category.toLowerCase().includes(searchVal) ||
-          log.details.toLowerCase().includes(searchVal)
-        );
+        const isTraceIdQuery = searchVal.startsWith('zt-') && searchVal.length > 5;
+        if (isTraceIdQuery) {
+          result = result.filter(log => log.traceId && log.traceId.toLowerCase() === searchVal);
+        } else {
+          result = result.filter(log =>
+            log.message.toLowerCase().includes(searchVal) ||
+            log.category.toLowerCase().includes(searchVal) ||
+            log.details.toLowerCase().includes(searchVal) ||
+            (log.traceId && log.traceId.toLowerCase().includes(searchVal))
+          );
+        }
       }
       return result;
     }),
 
     filteredIssueLogs: computed(() => {
-      const searchVal = logSearch().toLowerCase().trim();
+      const searchVal = logSearch().trim().toLowerCase();
       let result = issueLogs();
 
       if (searchVal) {
-        result = result.filter(log =>
-          log.message.toLowerCase().includes(searchVal) ||
-          log.category.toLowerCase().includes(searchVal) ||
-          log.details.toLowerCase().includes(searchVal)
-        );
+        const isTraceIdQuery = searchVal.startsWith('zt-') && searchVal.length > 5;
+        if (isTraceIdQuery) {
+          result = result.filter(log => log.traceId && log.traceId.toLowerCase() === searchVal);
+        } else {
+          result = result.filter(log =>
+            log.message.toLowerCase().includes(searchVal) ||
+            log.category.toLowerCase().includes(searchVal) ||
+            log.details.toLowerCase().includes(searchVal) ||
+            (log.traceId && log.traceId.toLowerCase().includes(searchVal))
+          );
+        }
       }
 
       return result;
@@ -677,11 +689,11 @@ export const AdminStore = signalStore(
         )
       ),
 
-      loadLogs: rxMethod<{ level: string; search: string; traceId: string }>(
+      loadLogs: rxMethod<{ level: string; search: string; traceId: string; startTime?: number; endTime?: number }>(
         pipe(
           tap(() => patchState(store, { isLoadingLogs: true })),
-          switchMap(({ level, search, traceId }) =>
-            adminLogsService.getLogs(level, search, traceId).pipe(
+          switchMap(({ level, search, traceId, startTime, endTime }) =>
+            adminLogsService.getLogs(level, search, traceId, 500, startTime, endTime).pipe(
               tap((logs) => {
                 patchState(store, { logs, isLoadingLogs: false });
               }),
@@ -696,12 +708,12 @@ export const AdminStore = signalStore(
         )
       ),
 
-      loadIssueLogs: rxMethod<{ search: string; traceId: string }>(
+      loadIssueLogs: rxMethod<{ search: string; traceId: string; startTime?: number; endTime?: number }>(
         pipe(
-          switchMap(({ search, traceId }) =>
+          switchMap(({ search, traceId, startTime, endTime }) =>
             forkJoin([
-              adminLogsService.getLogs(LogLevel.WARN, search, traceId, 500),
-              adminLogsService.getLogs(LogLevel.ERROR, search, traceId, 500),
+              adminLogsService.getLogs(LogLevel.WARN, search, traceId, 500, startTime, endTime),
+              adminLogsService.getLogs(LogLevel.ERROR, search, traceId, 500, startTime, endTime),
             ]).pipe(
               tap(([warnLogs, errorLogs]) => {
                 patchState(store, { issueLogs: [...warnLogs, ...errorLogs] });
@@ -754,12 +766,24 @@ export const AdminStore = signalStore(
 
       setLogFilter(filter: LogLevel | 'ALL') {
         patchState(store, { logFilter: filter });
-        this.loadLogs({ level: filter, search: store.logSearch(), traceId: '' });
+        const search = store.logSearch().trim();
+        const isTraceId = search.startsWith('ZT-') && search.length > 5;
+        this.loadLogs({
+          level: filter,
+          search: isTraceId ? '' : search,
+          traceId: isTraceId ? search : ''
+        });
       },
 
       setLogSearch(search: string) {
         patchState(store, { logSearch: search });
-        this.loadLogs({ level: store.logFilter(), search, traceId: '' });
+        const trimmed = search.trim();
+        const isTraceId = trimmed.startsWith('ZT-') && trimmed.length > 5;
+        this.loadLogs({
+          level: store.logFilter(),
+          search: isTraceId ? '' : trimmed,
+          traceId: isTraceId ? trimmed : ''
+        });
       },
 
       setIncidentPage(page: number) {
@@ -1130,8 +1154,14 @@ export const AdminStore = signalStore(
           if (state.logs.some(l => l.id === logItem.id)) {
             return state;
           }
+          const nextLogs = [logItem, ...state.logs].slice(0, 1000);
+          let nextIssueLogs = state.issueLogs;
+          if ((logItem.level === LogLevel.WARN || logItem.level === LogLevel.ERROR) && !state.issueLogs.some(l => l.id === logItem.id)) {
+            nextIssueLogs = [logItem, ...state.issueLogs].slice(0, 1000);
+          }
           return {
-            logs: [logItem, ...state.logs].slice(0, 1000)
+            logs: nextLogs,
+            issueLogs: nextIssueLogs
           };
         });
       },

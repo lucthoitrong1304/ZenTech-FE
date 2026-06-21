@@ -29,9 +29,17 @@ export class AdminLogsService {
     level: string = 'ALL',
     search: string = '',
     traceId: string = '',
-    limit: number = 500
+    limit: number = 500,
+    startTime?: number,
+    endTime?: number
   ): Observable<SystemLog[]> {
-    const url = `${this.adminLogsUrl}?level=${level}&search=${encodeURIComponent(search)}&traceId=${traceId}&limit=${limit}`;
+    let url = `${this.adminLogsUrl}?level=${level}&search=${encodeURIComponent(search)}&traceId=${traceId}&limit=${limit}`;
+    if (startTime !== undefined) {
+      url += `&startTime=${startTime}`;
+    }
+    if (endTime !== undefined) {
+      url += `&endTime=${endTime}`;
+    }
     return this.apiService.get<SystemLog[]>(url);
   }
 
