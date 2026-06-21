@@ -99,6 +99,11 @@ export class AiManagementService {
       .post<Record<string, never>, ApiResponseDto<AiDocument>>(`${this.baseUrl}/documents/${documentId}/reingest`, {})
       .pipe(map(unwrapApiResponse));
   }
+  reindexProducts(): Observable<string> {
+    return this.apiService
+      .post<Record<string, never>, ApiResponseDto<string>>(`${this.baseUrl}/products/reindex`, {})
+      .pipe(map(unwrapApiResponse));
+  }
 }
 
 function unwrapApiResponse<T>(response: ApiResponseDto<T>): T {

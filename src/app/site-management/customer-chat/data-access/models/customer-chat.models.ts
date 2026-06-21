@@ -129,6 +129,7 @@ export enum ChatMessageType {
   MEDIA = 'MEDIA',
   SYSTEM = 'SYSTEM',
   CALL = 'CALL',
+  TEXT_STREAM_CHUNK = 'TEXT_STREAM_CHUNK',
 }
 
 export enum ChatAttachmentType {

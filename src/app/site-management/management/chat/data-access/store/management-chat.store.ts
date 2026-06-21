@@ -542,8 +542,38 @@ export const ManagementChatStore = signalStore(
               messageSub = websocketService
                 .subscribe<ChatMessageResponse>(`/topic/conversations.${id}`)
                 .subscribe((msg) => {
+                  if (msg.messageType as any === 'TEXT_STREAM_CHUNK') {
+                    const streamingMsg = store.messages().find((m) => m.id === 'ai-streaming');
+                    if (!streamingMsg) {
+                      const newStreamMsg: ManagementChatMessage = {
+                        id: 'ai-streaming',
+                        conversationId: id,
+                        sender: 'AI',
+                        senderName: 'ZenTech AI',
+                        messageType: ChatMessageType.TEXT,
+                        body: msg.content || '',
+                        sentAtLabel: formatTime(msg.createdAt || new Date().toISOString()),
+                        attachments: [],
+                      };
+                      patchState(store, addEntity(newStreamMsg, MESSAGE_ENTITY_CONFIG));
+                    } else {
+                      const updatedStreamMsg = {
+                        ...streamingMsg,
+                        body: streamingMsg.body + (msg.content || ''),
+                      };
+                      patchState(store, updateEntity({ id: 'ai-streaming', changes: updatedStreamMsg }, MESSAGE_ENTITY_CONFIG));
+                    }
+                    return;
+                  }
+
                   const exists = store.messages().some((existing) => existing.id === msg.id);
                   if (!exists) {
+                    if (msg.senderType === ParticipantType.BOT) {
+                      const streamingMsg = store.messages().find((m) => m.id === 'ai-streaming');
+                      if (streamingMsg) {
+                        patchState(store, removeEntity('ai-streaming', MESSAGE_ENTITY_CONFIG));
+                      }
+                    }
                     const mappedMsg = mapToManagementChatMessage(msg, customerName);
                     const mediaItems = mapToManagementChatMediaItems(msg);
                     patchState(
