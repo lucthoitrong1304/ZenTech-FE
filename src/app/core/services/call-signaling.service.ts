@@ -3,6 +3,7 @@ import { Client, IMessage } from '@stomp/stompjs';
 import { Subject } from 'rxjs';
 import { AuthStorageService } from './auth-storage.service';
 import { WebRTCService } from './webrtc.service';
+import { buildWebSocketUrl } from './websocket-url';
 
 export interface WebRtcSignalMessage {
   type: 'CALL_REQUEST' | 'CALL_ACCEPTED' | 'CALL_REJECTED' | 'OFFER' | 'ANSWER' | 'ICE_CANDIDATE' | 'HANG_UP' | 'BUSY' | 'PARTNER_LEFT';
@@ -47,7 +48,7 @@ export class CallSignalingService {
 
     this.currentUserEmail = currentUserEmail;
     this.stompClient = new Client({
-      brokerURL: 'ws://localhost:8080/ws',
+      brokerURL: buildWebSocketUrl(),
       connectHeaders: {
         Authorization: `Bearer ${token}`
       },

@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, effect, input, output } from '@angu
 import { LucideBot, LucideFileText, LucideImage, LucideUserRound, LucidePhone } from '@lucide/angular';
 import { MarkdownComponent } from 'ngx-markdown';
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
+import { ChatProductRecommendationsComponent } from '../../../../shared/components/chat-product-recommendations/chat-product-recommendations.component';
 import {
   CustomerChatMessageAttachment,
   CustomerChatMessage,
@@ -12,7 +13,7 @@ import {
 @Component({
   selector: 'app-customer-message-timeline',
   standalone: true,
-  imports: [CommonModule, LucideBot, LucideFileText, LucideImage, LucideUserRound, LucidePhone, MarkdownComponent],
+  imports: [CommonModule, LucideBot, LucideFileText, LucideImage, LucideUserRound, LucidePhone, MarkdownComponent, ChatProductRecommendationsComponent],
   templateUrl: './customer-message-timeline.component.html',
   styles: [`
     :host .ai-message > div > div:last-child {

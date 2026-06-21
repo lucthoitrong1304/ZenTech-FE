@@ -39,9 +39,8 @@ export interface AiAgent {
   name: string;
   description?: string | null;
   status: AiAgentStatus;
-  assignedRoles: AiRole[];
+  assignedRole: AiRole;
   priority: number;
-  defaultForRole: boolean;
   systemPrompt: string;
   guardrails?: string | null;
   temperature: number;
@@ -61,9 +60,8 @@ export interface AiAgentPayload {
   name: string;
   description: string | null;
   status: AiAgentStatus;
-  assignedRoles: AiRole[];
+  assignedRole: AiRole;
   priority: number;
-  defaultForRole: boolean;
   systemPrompt: string;
   guardrails: string | null;
   temperature: number;
@@ -105,9 +103,8 @@ export function createEmptyAgentPayload(): AiAgentPayload {
     name: '',
     description: '',
     status: 'INACTIVE',
-    assignedRoles: ['CUSTOMER'],
+    assignedRole: 'CUSTOMER',
     priority: 0,
-    defaultForRole: false,
     systemPrompt: 'Ban la tro ly AI cua ZenTech. Hay tu van tu nhien, ngan gon, lich su, bang tieng Viet.',
     guardrails: 'Dung dataset khi cau hoi lien quan. Neu khong co context phu hop, van tro chuyen binh thuong, hoi them thong tin hoac dua ra tu van tong quat. Chi noi ro gioi han khi cau hoi can du lieu chinh xac ma agent chua co can cu.',
     temperature: 0.3,
@@ -126,9 +123,8 @@ export function toAgentPayload(agent: AiAgent): AiAgentPayload {
     name: agent.name,
     description: agent.description ?? '',
     status: agent.status,
-    assignedRoles: [...agent.assignedRoles],
+    assignedRole: agent.assignedRole,
     priority: agent.priority,
-    defaultForRole: agent.defaultForRole,
     systemPrompt: agent.systemPrompt,
     guardrails: agent.guardrails ?? '',
     temperature: agent.temperature,

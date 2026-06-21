@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AuthStorageService } from './auth-storage.service';
+import { buildWebSocketUrl } from './websocket-url';
 
 @Injectable({
   providedIn: 'root',
@@ -24,11 +25,8 @@ export class WebsocketService {
       return;
     }
 
-    const token = this.authStorageService.getAccessToken();
-    const wsUrl = 'ws://localhost:8080/ws';
-
     this.client = new Client({
-      brokerURL: wsUrl,
+      brokerURL: buildWebSocketUrl(),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,

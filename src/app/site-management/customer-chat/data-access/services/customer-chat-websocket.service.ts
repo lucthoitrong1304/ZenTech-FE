@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { Client, IMessage } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
+import { buildWebSocketUrl } from '../../../../core/services/websocket-url';
 
 @Injectable({
   providedIn: 'root',
@@ -24,11 +25,8 @@ export class CustomerChatWebsocketService {
       return;
     }
 
-    const token = this.authStorageService.getAccessToken();
-    const wsUrl = 'ws://localhost:8080/ws';
-
     this.client = new Client({
-      brokerURL: wsUrl,
+      brokerURL: buildWebSocketUrl(),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
@@ -64,10 +62,17 @@ export class CustomerChatWebsocketService {
 
   subscribe<T>(destination: string): Observable<T> {
     return new Observable<T>((observer) => {
-      let stompSubscription: any = null;
+      let stompSubscription: StompSubscription | null = null;
 
       const sub = this.connectionState$.subscribe((connected) => {
         if (connected && this.client && this.client.connected) {
+          if (stompSubscription) {
+            try {
+              stompSubscription.unsubscribe();
+            } catch (e) {
+              // Ignore already closed subscriptions
+            }
+          }
           stompSubscription = this.client.subscribe(destination, (message: IMessage) => {
             try {
               const body = JSON.parse(message.body) as T;

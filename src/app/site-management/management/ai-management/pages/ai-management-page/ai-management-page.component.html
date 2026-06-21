@@ -11,6 +11,10 @@
         <svg lucideRefreshCw [size]="16"></svg>
         <span>{{ loading() ? 'Đang tải...' : 'Tải lại' }}</span>
       </button>
+      <button type="button" class="ai-secondary-action" [disabled]="syncingProducts()" (click)="syncProducts()">
+        <svg lucideRefreshCw [size]="16"></svg>
+        <span>{{ syncingProducts() ? 'Đang đồng bộ...' : 'Đồng bộ sản phẩm' }}</span>
+      </button>
       <button type="button" class="ai-primary-action" (click)="newAgent()">
         <svg lucidePlus [size]="16"></svg>
         <span>Tạo agent</span>
@@ -75,16 +79,11 @@
               </span>
               <span class="agent-card__description">{{ agent.description || 'Chưa có mô tả ngắn.' }}</span>
               <span class="role-row">
-                @for (role of agent.assignedRoles; track role) {
-                  <small>{{ roleLabel(role) }}</small>
-                }
+                <small>{{ roleLabel(agent.assignedRole) }}</small>
               </span>
               <span class="agent-card__meta">
                 <span>{{ agent.datasetCount }} dataset</span>
                 <span>Priority {{ agent.priority }}</span>
-                @if (agent.defaultForRole) {
-                  <span class="default-badge">Default</span>
-                }
               </span>
             </span>
           </button>
@@ -151,7 +150,7 @@
                 </article>
                 <article>
                   <span>Role phục vụ</span>
-                  <strong>{{ agent.assignedRoles.length }}</strong>
+                  <strong>{{ roleLabel(agent.assignedRole) }}</strong>
                 </article>
                 <article>
                   <span>Dataset</span>
@@ -241,27 +240,13 @@
                     <input type="number" [ngModel]="agentDraft().priority" (ngModelChange)="updateAgentDraft({ priority: +$event })" />
                   </label>
                   <label>
-                    <span>Default cho role</span>
-                    <select
-                      [ngModel]="agentDraft().defaultForRole ? 'true' : 'false'"
-                      (ngModelChange)="updateAgentDraft({ defaultForRole: $event === 'true' })"
-                    >
-                      <option value="false">Không</option>
-                      <option value="true">Có</option>
+                    <span>Role được phục vụ</span>
+                    <select [ngModel]="agentDraft().assignedRole" (ngModelChange)="setAssignedRole($event)">
+                      @for (role of roles; track role) {
+                        <option [value]="role">{{ roleLabel(role) }}</option>
+                      }
                     </select>
                   </label>
-                </div>
-
-                <div class="check-section">
-                  <span>Role được phục vụ</span>
-                  <div class="check-grid">
-                    @for (role of roles; track role) {
-                      <label class="check-item">
-                        <input type="checkbox" [checked]="roleAttached(role)" (change)="toggleRole(role, $any($event.target).checked)" />
-                        <span>{{ roleLabel(role) }}</span>
-                      </label>
-                    }
-                  </div>
                 </div>
               </article>
 
@@ -587,14 +572,14 @@
               <span>System prompt</span>
               <textarea rows="4" [ngModel]="agentDraft().systemPrompt" (ngModelChange)="updateAgentDraft({ systemPrompt: $event })"></textarea>
             </label>
-            <div class="check-grid">
-              @for (role of roles; track role) {
-                <label class="check-item">
-                  <input type="checkbox" [checked]="roleAttached(role)" (change)="toggleRole(role, $any($event.target).checked)" />
-                  <span>{{ roleLabel(role) }}</span>
-                </label>
-              }
-            </div>
+            <label>
+              <span>Role được phục vụ</span>
+              <select [ngModel]="agentDraft().assignedRole" (ngModelChange)="setAssignedRole($event)">
+                @for (role of roles; track role) {
+                  <option [value]="role">{{ roleLabel(role) }}</option>
+                }
+              </select>
+            </label>
             <button type="button" class="save-btn" [disabled]="savingAgent()" (click)="saveAgent()">
               <svg lucideSave [size]="16"></svg>
               <span>{{ savingAgent() ? 'Đang tạo...' : 'Tạo agent' }}</span>

@@ -121,9 +121,9 @@ export class AiManagementPageComponent {
         !keyword ||
         agent.name.toLowerCase().includes(keyword) ||
         (agent.description ?? '').toLowerCase().includes(keyword) ||
-        agent.assignedRoles.some(item => item.toLowerCase().includes(keyword));
+        agent.assignedRole.toLowerCase().includes(keyword);
       const matchesStatus = status === 'ALL' || agent.status === status;
-      const matchesRole = role === 'ALL' || agent.assignedRoles.includes(role);
+      const matchesRole = role === 'ALL' || agent.assignedRole === role;
       return matchesKeyword && matchesStatus && matchesRole;
     });
   });
@@ -214,14 +214,8 @@ export class AiManagementPageComponent {
     this.agentDraft.update(current => ({ ...current, ...patch }));
   }
 
-  protected toggleRole(role: AiRole, checked: boolean): void {
-    const current = new Set(this.agentDraft().assignedRoles);
-    if (checked) {
-      current.add(role);
-    } else {
-      current.delete(role);
-    }
-    this.updateAgentDraft({ assignedRoles: Array.from(current) });
+  protected setAssignedRole(role: AiRole): void {
+    this.updateAgentDraft({ assignedRole: role });
   }
 
   protected toggleDataset(datasetId: string, checked: boolean): void {
@@ -236,8 +230,8 @@ export class AiManagementPageComponent {
 
   protected saveAgent(): void {
     const payload = this.agentDraft();
-    if (!payload.name.trim() || !payload.systemPrompt.trim() || payload.assignedRoles.length === 0) {
-      this.toastService.error('Vui lòng nhập tên, prompt và ít nhất một role cho agent.');
+    if (!payload.name.trim() || !payload.systemPrompt.trim() || !payload.assignedRole) {
+      this.toastService.error('Vui lòng nhập tên, prompt và chọn một vai trò cho agent.');
       return;
     }
 
@@ -458,7 +452,7 @@ export class AiManagementPageComponent {
   }
 
   protected roleAttached(role: AiRole): boolean {
-    return this.agentDraft().assignedRoles.includes(role);
+    return this.agentDraft().assignedRole === role;
   }
 
   protected roleLabel(role: AiRole): string {
@@ -493,6 +487,19 @@ export class AiManagementPageComponent {
     if (size < 1024) return `${size} B`;
     if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`;
     return `${(size / 1024 / 1024).toFixed(1)} MB`;
+  }
+
+  protected syncingProducts = signal(false);
+
+  protected syncProducts(): void {
+    this.syncingProducts.set(true);
+    this.aiManagementService
+      .reindexProducts()
+      .pipe(finalize(() => this.syncingProducts.set(false)))
+      .subscribe({
+        next: () => this.toastService.success('Đồng bộ sản phẩm qua AI thành công!'),
+        error: (err) => this.toastService.error(readError(err, 'Đồng bộ sản phẩm qua AI thất bại.')),
+      });
   }
 
   private upsertAgent(agent: AiAgent): void {

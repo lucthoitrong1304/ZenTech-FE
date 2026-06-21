@@ -1,4 +1,5 @@
 import { CallHistoryData, ChatMessageType } from '../../../../customer-chat/data-access/models/customer-chat.models';
+import { ChatProductRecommendation } from '../../../../../shared/components/chat-product-recommendations/chat-product-recommendations.model';
 
 export type ManagementChatConversationStatus = 'AI_ASSISTING' | 'WAITING_STAFF' | 'STAFF_HANDLING' | 'CLOSED';
 
@@ -54,6 +55,7 @@ export interface ManagementChatMessage {
   callData?: CallHistoryData;
   sentAtLabel: string;
   attachments: ManagementChatMessageAttachment[];
+  recommendedProducts?: ChatProductRecommendation[];
 }
 
 export interface ManagementChatMediaItem {

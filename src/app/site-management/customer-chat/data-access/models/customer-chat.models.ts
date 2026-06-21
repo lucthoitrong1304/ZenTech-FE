@@ -1,3 +1,5 @@
+import { ChatProductRecommendation } from '../../../../shared/components/chat-product-recommendations/chat-product-recommendations.model';
+
 export type CustomerChatSessionStatus = 'BOT_CONSULTING' | 'WAITING_FOR_AGENT' | 'AGENT_HANDLING' | 'CLOSED';
 
 export type CustomerChatMessageSender = 'CUSTOMER' | 'AI' | 'STAFF';
@@ -50,6 +52,7 @@ export interface CustomerChatMessage {
   callData?: CallHistoryData;
   sentAtLabel: string;
   attachments: CustomerChatMessageAttachment[];
+  recommendedProducts?: ChatProductRecommendation[];
 }
 
 export interface CustomerChatSharedItem {
@@ -129,6 +132,7 @@ export enum ChatMessageType {
   MEDIA = 'MEDIA',
   SYSTEM = 'SYSTEM',
   CALL = 'CALL',
+  TEXT_STREAM_CHUNK = 'TEXT_STREAM_CHUNK',
 }
 
 export enum ChatAttachmentType {
@@ -194,6 +198,7 @@ export interface ChatMessageResponse {
   messageType: ChatMessageType;
   content: string;
   attachments: ChatAttachmentResponse[];
+  recommendedProducts?: ChatProductRecommendation[];
   createdAt: string;
   deletedAt: string | null;
 }
@@ -348,6 +353,7 @@ export function mapToCustomerChatSession(
         url: att.mediaUrl || '',
         thumbnailUrl: att.attachmentType === ChatAttachmentType.IMAGE ? att.mediaUrl || null : null,
       })),
+      recommendedProducts: m.recommendedProducts || [],
     };
   });
 
