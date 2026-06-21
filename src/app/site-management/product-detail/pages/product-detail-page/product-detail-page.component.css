@@ -25,6 +25,7 @@
 
 .product-detail-container--grid {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 2.5rem;
 }
 
@@ -36,7 +37,7 @@
 :host ::ng-deep .product-detail-markdown :is(h1, h2, h3) {
   margin: 1.35rem 0 0.55rem;
   color: #101010;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -73,7 +74,7 @@
 
 :host ::ng-deep .product-detail-markdown strong {
   color: #101010;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 @media (min-width: 640px) {
@@ -82,7 +83,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .product-detail-container {
     padding-inline: 2rem;
   }

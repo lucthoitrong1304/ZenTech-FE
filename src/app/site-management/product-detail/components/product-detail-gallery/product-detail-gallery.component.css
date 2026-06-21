@@ -2,8 +2,18 @@
 
 :host {
   display: block;
+  min-width: 0;
+  width: 100%;
 }
 
-.product-detail-gallery__thumbs {
-  --zt-scrollbar-size: 4px;
+@media (min-width: 768px) {
+  :host {
+    height: 100%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-detail-gallery__thumbs {
+    overflow-x: hidden !important;
+  }
 }

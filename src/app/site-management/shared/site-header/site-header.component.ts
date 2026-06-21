@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   LucideChevronDown,
@@ -44,6 +44,8 @@ export interface HeaderUser {
   styleUrl: './site-header.component.css'
 })
 export class SiteHeaderComponent {
+  @ViewChild(NotificationBellComponent) bellComponent?: NotificationBellComponent;
+
   readonly navItems = input<HeaderNavItem[]>([]);
   readonly activeNavLabel = input<string | null>(null);
   readonly cartCount = input(0);
@@ -86,6 +88,13 @@ export class SiteHeaderComponent {
 
   onLogout(): void {
     this.logout.emit();
+  }
+
+  toggleAccountMenu(event: MouseEvent, accountMenu: any, accountTrigger: any): void {
+    if (this.bellComponent) {
+      this.bellComponent.hide();
+    }
+    accountMenu.toggle(event, accountTrigger);
   }
 
   trackByLabel(_: number, item: HeaderNavItem): string {

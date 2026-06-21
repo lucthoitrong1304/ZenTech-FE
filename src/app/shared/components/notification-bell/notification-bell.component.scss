@@ -1,7 +1,78 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-bell-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+  position: relative;
+  height: 2.5rem;
+  width: 2.5rem;
+  border-radius: 999px;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgb(255, 255, 255);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.notification-bell-icon {
+  height: 1.05rem;
+  width: 1.05rem;
+}
+
 ::ng-deep {
-  .notification-popover {
+  .notification-popover.p-popover {
+    background: #121212 !important;
+    border: 1px solid rgba(210, 197, 171, 0.14) !important;
+    border-top: 3px solid #ffc700 !important; // ZenTech signature gold bar top border
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28) !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    margin-top: 0.55rem !important;
+
+    &::before,
+    &::after,
+    .p-popover-arrow {
+      display: none !important;
+    }
+
     .p-popover-content {
-      padding: 0;
+      padding: 0 !important;
+      background: #121212 !important;
+    }
+  }
+
+  /* Custom Scrollbar for Notifications */
+  .notification-container .zt-scrollbar {
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 99px;
+      &:hover {
+        background: rgba(255, 255, 255, 0.28);
+      }
     }
   }
 }

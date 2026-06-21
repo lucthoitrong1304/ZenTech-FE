@@ -12,12 +12,12 @@
       <section class="product-detail-section">
         <div class="product-detail-container product-detail-container--grid py-12">
           <div class="flex gap-4">
-            <div class="hidden w-24 space-y-4 lg:block">
+            <div class="hidden w-24 space-y-4 md:block">
               @for (block of skeletonBlocks; track block) {
                 <div class="h-24 animate-pulse rounded-[10px] bg-[#ebe7e7]"></div>
               }
             </div>
-            <div class="min-h-[24rem] flex-1 animate-pulse rounded-[16px] bg-[#ebe7e7] lg:min-h-[37.5rem]"></div>
+            <div class="min-h-[24rem] flex-1 animate-pulse rounded-[16px] bg-[#ebe7e7] md:min-h-[30rem]"></div>
           </div>
 
           <div class="min-w-0 space-y-5 py-4">
@@ -27,7 +27,7 @@
             @for (block of skeletonBlocks; track block) {
               <div class="h-4 w-full animate-pulse rounded-full bg-[#ebe7e7]"></div>
             }
-            <div class="grid gap-3 sm:grid-cols-2">
+            <div class="grid gap-3 grid-cols-1 lg:grid-cols-2">
               <div class="h-14 animate-pulse rounded-full bg-[#ebe7e7]"></div>
               <div class="h-14 animate-pulse rounded-full bg-[#ebe7e7]"></div>
             </div>
@@ -36,7 +36,7 @@
       </section>
     } @else if (productDetailStore.product(); as product) {
       <section class="product-detail-section">
-        <div class="product-detail-container product-detail-container--grid gap-10 py-10 lg:py-14">
+        <div class="product-detail-container product-detail-container--grid gap-10 py-10 md:py-14">
           <app-product-detail-gallery
             [images]="productDetailStore.gallery()"
             [productName]="product.name"
@@ -44,20 +44,17 @@
             (imageSelect)="onImageSelect($event)"
           />
 
-          <div class="flex min-w-0 flex-col space-y-7 py-2 lg:max-w-md">
+          <div class="flex min-w-0 flex-col space-y-7 py-0 md:max-w-md lg:max-w-lg">
             <div class="min-w-0 space-y-4">
-              <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-                ZenTech product
-              </p>
-              <h1 class="break-words text-4xl font-black leading-tight text-[#101010] sm:text-5xl">
+              <h1 class="break-words text-4xl font-bold leading-tight text-[#101010] sm:text-5xl">
                 {{ product.name }}
               </h1>
               <div class="flex flex-wrap items-center gap-3 text-sm text-[#4f4632]">
-                <span class="font-black text-[#9b6500]">
+                <span class="font-bold text-[#9b6500]">
                   {{ productDetailStore.rating() | number: '1.1-1' }}/5
                 </span>
-                <span>{{ productDetailStore.reviewCount() }} reviews</span>
-                <span>{{ productDetailStore.selectedInStock() ? 'In stock' : 'Back soon' }}</span>
+                <span>{{ productDetailStore.reviewCount() }} đánh giá</span>
+                <span>{{ productDetailStore.selectedInStock() ? 'Còn hàng' : 'Tạm hết hàng' }}</span>
               </div>
             </div>
 
@@ -74,12 +71,12 @@
 
             @if (product.variants.length > 0) {
               <div class="space-y-3">
-                <h2 class="text-sm font-black text-[#101010]">Variant</h2>
+                <h2 class="text-sm font-bold text-[#101010]">Phiên bản</h2>
                 <div class="flex flex-wrap gap-5">
                   @for (variant of product.variants; track variant.id) {
                     <button
                       type="button"
-                      class="flex min-w-0 flex-col items-center gap-2 text-xs font-bold text-[#4f4632] transition hover:text-[#101010]"
+                      class="flex min-w-0 flex-col items-center gap-2 text-xs font-bold text-[#4f4632] transition hover:text-[#101010] cursor-pointer"
                       [class.opacity-50]="variant.stockQuantity <= 0"
                       (click)="onVariantSelect(variant.id)"
                     >
@@ -102,7 +99,7 @@
 
             @if (productDetailStore.groupProducts().length > 0) {
               <div class="space-y-3">
-                <h2 class="text-sm font-black text-[#101010]">Synchronized editions</h2>
+                <h2 class="text-sm font-bold text-[#101010]">Phiên bản đồng bộ</h2>
                 <div class="grid gap-3 sm:grid-cols-2">
                   @for (groupProduct of productDetailStore.groupProducts(); track groupProduct.id) {
                     <a
@@ -114,7 +111,7 @@
                         [alt]="groupProduct.name"
                         class="h-12 w-12 rounded-[8px] object-cover"
                       />
-                      <span class="min-w-0 truncate text-sm font-black">{{ groupProduct.name }}</span>
+                      <span class="min-w-0 truncate text-sm font-bold">{{ groupProduct.name }}</span>
                     </a>
                   }
                 </div>
@@ -122,22 +119,22 @@
             }
 
             <div class="space-y-3">
-              <h2 class="text-sm font-black text-[#101010]">Quantity</h2>
+              <h2 class="text-sm font-bold text-[#101010]">Số lượng</h2>
               <div class="inline-flex w-fit items-center overflow-hidden rounded-[10px] border border-[#d2c5ab] bg-white">
                 <button
                   type="button"
-                  class="h-12 w-12 text-lg font-black text-[#4f4632] transition hover:bg-[#f0edec] disabled:opacity-50"
+                  class="h-12 w-12 text-lg font-bold text-[#4f4632] transition hover:bg-[#f0edec] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                   (click)="decrementQuantity()"
                   [disabled]="!productDetailStore.canDecrement()"
                 >
                   -
                 </button>
-                <span class="grid h-12 w-14 place-items-center border-x border-[#d2c5ab] text-sm font-black">
+                <span class="grid h-12 w-14 place-items-center border-x border-[#d2c5ab] text-sm font-bold">
                   {{ productDetailStore.quantity() }}
                 </span>
                 <button
                   type="button"
-                  class="h-12 w-12 text-lg font-black text-[#4f4632] transition hover:bg-[#f0edec] disabled:opacity-50"
+                  class="h-12 w-12 text-lg font-bold text-[#4f4632] transition hover:bg-[#f0edec] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                   (click)="incrementQuantity()"
                   [disabled]="!productDetailStore.canIncrement()"
                 >
@@ -145,28 +142,28 @@
                 </button>
               </div>
               <p class="text-sm text-[#81765f]">
-                {{ productDetailStore.selectedStockQuantity() }} units available
+                Còn lại {{ productDetailStore.selectedStockQuantity() }} sản phẩm
               </p>
             </div>
 
-            <div class="mt-auto grid gap-3 sm:grid-cols-2">
+            <div class="mt-auto grid gap-3 grid-cols-1 lg:grid-cols-2">
               <button
                 type="button"
-                class="inline-flex min-w-0 items-center justify-center rounded-full bg-[#ffc700] px-6 py-4 text-center text-sm font-black text-[#251a00] transition hover:bg-[#f5bf00]"
+                class="inline-flex min-w-0 items-center justify-center rounded-full bg-[#ffc700] px-6 py-4 text-center text-sm font-bold text-[#251a00] transition hover:bg-[#f5bf00] cursor-pointer disabled:cursor-not-allowed"
                 [class.opacity-50]="!productDetailStore.selectedInStock()"
                 [disabled]="!productDetailStore.selectedInStock()"
                 (click)="buySelectedProductNow()"
               >
-                Buy Now
+                Mua ngay
               </button>
               <button
                 type="button"
-                class="inline-flex min-w-0 items-center justify-center rounded-full bg-[#4b41e1] px-6 py-4 text-center text-sm font-black text-white transition hover:bg-[#332bc9]"
+                class="inline-flex min-w-0 items-center justify-center rounded-full bg-[#4b41e1] px-6 py-4 text-center text-sm font-bold text-white transition hover:bg-[#332bc9] cursor-pointer disabled:cursor-not-allowed"
                 [class.opacity-50]="!productDetailStore.selectedInStock()"
                 [disabled]="!productDetailStore.selectedInStock()"
                 (click)="addSelectedProductToCart()"
               >
-                Add to Cart
+                Thêm vào giỏ hàng
               </button>
             </div>
           </div>
@@ -175,21 +172,18 @@
 
       @if (detailMarkdownContent()) {
         <section class="product-detail-section border-y border-[#e5e1dc] bg-[#fcf9f8]">
-          <div class="product-detail-container py-10 lg:py-12">
-            <div class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="product-detail-container py-10 md:py-12">
+            <div class="flex min-w-0 flex-row items-center justify-between gap-4">
               <div class="min-w-0">
-                <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-                  Product system
-                </p>
-                <h2 class="mt-3 break-words text-3xl font-black text-[#101010]">
-                  {{ detailContentTitle() }}
+                <h2 class="mt-1 break-words text-3xl font-bold text-[#101010]">
+                  {{ detailContentTitle() === 'Description' ? 'Mô tả' : 'Thông số kỹ thuật' }}
                 </h2>
               </div>
               <button
                 type="button"
-                class="inline-flex h-12 w-12 flex-none items-center justify-center rounded-full border-2 border-[#101010] text-[#101010] transition hover:bg-[#101010] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4b41e1]"
+                class="inline-flex h-12 w-12 flex-none items-center justify-center rounded-full border-2 border-[#101010] text-[#101010] transition hover:bg-[#101010] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4b41e1] cursor-pointer"
                 (click)="toggleDescription()"
-                [attr.aria-label]="descriptionExpanded() ? 'Collapse description' : 'Expand description'"
+                [attr.aria-label]="descriptionExpanded() ? 'Thu gọn mô tả' : 'Xem thêm mô tả'"
                 [attr.aria-expanded]="descriptionExpanded()"
               >
                 @if (descriptionExpanded()) {
@@ -213,17 +207,14 @@
         <section class="product-detail-section bg-white">
           <div class="product-detail-container py-10">
             <div class="mb-6 min-w-0">
-              <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-                Technical matrix
-              </p>
-              <h2 class="mt-3 break-words text-3xl font-black text-[#101010]">
-                Spec
+              <h2 class="mt-1 break-words text-3xl font-bold text-[#101010]">
+                Thông số kỹ thuật
               </h2>
             </div>
             <div class="grid gap-3 sm:grid-cols-2">
               @for (spec of product.specs; track spec.label) {
                 <article class="min-w-0 rounded-[10px] border border-[#d2c5ab]/30 p-4">
-                  <h3 class="text-[11px] font-black uppercase tracking-[0.18em] text-[#81765f]">
+                  <h3 class="text-[11px] font-bold uppercase tracking-[0.18em] text-[#81765f]">
                     {{ spec.label }}
                   </h3>
                   <p class="mt-2 whitespace-pre-line text-sm leading-7 text-[#1c1b1b]">
@@ -241,11 +232,8 @@
           <div class="product-detail-container py-14">
             <div class="mb-8 flex min-w-0 items-end justify-between gap-4">
               <div class="min-w-0">
-                <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-                  More from ZenTech
-                </p>
-                <h2 class="mt-3 break-words text-3xl font-black text-[#101010]">
-                  You may also like
+                <h2 class="mt-1 break-words text-3xl font-bold text-[#101010]">
+                  Có thể bạn cũng thích
                 </h2>
               </div>
             </div>
@@ -266,21 +254,18 @@
         <div class="product-detail-container py-14">
           <div class="mb-8 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div class="min-w-0">
-              <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-                Customer voice
-              </p>
-              <h2 class="mt-3 break-words text-3xl font-black text-[#101010]">Reviews</h2>
+              <h2 class="mt-1 break-words text-3xl font-bold text-[#101010]">Đánh giá</h2>
               <p class="mt-2 text-sm text-[#4f4632]">
-                {{ productDetailStore.rating() | number: '1.1-1' }}/5 stars ·
-                {{ productDetailStore.reviewCount() }} reviews
+                {{ productDetailStore.rating() | number: '1.1-1' }}/5 sao ·
+                {{ productDetailStore.reviewCount() }} đánh giá
               </p>
             </div>
             <button
               type="button"
-              class="rounded-full border-2 border-[#101010] px-6 py-3 text-[11px] font-black uppercase tracking-[0.16em] text-[#101010] transition hover:bg-[#101010] hover:text-white"
+              class="rounded-full border-2 border-[#101010] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[#101010] transition hover:bg-[#101010] hover:text-white cursor-pointer"
               (click)="openReviewModal()"
             >
-              Write a Review
+              Viết đánh giá
             </button>
           </div>
 
@@ -311,10 +296,7 @@
       <section class="product-detail-section">
         <div class="product-detail-container py-16">
           <div class="rounded-[10px] border border-[#d2c5ab]/30 bg-white p-8 text-center sm:p-12">
-            <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-              Product not found
-            </p>
-            <h1 class="mt-4 break-words text-3xl font-black text-[#1c1b1b]">
+            <h1 class="mt-1 break-words text-3xl font-bold text-[#1c1b1b]">
               Không tìm thấy sản phẩm phù hợp.
             </h1>
             <p class="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#4f4632]">
@@ -322,9 +304,9 @@
             </p>
             <a
               routerLink="/categories/keyboards"
-              class="mt-8 inline-flex rounded-[10px] bg-[#101010] px-6 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#4b41e1]"
+              class="mt-8 inline-flex rounded-[10px] bg-[#101010] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#4b41e1] cursor-pointer"
             >
-              Browse Products
+              Xem sản phẩm
             </a>
           </div>
         </div>

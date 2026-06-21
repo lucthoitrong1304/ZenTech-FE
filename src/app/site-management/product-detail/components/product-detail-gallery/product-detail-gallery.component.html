@@ -1,9 +1,9 @@
-<div class="flex min-w-0 flex-col gap-4 lg:h-[600px] lg:flex-row">
-  <div class="product-detail-gallery__thumbs order-2 flex gap-3 overflow-x-auto pb-1 lg:order-1 lg:h-full lg:w-28 lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0 lg:pr-2">
+<div class="flex flex-col gap-4 md:h-full lg:flex-row lg:h-[600px] w-full min-w-0">
+  <div class="product-detail-gallery__thumbs order-2 flex flex-row gap-2.5 overflow-x-auto overflow-y-hidden pb-3 lg:order-1 lg:flex-col lg:h-full lg:w-28 lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0 lg:pr-2 lg:gap-3">
     @for (image of images(); track image) {
       <button
         type="button"
-        class="h-20 w-20 flex-none overflow-hidden rounded-[10px] border bg-[#ebe7e7] transition lg:h-24 lg:w-24"
+        class="h-16 w-16 flex-none overflow-hidden rounded-[10px] border bg-[#ebe7e7] transition hover:border-[#4b41e1] cursor-pointer lg:h-24 lg:w-24"
         [class.border-[#4b41e1]]="image === selectedImage()"
         [class.border-[#d2c5ab]]="image !== selectedImage()"
         (click)="imageSelect.emit(image)"
@@ -13,11 +13,12 @@
     }
   </div>
 
-  <div class="order-1 min-w-0 flex-1 overflow-hidden rounded-[16px] bg-[#ebe7e7] lg:order-2 lg:h-full">
+  <div class="order-1 min-w-0 w-full aspect-[4/3] sm:aspect-square overflow-hidden rounded-[16px] bg-[#ebe7e7] flex items-center justify-center md:h-full md:aspect-auto lg:order-2 lg:h-full lg:flex-1 lg:w-auto">
     <img
       [src]="selectedImage()"
       [alt]="productName()"
-      class="aspect-square w-full object-cover lg:h-full lg:aspect-auto"
+      class="h-full w-full object-cover"
     />
   </div>
 </div>
+

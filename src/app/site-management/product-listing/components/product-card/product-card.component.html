@@ -28,7 +28,7 @@
   <div class="flex flex-1 flex-col space-y-3">
     <div class="min-w-0 space-y-1">
       <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-[#4b41e1]">
-        {{ product().inStock ? 'In Stock' : 'Back Soon' }}
+        {{ product().inStock ? 'Còn hàng' : 'Tạm hết hàng' }}
       </p>
       <a
         [routerLink]="['/products', product().slug]"
@@ -42,7 +42,7 @@
         <p class="text-sm text-[#4f4632]">
           {{ product().rating | number: '1.1-1' }}/5
           @if (product().reviewCount) {
-            <span class="text-[#81765f]">({{ product().reviewCount }} reviews)</span>
+            <span class="text-[#81765f]">({{ product().reviewCount }} đánh giá)</span>
           }
         </p>
       }
@@ -64,13 +64,13 @@
       class="mt-auto inline-flex w-full min-w-0 items-center justify-center rounded-[10px] px-3 py-3 text-center text-[10px] font-black uppercase tracking-[0.14em] transition"
       [ngClass]="
         product().inStock
-          ? 'bg-[#101010] text-white hover:bg-[#4b41e1]'
+          ? 'bg-[#101010] text-white hover:bg-[#4b41e1] cursor-pointer'
           : 'cursor-not-allowed bg-[#ebe7e7] text-[#81765f]'
       "
       [disabled]="!product().inStock"
       (click)="onAddToCart($event)"
     >
-      {{ product().inStock ? 'Add to Cart' : 'Notify Me' }}
+      {{ product().inStock ? 'Thêm vào giỏ hàng' : 'Nhận thông báo' }}
     </button>
   </div>
 </article>

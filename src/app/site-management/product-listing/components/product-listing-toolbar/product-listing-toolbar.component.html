@@ -1,38 +1,65 @@
-<section class="border-b border-[#d2c5ab]/20 bg-white">
-  <div
-    class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8"
-  >
-    <div class="space-y-3">
-      <nav class="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em]">
-        <a routerLink="/" class="text-[#81765f] transition hover:text-[#1c1b1b]">Home</a>
-        <span class="text-[#b3ab98]">/</span>
-        <span class="text-[#4b41e1]">{{ category().label }}</span>
-      </nav>
-
-      <div class="space-y-1">
-        <h2 class="text-2xl font-black uppercase italic tracking-[-0.04em] text-[#1c1b1b]">
-          Browse {{ category().label }}
-        </h2>
-        <p class="text-sm text-[#4f4632]">
-          {{ productCount() }} sản phẩm đang hiển thị từ catalog.
-        </p>
-      </div>
+<div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8 flex justify-end">
+  <div class="relative inline-block text-left">
+    <div class="flex items-center gap-3">
+      <span class="text-[11px] font-bold uppercase tracking-[0.18em] text-[#81765f]">
+        Sắp xếp theo:
+      </span>
+      <button
+        type="button"
+        (click)="toggleDropdown()"
+        class="inline-flex w-56 items-center justify-between rounded-[10px] border border-[#d2c5ab]/60 bg-white px-4 py-3 text-xs font-black uppercase tracking-[0.14em] text-[#1c1b1b] shadow-[0_2px_4px_rgba(0,0,0,0.02)] outline-none transition hover:border-[#4b41e1]/80 hover:bg-[#fcf9f8] cursor-pointer whitespace-nowrap"
+      >
+        <span>{{ getSelectedLabel() }}</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2.5"
+          stroke="currentColor"
+          class="h-3.5 w-3.5 text-[#81765f] shrink-0 transition-transform duration-200"
+          [class.rotate-180]="isOpen()"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+        </svg>
+      </button>
     </div>
 
-    <label
-      class="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#4f4632]"
+    <!-- Dropdown Options Panel -->
+    <div
+      class="absolute right-0 mt-2 w-56 origin-top-right rounded-[12px] border border-[#d2c5ab]/30 bg-white p-1.5 shadow-[0_10px_25px_-5px_rgba(16,16,16,0.1),0_8px_10px_-6px_rgba(16,16,16,0.1)] focus:outline-none z-30 transition-all duration-200 ease-out"
+      [class.opacity-100]="isOpen()"
+      [class.scale-100]="isOpen()"
+      [class.pointer-events-auto]="isOpen()"
+      [class.opacity-0]="!isOpen()"
+      [class.scale-95]="!isOpen()"
+      [class.pointer-events-none]="!isOpen()"
     >
-      <span>Sort by</span>
-      <select
-        #sortSelect
-        [value]="selectedSort()"
-        (change)="onSortChange(sortSelect.value)"
-        class="min-w-[12rem] rounded-[10px] border border-[#d2c5ab]/60 bg-[#fcf9f8] px-4 py-3 text-xs font-bold uppercase tracking-[0.14em] text-[#1c1b1b] outline-none transition focus:border-[#4b41e1]"
-      >
-        @for (option of sortOptions(); track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
-    </label>
+      @for (option of sortOptions(); track option.value) {
+        <button
+          type="button"
+          (click)="selectOption(option.value)"
+          class="flex w-full items-center justify-between rounded-[8px] px-3.5 py-2.5 text-left text-xs font-bold uppercase tracking-[0.1em] transition-colors cursor-pointer"
+          [class.bg-[#4b41e1]/6]="option.value === selectedSort()"
+          [class.text-[#4b41e1]]="option.value === selectedSort()"
+          [class.text-[#4f4632]]="option.value !== selectedSort()"
+          [class.hover:bg-[#fcf9f8]]="option.value !== selectedSort()"
+          [class.hover:text-[#1c1b1b]]="option.value !== selectedSort()"
+        >
+          <span>{{ option.label }}</span>
+          @if (option.value === selectedSort()) {
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="3"
+              stroke="currentColor"
+              class="h-3.5 w-3.5 text-[#4b41e1]"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+            </svg>
+          }
+        </button>
+      }
+    </div>
   </div>
-</section>
+</div>
