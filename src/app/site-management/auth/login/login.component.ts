@@ -5,6 +5,7 @@ import {
   effect,
   ElementRef,
   inject,
+  signal,
   untracked,
   ViewChild,
 } from '@angular/core';
@@ -12,9 +13,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   LucideArrowRight,
-  LucideLockKeyhole,
+  LucideEye,
+  LucideEyeOff,
   LucideMail,
-  LucideLoader2
+  LucideLoader2,
 } from '@lucide/angular';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -40,7 +42,8 @@ declare const google: any;
     InputTextModule,
     LucideLoader2,
     LucideArrowRight,
-    LucideLockKeyhole,
+    LucideEye,
+    LucideEyeOff,
     LucideMail,
     AuthShellComponent,
   ],
@@ -59,6 +62,7 @@ export class LoginComponent implements AfterViewInit {
   private readonly toastService = inject(ToastService);
   private readonly authSessionStore = inject(AuthSessionStore);
   protected readonly loginStore = inject(LoginStore);
+  protected readonly isPasswordVisible = signal(false);
 
   protected readonly loginForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],

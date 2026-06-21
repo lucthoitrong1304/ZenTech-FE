@@ -1,7 +1,14 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { LucideKeyRound, LucideShieldAlert, LucideShieldCheck, LucideLoader2 } from '@lucide/angular';
+import {
+  LucideEye,
+  LucideEyeOff,
+  LucideKeyRound,
+  LucideShieldAlert,
+  LucideShieldCheck,
+  LucideLoader2,
+} from '@lucide/angular';
 import { ChangePasswordStore } from '../../data-access/store/change-password.store';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { ChangePasswordRequest } from '../../../auth/data-access/models/auth.models';
@@ -9,7 +16,16 @@ import { ChangePasswordRequest } from '../../../auth/data-access/models/auth.mod
 @Component({
   selector: 'app-management-change-password-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LucideKeyRound, LucideShieldAlert, LucideShieldCheck, LucideLoader2],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    LucideEye,
+    LucideEyeOff,
+    LucideKeyRound,
+    LucideShieldAlert,
+    LucideShieldCheck,
+    LucideLoader2,
+  ],
   templateUrl: './management-change-password-page.html',
   styleUrl: './management-change-password-page.css',
 })
@@ -17,16 +33,31 @@ export class ManagementChangePasswordPage {
   private readonly fb = inject(FormBuilder);
   readonly authSessionStore = inject(AuthSessionStore);
   readonly changePasswordStore = inject(ChangePasswordStore);
+  readonly passwordVisibility = signal({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  });
+
+  togglePasswordVisibility(field: 'currentPassword' | 'newPassword' | 'confirmPassword'): void {
+    this.passwordVisibility.update((visibility) => ({
+      ...visibility,
+      [field]: !visibility[field],
+    }));
+  }
 
   readonly isPasswordSet = computed(() => {
     return this.authSessionStore.currentUser()?.isPasswordSet ?? true;
   });
 
-  passwordForm: FormGroup = this.fb.group({
-    currentPassword: [''],
-    newPassword: ['', [Validators.required, Validators.minLength(6)]],
-    confirmPassword: ['', [Validators.required]]
-  }, { validators: this.passwordMatchValidator });
+  passwordForm: FormGroup = this.fb.group(
+    {
+      currentPassword: [''],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]],
+    },
+    { validators: this.passwordMatchValidator },
+  );
 
   passwordMatchValidator(g: FormGroup) {
     const newPassword = g.get('newPassword')?.value;
@@ -43,7 +74,7 @@ export class ManagementChangePasswordPage {
     const { currentPassword, newPassword } = this.passwordForm.value;
     const payload: ChangePasswordRequest = {
       newPassword,
-      currentPassword: this.isPasswordSet() ? currentPassword : ''
+      currentPassword: this.isPasswordSet() ? currentPassword : '',
     };
 
     if (this.isPasswordSet() && !currentPassword) {

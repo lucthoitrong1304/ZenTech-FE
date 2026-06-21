@@ -1,6 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, input, output } from '@angular/core';
-import { LucideMinus, LucidePlus, LucideX } from '@lucide/angular';
+import { LucideX } from '@lucide/angular';
 import {
   ManagementOrder,
   ManagementOrderEditDraft,
@@ -11,7 +11,7 @@ import {
 @Component({
   selector: 'app-order-edit-drawer',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, LucideMinus, LucidePlus, LucideX],
+  imports: [CurrencyPipe, DatePipe, LucideX],
   templateUrl: './order-edit-drawer.component.html',
   styleUrl: './order-edit-drawer.component.css',
 })
@@ -42,10 +42,6 @@ export class OrderEditDrawerComponent {
 
   protected getDraftQuantity(orderItemId: string): number {
     return this.draft()?.items.find(item => item.orderItemId === orderItemId)?.quantity ?? 1;
-  }
-
-  protected setQuantity(orderItemId: string, quantity: number): void {
-    this.quantityChange.emit({ orderItemId, quantity });
   }
 
   protected submit(event: Event): void {

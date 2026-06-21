@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, effect, inject, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { LucideArrowRight, LucideMail } from '@lucide/angular';
+import { LucideArrowRight, LucideLoader2, LucideMail } from '@lucide/angular';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastService } from '../../../shared/components/toast/toast.service';
@@ -19,6 +19,7 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
     ButtonModule,
     InputTextModule,
     LucideArrowRight,
+    LucideLoader2,
     LucideMail,
     AuthShellComponent,
   ],

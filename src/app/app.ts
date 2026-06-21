@@ -45,6 +45,7 @@ export class App {
       url.startsWith('/management') ||
       url.startsWith('/admin') ||
       url.startsWith('/auth') ||
+      url.startsWith('/reset-password') ||
       url.startsWith('/error')
     );
   });

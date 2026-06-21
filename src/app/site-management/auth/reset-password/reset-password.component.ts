@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, effect, inject, signal, untracked } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -8,11 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import {
-  LucideArrowRight,
-  LucideLockKeyhole,
-  LucideShieldCheck,
-} from '@lucide/angular';
+import { LucideArrowRight, LucideEye, LucideEyeOff } from '@lucide/angular';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastService } from '../../../shared/components/toast/toast.service';
@@ -29,8 +25,8 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
     ButtonModule,
     InputTextModule,
     LucideArrowRight,
-    LucideLockKeyhole,
-    LucideShieldCheck,
+    LucideEye,
+    LucideEyeOff,
     AuthShellComponent,
   ],
   templateUrl: './reset-password.component.html',
@@ -43,6 +39,14 @@ export class ResetPasswordComponent {
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   protected readonly passwordRecoveryStore = inject(PasswordRecoveryStore);
+  protected readonly passwordVisibility = signal({ newPassword: false, confirmPassword: false });
+
+  protected togglePasswordVisibility(field: 'newPassword' | 'confirmPassword'): void {
+    this.passwordVisibility.update((visibility) => ({
+      ...visibility,
+      [field]: !visibility[field],
+    }));
+  }
 
   protected readonly token = this.route.snapshot.queryParamMap.get('token')?.trim() || '';
   protected readonly resetPasswordForm = this.formBuilder.nonNullable.group(
@@ -52,7 +56,7 @@ export class ResetPasswordComponent {
     },
     {
       validators: [passwordMatchValidator],
-    }
+    },
   );
 
   constructor() {
@@ -66,8 +70,8 @@ export class ResetPasswordComponent {
       if (message) {
         untracked(() => {
           this.passwordRecoveryStore.clearMessages();
-        this.toastService.success(message);
-        this.router.navigate(['/auth/login']);
+          this.toastService.success(message);
+          this.router.navigate(['/auth/login']);
         });
       }
     });
@@ -99,7 +103,7 @@ export class ResetPasswordComponent {
 
   protected hasControlError(
     controlName: 'newPassword' | 'confirmPassword',
-    errorCode: string
+    errorCode: string,
   ): boolean {
     const control = this.resetPasswordForm.controls[controlName];
 

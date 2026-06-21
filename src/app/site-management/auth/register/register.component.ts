@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, effect, inject, signal, untracked } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -8,13 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import {
-  LucideArrowRight,
-  LucideLockKeyhole,
-  LucideMail,
-  LucideShieldCheck,
-  LucideUser,
-} from '@lucide/angular';
+import { LucideArrowRight, LucideEye, LucideEyeOff, LucideMail, LucideUser } from '@lucide/angular';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastService } from '../../../shared/components/toast/toast.service';
@@ -31,9 +25,9 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
     ButtonModule,
     InputTextModule,
     LucideArrowRight,
-    LucideLockKeyhole,
+    LucideEye,
+    LucideEyeOff,
     LucideMail,
-    LucideShieldCheck,
     LucideUser,
     AuthShellComponent,
   ],
@@ -46,6 +40,14 @@ export class RegisterComponent {
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   protected readonly registerStore = inject(RegisterStore);
+  protected readonly passwordVisibility = signal({ password: false, confirmPassword: false });
+
+  protected togglePasswordVisibility(field: 'password' | 'confirmPassword'): void {
+    this.passwordVisibility.update((visibility) => ({
+      ...visibility,
+      [field]: !visibility[field],
+    }));
+  }
 
   protected readonly registerForm = this.formBuilder.nonNullable.group(
     {
@@ -56,7 +58,7 @@ export class RegisterComponent {
     },
     {
       validators: [passwordMatchValidator],
-    }
+    },
   );
 
   constructor() {
@@ -66,8 +68,8 @@ export class RegisterComponent {
       if (message) {
         untracked(() => {
           this.registerStore.clearMessages();
-        this.toastService.success(message);
-        this.router.navigate(['/auth/login']);
+          this.toastService.success(message);
+          this.router.navigate(['/auth/login']);
         });
       }
     });
@@ -100,7 +102,7 @@ export class RegisterComponent {
 
   protected hasControlError(
     controlName: 'email' | 'password' | 'confirmPassword',
-    errorCode: string
+    errorCode: string,
   ): boolean {
     const control = this.registerForm.controls[controlName];
 

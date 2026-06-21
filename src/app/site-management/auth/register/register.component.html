@@ -32,6 +32,7 @@
               pInputText
               class="auth-field"
               type="email"
+              autocomplete="email"
               formControlName="email"
               placeholder="hello@zentech.vn"
             />
@@ -54,13 +55,24 @@
                 id="register-password"
                 pInputText
                 class="auth-field"
-                type="password"
+                [type]="passwordVisibility().password ? 'text' : 'password'"
+                autocomplete="new-password"
                 formControlName="password"
                 placeholder="********"
               />
-              <span class="auth-field-icon" aria-hidden="true">
-                <svg lucideLockKeyhole [attr.stroke-width]="1.8"></svg>
-              </span>
+              <button
+                type="button"
+                class="auth-password-toggle"
+                [attr.aria-label]="passwordVisibility().password ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+                [attr.aria-pressed]="passwordVisibility().password"
+                (click)="togglePasswordVisibility('password')"
+              >
+                @if (passwordVisibility().password) {
+                  <svg lucideEyeOff [attr.stroke-width]="1.8"></svg>
+                } @else {
+                  <svg lucideEye [attr.stroke-width]="1.8"></svg>
+                }
+              </button>
             </div>
             @if (hasControlError('password', 'required')) {
               <p class="auth-field-error">Mật khẩu không được để trống.</p>
@@ -76,13 +88,28 @@
                 id="register-confirm-password"
                 pInputText
                 class="auth-field"
-                type="password"
+                [type]="passwordVisibility().confirmPassword ? 'text' : 'password'"
+                autocomplete="new-password"
                 formControlName="confirmPassword"
                 placeholder="********"
               />
-              <span class="auth-field-icon" aria-hidden="true">
-                <svg lucideShieldCheck [attr.stroke-width]="1.8"></svg>
-              </span>
+              <button
+                type="button"
+                class="auth-password-toggle"
+                [attr.aria-label]="
+                  passwordVisibility().confirmPassword
+                    ? 'Ẩn mật khẩu xác nhận'
+                    : 'Hiện mật khẩu xác nhận'
+                "
+                [attr.aria-pressed]="passwordVisibility().confirmPassword"
+                (click)="togglePasswordVisibility('confirmPassword')"
+              >
+                @if (passwordVisibility().confirmPassword) {
+                  <svg lucideEyeOff [attr.stroke-width]="1.8"></svg>
+                } @else {
+                  <svg lucideEye [attr.stroke-width]="1.8"></svg>
+                }
+              </button>
             </div>
             @if (hasControlError('confirmPassword', 'required')) {
               <p class="auth-field-error">Vui lòng xác nhận mật khẩu.</p>
