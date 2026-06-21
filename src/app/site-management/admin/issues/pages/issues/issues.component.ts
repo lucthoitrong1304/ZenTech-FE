@@ -1,15 +1,12 @@
 import { Component, OnDestroy, OnInit, inject, signal, computed, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import {
   LucideSearch,
-  LucideTrash2,
-  LucideChevronDown,
+  LucideRefreshCw,
   LucideBot,
   LucideCopy,
-  LucideRefreshCw,
   LucideGlobe,
   LucideTerminal,
   LucideSparkles
@@ -24,18 +21,6 @@ interface LogMetadataItem {
   value: string;
 }
 
-interface LogJourneyItem {
-  id: string;
-  time: Date;
-  title: string;
-  description: string;
-  level: LogLevel;
-  category: string;
-  isCurrent: boolean;
-}
-
-
-
 enum LogTimeRange {
   MINUTES_15 = 'MINUTES_15',
   HOUR_1 = 'HOUR_1',
@@ -44,7 +29,18 @@ enum LogTimeRange {
   CUSTOM = 'CUSTOM',
 }
 
-
+interface LogIssue {
+  id: string;
+  title: string;
+  signature: string;
+  level: LogLevel;
+  category: string;
+  occurrences: number;
+  firstSeen: Date;
+  lastSeen: Date;
+  traceIds: string[];
+  logs: SystemLog[];
+}
 
 interface ClientLogStackContext {
   eventType?: string;
@@ -64,43 +60,41 @@ interface ClientLogStackContext {
 }
 
 @Component({
-  selector: 'app-admin-logs',
+  selector: 'app-admin-issues',
   standalone: true,
   imports: [
     CommonModule,
     FormsModule,
     LucideSearch,
-    LucideTrash2,
-    LucideChevronDown,
+    LucideRefreshCw,
     LucideBot,
     LucideCopy,
-    LucideRefreshCw,
     LucideGlobe,
     LucideTerminal,
     LucideSparkles
   ],
-  templateUrl: './logs.component.html',
-  styleUrl: './logs.component.css'
+  templateUrl: './issues.component.html',
+  styleUrl: './issues.component.css'
 })
-export class LogsComponent implements OnInit, OnDestroy {
+export class IssuesComponent implements OnInit, OnDestroy {
   protected readonly store = inject(AdminStore);
   protected readonly toastService = inject(ToastService);
   protected readonly LogLevel = LogLevel;
   protected readonly LogServiceCategory = LogServiceCategory;
-
   protected readonly LogTimeRange = LogTimeRange;
 
   protected readonly activeFilter = signal<LogLevel | 'ALL'>('ALL');
-  protected readonly activeService = signal<LogServiceCategory>(LogServiceCategory.ALL); // Lọc theo SERVICE nguồn
+  protected readonly activeService = signal<LogServiceCategory>(LogServiceCategory.ALL);
   protected readonly searchText = signal('');
   protected readonly selectedLog = signal<SystemLog | null>(null);
+  protected readonly selectedIssue = signal<LogIssue | null>(null);
+  protected readonly selectedIssueReturn = signal<LogIssue | null>(null);
   protected readonly activeTimeRange = signal<LogTimeRange>(LogTimeRange.HOUR_1);
   protected readonly autoRefreshEnabled = signal(true);
-  protected readonly visibleLogCount = signal(50);
-  protected readonly logPageSize = 50;
+  protected readonly visibleIssueCount = signal(20);
+  protected readonly issuePageSize = 20;
   protected readonly wsService = inject(WebsocketService);
   private readonly ngZone = inject(NgZone);
-  private readonly route = inject(ActivatedRoute);
   private wsSubscription: Subscription | null = null;
 
   // Lọc khoảng thời gian tùy chọn
@@ -125,18 +119,52 @@ export class LogsComponent implements OnInit, OnDestroy {
   protected readonly explainingIds = signal<Record<string, boolean>>({});
 
   ngOnInit(): void {
-    const traceId = this.route.snapshot.queryParamMap.get('traceId') || '';
-    this.searchText.set(traceId);
-    if (traceId) {
-      this.store.loadLogs({ level: 'ALL', search: traceId, traceId });
-    } else {
-      this.reloadLogsFromServer();
-    }
+    this.reloadLogsFromServer();
     this.startRealtimeLogs();
   }
 
   ngOnDestroy(): void {
     this.stopRealtimeLogs();
+  }
+
+  protected toggleAutoRefresh(): void {
+    const nextState = !this.autoRefreshEnabled();
+    this.autoRefreshEnabled.set(nextState);
+
+    if (nextState) {
+      this.startRealtimeLogs();
+      this.toastService.success('Đã bật chế độ Vấn đề thời gian thực (Real-time issues)');
+      return;
+    }
+
+    this.stopRealtimeLogs();
+    this.toastService.success('Đã tắt chế độ Vấn đề thời gian thực');
+  }
+
+  private startRealtimeLogs(): void {
+    this.stopRealtimeLogs();
+    console.log('[Issues WS] Khởi tạo kết nối và đăng ký lắng nghe /topic/admin.logs');
+    this.wsService.connect();
+    
+    this.wsSubscription = this.wsService.subscribe<SystemLog>('/topic/admin.logs')
+      .subscribe({
+        next: (logItem: SystemLog) => {
+          console.log('[Issues WS] Nhận log mới từ WS:', logItem);
+          this.ngZone.run(() => {
+            this.store.appendLog(logItem);
+          });
+        },
+        error: (err: unknown) => {
+          console.error('[Issues WS Subscription Error]', err);
+        }
+      });
+  }
+
+  private stopRealtimeLogs(): void {
+    if (this.wsSubscription) {
+      this.wsSubscription.unsubscribe();
+      this.wsSubscription = null;
+    }
   }
 
   protected readonly displayedLogs = computed(() => {
@@ -150,20 +178,30 @@ export class LogsComponent implements OnInit, OnDestroy {
     return logs.filter(log => this.normalizeServiceCategory(log.category) === service);
   });
 
-  protected readonly visibleLogs = computed(() => this.displayedLogs().slice(0, this.visibleLogCount()));
+  protected readonly displayedIssues = computed(() => {
+    const issueLogs = this.activeFilter() === 'ALL'
+      ? this.filterLogsByTimeRange(this.store.filteredIssueLogs())
+      : this.displayedLogs();
+    const service = this.activeService();
+    const scopedIssueLogs = service === LogServiceCategory.ALL
+      ? issueLogs
+      : issueLogs.filter(log => this.normalizeServiceCategory(log.category) === service);
+
+    return this.buildIssues(scopedIssueLogs);
+  });
+
+  protected readonly visibleIssues = computed(() => this.displayedIssues().slice(0, this.visibleIssueCount()));
 
   protected handleFilterChange(filter: LogLevel | 'ALL'): void {
     this.activeFilter.set(filter);
-    this.store.setLogFilter(filter);
     this.resetVisibleCounts();
+    this.reloadLogsFromServer();
   }
 
   protected handleServiceChange(service: LogServiceCategory): void {
     this.activeService.set(service);
     this.resetVisibleCounts();
   }
-
-
 
   protected handleTimeRangeChange(range: LogTimeRange): void {
     this.activeTimeRange.set(range);
@@ -290,6 +328,15 @@ export class LogsComponent implements OnInit, OnDestroy {
       startTime,
       endTime
     });
+
+    if (this.activeFilter() === 'ALL') {
+      this.store.loadIssueLogs({
+        search: isTraceId ? '' : search,
+        traceId: isTraceId ? search : '',
+        startTime,
+        endTime
+      });
+    }
   }
 
   private formatDateToLocalInput(date: Date): string {
@@ -302,10 +349,58 @@ export class LogsComponent implements OnInit, OnDestroy {
     return `${yyyy}-${MM}-${dd}T${hh}:${mm}`;
   }
 
+  protected openIssueDetails(issue: LogIssue): void {
+    this.selectedIssue.set(issue);
+  }
 
+  protected closeIssueDetails(): void {
+    this.selectedIssue.set(null);
+  }
 
-  private normalizeServiceCategory(category: string): LogServiceCategory {
-    const normalizedCategory = category.toUpperCase();
+  protected openRelatedLogDetails(issue: LogIssue, log: SystemLog): void {
+    this.selectedIssueReturn.set(issue);
+    this.selectedIssue.set(null);
+    this.selectedLog.set(log);
+    this.auditLogDetailView(log);
+  }
+
+  protected closeLogDetails(): void {
+    this.selectedLog.set(null);
+    this.selectedIssueReturn.set(null);
+  }
+
+  protected backToIssueDetails(): void {
+    const issue = this.selectedIssueReturn();
+    if (issue) {
+      this.selectedIssue.set(issue);
+    }
+    this.selectedLog.set(null);
+    this.selectedIssueReturn.set(null);
+  }
+
+  protected handleSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchText.set(value);
+    this.store.setLogSearch(value);
+    this.resetVisibleCounts();
+    this.reloadLogsFromServer();
+  }
+
+  protected handleRefreshLogs(): void {
+    this.reloadLogsFromServer();
+    this.toastService.success('Đã làm mới danh sách Vấn đề');
+  }
+
+  protected loadMoreIssues(): void {
+    this.visibleIssueCount.update(count => count + this.issuePageSize);
+  }
+
+  private resetVisibleCounts(): void {
+    this.visibleIssueCount.set(this.issuePageSize);
+  }
+
+  protected normalizeServiceCategory(category: string): LogServiceCategory {
+    const normalizedCategory = category.toUpperCase().trim();
 
     if (normalizedCategory === LogServiceCategory.FRONTEND) {
       return LogServiceCategory.FRONTEND;
@@ -318,31 +413,6 @@ export class LogsComponent implements OnInit, OnDestroy {
     return LogServiceCategory.BACKEND;
   }
 
-  protected handleSearchInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchText.set(value);
-    this.store.setLogSearch(value);
-    this.resetVisibleCounts();
-    this.reloadLogsFromServer();
-  }
-
-  protected openLogDetails(log: SystemLog): void {
-    this.selectedLog.set(log);
-    this.auditLogDetailView(log);
-  }
-
-  protected closeLogDetails(): void {
-    this.selectedLog.set(null);
-  }
-
-  protected loadMoreLogs(): void {
-    this.visibleLogCount.update(count => count + this.logPageSize);
-  }
-
-  private resetVisibleCounts(): void {
-    this.visibleLogCount.set(this.logPageSize);
-  }
-
   protected getLogViewMode(logId: string): 'structured' | 'raw' {
     return this.viewModeMap()[logId] || 'structured';
   }
@@ -351,17 +421,18 @@ export class LogsComponent implements OnInit, OnDestroy {
     this.viewModeMap.update(map => ({ ...map, [logId]: mode }));
   }
 
-  protected handleExplainLog(logItem: SystemLog): void {
-    const logId = logItem.id;
-    if (this.explanations()[logId] || this.explainingIds()[logId]) return;
-
+  protected triggerAiExplanation(log: SystemLog): void {
+    const logId = log.id;
     this.explainingIds.update(map => ({ ...map, [logId]: true }));
 
+    const service = this.normalizeServiceCategory(log.category);
+    const logDetails = log.details || log.message;
+
     this.store.explainLog(
-      logItem.message,
-      logItem.details,
-      logItem.category || LogServiceCategory.BACKEND,
-      (explanation) => {
+      log.message,
+      logDetails,
+      service,
+      (explanation: string) => {
         this.explanations.update(map => ({ ...map, [logId]: explanation }));
         this.explainingIds.update(map => ({ ...map, [logId]: false }));
       },
@@ -369,24 +440,6 @@ export class LogsComponent implements OnInit, OnDestroy {
         this.explainingIds.update(map => ({ ...map, [logId]: false }));
       }
     );
-  }
-
-  protected filterByTraceId(traceId: string, event: Event): void {
-    event.stopPropagation(); // Tránh kích hoạt toggle đóng mở dòng
-    if (!traceId) return;
-    this.searchText.set(traceId);
-    this.store.setLogSearch(traceId);
-    this.reloadLogsFromServer();
-  }
-
-  protected applyLevelFilter(level: LogLevel, event: Event): void {
-    event.stopPropagation();
-    this.handleFilterChange(level);
-  }
-
-  protected applyServiceFilter(category: string, event: Event): void {
-    event.stopPropagation();
-    this.handleServiceChange(this.normalizeServiceCategory(category));
   }
 
   protected getStructuredMetadata(log: SystemLog): LogMetadataItem[] {
@@ -428,97 +481,105 @@ export class LogsComponent implements OnInit, OnDestroy {
     return metadata;
   }
 
-  protected getIndexedLabels(log: SystemLog): LogMetadataItem[] {
-    const service = this.normalizeServiceCategory(log.category);
-    const filename = service === LogServiceCategory.AI_SERVICE
-      ? '/logs/ai.log'
-      : service === LogServiceCategory.FRONTEND
-        ? '/logs/frontend.log'
-        : '/logs/backend.log';
-
-    return [
-      { label: 'service', value: service.toLowerCase() },
-      { label: 'service_name', value: service.toLowerCase() },
-      { label: 'filename', value: filename },
-    ];
+  protected copyToClipboard(text: string, event: Event): void {
+    event.stopPropagation();
+    navigator.clipboard.writeText(text).then(() => {
+      this.toastService.success('Đã sao chép nội dung log!');
+    });
   }
 
-  protected getUserJourney(log: SystemLog): LogJourneyItem[] {
-    const currentContext = this.parseClientLogStack(log.details);
-    const currentTime = new Date(log.timestamp).getTime();
-    const journeyWindowMs = 10 * 60 * 1000;
+  private buildIssues(logs: SystemLog[]): LogIssue[] {
+    const issueMap = new Map<string, LogIssue>();
 
-    return this.store.logs()
-      .filter(candidate => this.isJourneyCandidate(candidate, log, currentContext, currentTime, journeyWindowMs))
-      .sort((left, right) => new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime())
-      .slice(-8)
-      .map(candidate => this.toJourneyItem(candidate, log.id));
+    logs
+      .filter(log => log.level === LogLevel.ERROR || log.level === LogLevel.WARN)
+      .forEach(log => {
+        const signature = this.getIssueSignature(log);
+        const existingIssue = issueMap.get(signature);
+        const timestamp = new Date(log.timestamp);
+
+        if (!existingIssue) {
+          issueMap.set(signature, {
+            id: signature,
+            title: this.getIssueTitle(log),
+            signature,
+            level: log.level,
+            category: log.category,
+            occurrences: 1,
+            firstSeen: timestamp,
+            lastSeen: timestamp,
+            traceIds: log.traceId ? [log.traceId] : [],
+            logs: [log],
+          });
+          return;
+        }
+
+        existingIssue.logs.push(log);
+        existingIssue.occurrences += 1;
+        existingIssue.firstSeen = timestamp < existingIssue.firstSeen ? timestamp : existingIssue.firstSeen;
+        existingIssue.lastSeen = timestamp > existingIssue.lastSeen ? timestamp : existingIssue.lastSeen;
+
+        if (log.traceId && !existingIssue.traceIds.includes(log.traceId)) {
+          existingIssue.traceIds.push(log.traceId);
+        }
+      });
+
+    return Array.from(issueMap.values())
+      .sort((left, right) => right.lastSeen.getTime() - left.lastSeen.getTime());
   }
 
-  private isJourneyCandidate(
-    candidate: SystemLog,
-    currentLog: SystemLog,
-    currentContext: ClientLogStackContext | null,
-    currentTime: number,
-    journeyWindowMs: number
-  ): boolean {
-    const candidateTime = new Date(candidate.timestamp).getTime();
-
-    if (candidateTime > currentTime || currentTime - candidateTime > journeyWindowMs) {
-      return false;
-    }
-
-    if (candidate.id === currentLog.id) {
-      return true;
-    }
-
-    // 1. Nếu trùng traceId (ở cả header hoặc client context), chắc chắn thuộc hành trình
-    const candidateContext = this.parseClientLogStack(candidate.details);
-    const candidateTraceId = candidate.traceId || candidateContext?.traceId;
-    const currentTraceId = currentLog.traceId || currentContext?.traceId;
-
-    if (candidateTraceId && currentTraceId && candidateTraceId === currentTraceId) {
-      return true;
-    }
-
-    // 2. Loại bỏ các log API có traceId của request khác (tránh chồng chéo các API calls song song)
-    if (candidateTraceId && currentTraceId && candidateTraceId !== currentTraceId) {
-      return false;
-    }
-
-    // 3. Với các sự kiện điều hướng trang không có traceId, lọc theo email người dùng để chắc chắn cùng một phiên làm việc
-    if (currentContext?.userEmail && candidateContext?.userEmail && candidateContext.userEmail !== currentContext.userEmail) {
-      return false;
-    }
-
-    // 4. Lấy các log Frontend trong cùng một route làm breadcrumbs
-    if (this.normalizeServiceCategory(candidate.category) === LogServiceCategory.FRONTEND) {
-      if (currentContext?.routeUrl && candidateContext?.routeUrl && candidateContext.routeUrl !== currentContext.routeUrl) {
-        return false;
-      }
-      return true;
-    }
-
-    return false;
-  }
-
-  private toJourneyItem(log: SystemLog, currentLogId: string): LogJourneyItem {
+  private getIssueTitle(log: SystemLog): string {
     const context = this.parseClientLogStack(log.details);
-    const title = this.toFriendlyJourneyTitle(context?.eventType, log.message);
-    const routeText = context?.routeUrl ? `Route: ${context.routeUrl}` : '';
-    const apiText = context?.apiPath ? `API: ${context.method || 'HTTP'} ${this.normalizeApiPath(context.apiPath)}` : '';
-    const reasonText = context?.reason ? `Reason: ${context.reason}` : '';
-    const description = [routeText, apiText, reasonText].filter(Boolean).join(' · ') || log.message;
 
-    return {
-      id: log.id,
-      time: new Date(log.timestamp),
-      title,
-      description,
-      level: log.level,
-      category: log.category,
-      isCurrent: log.id === currentLogId,
-    };
+    if (context?.eventType && context.apiPath) {
+      return `${this.toFriendlyJourneyTitle(context.eventType, log.message)} · ${context.method || 'HTTP'} ${this.normalizeApiPath(context.apiPath)}`;
+    }
+
+    return log.message.split('|')[0]?.trim() || log.message;
+  }
+
+  private getIssueSignature(log: SystemLog): string {
+    const context = this.parseClientLogStack(log.details);
+    const baseMessage = this.normalizeIssueMessage(log.message);
+    const apiPart = context?.apiPath ? this.normalizeApiPath(context.apiPath) : baseMessage;
+    const eventPart = context?.eventType || baseMessage;
+
+    return `${log.level}:${this.normalizeServiceCategory(log.category)}:${eventPart}:${apiPart}`;
+  }
+
+  private normalizeIssueMessage(message: string): string {
+    return message
+      .replace(/ZT-[A-Za-z0-9_-]+/g, 'ZT-*')
+      .replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, ':uuid')
+      .replace(/\d+/g, ':id')
+      .trim();
+  }
+
+  private parseClientLogStack(details: string): ClientLogStackContext | null {
+    const stackMarker = 'Stack:';
+    const stackStartIndex = details.indexOf(stackMarker);
+
+    if (stackStartIndex < 0) {
+      return null;
+    }
+
+    const rawStack = details.slice(stackStartIndex + stackMarker.length).trim();
+
+    if (!rawStack.startsWith('{')) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(rawStack) as unknown;
+
+      if (typeof parsed !== 'object' || parsed === null) {
+        return null;
+      }
+
+      return parsed as ClientLogStackContext;
+    } catch {
+      return null;
+    }
   }
 
   private toFriendlyJourneyTitle(eventType: string | undefined, fallbackMessage: string): string {
@@ -565,103 +626,6 @@ export class LogsComponent implements OnInit, OnDestroy {
     }).format(new Date(value));
   }
 
-
-
-  private parseClientLogStack(details: string): ClientLogStackContext | null {
-    const stackMarker = 'Stack:';
-    const stackStartIndex = details.indexOf(stackMarker);
-
-    if (stackStartIndex < 0) {
-      return null;
-    }
-
-    const rawStack = details.slice(stackStartIndex + stackMarker.length).trim();
-
-    if (!rawStack.startsWith('{')) {
-      return null;
-    }
-
-    try {
-      const parsed = JSON.parse(rawStack) as unknown;
-
-      if (typeof parsed !== 'object' || parsed === null) {
-        return null;
-      }
-
-      return parsed as ClientLogStackContext;
-    } catch {
-      return null;
-    }
-  }
-
-  protected copyToClipboard(text: string, event: Event): void {
-    event.stopPropagation();
-    navigator.clipboard.writeText(text).then(() => {
-      this.toastService.success('Đã sao chép nội dung log!');
-    });
-  }
-
-  protected handleRefreshLogs(): void {
-    this.reloadLogsFromServer();
-    this.toastService.success('Đã làm mới danh sách nhật ký');
-  }
-
-  protected toggleAutoRefresh(): void {
-    const nextState = !this.autoRefreshEnabled();
-    this.autoRefreshEnabled.set(nextState);
-
-    if (nextState) {
-      this.startRealtimeLogs();
-      this.toastService.success('Đã bật chế độ log thời gian thực (Real-time logs)');
-      return;
-    }
-
-    this.stopRealtimeLogs();
-    this.toastService.success('Đã tắt chế độ log thời gian thực');
-  }
-
-  private startRealtimeLogs(): void {
-    this.stopRealtimeLogs();
-    console.log('[Logs WS] Khởi tạo kết nối và đăng ký lắng nghe /topic/admin.logs');
-    this.wsService.connect();
-    
-    // Subscribe to websocket log topic
-    this.wsSubscription = this.wsService.subscribe<SystemLog>('/topic/admin.logs')
-      .subscribe({
-        next: (logItem: SystemLog) => {
-          console.log('[Logs WS] Nhận log mới từ WS:', logItem);
-          this.ngZone.run(() => {
-            this.store.appendLog(logItem);
-          });
-        },
-        error: (err: unknown) => {
-          console.error('[Logs WS Subscription Error]', err);
-        }
-      });
-  }
-
-  private stopRealtimeLogs(): void {
-    if (this.wsSubscription) {
-      this.wsSubscription.unsubscribe();
-      this.wsSubscription = null;
-    }
-  }
-
-  protected handleClearLogs(): void {
-    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ logs hiện tại không?')) {
-      this.store.recordActivityLog({
-        action: 'CLEAR_LOG',
-        area: ActivityArea.ADMIN,
-        severity: ActivitySeverity.SECURITY,
-        module: 'LOG',
-        targetType: 'LOG',
-        targetLabel: 'Danh sách log hiển thị',
-        summary: 'Admin xóa danh sách log đang hiển thị'
-      });
-      this.store.clearLogs();
-    }
-  }
-
   private auditLogDetailView(log: SystemLog): void {
     this.store.recordActivityLog({
       action: 'VIEW_LOG_DETAIL',
@@ -671,7 +635,7 @@ export class LogsComponent implements OnInit, OnDestroy {
       targetType: 'LOG',
       targetId: log.id,
       targetLabel: log.traceId || log.id,
-      summary: `Admin xem chi tiết log ${log.level} của ${log.category}`,
+      summary: `Admin xem chi tiết log ${log.level} của ${log.category} từ danh sách Issue`,
       metadata: JSON.stringify({
         level: log.level,
         category: log.category,
@@ -681,4 +645,3 @@ export class LogsComponent implements OnInit, OnDestroy {
     });
   }
 }
-

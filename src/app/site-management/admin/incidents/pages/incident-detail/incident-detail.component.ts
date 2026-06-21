@@ -230,6 +230,7 @@ export class IncidentDetailComponent implements OnInit {
         const mappedInc = {
           ...inc,
           occurredAt: inc.occurredAt ? new Date(inc.occurredAt) : undefined,
+          firstOccurredAt: inc.firstOccurredAt ? new Date(inc.firstOccurredAt) : undefined,
           createdAt: inc.createdAt ? new Date(inc.createdAt) : undefined,
           resolvedAt: inc.resolvedAt ? new Date(inc.resolvedAt) : undefined
         };
@@ -430,11 +431,28 @@ export class IncidentDetailComponent implements OnInit {
     });
   }
 
-  protected getOccurrenceTimeForEmail(email: string): Date | null {
+  protected getOccurrenceSummaryForEmail(email: string): { count: number; firstTime: Date | null; lastTime: Date | null } {
     const inc = this.incident();
-    if (!inc || !inc.occurrences) return null;
-    const occ = inc.occurrences.find((o: { traceId: string; occurredAt: Date; userEmail: string | null }) => o.userEmail === email);
-    return occ ? new Date(occ.occurredAt) : null;
+    if (!inc || !inc.occurrences) return { count: 0, firstTime: null, lastTime: null };
+    
+    const emailOccs = inc.occurrences.filter((o: any) => o.userEmail === email);
+    if (emailOccs.length === 0) return { count: 0, firstTime: null, lastTime: null };
+    
+    const sorted = [...emailOccs].sort((a: any, b: any) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
+    return {
+      count: sorted.length,
+      firstTime: new Date(sorted[0].occurredAt),
+      lastTime: new Date(sorted[sorted.length - 1].occurredAt)
+    };
+  }
+
+  protected getUserOccurrences(email: string): any[] {
+    const inc = this.incident();
+    if (!inc || !inc.occurrences) return [];
+    
+    return inc.occurrences
+      .filter((o: any) => o.userEmail === email)
+      .sort((a: any, b: any) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
   }
 
   protected getInitials(name: string): string {
@@ -746,10 +764,12 @@ export class IncidentDetailComponent implements OnInit {
     );
   }
 
-  protected copyToClipboard(text: string, event: Event): void {
-    event.stopPropagation();
+  protected copyToClipboard(text: string, event?: Event, successMsg: string = 'Đã sao chép nội dung log!'): void {
+    if (event) {
+      event.stopPropagation();
+    }
     navigator.clipboard.writeText(text).then(() => {
-      this.toastService.success('Đã sao chép nội dung log!');
+      this.toastService.success(successMsg);
     });
   }
 

@@ -8,6 +8,7 @@ export interface ManagementIncidentImpactDto {
   httpMethod: string;
   statusCode: number;
   occurredAt: string;
+  firstOccurredAt: string; // Thời điểm xảy ra lần đầu tiên
   resolvedAt: string | null;
   status: IncidentStatus;
   durationMinutes: number;

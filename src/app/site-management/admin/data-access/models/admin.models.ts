@@ -53,6 +53,7 @@ export interface SystemIncident {
   errorMessage?: string;
   stackTrace?: string;
   occurredAt?: Date;
+  firstOccurredAt?: Date;
   createdAt?: Date;
   userEmail?: string;
   affectedUserEmails?: string[];

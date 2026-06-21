@@ -291,7 +291,7 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
   protected getIncidentTimeline(incident: ManagementIncidentImpactDto | null | undefined) {
     if (!incident) return [];
     
-    const baseTime = incident.occurredAt ? new Date(incident.occurredAt) : new Date();
+    const baseTime = (incident.firstOccurredAt || incident.occurredAt) ? new Date(incident.firstOccurredAt || incident.occurredAt) : new Date();
     const formatTime = (date: Date, offsetMins: number) => {
       const targetDate = new Date(date.getTime() + offsetMins * 60000);
       const timeStr = targetDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
@@ -334,7 +334,7 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
         apiPath: inc.apiPath,
         serviceName: inc.serviceName,
         revenueLoss: inc.revenueLoss,
-        occurredAt: inc.occurredAt
+        occurredAt: inc.firstOccurredAt || inc.occurredAt
       }));
   }
 
