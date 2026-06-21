@@ -1,0 +1,744 @@
+<div class="mb-container">
+  <!-- Page Header -->
+  <header class="mb-header">
+    <div class="mb-header__content">
+      <p class="mb-header__eyebrow">Tổng quan hệ thống</p>
+      <h1 class="mb-header__title">Phân tích tác động kinh doanh</h1>
+      <p class="mb-header__description">
+        Giám sát thiệt hại doanh thu, số lượng đơn hàng thất thoát và khách hàng bị ảnh hưởng trực tiếp do sự cố kỹ thuật.
+      </p>
+    </div>
+    <div class="mb-header__actions">
+      <button class="mb-btn-icon" (click)="refreshDashboard()" title="Tải lại dữ liệu">
+        <svg lucideRotateCw [attr.stroke-width]="2" class="w-4 h-4"></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- KPI Dashboard Grid -->
+  <section class="mb-kpi-grid">
+    <!-- Card 1: Doanh thu thất thoát -->
+    <article class="mb-kpi-card mb-kpi-card--critical">
+      <div class="mb-kpi-card__header">
+        <span class="mb-kpi-card__title">Tổng doanh thu thất thoát</span>
+        <div class="mb-kpi-card__icon-wrapper bg-rose-50 text-rose-600">
+          <svg lucideTrendingDown [attr.stroke-width]="2" class="w-5 h-5"></svg>
+        </div>
+      </div>
+      <strong class="mb-kpi-card__value text-rose-600">
+        {{ formatVND(store.dashboard()?.totalLostRevenue) }}
+      </strong>
+      <p class="mb-kpi-card__footer">Ước tính doanh thu bị mất trong thời gian xảy ra lỗi</p>
+    </article>
+
+    <!-- Card 2: Đơn hàng bị mất -->
+    <article class="mb-kpi-card mb-kpi-card--warning">
+      <div class="mb-kpi-card__header">
+        <span class="mb-kpi-card__title">Đơn hàng bị thất thoát</span>
+        <div class="mb-kpi-card__icon-wrapper bg-amber-50 text-amber-600">
+          <svg lucideFileText [attr.stroke-width]="2" class="w-5 h-5"></svg>
+        </div>
+      </div>
+      <strong class="mb-kpi-card__value text-amber-600">
+        {{ store.dashboard()?.totalLostOrders || 0 }} <span class="text-sm font-normal text-gray-500">đơn</span>
+      </strong>
+      <p class="mb-kpi-card__footer">Số đơn hàng kỳ vọng chưa thể mua thành công</p>
+    </article>
+
+    <!-- Card 3: Khách hàng bị ảnh hưởng -->
+    <article class="mb-kpi-card mb-kpi-card--info">
+      <div class="mb-kpi-card__header">
+        <span class="mb-kpi-card__title">Khách hàng bị ảnh hưởng</span>
+        <div class="mb-kpi-card__icon-wrapper bg-indigo-50 text-indigo-600">
+          <svg lucideUsers [attr.stroke-width]="2" class="w-5 h-5"></svg>
+        </div>
+      </div>
+      <strong class="mb-kpi-card__value text-indigo-600">
+        {{ store.dashboard()?.totalAffectedUsers || 0 }} <span class="text-sm font-normal text-gray-500">user</span>
+      </strong>
+      <p class="mb-kpi-card__footer">Tài khoản/phiên truy cập gặp lỗi hệ thống trực tiếp</p>
+    </article>
+
+    <!-- Card 4: Tổng quan sự cố -->
+    <article class="mb-kpi-card">
+      <div class="mb-kpi-card__header">
+        <span class="mb-kpi-card__title">Cơ cấu mức độ sự cố</span>
+        <div class="mb-kpi-card__icon-wrapper bg-gray-50 text-gray-600">
+          <svg lucideActivity [attr.stroke-width]="2" class="w-5 h-5"></svg>
+        </div>
+      </div>
+      <div class="mb-kpi-card__severity-distribution">
+        <div class="mb-severity-bar" [title]="'Tổng sự cố: ' + (store.dashboard()?.totalIncidentsCount || 0)">
+          <div class="mb-severity-bar__fill bg-rose-500" [style.width.%]="((store.dashboard()?.criticalIncidentsCount || 0) / (store.dashboard()?.totalIncidentsCount || 1)) * 100"></div>
+          <div class="mb-severity-bar__fill bg-amber-500" [style.width.%]="((store.dashboard()?.highIncidentsCount || 0) / (store.dashboard()?.totalIncidentsCount || 1)) * 100"></div>
+          <div class="mb-severity-bar__fill bg-yellow-500" [style.width.%]="((store.dashboard()?.mediumIncidentsCount || 0) / (store.dashboard()?.totalIncidentsCount || 1)) * 100"></div>
+          <div class="mb-severity-bar__fill bg-blue-500" [style.width.%]="((store.dashboard()?.lowIncidentsCount || 0) / (store.dashboard()?.totalIncidentsCount || 1)) * 100"></div>
+        </div>
+        <div class="mb-severity-legend">
+          <span class="text-rose-600">Critical: {{ store.dashboard()?.criticalIncidentsCount || 0 }}</span>
+          <span class="text-amber-600">High: {{ store.dashboard()?.highIncidentsCount || 0 }}</span>
+          <span class="text-yellow-600">Med: {{ store.dashboard()?.mediumIncidentsCount || 0 }}</span>
+          <span class="text-blue-600">Low: {{ store.dashboard()?.lowIncidentsCount || 0 }}</span>
+        </div>
+      </div>
+      <p class="mb-kpi-card__footer">Phân loại dựa trên thiệt hại kinh tế của sự cố</p>
+    </article>
+  </section>
+
+  <!-- Incident Table Section -->
+  <section class="mb-table-card">
+    <div class="mb-table-card__header">
+      <h2 class="mb-table-card__title">Nhật ký sự cố & Tác động tài chính</h2>
+      <span class="mb-table-card__subtitle">Dữ liệu được đồng bộ từ Monitoring System và Correlation Engine</span>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="mb-filter-bar">
+      <!-- Search Input Wrapper -->
+      <div class="mb-search-wrapper">
+        <svg lucideSearch class="mb-search-icon"></svg>
+        <input 
+          type="text" 
+          placeholder="Tìm kiếm mã sự cố, API, dịch vụ..." 
+          class="mb-search-input"
+          [value]="localSearch()"
+          (input)="onSearchInput($event)"
+        />
+      </div>
+
+      <!-- Date Filters Group -->
+      <div class="mb-date-filters-group">
+        <div class="mb-date-wrapper">
+          <select 
+            class="mb-date-select" 
+            [value]="selectedPreset()" 
+            (change)="onPresetChange($event)"
+          >
+            <option value="TODAY">Hôm nay</option>
+            <option value="LAST_7_DAYS">7 ngày gần nhất</option>
+            <option value="LAST_30_DAYS">30 ngày gần nhất</option>
+            <option value="CUSTOM">Tùy chọn...</option>
+            <option value="ALL_TIME">Tất cả thời gian</option>
+          </select>
+        </div>
+
+        <!-- Custom Date Range Picker Inputs -->
+        @if (selectedPreset() === 'CUSTOM') {
+          <div class="mb-custom-date-range">
+            <div class="mb-custom-date-field">
+              <span class="mb-custom-date-label">Từ:</span>
+              <input 
+                type="date" 
+                class="mb-custom-date-input" 
+                [value]="localStartDate()"
+                (change)="onCustomStartDateChange($event)"
+              />
+            </div>
+            <div class="mb-custom-date-field">
+              <span class="mb-custom-date-label">Đến:</span>
+              <input 
+                type="date" 
+                class="mb-custom-date-input" 
+                [value]="localEndDate()"
+                (change)="onCustomEndDateChange($event)"
+              />
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="mb-table-wrapper">
+      <table class="mb-table">
+        <thead>
+          <tr>
+            <th>Mã sự cố</th>
+            <th>Sự cố / Lỗi hệ thống</th>
+            <th>Thời gian xảy ra</th>
+            <th>Thời lượng</th>
+            <th>Số User bị lỗi</th>
+            <th>Thất thoát doanh thu</th>
+            <th>Trạng thái</th>
+            <th>Mức độ tác động</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (store.isLoadingIncidents()) {
+            <tr>
+              <td colspan="9" class="mb-table__loading-cell">
+                <div class="flex items-center justify-center gap-2 py-8 text-gray-500">
+                  <svg lucideRotateCw class="animate-spin w-5 h-5 text-indigo-600"></svg>
+                  <span>Đang phân tích tác động tài chính...</span>
+                </div>
+              </td>
+            </tr>
+          } @else if (store.incidents().length === 0) {
+            <tr>
+              <td colspan="9" class="mb-table__empty-cell">
+                <div class="py-12 text-center text-gray-500">
+                  Không ghi nhận sự cố kỹ thuật nào trong khoảng thời gian giám sát.
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (inc of store.incidents(); track inc.incidentId) {
+              <tr class="mb-table-row" (click)="openIncidentDetail(inc)">
+                <td class="font-bold text-gray-900">{{ inc.incidentCode }}</td>
+                <td>
+                  <span class="text-sm font-semibold text-gray-900">{{ getFriendlyErrorName(inc.apiPath) }}</span>
+                </td>
+                <td class="text-gray-600 text-xs">
+                  {{ inc.occurredAt | date:'HH:mm:ss dd/MM/yyyy' }}
+                </td>
+                <td class="text-gray-700 text-sm">
+                  {{ formatDuration(inc.durationMinutes) }}
+                </td>
+                <td>
+                  <span 
+                    class="mb-user-count-link" 
+                    (click)="openIncidentDetail(inc, 'users'); $event.stopPropagation()"
+                    title="Xem chi tiết khách hàng bị ảnh hưởng"
+                  >
+                    <svg lucideUsers [attr.stroke-width]="2" class="w-3.5 h-3.5"></svg>
+                    <span>{{ inc.affectedUsers }} user</span>
+                  </span>
+                </td>
+                <td class="text-rose-600 font-semibold">
+                  {{ formatVND(inc.revenueLoss) }}
+                </td>
+                <td>
+                  <span class="mb-status-badge" [class]="'status-' + inc.status.toLowerCase()">
+                    {{ inc.status === IncidentStatus.OPEN ? 'Đang mở' : inc.status === IncidentStatus.INVESTIGATING ? 'Đang điều tra' : 'Đã xử lý' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="mb-severity-badge" [class]="'severity-' + inc.severity.toLowerCase()">
+                    {{ inc.severity }}
+                  </span>
+                </td>
+                <td class="text-right">
+                  <svg lucideChevronRight class="w-5 h-5 text-gray-400"></svg>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginator -->
+    <div class="mb-paginator-wrapper">
+      <p-paginator
+        [first]="store.page() * store.size()"
+        [rows]="store.size()"
+        [totalRecords]="store.totalRecords()"
+        [rowsPerPageOptions]="[10, 20, 50]"
+        (onPageChange)="onPageChange($event)"
+        class="inventory-paginator"
+      ></p-paginator>
+    </div>
+  </section>
+
+  <!-- Slide-over Drawer -->
+  <div class="mb-drawer-overlay" [class.mb-drawer-overlay--open]="isDrawerOpen()" (click)="closeDrawer()">
+    <aside class="mb-drawer" [class.mb-drawer--open]="isDrawerOpen()" (click)="$event.stopPropagation()">
+      <!-- Drawer Header -->
+      <div class="mb-drawer__header">
+        <div class="mb-drawer__header-title-wrapper">
+          <span class="mb-drawer__eyebrow">Chi tiết sự cố</span>
+          <h2 class="mb-drawer__title">Sự cố {{ store.selectedIncident()?.incidentCode }}</h2>
+          <div class="mb-drawer__header-meta">
+            <span class="mb-drawer__meta-chip">
+              <svg lucideAlertTriangle class="w-3 h-3"></svg>
+              {{ getFriendlyErrorName(store.selectedIncident()?.apiPath) }}
+            </span>
+            <span class="mb-drawer__meta-chip">
+              <svg lucideClock class="w-3 h-3"></svg>
+              {{ formatDuration(store.selectedIncident()?.durationMinutes) }}
+            </span>
+          </div>
+        </div>
+        <button class="mb-btn-close" (click)="closeDrawer()">
+          <svg lucideX [attr.stroke-width]="2" class="w-5 h-5"></svg>
+        </button>
+      </div>
+
+      <!-- Drawer Sub-tabs -->
+      <nav class="mb-drawer-tabs">
+        <button
+          class="mb-drawer-tab-btn"
+          [class.mb-drawer-tab-btn--active]="activeDetailTab() === 'metrics'"
+          (click)="activeDetailTab.set('metrics')"
+        >
+          Tác động kinh doanh
+        </button>
+        <button
+          class="mb-drawer-tab-btn"
+          [class.mb-drawer-tab-btn--active]="activeDetailTab() === 'users'"
+          (click)="activeDetailTab.set('users')"
+        >
+          Khách hàng bị ảnh hưởng ({{ store.selectedIncident()?.affectedUsers || 0 }})
+        </button>
+        <button
+          class="mb-drawer-tab-btn"
+          [class.mb-drawer-tab-btn--active]="activeDetailTab() === 'ai'"
+          (click)="activeDetailTab.set('ai')"
+        >
+          AI Phân tích chuyên sâu
+        </button>
+      </nav>
+
+      <!-- Drawer Content -->
+      <div class="mb-drawer__content">
+        @if (store.isLoadingDetail()) {
+          <div class="flex flex-col items-center justify-center py-20 text-gray-500 gap-3">
+            <svg lucideRotateCw class="animate-spin w-8 h-8 text-indigo-600"></svg>
+            <span>Đang lấy số liệu tác động thời gian thực...</span>
+          </div>
+        } @else if (store.selectedIncident()) {
+          <!-- TAB 1: METRICS -->
+          @if (activeDetailTab() === 'metrics') {
+            <div class="flex flex-col gap-6">
+              <!-- Confidence & Severity Reasons Grid -->
+              <div class="grid grid-cols-2 gap-4">
+                <!-- Card: Confidence Score -->
+                @let conf = getConfidenceScore(store.selectedIncident());
+                <div class="mb-detail-panel">
+                  <h4 class="mb-detail-panel__title flex items-center gap-1.5">
+                    Độ tin cậy phân tích
+                    <svg lucideHelpCircle class="w-3.5 h-3.5 text-gray-400 cursor-help" title="Độ tin cậy được tính dựa trên mức độ đầy đủ của Business Events, dữ liệu Baseline và số lượng người dùng bị ảnh hưởng."></svg>
+                  </h4>
+                  <div class="flex items-center gap-3 mt-1.5">
+                    <div class="relative w-11 h-11 flex items-center justify-center rounded-full border-4 border-gray-100" [style.border-top-color]="conf.percentage >= 60 ? '#10b981' : '#f59e0b'">
+                      <span class="text-xs font-bold text-gray-900">{{ conf.percentage }}%</span>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider" [class]="conf.colorClass">
+                        {{ conf.label }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card: Severity Reason -->
+                <div class="mb-detail-panel">
+                  <h4 class="mb-detail-panel__title flex items-center gap-1.5">
+                    <svg lucideShieldAlert class="w-3.5 h-3.5 text-indigo-500"></svg>
+                    Lý do xếp hạng
+                  </h4>
+                  <ul class="flex flex-col gap-1 mt-1 text-[10px] text-gray-700">
+                    @for (reason of getSeverityReasons(store.selectedIncident()); track reason) {
+                      <li class="flex items-center gap-1 text-gray-700 font-medium">
+                        <span class="text-emerald-600 font-bold">✓</span> {{ reason }}
+                      </li>
+                    }
+                  </ul>
+                </div>
+              </div>
+
+
+              <!-- Financial Metrics Comparison -->
+              <div class="mb-detail-panel">
+                <h3 class="mb-detail-panel__title">Tác động tài chính (Thực tế vs. Baseline)</h3>
+                <div class="mb-metrics-comparison">
+                  <!-- Revenue compare -->
+                  <div class="mb-metric-comp-row">
+                    <div class="mb-metric-comp-col">
+                      <span class="mb-metric-comp-label">Doanh thu kỳ vọng</span>
+                      <strong class="mb-metric-comp-val text-gray-900">
+                        {{ formatVND(store.selectedIncident()?.expectedRevenue) }}
+                      </strong>
+                    </div>
+                    <div class="mb-metric-comp-col">
+                      <span class="mb-metric-comp-label">Doanh thu thực tế</span>
+                      <strong class="mb-metric-comp-val text-emerald-600">
+                        {{ formatVND(store.selectedIncident()?.actualRevenue) }}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div class="border-t border-gray-100 my-2 pt-2">
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm font-semibold text-gray-700">Thiệt hại Doanh thu:</span>
+                      <strong class="text-lg font-bold text-rose-600">
+                        - {{ formatVND(store.selectedIncident()?.revenueLoss) }}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <!-- Orders compare -->
+                  <div class="mb-metric-comp-row mt-4">
+                    <div class="mb-metric-comp-col">
+                      <span class="mb-metric-comp-label">Đơn hàng kỳ vọng</span>
+                      <span class="mb-metric-comp-val text-gray-800 font-medium">
+                        {{ store.selectedIncident()?.expectedOrders }} đơn
+                      </span>
+                    </div>
+                    <div class="mb-metric-comp-col">
+                      <span class="mb-metric-comp-label">Đơn hàng thực tế</span>
+                      <span class="mb-metric-comp-val text-emerald-700 font-medium">
+                        {{ store.selectedIncident()?.actualOrders }} đơn
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="border-t border-gray-100 my-2 pt-2">
+                    <div class="flex justify-between items-center">
+                      <span class="text-sm font-semibold text-gray-700">Đơn hàng bị mất:</span>
+                      <strong class="text-md font-bold text-rose-600">
+                        - {{ store.selectedIncident()?.lostOrders }} đơn
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Incident Timeline -->
+              <div class="mb-detail-panel">
+                <h3 class="mb-detail-panel__title flex items-center gap-1.5">
+                  <svg lucideClock class="w-3.5 h-3.5 text-indigo-500"></svg>
+                  Vòng đời & Timeline sự cố
+                </h3>
+                <div class="mb-timeline mt-2">
+                  @for (item of getIncidentTimeline(store.selectedIncident()); track item.time; let last = $last) {
+                    <div class="mb-timeline-item" [class.mb-timeline-item--last]="last">
+                      <div class="mb-timeline-item__badge">{{ item.time }}</div>
+                      <div class="mb-timeline-item__content">
+                        <span class="text-xs text-gray-700 font-medium">{{ item.desc }}</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Impact Forecasting -->
+              @if (store.selectedIncident()?.status !== IncidentStatus.RESOLVED) {
+                <div class="mb-forecast-panel">
+                  <h3 class="mb-forecast-title">
+                    <svg lucideAlertTriangle class="w-4 h-4 text-amber-500"></svg>
+                    Dự báo nếu sự cố tiếp tục (Thêm 60 phút)
+                  </h3>
+                  @let delta = getForecastDelta(store.selectedIncident());
+                  <div class="mb-forecast-grid">
+                    <div class="mb-forecast-metric">
+                      <span class="mb-forecast-metric__label">Thất thoát doanh thu</span>
+                      <span class="mb-forecast-metric__value mb-forecast-metric__value--revenue">
+                        Dự kiến tăng: <strong class="mb-forecast-metric__amount">+{{ formatVND(delta.revenueLossDelta) }}</strong>
+                      </span>
+                    </div>
+                    <div class="mb-forecast-metric">
+                      <span class="mb-forecast-metric__label">Đơn hàng bị mất</span>
+                      <span class="mb-forecast-metric__value mb-forecast-metric__value--orders">
+                        Dự kiến tăng: <strong class="mb-forecast-metric__amount">+{{ delta.lostOrdersDelta }} đơn</strong>
+                      </span>
+                    </div>
+                  </div>
+                  @if (delta.lostOrdersDelta === 0) {
+                    <div class="mb-forecast-notice">
+                      <span>💡</span>
+                      <span>Tác động đã đạt ngưỡng bão hòa trong 60 phút tới do thời gian sự cố kéo dài.</span>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Similar Incidents -->
+              <div class="mb-detail-panel">
+                <h3 class="mb-detail-panel__title flex items-center gap-1.5">
+                  <svg lucideLink class="w-3.5 h-3.5 text-indigo-500"></svg>
+                  Sự cố tương tự trong lịch sử
+                </h3>
+                <div class="flex flex-col gap-2 mt-1">
+                  @let similar = getSimilarIncidents(store.selectedIncident());
+                  @if (similar.length === 0) {
+                    <p class="text-xs text-gray-500 italic py-1">Không tìm thấy sự cố tương tự xảy ra gần đây.</p>
+                  } @else {
+                    @for (sim of similar; track sim.code) {
+                      <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border border-gray-100 shadow-sm text-xs">
+                        <div class="flex flex-col gap-0.5">
+                          <span class="font-bold text-gray-900">{{ sim.code }}</span>
+                          <span class="text-[10px] text-indigo-600 font-mono">{{ getFriendlyErrorName(sim.apiPath) }}</span>
+                        </div>
+                        <div class="text-right">
+                          <span class="text-rose-600 font-semibold">- {{ formatVND(sim.revenueLoss) }}</span>
+                          <p class="text-[9px] text-gray-400 mt-0.5">{{ sim.occurredAt | date:'dd/MM/yyyy' }}</p>
+                        </div>
+                      </div>
+                    }
+                    <div class="mt-1 text-[10px] bg-indigo-50/50 text-indigo-700 p-2.5 rounded-lg border border-indigo-100">
+                      💡 <strong>Khuyến nghị:</strong> 80% sự cố tương tự trước đây được khắc phục bằng việc kiểm tra phân quyền API hoặc khởi động lại dịch vụ <strong>{{ store.selectedIncident()?.serviceName }}</strong>.
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Funnel Weight Analysis -->
+              @let activeStep = getActiveFunnelStep(store.selectedIncident()?.apiPath);
+              <div class="mb-detail-panel">
+                <h3 class="mb-detail-panel__title">Phân tích Phễu Chuyển Đổi (Funnel Drop)</h3>
+                <p class="text-xs text-gray-500 mb-4">Trọng số đóng góp của từng bước vào tỷ lệ chuyển đổi doanh thu</p>
+                <div class="mb-funnel">
+                  <!-- Step 1: Xem sản phẩm (10%) -->
+                  <div class="mb-funnel-step" [class.mb-funnel-step--active]="activeStep === 1" [class.mb-funnel-step--inactive]="activeStep !== 1 && activeStep !== 0">
+                    <div class="mb-funnel-step__indicator">
+                      <span class="mb-funnel-step__badge">1</span>
+                      <div class="mb-funnel-step__line bg-indigo-500"></div>
+                    </div>
+                    <div class="mb-funnel-step__content">
+                      <div class="mb-funnel-step__title-wrapper">
+                        <strong class="text-gray-900 text-sm">Xem sản phẩm</strong>
+                        <span class="mb-funnel-step__weight-badge">Trọng số: 10%</span>
+                      </div>
+                      <span class="text-xs text-gray-500">Trọng số hành vi thấp, ít ảnh hưởng doanh số tức thời</span>
+                    </div>
+                  </div>
+
+                  <!-- Step 2: Thêm giỏ hàng (50%) -->
+                  <div class="mb-funnel-step" [class.mb-funnel-step--active]="activeStep === 2" [class.mb-funnel-step--inactive]="activeStep !== 2 && activeStep !== 0">
+                    <div class="mb-funnel-step__indicator">
+                      <span class="mb-funnel-step__badge">2</span>
+                      <div class="mb-funnel-step__line bg-indigo-500"></div>
+                    </div>
+                    <div class="mb-funnel-step__content">
+                      <div class="mb-funnel-step__title-wrapper">
+                        <strong class="text-gray-900 text-sm">Thêm giỏ hàng</strong>
+                        <span class="mb-funnel-step__weight-badge">Trọng số: 50%</span>
+                      </div>
+                      <span class="text-xs text-gray-500">Tác động trung bình, ảnh hưởng tỉ lệ chuyển đổi tiếp theo</span>
+                    </div>
+                  </div>
+
+                  <!-- Step 3: Checkout (100%) -->
+                  <div class="mb-funnel-step" [class.mb-funnel-step--active]="activeStep === 3" [class.mb-funnel-step--inactive]="activeStep !== 3 && activeStep !== 0">
+                    <div class="mb-funnel-step__indicator">
+                      <span class="mb-funnel-step__badge mb-funnel-step__badge--critical">3</span>
+                      <div class="mb-funnel-step__line bg-rose-500"></div>
+                    </div>
+                    <div class="mb-funnel-step__content">
+                      <div class="mb-funnel-step__title-wrapper">
+                        <strong class="text-gray-900 text-sm">Checkout / Bắt đầu đặt hàng</strong>
+                        <span class="mb-funnel-step__weight-badge mb-funnel-step__weight-badge--critical">Trọng số: 100%</span>
+                      </div>
+                      <span class="text-xs text-gray-500">Trọng số tối đa, ảnh hưởng trực tiếp đến doanh số</span>
+                    </div>
+                  </div>
+
+                  <!-- Step 4: Thanh toán (100%) -->
+                  <div class="mb-funnel-step mb-funnel-step--last" [class.mb-funnel-step--active]="activeStep === 4" [class.mb-funnel-step--inactive]="activeStep !== 4 && activeStep !== 0">
+                    <div class="mb-funnel-step__indicator">
+                      <span class="mb-funnel-step__badge mb-funnel-step__badge--critical">4</span>
+                    </div>
+                    <div class="mb-funnel-step__content">
+                      <div class="mb-funnel-step__title-wrapper">
+                        <strong class="text-gray-900 text-sm">Hoàn tất Thanh toán</strong>
+                        <span class="mb-funnel-step__weight-badge mb-funnel-step__weight-badge--critical">Trọng số: 100%</span>
+                      </div>
+                      <span class="text-xs text-gray-500">Trọng số tuyệt đối. Bất kỳ gián đoạn nào ở đây đều tạo thiệt hại 1:1</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- TAB 2: AFFECTED USERS -->
+          @if (activeDetailTab() === 'users') {
+            <div class="flex flex-col gap-4">
+              <div class="mb-detail-panel">
+                <h3 class="mb-detail-panel__title">Danh sách khách hàng bị ảnh hưởng</h3>
+                <p class="text-[11px] text-gray-500 mb-2">Đo lường từ traceId và thông tin tài khoản phát sinh lỗi checkout trong khoảng thời gian xảy ra sự cố.</p>
+                
+                @if (store.isLoadingAffectedUsers()) {
+                  <div class="flex flex-col items-center justify-center py-20 text-gray-500 gap-3">
+                    <svg lucideRotateCw class="animate-spin w-6 h-6 text-indigo-600"></svg>
+                    <span>Đang trích xuất dữ liệu khách hàng lỗi...</span>
+                  </div>
+                } @else if (store.affectedUsersList().length === 0) {
+                  <div class="text-center py-10 text-xs text-gray-500 italic">
+                    Không tìm thấy thông tin khách hàng bị ảnh hưởng.
+                  </div>
+                } @else {
+                  <div class="mb-user-list">
+                    @for (usr of store.affectedUsersList(); track usr.traceId) {
+                      <div class="mb-user-card">
+                        <div class="mb-user-card__left">
+                          <div class="mb-user-card__avatar">
+                            @if (usr.avatarUrl) {
+                              <img [src]="usr.avatarUrl" [alt]="usr.fullName" class="mb-user-card__avatar-img" />
+                            } @else {
+                              <span>{{ getInitials(usr.fullName) }}</span>
+                            }
+                          </div>
+                          <div class="mb-user-card__info">
+                            <span class="mb-user-card__name">{{ usr.fullName }}</span>
+                            <div class="mb-user-card__meta">
+                              <span>{{ usr.email }}</span>
+                              <span class="mb-user-card__separator">•</span>
+                              <span class="mb-user-card__trace" [title]="usr.traceId">Trace: {{ usr.traceId | slice:0:12 }}...</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="mb-user-card__right">
+                          <span class="mb-user-card__time">
+                            <svg lucideClock class="w-3.5 h-3.5"></svg>
+                            {{ usr.lastEventAt | date:'HH:mm:ss dd/MM' }}
+                          </span>
+                          <span class="mb-user-card__status">
+                            Checkout Failed
+                          </span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- TAB 3: AI ANALYTICS -->
+          @if (activeDetailTab() === 'ai') {
+            <div class="flex flex-col gap-6">
+              @if (store.selectedIncident()?.aiSummary) {
+                @let ai = parseAiSummary(store.selectedIncident()?.aiSummary);
+                
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner">
+                    <svg lucideSparkles [attr.stroke-width]="2" class="w-4 h-4"></svg>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-emerald-800 text-sm">Phân tích đề xuất từ ZenTech AI</h4>
+                    <span class="text-[9px] text-emerald-600 font-semibold uppercase tracking-wider">Generative AI Response</span>
+                  </div>
+                </div>
+
+                <!-- Section 1: Tóm tắt thiệt hại -->
+                @if (ai['tomTat']) {
+                  <div class="mb-detail-panel mb-detail-panel--ai">
+                    <h4 class="font-bold text-emerald-950 text-xs flex items-center gap-1.5 uppercase tracking-wide border-b border-emerald-100/50 pb-1.5 mb-2">
+                      📊 Tóm tắt thiệt hại kinh doanh
+                    </h4>
+                    <markdown class="ai-markdown" [data]="ai['tomTat']"></markdown>
+                  </div>
+                }
+
+                <!-- Section 2: Đánh giá mức độ -->
+                @if (ai['mucDo']) {
+                  <div class="mb-detail-panel mb-detail-panel--ai">
+                    <h4 class="font-bold text-emerald-950 text-xs flex items-center gap-1.5 uppercase tracking-wide border-b border-emerald-100/50 pb-1.5 mb-2">
+                      🎯 Đánh giá mức độ nghiêm trọng
+                    </h4>
+                    <markdown class="ai-markdown" [data]="ai['mucDo']"></markdown>
+                  </div>
+                }
+
+                <!-- Section 3: Nguyên nhân gốc rễ -->
+                @if (ai['nguyenNhan']) {
+                  <div class="mb-detail-panel mb-detail-panel--ai">
+                    <h4 class="font-bold text-emerald-950 text-xs flex items-center gap-1.5 uppercase tracking-wide border-b border-emerald-100/50 pb-1.5 mb-2">
+                      🔍 Phân tích nguyên nhân gốc rễ
+                    </h4>
+                    <markdown class="ai-markdown" [data]="ai['nguyenNhan']"></markdown>
+                  </div>
+                }
+
+                <!-- Section 4: Tác động chuyển đổi -->
+                @if (ai['chuyenDoi']) {
+                  <div class="mb-detail-panel mb-detail-panel--ai">
+                    <h4 class="font-bold text-emerald-950 text-xs flex items-center gap-1.5 uppercase tracking-wide border-b border-emerald-100/50 pb-1.5 mb-2">
+                      📈 Đánh giá tác động chuyển đổi
+                    </h4>
+                    <markdown class="ai-markdown" [data]="ai['chuyenDoi']"></markdown>
+                  </div>
+                }
+
+                <!-- Section 5: Thiệt hại doanh thu -->
+                @if (ai['thietHai']) {
+                  <div class="mb-detail-panel mb-detail-panel--ai">
+                    <h4 class="font-bold text-emerald-950 text-xs flex items-center gap-1.5 uppercase tracking-wide border-b border-emerald-100/50 pb-1.5 mb-2">
+                      💰 Đánh giá thiệt hại tài chính
+                    </h4>
+                    <markdown class="ai-markdown" [data]="ai['thietHai']"></markdown>
+                  </div>
+                }
+
+                <!-- Section 6: Ảnh hưởng khách hàng -->
+                @if (ai['khachHang']) {
+                  <div class="mb-detail-panel mb-detail-panel--ai">
+                    <h4 class="font-bold text-emerald-950 text-xs flex items-center gap-1.5 uppercase tracking-wide border-b border-emerald-100/50 pb-1.5 mb-2">
+                      👥 Đánh giá ảnh hưởng khách hàng
+                    </h4>
+                    <markdown class="ai-markdown" [data]="ai['khachHang']"></markdown>
+                  </div>
+                }
+
+                <!-- Section 7: Đề xuất hành động -->
+                @if (ai['deXuat']) {
+                  <div class="mb-detail-panel mb-detail-panel--ai">
+                    <h4 class="font-bold text-emerald-950 text-xs flex items-center gap-1.5 uppercase tracking-wide border-b border-emerald-100/50 pb-1.5 mb-2">
+                      💡 Đề xuất hành động khắc phục
+                    </h4>
+                    <markdown class="ai-markdown" [data]="ai['deXuat']"></markdown>
+                  </div>
+                }
+
+                <!-- Section 8: Kết luận -->
+                @if (ai['ketLuan']) {
+                  <div class="mb-detail-panel mb-detail-panel--ai bg-emerald-50 border border-emerald-200">
+                    <h4 class="font-bold text-emerald-950 text-xs flex items-center gap-1.5 uppercase tracking-wide border-b border-emerald-200 pb-1.5 mb-2">
+                      📌 Kết luận sự cố (30s)
+                    </h4>
+                    <markdown class="ai-markdown" [data]="ai['ketLuan']"></markdown>
+                  </div>
+                }
+
+                <div class="mt-4 flex justify-end">
+                  <button
+                    class="mb-btn-secondary flex items-center gap-2"
+                    (click)="triggerAiAnalysis(store.selectedIncident()!.incidentId)"
+                    [disabled]="store.isAnalyzingAi()"
+                  >
+                    @if (store.isAnalyzingAi()) {
+                      <svg lucideRotateCw class="animate-spin w-4 h-4 text-gray-600"></svg>
+                      <span>Đang phân tích lại...</span>
+                    } @else {
+                      <svg lucideSparkles class="w-4 h-4 text-indigo-600"></svg>
+                      <span>Chạy lại phân tích AI</span>
+                    }
+                  </button>
+                </div>
+              } @else {
+                <!-- Prompt user to run AI Analysis -->
+                <div class="text-center py-12 px-6 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-4">
+                  <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center shadow-inner">
+                    <svg lucideSparkles [attr.stroke-width]="2" class="w-6 h-6"></svg>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-gray-800">Chưa có phân tích tác động từ AI</h4>
+                    <p class="text-xs text-gray-500 max-w-xs mt-1">
+                      Kích hoạt AI để tóm tắt thiệt hại kinh doanh, dịch lỗi kỹ thuật và đề xuất hành động khôi phục cụ thể cho sự cố này.
+                    </p>
+                  </div>
+                  <button
+                    class="mb-btn-primary flex items-center gap-2 mt-2"
+                    (click)="triggerAiAnalysis(store.selectedIncident()!.incidentId)"
+                    [disabled]="store.isAnalyzingAi()"
+                  >
+                    @if (store.isAnalyzingAi()) {
+                      <svg lucideRotateCw class="animate-spin w-4 h-4 text-white"></svg>
+                      <span>AI Đang tính toán và lập báo cáo...</span>
+                    } @else {
+                      <svg lucideSparkles class="w-4 h-4 text-[#111827]"></svg>
+                      <span class="text-[#111827]">Phân tích tác động bằng AI</span>
+                    }
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    </aside>
+  </div>
+</div>
