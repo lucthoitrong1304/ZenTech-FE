@@ -404,19 +404,25 @@
                 @for (email of activeTck.affectedUserEmails; track email; let i = $index) {
                   @let profile = userProfiles()[email];
                   <div class="tck-rank-card" [class.tck-rank-card--first]="i === 0">
-                    <!-- Rank badge -->
-                    <div class="tck-rank-badge" [class.tck-rank-badge--first]="i === 0">{{ i + 1 }}</div>
-                    <!-- Avatar -->
-                    @if (profile?.imageUrl; as imgUrl) {
-                      <img [src]="imgUrl" alt="Avatar" class="tck-profile-avatar-img" />
-                    } @else {
-                      <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(email)">
-                        {{ getInitials(profile?.displayName || email.split('@')[0]) }}
-                      </div>
-                    }
+                    <!-- Rank Indicator & Avatar Wrapper -->
+                    <div class="relative shrink-0">
+                      @if (profile?.imageUrl; as imgUrl) {
+                        <img [src]="imgUrl" alt="Avatar" class="tck-profile-avatar-img" />
+                      } @else {
+                        <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(email)">
+                          {{ getInitials(profile?.displayName || email.split('@')[0]) }}
+                        </div>
+                      }
+                      <!-- Small Rank Badge overlapping avatar -->
+                      <span class="tck-rank-badge-overlay"
+                            [class]="i === 0 ? 'tck-rank-badge-overlay--first' : 'tck-rank-badge-overlay--other'">
+                        {{ i + 1 }}
+                      </span>
+                    </div>
+
                     <!-- Info -->
-                    <div class="tck-profile-info">
-                      <div class="tck-profile-name-row">
+                    <div class="tck-profile-info flex-1 min-w-0">
+                      <div class="flex items-center justify-between gap-2">
                         <span class="tck-profile-name">{{ profile?.displayName || email.split('@')[0] }}</span>
                         @if (i === 0) {
                           <span class="tck-first-hit-chip">FIRST HIT</span>
@@ -430,16 +436,21 @@
                 @let customerEmail = activeTck.createdByEmail;
                 @let customerProfile = customerEmail ? userProfiles()[customerEmail] : null;
                 <div class="tck-rank-card tck-rank-card--first">
-                  <div class="tck-rank-badge tck-rank-badge--first">1</div>
-                  @if (customerProfile?.imageUrl; as imgUrl) {
-                    <img [src]="imgUrl" alt="Avatar" class="tck-profile-avatar-img" />
-                  } @else {
-                    <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(customerEmail || activeTck.customerName)">
-                      {{ getInitials(customerProfile?.displayName || activeTck.customerName) }}
-                    </div>
-                  }
-                  <div class="tck-profile-info">
-                    <div class="tck-profile-name-row">
+                  <!-- Rank Indicator & Avatar Wrapper -->
+                  <div class="relative shrink-0">
+                    @if (customerProfile?.imageUrl; as imgUrl) {
+                      <img [src]="imgUrl" alt="Avatar" class="tck-profile-avatar-img" />
+                    } @else {
+                      <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(customerEmail || activeTck.customerName)">
+                        {{ getInitials(customerProfile?.displayName || activeTck.customerName) }}
+                      </div>
+                    }
+                    <!-- Small Rank Badge overlapping avatar -->
+                    <span class="tck-rank-badge-overlay tck-rank-badge-overlay--first">1</span>
+                  </div>
+
+                  <div class="tck-profile-info flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-2">
                       <span class="tck-profile-name">{{ customerProfile?.displayName || activeTck.customerName }}</span>
                     </div>
                     <span class="tck-profile-email">{{ customerEmail || 'N/A' }}</span>
@@ -451,9 +462,11 @@
 
           <!-- Assignee Profile -->
           <div class="tck-modal-row">
-            <span class="tck-modal-label">Người phụ trách</span>
+            <div class="tck-affected-header">
+              <span class="tck-modal-label">Người phụ trách</span>
+            </div>
             <p-select
-              styleClass="detail-assignee-select mt-1"
+              styleClass="detail-assignee-select"
               [options]="ticketAssigneeOptions()"
               [ngModel]="activeTck.assigneeEmail || 'UNASSIGNED'"
               optionLabel="label"

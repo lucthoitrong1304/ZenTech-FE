@@ -13,6 +13,7 @@ import { CategoryNavigationStore } from '../../../shared/data-access/store/categ
 import { SiteHeaderComponent } from '../../../shared/site-header/site-header.component';
 import { CartSummaryComponent } from '../../components/cart-summary/cart-summary.component';
 import { CheckoutPaymentMethod } from '../../data-access/models/checkout.model';
+import { BusinessEventService, BusinessEventType } from '../../data-access/services/business-event.service';
 import { CheckoutService } from '../../data-access/services/checkout.service';
 import { CartStore } from '../../data-access/store/cart.store';
 
@@ -30,6 +31,7 @@ export class CheckoutPageComponent {
   private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly accountService = inject(AccountService);
   private readonly checkoutService = inject(CheckoutService);
+  private readonly businessEventService = inject(BusinessEventService);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   protected readonly cartStore = inject(CartStore);
@@ -128,6 +130,13 @@ export class CheckoutPageComponent {
     this.checkoutSubmitting.set(true);
     this.checkoutError.set(null);
 
+    // Ghi nhận sự kiện CHECKOUT_START trước khi gửi request
+    const totalAmount = this.payableTotal();
+    this.businessEventService.record({
+      eventType: BusinessEventType.CHECKOUT_START,
+      amount: totalAmount,
+    });
+
     this.checkoutService
       .checkout({
         addressId,
@@ -144,6 +153,12 @@ export class CheckoutPageComponent {
           this.checkoutCreated.set(true);
           this.cartStore.clearCart();
 
+          // Ghi nhận thanh toán thành công
+          this.businessEventService.record({
+            eventType: BusinessEventType.PAYMENT_SUCCESS,
+            amount: totalAmount,
+          });
+
           if (checkout.paymentUrl) {
             window.location.href = checkout.paymentUrl;
             return;
@@ -155,6 +170,11 @@ export class CheckoutPageComponent {
           });
         },
         error: error => {
+          // Ghi nhận thanh toán thất bại
+          this.businessEventService.record({
+            eventType: BusinessEventType.PAYMENT_FAILED,
+            amount: totalAmount,
+          });
           this.checkoutSubmitting.set(false);
           this.checkoutError.set(this.extractErrorMessage(error));
         },

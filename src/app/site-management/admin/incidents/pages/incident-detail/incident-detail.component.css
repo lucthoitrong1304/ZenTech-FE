@@ -417,74 +417,107 @@
 
 /* Base rank card */
 .affected-rank-card {
-  @apply flex items-center gap-2.5 bg-white px-3 py-2.5 rounded-xl border border-[#E5E7EB] cursor-pointer transition-all duration-200 shrink-0;
-  min-width: 220px;
-  max-width: 260px;
+  @apply flex flex-col gap-3.5 bg-white px-4 py-3.5 rounded-xl border border-[#E5E7EB] cursor-pointer transition-all duration-200 shrink-0 shadow-xs;
+  min-width: 290px;
+  max-width: 330px;
 }
 
 .affected-rank-card:hover {
-  @apply border-[#4F46E5] shadow-sm;
+  @apply border-[#4F46E5] shadow-sm translate-y-[-1px];
 }
 
-/* First affected — highlighted */
+/* First affected — highlighted with a soft, elegant rose accent instead of harsh red outline */
 .affected-rank-card.affected-rank-card--first {
-  @apply border-[#E11D48] bg-rose-50/40;
+  @apply border-rose-200 bg-rose-50/15;
 }
 
 .affected-rank-card.affected-rank-card--first:hover {
-  @apply border-[#E11D48] shadow-sm shadow-rose-100;
+  @apply border-rose-300 shadow-sm shadow-rose-100/40;
 }
 
 /* Selected state */
 .affected-rank-card.affected-rank-card--selected {
-  @apply ring-1 ring-[#4F46E5] border-[#4F46E5] bg-indigo-50/30;
+  @apply border-indigo-600 ring-2 ring-indigo-100 bg-indigo-50/20 shadow-xs;
 }
 
 .affected-rank-card.affected-rank-card--first.affected-rank-card--selected {
-  @apply ring-1 ring-[#E11D48] border-[#E11D48] bg-rose-50/50;
+  @apply border-rose-500 ring-2 ring-rose-100 bg-rose-50/40 shadow-xs;
 }
 
-/* Rank badge */
-.rank-badge {
-  @apply w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0 bg-gray-200 text-gray-500;
-}
-
-.rank-badge.rank-badge--first {
-  @apply bg-[#E11D48] text-white;
-}
-
-/* Avatar */
+/* Avatar - larger and with premium border */
 .profile-avatar-img {
-  @apply w-8 h-8 rounded-full object-cover border border-[#E5E7EB] shrink-0;
+  @apply w-11 h-11 rounded-full object-cover border border-gray-200/80 shrink-0;
 }
 
 .profile-avatar-letter {
-  @apply w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase shadow-xs shrink-0;
+  @apply w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white uppercase shadow-inner shrink-0;
+}
+
+/* Rank Badge Overlapping Avatar with white border */
+.profile-rank-badge {
+  @apply absolute -top-1 -left-1 w-5.5 h-5.5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm border-2 border-white z-20;
+}
+
+.profile-rank-badge--first {
+  @apply bg-[#E11D48];
+}
+
+.profile-rank-badge--other {
+  @apply bg-gray-500;
 }
 
 /* Info block */
 .profile-info {
-  @apply flex flex-col min-w-0;
-}
-
-.profile-name-row {
-  @apply flex items-center gap-1.5 min-w-0;
+  @apply flex flex-col min-w-0 justify-center;
 }
 
 .profile-name {
-  @apply text-xs font-bold text-gray-900 truncate;
+  @apply text-[14px] font-semibold text-gray-900 truncate leading-snug;
 }
 
 .first-hit-chip {
-  @apply text-[9px] font-black tracking-wider uppercase bg-[#E11D48] text-white px-1.5 py-0.5 rounded-full shrink-0;
+  @apply text-[9px] font-bold tracking-wider uppercase bg-[#E11D48] text-white px-1.5 py-0.5 rounded-sm shrink-0 leading-none;
 }
 
 .profile-email {
-  @apply text-xs text-gray-500 font-medium truncate;
+  @apply text-xs text-gray-500 font-normal truncate mt-0.5 block;
 }
 
-.profile-occ-time {
-  @apply text-[10px] text-gray-400 font-mono truncate mt-0.5;
+/* Timeline specific styles inside affected user card */
+.timeline-header {
+  @apply flex items-center justify-between text-xs font-semibold text-gray-400 uppercase tracking-wider;
+}
+
+.timeline-count-badge {
+  @apply px-2 py-0.5 rounded bg-rose-50 border border-rose-100/50 text-rose-600 text-[10px] font-bold;
+}
+
+.timeline-list {
+  @apply relative flex flex-col gap-2.5 pl-4 mt-1 w-full;
+}
+
+.timeline-line {
+  @apply absolute left-[4px] top-2 bottom-2 w-[1px] bg-gray-200;
+}
+
+.timeline-item-row {
+  @apply relative flex items-center justify-between text-xs text-gray-700 w-full py-0.5;
+}
+
+.timeline-dot {
+  @apply absolute -left-[15px] w-2 h-2 rounded-full bg-rose-500 border border-white shadow-xs z-10;
+}
+
+.timeline-time-text {
+  @apply font-medium text-gray-800 flex items-center gap-1;
+}
+
+.timeline-date-caption {
+  @apply text-gray-400 text-[10px] font-normal;
+}
+
+.timeline-trace-badge {
+  @apply font-mono text-[11px] bg-gray-50 hover:bg-gray-100 border border-gray-200/60 text-gray-600 px-2 py-0.5 rounded-md cursor-pointer transition-colors shadow-xs;
 }
 
 /* Custom styles for PrimeNG assignee select in incident-detail page */

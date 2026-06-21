@@ -8,11 +8,6 @@
         Giám sát thiệt hại doanh thu, số lượng đơn hàng thất thoát và khách hàng bị ảnh hưởng trực tiếp do sự cố kỹ thuật.
       </p>
     </div>
-    <div class="mb-header__actions">
-      <button class="mb-btn-icon" (click)="refreshDashboard()" title="Tải lại dữ liệu">
-        <svg lucideRotateCw [attr.stroke-width]="2" class="w-4 h-4"></svg>
-      </button>
-    </div>
   </header>
 
   <!-- KPI Dashboard Grid -->
@@ -145,6 +140,11 @@
             </div>
           </div>
         }
+
+        <!-- Reload Button -->
+        <button class="mb-btn-icon flex items-center justify-center" (click)="refreshDashboard()" title="Tải lại dữ liệu">
+          <svg lucideRotateCw [attr.stroke-width]="2" class="w-4 h-4"></svg>
+        </button>
       </div>
     </div>
 
@@ -190,7 +190,7 @@
                   <span class="text-sm font-semibold text-gray-900">{{ getFriendlyErrorName(inc.apiPath) }}</span>
                 </td>
                 <td class="text-gray-600 text-xs">
-                  {{ inc.occurredAt | date:'HH:mm:ss dd/MM/yyyy' }}
+                  {{ (inc.firstOccurredAt || inc.occurredAt) | date:'HH:mm:ss dd/MM/yyyy' }}
                 </td>
                 <td class="text-gray-700 text-sm">
                   {{ formatDuration(inc.durationMinutes) }}
