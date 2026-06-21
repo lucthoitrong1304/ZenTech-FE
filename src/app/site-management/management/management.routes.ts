@@ -24,13 +24,12 @@ export const managementRoutes: Routes = [
         path: 'analytics',
         data: {
           eyebrow: 'Tổng quan hệ thống',
-          title: 'Phân tích kinh doanh',
-          description: 'Không gian tổng hợp xu hướng doanh thu, kênh bán và hiệu quả tăng trưởng.',
-          primaryAction: 'Tạo phân tích',
+          title: 'Phân tích tác động kinh doanh',
+          description: 'Giám sát thiệt hại kinh doanh, số lượng đơn hàng thất thoát và người dùng bị ảnh hưởng do sự cố kỹ thuật.',
         },
         loadComponent: () =>
-          import('./pages/management-placeholder/management-placeholder.component').then(
-            m => m.ManagementPlaceholderComponent
+          import('./business-impact/pages/management-business-impact/management-business-impact.component').then(
+            m => m.ManagementBusinessImpactComponent
           ),
       },
       {

@@ -185,7 +185,7 @@ export class ManagementLayoutComponent {
       title: 'Tổng quan hệ thống',
       items: [
         { label: 'Bảng điều khiển', path: '/management/dashboard', icon: 'dashboard' },
-        { label: 'Phân tích kinh doanh', path: '/management/analytics', icon: 'analytics' },
+        { label: 'Phân tích tác động kinh doanh', path: '/management/analytics', icon: 'analytics' },
       ],
     },
     {
