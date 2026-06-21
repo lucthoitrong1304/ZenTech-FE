@@ -547,6 +547,7 @@ export const CustomerChatStore = signalStore(
                                   ? att.mediaUrl || null
                                   : null,
                             })),
+                            recommendedProducts: msg.recommendedProducts || [],
                           };
 
                           patchState(store, addEntity(mappedMsg, MESSAGE_ENTITY_CONFIG), {

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
 import { LucideBot, LucideFileText, LucideImage, LucidePhone } from '@lucide/angular';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
+import { ChatProductRecommendationsComponent } from '../../../../../shared/components/chat-product-recommendations/chat-product-recommendations.component';
 import {
   ManagementChatConversation,
   ManagementChatMessageAttachment,
@@ -11,7 +12,7 @@ import {
 @Component({
   selector: 'app-message-timeline',
   standalone: true,
-  imports: [CommonModule, LucideBot, LucideFileText, LucideImage, LucidePhone],
+  imports: [CommonModule, LucideBot, LucideFileText, LucideImage, LucidePhone, ChatProductRecommendationsComponent],
   templateUrl: './message-timeline.component.html',
   host: {
     class: 'flex min-h-0 flex-1 flex-col',

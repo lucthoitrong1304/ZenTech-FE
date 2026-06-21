@@ -143,6 +143,7 @@ function mapToManagementChatMessage(
           ? attachment.mediaUrl || null
           : null,
     })),
+    recommendedProducts: m.recommendedProducts || [],
   };
 }
 

@@ -84,6 +84,12 @@
                 <p>{{ message.body }}</p>
               }
 
+              @if (message.recommendedProducts; as products) {
+                @if (products.length > 0) {
+                  <app-chat-product-recommendations [products]="products" />
+                }
+              }
+
               @if (message.attachments.length > 0) {
                 <div class="grid gap-2">
                   @for (attachment of message.attachments; track attachment.id) {

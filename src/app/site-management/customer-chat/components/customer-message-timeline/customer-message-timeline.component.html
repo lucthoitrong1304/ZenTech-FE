@@ -18,7 +18,7 @@
         [id]="'msg-' + message.id"
         class="message-bubble flex gap-3"
         [class.ai-message]="message.sender === 'AI'"
-        [class.max-w-[760px]]="message.sender === 'AI'"
+        [class.max-w-[960px]]="message.sender === 'AI'"
         [class.max-w-[72%]]="message.sender !== 'AI'"
         [class.ml-auto]="message.sender === 'CUSTOMER'"
         [class.flex-row-reverse]="message.sender === 'CUSTOMER'"
@@ -86,6 +86,12 @@
                 <markdown class="customer-ai-markdown" [data]="message.body"></markdown>
               } @else {
                 <p>{{ message.body }}</p>
+              }
+
+              @if (message.recommendedProducts; as products) {
+                @if (products.length > 0) {
+                  <app-chat-product-recommendations [products]="products" />
+                }
               }
 
               @if (message.attachments.length > 0) {
