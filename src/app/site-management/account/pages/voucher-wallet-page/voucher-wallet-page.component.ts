@@ -15,9 +15,9 @@ export class VoucherWalletPageComponent {
   protected readonly accountStore = inject(AccountStore);
   private readonly toastService = inject(ToastService);
   protected readonly tabs: { label: string; status: VoucherStatus }[] = [
-    { label: 'Active', status: 'active' },
-    { label: 'Used', status: 'used' },
-    { label: 'Expired', status: 'expired' },
+    { label: 'Khả dụng', status: 'active' },
+    { label: 'Đã sử dụng', status: 'used' },
+    { label: 'Hết hạn', status: 'expired' },
   ];
 
   protected setTab(status: VoucherStatus): void {
@@ -40,8 +40,8 @@ export class VoucherWalletPageComponent {
 
   protected copyVoucherCode(code: string): void {
     this.copyText(code)
-      .then(() => this.toastService.success(`Da copy ma ${code}`))
-      .catch(() => this.toastService.error('Khong the copy ma voucher. Vui long copy thu cong.'));
+      .then(() => this.toastService.success(`Đã sao chép mã ${code}`))
+      .catch(() => this.toastService.error('Không thể sao chép mã voucher. Vui lòng sao chép thủ công.'));
   }
 
   private async copyText(value: string): Promise<void> {

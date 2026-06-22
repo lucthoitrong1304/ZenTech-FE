@@ -1,7 +1,7 @@
 <section class="mx-auto max-w-7xl">
   <header class="mb-10">
-    <h1 class="text-5xl font-black leading-none tracking-tight text-[#1c1b1b]">Lịch sử đơn hàng</h1>
-    <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#4f4632]">
+    <h1 class="text-4xl font-bold leading-none tracking-tight text-[#1c1b1b]">Lịch sử đơn hàng</h1>
+    <p class="mt-3 max-w-2xl text-sm font-medium leading-6 text-[#4f4632]">
       Theo dõi các đơn hàng đã mua, trạng thái vận chuyển và tổng thanh toán.
     </p>
   </header>
@@ -11,7 +11,7 @@
       @for (filter of filters; track filter.value) {
         <button
           type="button"
-          class="rounded-full px-5 py-2.5 text-sm font-black transition cursor-pointer"
+          class="rounded-full px-5 py-2.5 text-sm font-bold transition cursor-pointer"
           [ngClass]="
             accountStore.orderFilter() === filter.value
               ? 'bg-white text-[#1c1b1b] shadow-sm'
@@ -28,7 +28,7 @@
       <svg lucideSearch class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#81765f]" [attr.stroke-width]="2"></svg>
       <input
         type="search"
-        class="h-12 w-full rounded-full border-0 bg-[#f6f3f2] pl-11 pr-5 text-sm font-semibold text-[#1c1b1b] outline-none ring-0 placeholder:text-[#81765f] focus:ring-2 focus:ring-[#ffc700] lg:w-80"
+        class="h-12 w-full rounded-full border-0 bg-[#f6f3f2] pl-11 pr-5 text-sm font-medium text-[#1c1b1b] outline-none ring-0 placeholder:text-[#81765f] focus:ring-2 focus:ring-[#ffc700] lg:w-80"
         placeholder="Tìm đơn hàng..."
         [value]="accountStore.orderSearchKeyword()"
         (input)="searchOrders($event)"
@@ -53,12 +53,12 @@
 
         <div class="grid min-w-0 flex-1 gap-4 md:grid-cols-4 md:items-center">
           <div class="min-w-0">
-            <span class="block text-[10px] font-black uppercase tracking-[0.18em] text-[#81765f]">Order ID</span>
-            <p class="mt-1 font-mono text-sm font-black truncate">{{ order.orderId }}</p>
+            <span class="block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#81765f]">Mã đơn hàng</span>
+            <p class="mt-1 font-mono text-sm font-semibold truncate">{{ order.orderId }}</p>
           </div>
           <div class="min-w-0">
-            <span class="block text-[10px] font-black uppercase tracking-[0.18em] text-[#81765f]">Sản phẩm</span>
-            <p class="mt-1 truncate text-sm font-black">
+            <span class="block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#81765f]">Sản phẩm</span>
+            <p class="mt-1 truncate text-sm font-bold">
               {{ order.items[0]?.productName || 'Đơn hàng ZenTech' }}
               @if (order.items.length > 1) {
                 và {{ order.items.length - 1 }} sản phẩm khác
@@ -66,22 +66,22 @@
             </p>
           </div>
           <div>
-            <span class="block text-[10px] font-black uppercase tracking-[0.18em] text-[#81765f]">Ngày đặt</span>
-            <p class="mt-1 text-sm font-bold">{{ order.createdAt | date: 'dd/MM/yyyy' }}</p>
+            <span class="block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#81765f]">Ngày đặt</span>
+            <p class="mt-1 text-sm font-medium">{{ order.createdAt | date: 'dd/MM/yyyy' }}</p>
           </div>
           <div>
-            <span class="block text-[10px] font-black uppercase tracking-[0.18em] text-[#81765f]">Tổng tiền</span>
-            <p class="mt-1 text-lg font-black">{{ order.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</p>
+            <span class="block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#81765f]">Tổng tiền</span>
+            <p class="mt-1 text-lg font-bold">{{ order.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</p>
           </div>
         </div>
 
         <div class="flex flex-wrap items-center gap-3 lg:justify-end">
-          <span class="inline-flex h-8 items-center rounded-full px-4 text-[11px] font-black uppercase tracking-[0.14em]" [ngClass]="statusClass(order.orderStatus)">
-            {{ order.orderStatus }}
+          <span class="inline-flex h-8 items-center rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.14em]" [ngClass]="statusClass(order.orderStatus)">
+            {{ orderStatusLabel(order.orderStatus) }}
           </span>
           <button
             type="button"
-            class="inline-flex h-11 items-center rounded-full bg-[#ffc700] px-6 text-sm font-black text-[#251a00] transition hover:bg-[#f5bf00] cursor-pointer"
+            class="inline-flex h-11 items-center rounded-full bg-[#ffc700] px-6 text-sm font-bold text-[#251a00] transition hover:bg-[#f5bf00] cursor-pointer"
             (click)="openDetail(order.orderId)"
           >
             Xem chi tiết
@@ -89,7 +89,7 @@
         </div>
       </article>
     } @empty {
-      <div class="rounded-[16px] bg-white p-10 text-center text-sm font-bold text-[#4f4632]">
+      <div class="rounded-[16px] bg-white p-10 text-center text-sm font-semibold text-[#4f4632]">
         Không tìm thấy đơn hàng phù hợp.
       </div>
     }
@@ -108,17 +108,17 @@
         <!-- Summary Header -->
         <div class="flex flex-wrap justify-between items-center gap-4 bg-[#fcf9f8] p-4 rounded-xl border border-[#e5e7eb]">
           <div>
-            <p class="text-[10px] font-black uppercase tracking-wider text-[#81765f]">Mã đơn hàng</p>
-            <p class="font-mono text-sm font-black text-[#1c1b1b] mt-1">{{ detail.orderId }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[#81765f]">Mã đơn hàng</p>
+            <p class="font-mono text-sm font-semibold text-[#1c1b1b] mt-1">{{ detail.orderId }}</p>
           </div>
           <div>
-            <p class="text-[10px] font-black uppercase tracking-wider text-[#81765f]">Ngày đặt hàng</p>
-            <p class="text-sm font-bold text-[#1c1b1b] mt-1">{{ detail.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[#81765f]">Ngày đặt hàng</p>
+            <p class="text-sm font-semibold text-[#1c1b1b] mt-1">{{ detail.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
           </div>
           <div>
-            <p class="text-[10px] font-black uppercase tracking-wider text-[#81765f]">Trạng thái</p>
-            <span class="inline-flex h-7 items-center rounded-full px-3 text-[10px] font-black uppercase tracking-[0.1em] mt-1" [ngClass]="statusClass(detail.orderStatus)">
-              {{ detail.orderStatus }}
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[#81765f]">Trạng thái</p>
+            <span class="inline-flex h-7 items-center rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.15em] mt-1" [ngClass]="statusClass(detail.orderStatus)">
+              {{ orderStatusLabel(detail.orderStatus) }}
             </span>
           </div>
         </div>
@@ -130,9 +130,9 @@
             <div class="p-4 rounded-xl border border-[#e5e7eb] bg-white flex gap-3">
               <svg lucideMapPin class="h-5 w-5 text-[#4b41e1] flex-shrink-0 mt-0.5" [attr.stroke-width]="2"></svg>
               <div>
-                <h3 class="font-black text-sm text-[#1c1b1b]">Địa chỉ giao hàng</h3>
+                <h3 class="font-bold text-sm text-[#1c1b1b]">Địa chỉ giao hàng</h3>
                 <p class="text-xs font-semibold text-[#81765f] mt-1">SĐT: {{ addr.phoneNumber }}</p>
-                <p class="text-xs font-semibold text-[#4f4632] mt-0.5">{{ addr.street }}, {{ addr.ward }}, {{ addr.province }}</p>
+                <p class="text-xs font-medium text-[#4f4632] mt-0.5">{{ addr.street }}, {{ addr.ward }}, {{ addr.province }}</p>
               </div>
             </div>
           }
@@ -140,16 +140,16 @@
           <div class="p-4 rounded-xl border border-[#e5e7eb] bg-white flex gap-3">
             <svg lucideCreditCard class="h-5 w-5 text-[#be0037] flex-shrink-0 mt-0.5" [attr.stroke-width]="2"></svg>
             <div>
-              <h3 class="font-black text-sm text-[#1c1b1b]">Thanh toán</h3>
-              <p class="text-xs font-semibold text-[#4f4632] mt-1">Phương thức: {{ detail.paymentMethod }}</p>
-              <p class="text-xs font-semibold text-[#81765f] mt-0.5">Trạng thái: {{ detail.paymentStatus }}</p>
+              <h3 class="font-bold text-sm text-[#1c1b1b]">Thanh toán</h3>
+              <p class="text-xs font-medium text-[#4f4632] mt-1">Phương thức: {{ paymentMethodLabel(detail.paymentMethod) }}</p>
+              <p class="text-xs font-medium text-[#81765f] mt-0.5">Trạng thái: {{ paymentStatusLabel(detail.paymentStatus) }}</p>
             </div>
           </div>
         </div>
 
         <!-- Ordered Items -->
         <div>
-          <h3 class="font-black text-sm text-[#1c1b1b] mb-3 flex items-center gap-2">
+          <h3 class="font-bold text-sm text-[#1c1b1b] mb-3 flex items-center gap-2">
             <svg lucidePackage class="h-4 w-4 text-[#81765f]"></svg>
             Sản phẩm đã đặt ({{ detail.items.length }})
           </h3>
@@ -164,16 +164,16 @@
                   </div>
                 }
                 <div class="min-w-0 flex-1">
-                  <h4 class="font-black text-sm text-[#1c1b1b] truncate">{{ item.productName }}</h4>
+                  <h4 class="font-bold text-sm text-[#1c1b1b] truncate">{{ item.productName }}</h4>
                   @if (item.variantName) {
-                    <p class="text-xs font-bold text-[#81765f] mt-0.5">{{ item.variantName }}</p>
+                    <p class="text-xs font-semibold text-[#81765f] mt-0.5">{{ item.variantName }}</p>
                   }
-                  <p class="text-xs font-semibold text-[#4f4632] mt-1">
+                  <p class="text-xs font-medium text-[#4f4632] mt-1">
                     {{ item.quantity }} x {{ item.priceAtPurchase | currency: 'VND' : 'symbol' : '1.0-0' }}
                   </p>
                 </div>
                 <div class="text-right">
-                  <span class="font-black text-sm text-[#1c1b1b]">
+                  <span class="font-bold text-sm text-[#1c1b1b]">
                     {{ item.lineTotal | currency: 'VND' : 'symbol' : '1.0-0' }}
                   </span>
                 </div>
@@ -184,15 +184,15 @@
 
         @if (detail.coupons.length > 0) {
           <div class="rounded-xl border border-[#d7d2ff] bg-[#f4f2ff] p-4">
-            <h3 class="font-black text-sm text-[#1c1b1b] mb-3">Voucher đã áp dụng</h3>
+            <h3 class="font-bold text-sm text-[#1c1b1b] mb-3">Voucher đã áp dụng</h3>
             <div class="grid gap-3">
               @for (coupon of detail.coupons; track coupon.orderCouponId) {
                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white px-4 py-3">
                   <div>
-                    <p class="font-mono text-sm font-black text-[#3323cc]">{{ coupon.couponCode }}</p>
-                    <p class="mt-1 text-xs font-bold text-[#81765f]">{{ couponTypeLabel(coupon) }}</p>
+                    <p class="font-mono text-sm font-semibold text-[#3323cc]">{{ coupon.couponCode }}</p>
+                    <p class="mt-1 text-xs font-medium text-[#81765f]">{{ couponTypeLabel(coupon) }}</p>
                   </div>
-                  <span class="text-sm font-black tabular-nums text-emerald-700">
+                  <span class="text-sm font-bold tabular-nums text-emerald-700">
                     -{{ coupon.appliedAmount | currency: 'VND' : 'symbol' : '1.0-0' }}
                   </span>
                 </div>
@@ -203,21 +203,21 @@
 
         <!-- Financial Summary -->
         <div class="bg-[#fcf9f8] p-5 rounded-xl border border-[#e5e7eb] space-y-2">
-          <div class="flex justify-between text-sm font-semibold text-[#4f4632]">
+          <div class="flex justify-between text-sm font-medium text-[#4f4632]">
             <span>Tạm tính</span>
             <span>{{ detail.originalTotalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
           </div>
           @if (detail.discountAmount > 0) {
-            <div class="flex justify-between text-sm font-semibold text-[#be0037]">
+            <div class="flex justify-between text-sm font-medium text-[#be0037]">
               <span>Giảm giá</span>
               <span>-{{ detail.discountAmount | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
             </div>
           }
-          <div class="flex justify-between text-sm font-semibold text-[#4f4632]">
+          <div class="flex justify-between text-sm font-medium text-[#4f4632]">
             <span>Phí vận chuyển</span>
             <span>{{ detail.shippingFee | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
           </div>
-          <div class="flex justify-between text-base font-black text-[#1c1b1b] pt-3 border-t border-gray-200">
+          <div class="flex justify-between text-base font-bold text-[#1c1b1b] pt-3 border-t border-gray-200">
             <span>Tổng thanh toán</span>
             <span>{{ detail.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
           </div>
@@ -225,7 +225,7 @@
       </div>
     } @else if (accountStore.loading()) {
       <div class="flex h-[200px] items-center justify-center">
-        <div class="text-sm font-bold text-[#4f4632]">Đang tải chi tiết đơn hàng...</div>
+        <div class="text-sm font-semibold text-[#4f4632]">Đang tải chi tiết đơn hàng...</div>
       </div>
     }
   </p-dialog>

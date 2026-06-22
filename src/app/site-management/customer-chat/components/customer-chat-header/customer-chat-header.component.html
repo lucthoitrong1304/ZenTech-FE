@@ -1,17 +1,17 @@
 <header class="flex shrink-0 items-center justify-between gap-4 bg-white border-b border-[#e5e7eb] px-4 py-3 text-[#111827]">
   <div class="flex min-w-0 items-center gap-3">
-    <span class="relative grid h-10 w-10 shrink-0 place-items-center rounded-[8px] bg-[#ffc700] text-[#101010]">
-      <svg lucideSparkles class="h-5 w-5" [attr.stroke-width]="2.15"></svg>
+    <span class="relative h-10 w-10 shrink-0">
+      <img src="/brand/zentech-zt-badge.svg" alt="ZenTech Logo" class="h-full w-full object-contain" />
       @if (staff()?.online) {
-        <span class="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-[#101010] bg-emerald-400"></span>
+        <span class="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-400"></span>
       }
     </span>
 
     <div class="min-w-0">
-      <h2 class="truncate text-sm font-black uppercase tracking-[0.12em]">
+      <h2 class="truncate text-sm font-bold uppercase tracking-[0.06em] text-[#111827]">
         ZenTech Support
       </h2>
-      <p class="truncate text-xs font-semibold text-[#6B7280]">
+      <p class="truncate text-xs font-medium text-zinc-500">
         @switch (status()) {
           @case ('BOT_CONSULTING') {
             AI đang sẵn sàng tư vấn
@@ -44,19 +44,12 @@
   @if (!compact() && product(); as currentProduct) {
     <a
       [routerLink]="['/products', currentProduct.id]"
-      class="hidden min-w-0 items-center gap-3 rounded-[8px] bg-gray-100 px-3 py-2 text-left transition hover:bg-gray-200 lg:flex"
+      class="hidden min-w-0 flex-col justify-center text-center transition hover:opacity-80 lg:flex"
     >
-      <img
-        [src]="currentProduct.imageUrl"
-        [alt]="currentProduct.name"
-        class="h-10 w-10 rounded-[6px] object-cover"
-      />
-      <span class="min-w-0">
-        <strong class="block truncate text-xs font-black">{{ currentProduct.name }}</strong>
-        <small class="block truncate text-[11px] font-semibold text-[#6B7280]">
-          {{ currentProduct.stockLabel }}
-        </small>
-      </span>
+      <strong class="block truncate text-sm font-bold text-[#111827]">{{ currentProduct.name }}</strong>
+      <small class="block truncate text-[11px] font-semibold text-zinc-500 mt-0.5">
+        {{ currentProduct.stockLabel }}
+      </small>
     </a>
   }
 

@@ -116,15 +116,15 @@ export const AccountStore = signalStore(
 
             if (voucher.couponType === 'PERCENTAGE') {
               value = `${voucher.discountValue}%`;
-              unit = 'OFF';
+              unit = 'GIẢM';
               tone = 'primary';
             } else if (voucher.couponType === 'FIXED_AMOUNT') {
               value = `${voucher.discountValue / 1000}K`;
               unit = 'GIẢM';
               tone = 'secondary';
             } else {
-              value = 'Free';
-              unit = 'SHIPPING';
+              value = 'Miễn phí';
+              unit = 'VẬN CHUYỂN';
               tone = 'tertiary';
             }
 
@@ -132,7 +132,7 @@ export const AccountStore = signalStore(
               tone = 'muted';
             }
 
-            const title = `ZenTech Coupon ${voucher.couponCode}`;
+            const title = `Mã giảm giá ${voucher.couponCode}`;
             const description =
               voucher.couponType === 'FREE_SHIPPING'
                 ? `Miễn phí vận chuyển cho đơn hàng từ ${formatCurrency(voucher.minOrderAmount)}.`
@@ -146,7 +146,7 @@ export const AccountStore = signalStore(
                   : 'Hết hạn';
             const actionLabel =
               voucher.status === 'AVAILABLE'
-                ? 'Copy Code'
+                ? 'Sao chép'
                 : voucher.status === 'USED'
                   ? 'Đã sử dụng'
                   : 'Đã hết hạn';

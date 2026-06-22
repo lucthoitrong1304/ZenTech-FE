@@ -1,20 +1,20 @@
 @if (accountStore.profile(); as profile) {
   <section class="mx-auto max-w-7xl">
     <header class="mb-10">
-      <h1 class="text-5xl font-black leading-none tracking-tight text-[#1c1b1b]">Tổng quan</h1>
-      <p class="mt-3 max-w-2xl text-sm font-semibold leading-6 text-[#4f4632]">
+      <h1 class="text-4xl font-bold leading-none tracking-tight text-[#1c1b1b]">Tổng quan</h1>
+      <p class="mt-3 max-w-2xl text-sm font-medium leading-6 text-[#4f4632]">
         Không gian quản lý hồ sơ, ưu đãi, đơn hàng và địa chỉ giao hàng của bạn.
       </p>
     </header>
 
     @if (accountStore.actionMessage()) {
-      <div class="mb-6 rounded-[12px] bg-[#d8f5dd] px-5 py-4 text-sm font-bold text-[#166534] flex justify-between items-center">
+      <div class="mb-6 rounded-[12px] bg-[#d8f5dd] px-5 py-4 text-sm font-semibold text-[#166534] flex justify-between items-center">
         <span>{{ accountStore.actionMessage() }}</span>
-        <button (click)="accountStore.clearActionMessage()" class="text-xs uppercase tracking-wider opacity-65 font-black hover:opacity-100">Đóng</button>
+        <button (click)="accountStore.clearActionMessage()" class="text-xs uppercase tracking-wider opacity-65 font-bold hover:opacity-100">Đóng</button>
       </div>
     }
     @if (accountStore.error()) {
-      <div class="mb-6 rounded-[12px] bg-[#ffdad6] px-5 py-4 text-sm font-bold text-[#93000a]">
+      <div class="mb-6 rounded-[12px] bg-[#ffdad6] px-5 py-4 text-sm font-semibold text-[#93000a]">
         {{ accountStore.error() }}
       </div>
     }
@@ -27,7 +27,7 @@
               @if (profile.imageUrl) {
                 <img [src]="profile.imageUrl" alt="Avatar" referrerpolicy="no-referrer" class="h-20 w-20 rounded-full object-cover border-2 border-[#ffc700] shadow-sm" />
               } @else {
-                <div class="h-20 w-20 rounded-full bg-[#f6f3f2] flex items-center justify-center border-2 border-[#d2c5ab] text-2xl font-black text-[#81765f]">
+                <div class="h-20 w-20 rounded-full bg-[#f6f3f2] flex items-center justify-center border-2 border-[#d2c5ab] text-2xl font-bold text-[#81765f]">
                   {{ profile.fullName.charAt(0).toUpperCase() }}
                 </div>
               }
@@ -37,15 +37,15 @@
               </label>
             </div>
             <div>
-              <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#81765f]">
-                Profile Information
+              <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-[#81765f]">
+                Hồ sơ cá nhân
               </p>
-              <h2 class="mt-1 text-2xl font-black tracking-tight">Thông tin cá nhân</h2>
+              <h2 class="mt-1 text-2xl font-bold tracking-tight">Thông tin cá nhân</h2>
             </div>
           </div>
           <button
             type="button"
-            class="inline-flex h-10 items-center rounded-full bg-[#ffc700] px-5 text-sm font-black text-[#251a00] transition hover:bg-[#f5bf00]"
+            class="inline-flex h-10 items-center rounded-full bg-[#ffc700] px-5 text-sm font-bold text-[#251a00] transition hover:bg-[#f5bf00]"
             (click)="openEditProfile()"
           >
             Chỉnh sửa
@@ -54,34 +54,34 @@
 
         <div class="grid gap-6 md:grid-cols-2">
           <div>
-            <span class="block text-[11px] font-black uppercase tracking-[0.18em] text-[#81765f]">Họ tên</span>
-            <p class="mt-1 text-lg font-bold">{{ profile.fullName }}</p>
+            <span class="block text-[11px] font-bold uppercase tracking-[0.18em] text-[#81765f]">Họ tên</span>
+            <p class="mt-1 text-lg font-semibold">{{ profile.fullName }}</p>
           </div>
           <div>
-            <span class="block text-[11px] font-black uppercase tracking-[0.18em] text-[#81765f]">Email</span>
-            <p class="mt-1 text-lg font-bold">{{ profile.email }}</p>
+            <span class="block text-[11px] font-bold uppercase tracking-[0.18em] text-[#81765f]">Email</span>
+            <p class="mt-1 text-lg font-semibold">{{ profile.email }}</p>
           </div>
           <div>
-            <span class="block text-[11px] font-black uppercase tracking-[0.18em] text-[#81765f]">Ngày đăng ký</span>
-            <p class="mt-1 text-lg font-bold">{{ profile.registeredAt | date: 'dd/MM/yyyy' }}</p>
+            <span class="block text-[11px] font-bold uppercase tracking-[0.18em] text-[#81765f]">Ngày đăng ký</span>
+            <p class="mt-1 text-lg font-semibold">{{ profile.registeredAt | date: 'dd/MM/yyyy' }}</p>
           </div>
         </div>
       </section>
 
-      <section class="col-span-12 rounded-[16px] bg-[#4b41e1] p-8 text-white lg:col-span-5">
+      <section class="col-span-12 rounded-[16px] bg-gradient-to-br from-[#4b41e1] to-[#7066e9] p-8 text-white lg:col-span-5 hover:shadow-[0_20px_50px_rgba(75,65,225,0.3)] transition-all duration-300 transform hover:-translate-y-0.5">
         <div class="mb-10 flex items-start justify-between gap-4">
-          <svg lucideWallet class="h-10 w-10" [attr.stroke-width]="1.8"></svg>
-          <span class="rounded-full bg-white/18 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em]">
-            {{ accountStore.activeVoucherCount() }} rewards
+          <svg lucideWallet class="h-10 w-10 text-white/90" [attr.stroke-width]="1.8"></svg>
+          <span class="rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em]">
+            {{ accountStore.activeVoucherCount() }} ưu đãi
           </span>
         </div>
-        <h2 class="text-3xl font-black tracking-tight">Kho voucher</h2>
-        <p class="mt-2 text-sm font-semibold text-white/78">
+        <h2 class="text-2xl font-bold tracking-tight">Kho voucher</h2>
+        <p class="mt-2 text-sm font-medium text-white/80">
           Quản lý và áp dụng các mã giảm giá đặc quyền cho đơn hàng của bạn.
         </p>
         <a
           routerLink="/account/vouchers"
-          class="mt-8 inline-flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-black text-[#4b41e1] transition hover:bg-[#f6f3f2]"
+          class="mt-8 inline-flex h-12 w-full items-center justify-center rounded-full bg-white text-sm font-bold text-[#4b41e1] transition-all duration-200 hover:bg-[#f6f3f2] hover:scale-[1.01] active:scale-[0.99] shadow-sm"
         >
           Xem tất cả voucher
         </a>
@@ -89,8 +89,8 @@
 
       <section class="col-span-12 rounded-[16px] bg-[#f6f3f2] p-8">
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <h2 class="text-2xl font-black tracking-tight">Đơn hàng gần đây</h2>
-          <a routerLink="/account/orders" class="inline-flex items-center gap-1 text-sm font-black text-[#4b41e1]">
+          <h2 class="text-2xl font-bold tracking-tight">Đơn hàng gần đây</h2>
+          <a routerLink="/account/orders" class="inline-flex items-center gap-1 text-sm font-semibold text-[#4b41e1]">
             Xem tất cả
             <svg lucideChevronRight class="h-4 w-4" [attr.stroke-width]="2.4"></svg>
           </a>
@@ -108,25 +108,25 @@
                   </div>
                 }
                 <div class="min-w-0">
-                  <p class="text-[11px] font-black uppercase tracking-[0.18em] text-[#81765f]">{{ order.orderId }}</p>
-                  <h3 class="mt-1 truncate text-lg font-black">
+                  <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#81765f]">{{ order.orderId }}</p>
+                  <h3 class="mt-1 truncate text-lg font-bold">
                     {{ order.items[0]?.productName || 'Đơn hàng ZenTech' }}
                     @if (order.items.length > 1) {
                       và {{ order.items.length - 1 }} sản phẩm khác
                     }
                   </h3>
-                  <p class="text-sm font-semibold text-[#4f4632]">{{ order.createdAt | date: 'dd/MM/yyyy' }}</p>
+                  <p class="text-sm font-medium text-[#4f4632]">{{ order.createdAt | date: 'dd/MM/yyyy' }}</p>
                 </div>
               </div>
-              <div class="flex items-center justify-between gap-6 md:justify-end">
-                <span class="rounded-full bg-[#e2dfff] px-3 py-1 text-xs font-black uppercase text-[#3323cc]">
-                  {{ order.orderStatus }}
+              <div class="flex items-center justify-between gap-4 md:justify-end">
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider" [ngClass]="statusClass(order.orderStatus)">
+                  {{ orderStatusLabel(order.orderStatus) }}
                 </span>
-                <strong class="text-lg">{{ order.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                <span class="text-lg font-bold text-[#1c1b1b] leading-none">{{ order.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
               </div>
             </article>
           } @empty {
-            <div class="rounded-[14px] bg-white p-6 text-center text-sm font-bold text-[#4f4632]">
+            <div class="rounded-[14px] bg-white p-6 text-center text-sm font-semibold text-[#4f4632]">
               Bạn chưa có đơn hàng nào.
             </div>
           }
@@ -136,10 +136,10 @@
       <section class="col-span-12 rounded-[16px] bg-white p-8">
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 class="text-2xl font-black tracking-tight">Sổ địa chỉ</h2>
-            <p class="mt-1 text-sm font-semibold text-[#4f4632]">Quản lý địa điểm giao hàng của bạn.</p>
+            <h2 class="text-2xl font-bold tracking-tight">Sổ địa chỉ</h2>
+            <p class="mt-1 text-sm font-medium text-[#4f4632]">Quản lý địa điểm giao hàng của bạn.</p>
           </div>
-          <a routerLink="/account/addresses" class="rounded-full bg-[#1c1b1b] px-6 py-3 text-sm font-black text-white">
+          <a routerLink="/account/addresses" class="rounded-full bg-[#1c1b1b] px-6 py-3 text-sm font-bold text-white">
             Xem tất cả
           </a>
         </div>
@@ -151,24 +151,24 @@
                 <div class="mb-4 flex items-center justify-between">
                   <svg lucideMapPin class="h-5 w-5 text-[#4b41e1]" [attr.stroke-width]="2"></svg>
                   @if (address.isDefault) {
-                    <span class="rounded-full bg-[#ffc700] px-2 py-1 text-[10px] font-black uppercase">Default</span>
+                    <span class="rounded-full bg-[#ffc700] px-2.5 py-1 text-[10px] font-semibold uppercase text-[#251a00]">Mặc định</span>
                   }
                 </div>
-                <h3 class="font-black text-sm text-[#4f4632]">{{ address.phoneNumber }}</h3>
-                <p class="mt-2 text-sm font-semibold leading-6 text-[#1c1b1b]">
+                <h3 class="font-bold text-sm text-[#4f4632]">{{ address.phoneNumber }}</h3>
+                <p class="mt-2 text-sm font-medium leading-6 text-[#1c1b1b]">
                   {{ address.street }}, {{ address.ward }}, {{ address.province }}
                 </p>
               </div>
               <a
                 routerLink="/account/addresses"
-                class="mt-4 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-[#4b41e1]"
+                class="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#4b41e1]"
               >
                 <svg lucidePencil class="h-3.5 w-3.5" [attr.stroke-width]="2"></svg>
                 Quản lý
               </a>
             </article>
           } @empty {
-            <div class="rounded-[14px] bg-[#fcf9f8] p-6 text-center text-sm font-bold text-[#4f4632] col-span-3">
+            <div class="rounded-[14px] bg-[#fcf9f8] p-6 text-center text-sm font-semibold text-[#4f4632] col-span-3">
               Chưa lưu địa chỉ giao hàng nào.
             </div>
           }
@@ -186,25 +186,25 @@
   >
     <div class="space-y-4 py-4">
       <div>
-        <label class="block text-xs font-black uppercase tracking-[0.16em] text-[#81765f] mb-2">Họ và tên</label>
+        <label class="block text-xs font-bold uppercase tracking-[0.16em] text-[#81765f] mb-2">Họ và tên</label>
         <input
           type="text"
           [(ngModel)]="editFullName"
-          class="h-11 w-full rounded-full border border-[#d2c5ab] px-4 text-sm font-semibold outline-none focus:border-[#ffc700] focus:ring-1 focus:ring-[#ffc700]"
+          class="h-11 w-full rounded-full border border-[#d2c5ab] px-4 text-sm font-medium outline-none focus:border-[#ffc700] focus:ring-1 focus:ring-[#ffc700]"
         />
       </div>
 
       <div class="flex justify-end gap-2 pt-4">
         <button
           type="button"
-          class="h-10 rounded-full border border-gray-300 px-5 text-sm font-bold text-gray-700 hover:bg-gray-50 transition"
+          class="h-10 rounded-full border border-gray-300 px-5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
           (click)="isEditProfileOpen = false"
         >
           Hủy
         </button>
         <button
           type="button"
-          class="h-10 rounded-full bg-[#ffc700] px-6 text-sm font-black text-[#251a00] hover:bg-[#f5bf00] transition"
+          class="h-10 rounded-full bg-[#ffc700] px-6 text-sm font-bold text-[#251a00] hover:bg-[#f5bf00] transition"
           (click)="saveProfile()"
         >
           Lưu
@@ -214,7 +214,7 @@
   </p-dialog>
 } @else if (accountStore.loading()) {
   <div class="flex h-[300px] items-center justify-center">
-    <div class="text-sm font-bold text-[#4f4632]">Đang tải thông tin tài khoản...</div>
+    <div class="text-sm font-semibold text-[#4f4632]">Đang tải thông tin tài khoản...</div>
   </div>
 }
 

@@ -13,7 +13,8 @@ import {
   LucideUserPlus,
   LucideMinus,
   LucidePlus,
-  LucideTrash2
+  LucideTrash2,
+  LucideX
 } from '@lucide/angular';
 import { PopoverModule } from 'primeng/popover';
 import { DrawerModule } from 'primeng/drawer';
@@ -47,6 +48,7 @@ export interface HeaderUser {
     LucideMinus,
     LucidePlus,
     LucideTrash2,
+    LucideX,
     NotificationBellComponent
   ],
   templateUrl: './site-header.component.html',
