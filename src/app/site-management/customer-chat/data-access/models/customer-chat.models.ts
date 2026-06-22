@@ -380,7 +380,7 @@ export function mapToCustomerChatSession(
     product: {
       id: 'default-product',
       name: 'ZenTech Support',
-      imageUrl: '/home/asset-5.webp',
+      imageUrl: '',
       priceLabel: 'Hỗ trợ',
       stockLabel: 'Trung tâm hỗ trợ khách hàng',
     },
