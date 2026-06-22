@@ -12,6 +12,7 @@ describe('LoginStore', () => {
     fullName: 'Alex Nguyen',
     avatarUrl: null,
     roles: ['CUSTOMER'],
+    isPasswordSet: true,
   };
 
   function configureStore(): {
@@ -68,5 +69,6 @@ function createAuthResponse(): AuthResponse {
     email: 'alex@zentech.vn',
     fullName: 'Alex Nguyen',
     roles: ['CUSTOMER'],
+    imageUrl: null,
   };
 }

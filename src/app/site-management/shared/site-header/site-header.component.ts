@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input, output, ViewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, input, output, ViewChild, inject, OnDestroy } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import {
   LucideChevronDown,
   LucideCircleUserRound,
@@ -10,11 +10,16 @@ import {
   LucideSearch,
   LucideSettings,
   LucideShoppingCart,
-  LucideUserPlus
+  LucideUserPlus,
+  LucideMinus,
+  LucidePlus,
+  LucideTrash2
 } from '@lucide/angular';
 import { PopoverModule } from 'primeng/popover';
+import { DrawerModule } from 'primeng/drawer';
 import { HeaderNavItem } from '../site-navigation.models';
 import { NotificationBellComponent } from '../../../shared/components/notification-bell/notification-bell.component';
+import { CartStore } from '../../cart/data-access/store/cart.store';
 
 export interface HeaderUser {
   isAuthenticated: boolean;
@@ -29,6 +34,7 @@ export interface HeaderUser {
     CommonModule,
     RouterLink,
     PopoverModule,
+    DrawerModule,
     LucideMenu,
     LucideSearch,
     LucideShoppingCart,
@@ -38,12 +44,18 @@ export interface HeaderUser {
     LucideUserPlus,
     LucideSettings,
     LucideLogOut,
+    LucideMinus,
+    LucidePlus,
+    LucideTrash2,
     NotificationBellComponent
   ],
   templateUrl: './site-header.component.html',
   styleUrl: './site-header.component.css'
 })
-export class SiteHeaderComponent {
+export class SiteHeaderComponent implements OnDestroy {
+  private readonly router = inject(Router);
+  protected readonly cartStore = inject(CartStore);
+
   @ViewChild(NotificationBellComponent) bellComponent?: NotificationBellComponent;
 
   readonly navItems = input<HeaderNavItem[]>([]);
@@ -52,6 +64,8 @@ export class SiteHeaderComponent {
   readonly currentUser = input<HeaderUser | null>(null);
   readonly navSelect = output<HeaderNavItem>();
   readonly logout = output<void>();
+
+  protected cartDrawerVisible = false;
 
   readonly isAuthenticated = computed(() => this.currentUser()?.isAuthenticated === true);
   readonly hasAvatar = computed(() => !!this.currentUser()?.avatarUrl);
@@ -97,7 +111,31 @@ export class SiteHeaderComponent {
     accountMenu.toggle(event, accountTrigger);
   }
 
+  closeAndNavigate(commands: any[], queryParams?: any): void {
+    this.cartDrawerVisible = false;
+    setTimeout(() => {
+      this.router.navigate(commands, { queryParams });
+    }, 200);
+  }
+
+  navigateToLogin(): void {
+    this.closeAndNavigate(['/auth/login'], { returnUrl: this.router.url });
+  }
+
   trackByLabel(_: number, item: HeaderNavItem): string {
     return item.slug;
+  }
+
+  ngOnDestroy(): void {
+    // Clean up PrimeNG drawer mask if it's left in the DOM on navigation
+    const masks = document.querySelectorAll('.p-drawer-mask, .p-overlay-mask');
+    masks.forEach(mask => {
+      mask.remove();
+    });
+    // Restore body scroll and styles
+    document.body.classList.remove('p-overflow-hidden');
+    document.documentElement.classList.remove('p-overflow-hidden');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
   }
 }

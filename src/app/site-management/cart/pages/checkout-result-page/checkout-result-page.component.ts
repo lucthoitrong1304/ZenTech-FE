@@ -33,7 +33,7 @@ export class CheckoutResultPageComponent {
     const orderId = this.route.snapshot.queryParamMap.get('orderId');
     if (!orderId || orderId === 'null') {
       this.loading.set(false);
-      this.error.set('Khong tim thay ma don hang trong ket qua thanh toan.');
+      this.error.set('Không tìm thấy mã đơn hàng trong kết quả thanh toán.');
       return;
     }
 
@@ -42,7 +42,7 @@ export class CheckoutResultPageComponent {
         this.order.set(response.data);
       },
       error: () => {
-        this.error.set('Khong the tai thong tin don hang. Vui long kiem tra lich su don hang.');
+        this.error.set('Không thể tải thông tin đơn hàng. Vui lòng kiểm tra lịch sử đơn hàng.');
       },
       complete: () => {
         this.loading.set(false);
@@ -53,29 +53,29 @@ export class CheckoutResultPageComponent {
   protected get headline(): string {
     const order = this.order();
     if (order?.paymentStatus === 'SUCCESS') {
-      return 'Thanh toan thanh cong';
+      return 'Thanh toán thành công';
     }
     if (this.returnStatus === 'failed') {
-      return 'Thanh toan chua hoan tat';
+      return 'Thanh toán chưa hoàn tất';
     }
     if (this.returnStatus === 'invalid') {
-      return 'Ket qua thanh toan can kiem tra';
+      return 'Kết quả thanh toán cần kiểm tra';
     }
-    return 'Dang cho xac nhan thanh toan';
+    return 'Đang chờ xác nhận thanh toán';
   }
 
   protected get description(): string {
     const order = this.order();
     if (order?.paymentStatus === 'SUCCESS') {
-      return 'ZenTech da ghi nhan thanh toan cua ban. Don hang se duoc xu ly som.';
+      return 'ZenTech đã ghi nhận thanh toán của bạn. Đơn hàng sẽ được xử lý sớm.';
     }
     if (this.returnStatus === 'failed') {
-      return 'Cong thanh toan bao giao dich that bai hoac bi huy. Don hang van duoc luu de ban theo doi.';
+      return 'Cổng thanh toán báo giao dịch thất bại hoặc bị hủy. Đơn hàng vẫn được lưu để bạn theo dõi.';
     }
     if (this.returnStatus === 'invalid') {
-      return 'Chu ky ket qua khong hop le. Vui long doi IPN hoac lien he ho tro neu can.';
+      return 'Chữ ký kết quả không hợp lệ. Vui lòng đợi IPN hoặc liên hệ hỗ trợ nếu cần.';
     }
-    return 'Cong thanh toan da tra ve, backend dang cho IPN xac nhan trang thai cuoi cung.';
+    return 'Cổng thanh toán đã trả về, hệ thống đang chờ IPN xác nhận trạng thái cuối cùng.';
   }
 
   protected onLogout(): void {

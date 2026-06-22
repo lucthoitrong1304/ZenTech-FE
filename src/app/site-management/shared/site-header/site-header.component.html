@@ -66,7 +66,7 @@
 
       <button
         type="button"
-        routerLink="/cart"
+        (click)="cartDrawerVisible = true"
         class="site-header__icon-button relative"
         aria-label="Shopping cart"
       >
@@ -174,3 +174,154 @@
     }
   </div>
 </p-popover>
+
+<p-drawer
+  styleClass="site-cart-drawer"
+  position="right"
+  [(visible)]="cartDrawerVisible"
+  [modal]="true"
+  [blockScroll]="true"
+  [dismissible]="true"
+  appendTo="body"
+  [style]="{ width: 'min(28rem, calc(100vw - 1rem))', background: '#0a0a0a', borderLeft: '1px solid rgba(255,255,255,0.1)' }"
+>
+  <ng-template #header>
+    <div class="flex items-center gap-3">
+      <svg lucideShoppingCart class="h-5 w-5 text-[#ffc700]" [attr.stroke-width]="2.5"></svg>
+      <div>
+        <h2 class="text-lg font-black text-white uppercase tracking-wider">Giỏ Hàng</h2>
+        <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">
+          {{ isAuthenticated() ? cartStore.itemCount() + ' sản phẩm' : 'Chưa đăng nhập' }}
+        </p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="flex h-full flex-col justify-between text-white bg-[#0a0a0a]">
+    @if (!isAuthenticated()) {
+      <div class="flex flex-col items-center justify-center flex-1 px-6 py-12 text-center">
+        <div class="mb-6 rounded-full bg-white/5 p-6 ring-1 ring-white/10 animate-pulse">
+          <svg lucideShoppingCart class="h-12 w-12 text-white/40" [attr.stroke-width]="1.5"></svg>
+        </div>
+        <h3 class="text-lg font-black uppercase tracking-wider text-white">Bạn chưa đăng nhập</h3>
+        <p class="mt-3 text-xs font-semibold leading-relaxed text-white/60 max-w-xs">
+          Vui lòng đăng nhập để xem và quản lý giỏ hàng của bạn, tích lũy điểm và nhận nhiều ưu đãi hấp dẫn.
+        </p>
+        <button
+          type="button"
+          (click)="navigateToLogin()"
+          class="mt-8 flex min-h-12 w-full items-center justify-center rounded-full bg-[#ffc700] px-6 text-xs font-black uppercase tracking-[0.18em] text-[#0a0a0a] transition hover:bg-[#ffe066] cursor-pointer"
+        >
+          Đăng nhập ngay
+        </button>
+      </div>
+    } @else {
+      <div class="flex-1 overflow-y-auto py-4 px-2">
+        @if (cartStore.isEmpty()) {
+          <div class="flex flex-col items-center justify-center h-full px-6 py-12 text-center">
+            <div class="mb-6 rounded-full bg-white/5 p-6 ring-1 ring-white/10">
+              <svg lucideShoppingCart class="h-12 w-12 text-white/40" [attr.stroke-width]="1.5"></svg>
+            </div>
+            <h3 class="text-lg font-black uppercase tracking-wider text-white">Giỏ hàng trống</h3>
+            <p class="mt-3 text-xs font-semibold leading-relaxed text-white/60 max-w-xs">
+              Chưa có sản phẩm nào trong giỏ hàng của bạn. Quay lại cửa hàng để chọn sản phẩm nhé!
+            </p>
+            <button
+              type="button"
+              (click)="cartDrawerVisible = false"
+              class="mt-8 flex min-h-12 w-full items-center justify-center rounded-full bg-white/10 px-6 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-white/20 cursor-pointer"
+            >
+              Tiếp tục mua sắm
+            </button>
+          </div>
+        } @else {
+          <div class="flex flex-col gap-4">
+            @for (item of cartStore.items(); track item.variantId) {
+              <div class="group relative flex gap-4 rounded-lg bg-white/5 p-3 ring-1 ring-white/10 transition hover:bg-white/10">
+                <a (click)="closeAndNavigate(['/products', item.productSlug])" class="block aspect-square w-20 shrink-0 overflow-hidden rounded-md bg-white/5 cursor-pointer">
+                  <img [src]="item.image" [alt]="item.productName" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+                </a>
+                
+                <div class="flex flex-col justify-between flex-1 min-w-0">
+                  <div>
+                    <a (click)="closeAndNavigate(['/products', item.productSlug])" class="block truncate text-sm font-black text-white hover:text-[#ffc700] cursor-pointer">
+                      {{ item.productName }}
+                    </a>
+                    <p class="mt-0.5 truncate text-[10px] font-bold uppercase tracking-wider text-white/50">
+                      {{ item.variantName }}
+                    </p>
+                  </div>
+                  
+                  <div class="flex items-center justify-between mt-2">
+                    <div class="inline-flex h-8 items-center overflow-hidden rounded-full bg-white/10 text-white">
+                      <button
+                        type="button"
+                        class="grid h-8 w-8 place-items-center text-white/70 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                        [disabled]="item.quantity <= 1"
+                        (click)="cartStore.decrementItem(item.variantId)"
+                      >
+                        <svg lucideMinus class="h-3 w-3" [attr.stroke-width]="2.5"></svg>
+                      </button>
+                      <span class="grid h-8 w-8 place-items-center text-xs font-black tabular-nums">
+                        {{ item.quantity }}
+                      </span>
+                      <button
+                        type="button"
+                        class="grid h-8 w-8 place-items-center text-white/70 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                        [disabled]="item.quantity >= item.maxQuantity"
+                        (click)="cartStore.incrementItem(item.variantId)"
+                      >
+                        <svg lucidePlus class="h-3 w-3" [attr.stroke-width]="2.5"></svg>
+                      </button>
+                    </div>
+                    
+                    <span class="text-sm font-black text-white tabular-nums">
+                      {{ item.unitPrice * item.quantity | currency: 'VND' : 'symbol' : '1.0-0' }}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="absolute top-2 right-2 text-white/40 hover:text-red-500 transition cursor-pointer"
+                  (click)="cartStore.removeItem(item.variantId)"
+                  aria-label="Remove item"
+                >
+                  <svg lucideTrash2 class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (!cartStore.isEmpty()) {
+        <div class="border-t border-white/10 bg-black/40 p-4 space-y-4 shrink-0">
+          <div class="flex items-center justify-between text-sm font-bold text-white">
+            <span class="uppercase tracking-wider text-white/60">Tạm tính:</span>
+            <span class="text-lg font-black text-[#ffc700] tabular-nums">
+              {{ cartStore.total() | currency: 'VND' : 'symbol' : '1.0-0' }}
+            </span>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              (click)="closeAndNavigate(['/cart'])"
+              class="flex min-h-11 items-center justify-center rounded-full border border-white/20 bg-transparent px-4 text-xs font-black uppercase tracking-wider text-white transition hover:bg-white/10 cursor-pointer"
+            >
+              Xem giỏ hàng
+            </button>
+            <button
+              type="button"
+              (click)="closeAndNavigate(['/checkout'])"
+              class="flex min-h-11 items-center justify-center rounded-full bg-[#ffc700] px-4 text-xs font-black uppercase tracking-wider text-[#0a0a0a] transition hover:bg-[#ffe066] cursor-pointer"
+            >
+              Thanh toán
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</p-drawer>

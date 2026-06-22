@@ -1,30 +1,30 @@
 <aside class="rounded-[10px] bg-[#f6f3f2] p-6 shadow-[0_28px_90px_-70px_rgba(16,16,16,0.7)] lg:sticky lg:top-28 lg:p-8">
-  <h2 class="text-3xl font-black tracking-tight text-[#101010]">Order Summary</h2>
+  <h2 class="text-3xl font-black tracking-tight text-[#101010]">Tóm tắt đơn hàng</h2>
 
   <div class="mt-8 grid gap-5">
     <div class="flex items-center justify-between gap-4">
-      <span class="font-semibold text-[#4f4632]">Items</span>
+      <span class="font-semibold text-[#4f4632]">Số lượng sản phẩm</span>
       <span class="text-lg font-black tabular-nums">{{ itemCount() }}</span>
     </div>
     <div class="flex items-center justify-between gap-4">
-      <span class="font-semibold text-[#4f4632]">Subtotal</span>
+      <span class="font-semibold text-[#4f4632]">Tạm tính</span>
       <span class="text-lg font-black tabular-nums">
         {{ subtotal() | currency: 'VND' : 'symbol' : '1.0-0' }}
       </span>
     </div>
     <div class="flex items-center justify-between gap-4">
-      <span class="font-semibold text-[#4f4632]">Estimated Shipping</span>
+      <span class="font-semibold text-[#4f4632]">Phí vận chuyển dự kiến</span>
       @if (shippingFee() > 0) {
         <span class="text-lg font-black tabular-nums">
           {{ shippingFee() | currency: 'VND' : 'symbol' : '1.0-0' }}
         </span>
       } @else {
-        <span class="text-lg font-black uppercase text-[#4b41e1]">Free</span>
+        <span class="text-lg font-black uppercase text-[#4b41e1]">Miễn phí</span>
       }
     </div>
     @if (discount() > 0) {
       <div class="flex items-center justify-between gap-4">
-        <span class="font-semibold text-[#4f4632]">Discount</span>
+        <span class="font-semibold text-[#4f4632]">Giảm giá</span>
         <span class="text-lg font-black tabular-nums text-emerald-700">
           -{{ discount() | currency: 'VND' : 'symbol' : '1.0-0' }}
         </span>
@@ -33,7 +33,7 @@
 
     <div class="mt-3 border-t border-[#d2c5ab]/30 pt-6">
       <span class="text-[11px] font-black uppercase tracking-[0.18em] text-[#81765f]">
-        Total Amount
+        Tổng tiền
       </span>
       <p class="mt-2 text-4xl font-black tracking-tight tabular-nums text-[#101010]">
         {{ total() | currency: 'VND' : 'symbol' : '1.0-0' }}
@@ -54,15 +54,15 @@
       <div class="flex items-center gap-3 rounded-[8px] bg-white/70 p-3">
         <svg lucideShieldCheck class="h-5 w-5 shrink-0 text-[#4b41e1]" [attr.stroke-width]="2"></svg>
         <div class="min-w-0">
-          <p class="text-xs font-black uppercase tracking-[0.12em]">Secure Payment</p>
-          <p class="truncate text-[11px] font-semibold text-[#4f4632]">SSL encrypted transaction</p>
+          <p class="text-xs font-black uppercase tracking-[0.12em]">Thanh toán an toàn</p>
+          <p class="truncate text-[11px] font-semibold text-[#4f4632]">Giao dịch được bảo mật SSL</p>
         </div>
       </div>
       <div class="flex items-center gap-3 rounded-[8px] bg-white/70 p-3">
         <svg lucideTruck class="h-5 w-5 shrink-0 text-[#4b41e1]" [attr.stroke-width]="2"></svg>
         <div class="min-w-0">
-          <p class="text-xs font-black uppercase tracking-[0.12em]">Fast Delivery</p>
-          <p class="truncate text-[11px] font-semibold text-[#4f4632]">Ships within 24-48 hours</p>
+          <p class="text-xs font-black uppercase tracking-[0.12em]">Giao hàng nhanh</p>
+          <p class="truncate text-[11px] font-semibold text-[#4f4632]">Giao hàng từ 24-48 giờ</p>
         </div>
       </div>
     </div>
