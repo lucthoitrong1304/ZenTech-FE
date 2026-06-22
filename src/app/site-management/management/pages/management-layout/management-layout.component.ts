@@ -22,6 +22,7 @@ import {
   LucideSettings,
   LucideShoppingBag,
   LucideStore,
+  LucideTicket,
   LucideUser,
   LucideUsers,
   LucideWarehouse,
@@ -98,6 +99,7 @@ const DEFAULT_HEADER: ManagementHeaderState = {
     LucideSearch,
     LucideSettings,
     LucideShoppingBag,
+    LucideTicket,
     LucideUser,
     LucideUsers,
     LucideWarehouse,
@@ -197,6 +199,7 @@ export class ManagementLayoutComponent {
         { label: 'Yêu cầu & Đề xuất', path: '/management/requests', icon: 'chat' },
         { label: 'Duyệt yêu cầu', path: '/management/approvals', icon: 'employees' },
         { label: 'Tư vấn khách hàng', path: '/management/chat', icon: 'chat' },
+        { label: 'Ticket hỗ trợ', path: '/management/tickets', icon: 'ticket' },
         { label: 'Đơn hàng', path: '/management/orders', icon: 'orders' },
         {
           label: 'Sản phẩm',

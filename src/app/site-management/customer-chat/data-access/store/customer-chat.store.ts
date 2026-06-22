@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+﻿import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 import {
   addEntities,
@@ -29,6 +29,7 @@ import {
   CustomerChatSharedItemType,
   CustomerChatSharedTab,
   CustomerChatUpload,
+  CustomerTicketStatus,
   ParticipantStatus,
   ParticipantType,
   formatBytes,
@@ -57,6 +58,7 @@ interface CustomerChatUiState {
   searchResults: ChatMessageResponse[];
   isSearching: boolean;
   highlightedMessageId: string | null;
+  customerTicketStatus: CustomerTicketStatus | null;
 }
 
 const MESSAGE_ENTITY_CONFIG = {
@@ -93,6 +95,7 @@ const INITIAL_STATE: CustomerChatUiState = {
   searchResults: [],
   isSearching: false,
   highlightedMessageId: null,
+  customerTicketStatus: null,
 };
 
 export const CustomerChatStore = signalStore(
@@ -194,6 +197,7 @@ export const CustomerChatStore = signalStore(
     ) => {
       let messageSub: Subscription | null = null;
       let conversationSub: Subscription | null = null;
+    let ticketStatusSub: Subscription | null = null;
 
       const isStaffSession = (): boolean => {
         const session = authStorageService.getSession();
@@ -234,7 +238,7 @@ export const CustomerChatStore = signalStore(
             patchState(store, {
               loading: false,
               aiResponding: false,
-              errorMessage: 'Không thể tải cuộc trò chuyện. Vui lòng thử lại sau.',
+              errorMessage: 'KhÃ´ng thá»ƒ táº£i cuá»™c trÃ² chuyá»‡n. Vui lÃ²ng thá»­ láº¡i sau.',
             });
             break;
 
@@ -256,7 +260,7 @@ export const CustomerChatStore = signalStore(
             patchState(store, {
               sending: false,
               aiResponding: false,
-              errorMessage: 'Tin nhắn chưa gửi được. Vui lòng thử lại.',
+              errorMessage: 'Tin nháº¯n chÆ°a gá»­i Ä‘Æ°á»£c. Vui lÃ²ng thá»­ láº¡i.',
             });
             break;
 
@@ -295,7 +299,7 @@ export const CustomerChatStore = signalStore(
                 },
                 UPLOAD_ENTITY_CONFIG
               ),
-              { errorMessage: 'Không thể tải tệp lên. Vui lòng thử lại.' }
+              { errorMessage: 'KhÃ´ng thá»ƒ táº£i tá»‡p lÃªn. Vui lÃ²ng thá»­ láº¡i.' }
             );
             break;
 
@@ -389,7 +393,7 @@ export const CustomerChatStore = signalStore(
           case CustomerChatEventType.SearchMessagesFailed:
             patchState(store, {
               isSearching: false,
-              errorMessage: 'Không thể tìm kiếm tin nhắn.',
+              errorMessage: 'KhÃ´ng thá»ƒ tÃ¬m kiáº¿m tin nháº¯n.',
             });
             break;
         }
@@ -464,6 +468,9 @@ export const CustomerChatStore = signalStore(
                     );
 
                     websocketService.connect();
+                    loadCustomerTicketStatus();
+                    ticketStatusSub?.unsubscribe();
+                    ticketStatusSub = websocketService.subscribe('/topic/customer.tickets').subscribe(() => loadCustomerTicketStatus());
 
                     messageSub = websocketService
                       .subscribe<ChatMessageResponse>(`/topic/conversations.${id}`)
@@ -505,7 +512,7 @@ export const CustomerChatStore = signalStore(
                           const senderPart = participants.find(
                             (p) => p.referenceId === msg.senderReferenceId
                           );
-                          let senderName = senderPart?.displayName || 'Người dùng';
+                          let senderName = senderPart?.displayName || 'NgÆ°á»i dÃ¹ng';
                           let sender: CustomerChatMessageSender = 'CUSTOMER';
 
                           if (msg.senderType === ParticipantType.BOT) {
@@ -515,7 +522,7 @@ export const CustomerChatStore = signalStore(
                             sender = 'CUSTOMER';
                             const currentAccountId =
                               authStorageService.getSession()?.accountId || null;
-                            senderName = msg.senderReferenceId === currentAccountId ? 'Bạn' : senderName;
+                            senderName = msg.senderReferenceId === currentAccountId ? 'Báº¡n' : senderName;
                           } else {
                             sender = 'STAFF';
                           }
@@ -598,7 +605,7 @@ export const CustomerChatStore = signalStore(
                   patchState(store, {
                     loading: false,
                     aiResponding: false,
-                    errorMessage: 'Không thể tải cuộc trò chuyện.',
+                    errorMessage: 'KhÃ´ng thá»ƒ táº£i cuá»™c trÃ² chuyá»‡n.',
                   });
                 },
               }),
@@ -622,7 +629,7 @@ export const CustomerChatStore = signalStore(
                 error: () => {
                   patchState(store, {
                     loading: false,
-                    errorMessage: 'Không thể tạo cuộc trò chuyện mới.',
+                    errorMessage: 'KhÃ´ng thá»ƒ táº¡o cuá»™c trÃ² chuyá»‡n má»›i.',
                   });
                 },
               }),
@@ -632,6 +639,18 @@ export const CustomerChatStore = signalStore(
         )
       );
 
+
+      const loadCustomerTicketStatus = rxMethod<void>(
+        pipe(
+          switchMap(() => customerChatService.getTicketStatus().pipe(
+            tap({
+              next: (status) => patchState(store, { customerTicketStatus: status }),
+              error: () => patchState(store, { customerTicketStatus: null }),
+            }),
+            catchError(() => EMPTY)
+          ))
+        )
+      );
       const loadSession = rxMethod<void>(
         pipe(
           tap(() => patchState(store, { loading: true, errorMessage: null })),
@@ -670,7 +689,7 @@ export const CustomerChatStore = signalStore(
                 patchState(store, {
                   loading: false,
                   aiResponding: false,
-                  errorMessage: 'Không thể tải danh sách cuộc hội thoại.',
+                  errorMessage: 'KhÃ´ng thá»ƒ táº£i danh sÃ¡ch cuá»™c há»™i thoáº¡i.',
                 });
                 return EMPTY;
               })
@@ -776,7 +795,7 @@ export const CustomerChatStore = signalStore(
                     {
                       sending: false,
                       aiResponding: false,
-                      errorMessage: 'KhÃ´ng thá»ƒ táº£i tá»‡p lÃªn. Vui lÃ²ng thá»­ láº¡i.',
+                      errorMessage: 'KhÃƒÂ´ng thÃ¡Â»Æ’ tÃ¡ÂºÂ£i tÃ¡Â»â€¡p lÃƒÂªn. Vui lÃƒÂ²ng thÃ¡Â»Â­ lÃ¡ÂºÂ¡i.',
                     }
                   );
                 },
@@ -1003,6 +1022,7 @@ export const CustomerChatStore = signalStore(
       return {
         dispatch: handleEvent,
         loadSession,
+        loadCustomerTicketStatus,
         switchConversation,
         createNewConversation,
         sendMessage,
@@ -1077,3 +1097,5 @@ export const CustomerChatStore = signalStore(
     };
   })
 );
+
+

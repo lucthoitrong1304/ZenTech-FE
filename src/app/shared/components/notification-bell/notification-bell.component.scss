@@ -10,21 +10,21 @@
   justify-content: center;
   border: 0;
   background: transparent;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--notification-bell-color, rgba(255, 255, 255, 0.8));
   transition:
     background-color 180ms ease,
     color 180ms ease,
     transform 180ms ease;
   position: relative;
-  height: 2.5rem;
-  width: 2.5rem;
+  height: var(--notification-bell-size, 2.5rem);
+  width: var(--notification-bell-size, 2.5rem);
   border-radius: 999px;
   cursor: pointer;
   padding: 0;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgb(255, 255, 255);
+    background: var(--notification-bell-hover-bg, rgba(255, 255, 255, 0.08));
+    color: var(--notification-bell-hover-color, rgb(255, 255, 255));
   }
 
   &:active {

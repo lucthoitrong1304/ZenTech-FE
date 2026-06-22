@@ -108,6 +108,17 @@ export const managementRoutes: Routes = [
           import('./chat/pages/management-chat-page/management-chat-page.component').then(
             m => m.ManagementChatPageComponent
           ),
+      },      {
+        path: 'tickets',
+        data: {
+          eyebrow: 'Điều hành kinh doanh',
+          title: 'Ticket hỗ trợ',
+          description: 'Theo dõi trạng thái ticket phát sinh từ sự cố để tư vấn khách hàng chính xác.',
+        },
+        loadComponent: () =>
+          import('./tickets/pages/management-tickets-page/management-tickets-page.component').then(
+            m => m.ManagementTicketsPageComponent
+          ),
       },
       {
         path: 'orders',

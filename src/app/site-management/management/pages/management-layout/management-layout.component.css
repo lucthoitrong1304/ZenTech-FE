@@ -92,6 +92,32 @@
   width: 18px;
   height: 18px;
 }
+.management-notification-button {
+  overflow: visible;
+}
+
+.management-notification-button app-notification-bell {
+  --notification-bell-color: #4f4632;
+  --notification-bell-hover-color: #1c1b1b;
+  --notification-bell-hover-bg: rgba(79, 70, 50, 0.08);
+  --notification-bell-size: 38px;
+}
+
+:host ::ng-deep .management-notification-button .notification-bell-trigger {
+  color: #4f4632 !important;
+  background: transparent !important;
+}
+
+:host ::ng-deep .management-notification-button .notification-bell-trigger:hover {
+  color: #1c1b1b !important;
+  background: rgba(79, 70, 50, 0.08) !important;
+}
+
+:host ::ng-deep .management-notification-button .notification-bell-icon {
+  color: #4f4632 !important;
+  stroke: currentColor !important;
+}
+
 
 .management-account-trigger {
   display: flex;

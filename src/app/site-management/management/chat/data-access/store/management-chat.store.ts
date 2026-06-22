@@ -458,7 +458,7 @@ export const ManagementChatStore = signalStore(
     };
 
     const loadConversationMessages = (conversationId: string, customerName: string) => {
-      return customerChatService.getMessages(conversationId, 0, 100).pipe(
+      return managementChatService.getMessages(conversationId, 0, 100).pipe(
         tap((pageRes) => {
           const mappedMessages = (pageRes.content || []).map((m) =>
             mapToManagementChatMessage(m, customerName)

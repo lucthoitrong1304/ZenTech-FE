@@ -83,6 +83,21 @@
           </div>
         </div>
       } @else {
+        @if (store.customerTicketStatus(); as ticketStatus) {
+          <div
+            class="customer-ticket-popup-banner"
+            [class.customer-ticket-popup-banner--resolved]="isTicketResolved(ticketStatus)"
+          >
+            <span class="customer-ticket-popup-banner__icon" aria-hidden="true">
+              {{ isTicketResolved(ticketStatus) ? 'OK' : '!' }}
+            </span>
+            <span class="customer-ticket-popup-banner__content">
+              <strong>{{ getTicketStatusTitle(ticketStatus) }}</strong>
+              <span>{{ getTicketStatusMessage(ticketStatus) }}</span>
+            </span>
+          </div>
+        }
+
         <app-customer-message-timeline
           [messages]="store.messages()"
           [customer]="store.customer()"

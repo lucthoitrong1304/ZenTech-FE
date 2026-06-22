@@ -23,7 +23,7 @@
     <section class="management-chat-detail">
       @if (store.loading()) {
         <div class="grid h-full place-items-center text-sm font-bold text-[#4f4632]">
-          Đang tải tư vấn khách hàng...
+          &#272;ang t&#7843;i t&#432; v&#7845;n kh&#225;ch h&#224;ng...
         </div>
       } @else if (store.selectedConversation(); as conversation) {
         <app-chat-header
@@ -37,6 +37,56 @@
           (transferClicked)="openTransferDialog()"
           (closeClicked)="store.closeConversation()"
         />
+
+        @if (primaryRelatedTicket(); as ticket) {
+          <aside
+            class="management-ticket-alert"
+            [class.management-ticket-alert--done]="!isTicketActive(ticket)"
+            role="status"
+          >
+            <span class="management-ticket-alert__marker" aria-hidden="true"></span>
+            <div class="management-ticket-alert__content">
+              <div class="management-ticket-alert__topline">
+                <span class="management-ticket-alert__eyebrow">Ticket h&#7895; tr&#7907; li&#234;n quan</span>
+                <span class="management-ticket-alert__count">{{ relatedTickets().length }} ticket</span>
+              </div>
+              <div class="management-ticket-alert__main">
+                <span class="management-ticket-alert__code">{{ ticket.code }}</span>
+                <span class="management-ticket-alert__status">{{ ticketStatusLabel(ticket) }}</span>
+                <span class="management-ticket-alert__title">{{ ticket.title }}</span>
+              </div>
+              <p class="management-ticket-alert__hint">
+                @if (isTicketActive(ticket)) {
+                  &#431;u ti&#234;n ki&#7875;m tra ticket n&#224;y tr&#432;&#7899;c khi ph&#7843;n h&#7891;i kh&#225;ch.
+                } @else {
+                  Ticket m&#7899;i nh&#7845;t &#273;&#227; x&#7917; l&#253;, x&#225;c nh&#7853;n l&#7841;i v&#7899;i kh&#225;ch n&#7871;u l&#7895;i c&#242;n l&#7863;p.
+                }
+              </p>
+              @if (extraRelatedTicketCount() > 0) {
+                <div class="management-ticket-alert__history">
+                  <span>C&#242;n {{ extraRelatedTicketCount() }} ticket kh&#225;c trong l&#7883;ch s&#7917;</span>
+                  @if (resolvedRelatedTicketCount() > 0) {
+                    <span>{{ resolvedRelatedTicketCount() }} &#273;&#227; x&#7917; l&#253;/&#273;&#243;ng</span>
+                  }
+                  @if (otherActiveRelatedTicketCount() > 0) {
+                    <span>{{ otherActiveRelatedTicketCount() }} &#273;ang c&#7847;n theo d&#245;i</span>
+                  }
+                </div>
+              }
+            </div>
+            <button
+              class="management-ticket-alert__action"
+              type="button"
+              (click)="openTicketDetail(ticket, conversation.customer.email)"
+            >
+              M&#7903; chi ti&#7871;t
+            </button>
+          </aside>
+        } @else if (ticketsLoading()) {
+          <div class="management-ticket-alert management-ticket-alert--loading">
+            &#272;ang ki&#7875;m tra ticket li&#234;n quan...
+          </div>
+        }
 
         <app-message-timeline
           [conversation]="conversation"
@@ -82,7 +132,7 @@
   <app-media-preview-dialog [item]="previewItem()" (closed)="closePreview()" />
 
   <p-dialog
-    header="Chuyển tiếp hội thoại"
+    header="Chuy&#7875;n ti&#7871;p h&#7897;i tho&#7841;i"
     [modal]="true"
     [visible]="transferDialogOpen()"
     (visibleChange)="transferDialogOpen.set($event)"
@@ -90,7 +140,7 @@
   >
     <div class="flex flex-col gap-4 py-4">
       <p class="text-sm text-[#4f4632]">
-        Chọn nhân viên đang online để chuyển tiếp cuộc hội thoại này:
+        Ch&#7885;n nh&#226;n vi&#234;n &#273;ang online &#273;&#7875; chuy&#7875;n ti&#7871;p cu&#7897;c h&#7897;i tho&#7841;i n&#224;y:
       </p>
       
       <select
@@ -98,7 +148,7 @@
         (ngModelChange)="selectedStaffId.set($event)"
         class="w-full rounded-[8px] border border-[#d2c5ab]/30 bg-[#f6f3f2] p-3 text-sm text-[#101010] outline-none transition focus:border-[#645efb] focus:ring-1 focus:ring-[#645efb]"
       >
-        <option [ngValue]="null" disabled>-- Chọn nhân viên --</option>
+        <option [ngValue]="null" disabled>-- Ch&#7885;n nh&#226;n vi&#234;n --</option>
         @for (staff of store.activeStaffList(); track staff.accountId) {
           <option [ngValue]="staff.accountId">
             {{ staff.displayName }} ({{ staff.role }})
@@ -113,7 +163,7 @@
           class="rounded-[8px] bg-white px-4 py-2 text-sm font-semibold text-[#101010] ring-1 ring-inset ring-[#e5e7eb] hover:bg-[#f9fafb]"
           (click)="transferDialogOpen.set(false)"
         >
-          Hủy
+          H&#7911;y
         </button>
         <button
           type="button"
@@ -121,9 +171,11 @@
           [disabled]="!selectedStaffId() || store.loading()"
           (click)="submitTransfer()"
         >
-          {{ store.loading() ? 'Đang chuyển...' : 'Chuyển tiếp' }}
+          {{ store.loading() ? '\u0110ang chuy\u1ec3n...' : 'Chuy\u1ec3n ti\u1ebfp' }}
         </button>
       </div>
     </ng-template>
   </p-dialog>
 </section>
+
+
