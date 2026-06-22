@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CallSignalingService } from '../../../../../core/services/call-signaling.service';
 import { MediaPreviewDialogComponent } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
@@ -14,9 +14,13 @@ import { ConversationListComponent } from '../../components/conversation-list/co
 import { MessageTimelineComponent } from '../../components/message-timeline/message-timeline.component';
 import { ManagementChatStore } from '../../data-access/store/management-chat.store';
 import { ManagementShellUiState } from '../../../data-access/state/management-shell-ui.state';
+import { WebsocketService } from '../../../../../core/services/websocket.service';
+import { ManagementTicket } from '../../../tickets/data-access/models/management-ticket.models';
+import { ManagementTicketService } from '../../../tickets/data-access/services/management-ticket.service';
 
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-management-chat-page',
@@ -40,14 +44,27 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './management-chat-page.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ManagementChatPageComponent implements OnInit {
+export class ManagementChatPageComponent implements OnInit, OnDestroy {
   private readonly callSignalingService = inject(CallSignalingService);
   protected readonly store = inject(ManagementChatStore);
   protected readonly managementShellUi = inject(ManagementShellUiState);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly ticketService = inject(ManagementTicketService);
+  private readonly websocketService = inject(WebsocketService);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
   protected readonly transferDialogOpen = signal(false);
   protected readonly selectedStaffId = signal<string | null>(null);
+  protected readonly relatedTickets = signal<ManagementTicket[]>([]);
+  protected readonly ticketsLoading = signal(false);
+  private ticketRefreshSub: Subscription | null = null;
+
+  constructor() {
+    effect(() => {
+      const email = this.store.selectedConversation()?.customer.email || '';
+      this.loadRelatedTickets(email);
+    });
+  }
 
   ngOnInit(): void {
     this.store.loadWorkspace();
@@ -59,6 +76,12 @@ export class ManagementChatPageComponent implements OnInit {
       }
     });
 
+    this.websocketService.connect();
+    this.ticketRefreshSub = this.websocketService.subscribe('/topic/admin.tickets').subscribe(() => {
+      const email = this.store.selectedConversation()?.customer.email || '';
+      this.loadRelatedTickets(email);
+    });
+
     this.callSignalingService.callEnded.subscribe(
       ({ durationStr, status, isCaller }) => {
         if (isCaller) {
@@ -68,8 +91,84 @@ export class ManagementChatPageComponent implements OnInit {
     );
   }
 
+
+  ngOnDestroy(): void {
+    this.ticketRefreshSub?.unsubscribe();
+    this.ticketRefreshSub = null;
+  }
+
+  protected latestRelatedTicket(): ManagementTicket | null {
+    return this.primaryRelatedTicket();
+  }
+
+  protected primaryRelatedTicket(): ManagementTicket | null {
+    return this.relatedTickets().find(ticket => this.isTicketActive(ticket)) || this.relatedTickets()[0] || null;
+  }
+
+  protected extraRelatedTicketCount(): number {
+    return Math.max(this.relatedTickets().length - (this.primaryRelatedTicket() ? 1 : 0), 0);
+  }
+
+  protected resolvedRelatedTicketCount(): number {
+    const primary = this.primaryRelatedTicket();
+    return this.relatedTickets().filter(ticket => ticket !== primary && !this.isTicketActive(ticket)).length;
+  }
+
+  protected otherActiveRelatedTicketCount(): number {
+    const primary = this.primaryRelatedTicket();
+    return this.relatedTickets().filter(ticket => ticket !== primary && this.isTicketActive(ticket)).length;
+  }
+
+  protected openCustomerTickets(email: string | null): void {
+    if (!email) {
+      return;
+    }
+    this.router.navigate(['/management/tickets'], { queryParams: { customerEmail: email } });
+  }
+
+  protected openTicketDetail(ticket: ManagementTicket, email: string | null): void {
+    this.router.navigate(['/management/tickets'], {
+      queryParams: {
+        customerEmail: email || null,
+        ticketId: ticket.id,
+      },
+    });
+  }
+
+  protected isTicketActive(ticket: ManagementTicket): boolean {
+    return ticket.status === 'OPEN' || ticket.status === 'IN_PROGRESS';
+  }
+
+  protected ticketStatusLabel(ticket: ManagementTicket): string {
+    if (ticket.status === 'OPEN') return '\u0110ang m\u1edf';
+    if (ticket.status === 'IN_PROGRESS') return '\u0110ang x\u1eed l\u00fd';
+    if (ticket.status === 'RESOLVED') return '\u0110\u00e3 x\u1eed l\u00fd';
+    return '\u0110\u00e3 \u0111\u00f3ng';
+  }
+
+  private loadRelatedTickets(email: string): void {
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      this.relatedTickets.set([]);
+      this.ticketsLoading.set(false);
+      return;
+    }
+
+    this.ticketsLoading.set(true);
+    this.ticketService.getTicketsForCustomer(normalizedEmail, 4).subscribe({
+      next: page => {
+        this.relatedTickets.set(page.content || []);
+        this.ticketsLoading.set(false);
+      },
+      error: () => {
+        this.relatedTickets.set([]);
+        this.ticketsLoading.set(false);
+      },
+    });
+  }
   protected showAdminSidebar(): void {
     this.managementShellUi.showAdminSidebar();
+    this.router.navigate(['/management/dashboard']);
   }
 
   protected openPreview(item: MediaPreviewItem): void {
@@ -101,3 +200,5 @@ export class ManagementChatPageComponent implements OnInit {
     }
   }
 }
+
+

@@ -5,6 +5,7 @@ import { environment } from '../../../../../../environments/environment';
 import {
   ApiResponse,
   ConversationResponse,
+  ChatMessageResponse,
   ConversationStatus,
   PageResponse,
   ParticipantType,
@@ -44,6 +45,21 @@ export class ManagementChatService {
           };
         })
       );
+  }
+
+  getMessages(
+    conversationId: string,
+    page = 0,
+    size = 50
+  ): Observable<PageResponse<ChatMessageResponse>> {
+    return this.apiService
+      .get<ApiResponse<PageResponse<ChatMessageResponse>>>(
+        `${this.baseUrl}/${conversationId}/messages`,
+        {
+          params: { page, size },
+        }
+      )
+      .pipe(map((res) => res.data));
   }
 
   claimConversation(conversationId: string): Observable<ConversationResponse> {

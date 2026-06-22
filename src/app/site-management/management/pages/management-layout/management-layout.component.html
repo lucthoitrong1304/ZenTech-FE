@@ -1,4 +1,4 @@
-<div class="management-shell" [class.management-shell--chat-sidebar]="chatSidebarActive()">
+﻿<div class="management-shell" [class.management-shell--chat-sidebar]="chatSidebarActive()">
   <header class="management-topbar">
     <nav class="management-breadcrumb" aria-label="Management breadcrumb">
       <a routerLink="/management/dashboard" class="management-breadcrumb__brand">ZenTech</a>
@@ -24,7 +24,7 @@
       <button type="button" class="management-icon-button" aria-label="Tìm kiếm" (click)="commandPaletteService.open()">
         <svg lucideSearch [attr.stroke-width]="2"></svg>
       </button>
-      <div class="management-icon-button flex items-center justify-center">
+      <div class="management-icon-button management-notification-button flex items-center justify-center">
         <app-notification-bell></app-notification-bell>
       </div>
       <button
@@ -116,6 +116,9 @@
                   }
                   @case ('chat') {
                     <svg lucideMessageCircle [attr.stroke-width]="2"></svg>
+                  }
+                  @case ('ticket') {
+                    <svg lucideTicket [attr.stroke-width]="2"></svg>
                   }
                   @case ('orders') {
                     <svg lucideShoppingBag [attr.stroke-width]="2"></svg>
@@ -213,3 +216,5 @@
 />
 
 <app-command-palette />
+
+

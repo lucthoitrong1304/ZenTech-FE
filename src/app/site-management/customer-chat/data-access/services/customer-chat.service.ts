@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+﻿import { Injectable, inject } from '@angular/core';
 import { HttpContext, HttpHeaders } from '@angular/common/http';
 import { Observable, map, switchMap } from 'rxjs';
 import { ApiService } from '../../../../core/api/api.service';
@@ -8,6 +8,7 @@ import {
   ApiResponse,
   ChatAttachmentType,
   ChatMessageResponse,
+  CustomerTicketStatus,
   ConversationResponse,
   PageResponse,
   UploadPresignResponse,
@@ -19,6 +20,7 @@ import {
 export class CustomerChatService {
   private readonly apiService = inject(ApiService);
   private readonly baseUrl = `${environment.apiBaseUrl}/chat/conversations`;
+  private readonly ticketStatusUrl = `${environment.apiBaseUrl}/chat/tickets/status`;
 
   createOrGetConversation(): Observable<ConversationResponse> {
     return this.apiService
@@ -85,6 +87,12 @@ export class CustomerChatService {
       .pipe(map((res) => res.data));
   }
 
+
+  getTicketStatus(): Observable<CustomerTicketStatus | null> {
+    return this.apiService
+      .get<ApiResponse<CustomerTicketStatus | null>>(this.ticketStatusUrl)
+      .pipe(map((res) => res.data));
+  }
   requestAgent(conversationId: string): Observable<ConversationResponse> {
     return this.apiService
       .post<unknown, ApiResponse<ConversationResponse>>(
@@ -112,10 +120,10 @@ export class CustomerChatService {
       .pipe(map((res) => res.data));
   }
 
-  // Quy trình upload file qua presigned URL:
-  // 1. Lấy url presigned từ backend
-  // 2. PUT file trực tiếp lên R2/S3
-  // 3. Trả về thông tin fileKey để lưu trữ khi gửi tin nhắn qua websocket
+  // Quy trÃ¬nh upload file qua presigned URL:
+  // 1. Láº¥y url presigned tá»« backend
+  // 2. PUT file trá»±c tiáº¿p lÃªn R2/S3
+  // 3. Tráº£ vá» thÃ´ng tin fileKey Ä‘á»ƒ lÆ°u trá»¯ khi gá»­i tin nháº¯n qua websocket
   uploadFile(file: File): Observable<{
     fileKey: string;
     fileName: string;
@@ -165,3 +173,4 @@ export class CustomerChatService {
     return ChatAttachmentType.FILE;
   }
 }
+

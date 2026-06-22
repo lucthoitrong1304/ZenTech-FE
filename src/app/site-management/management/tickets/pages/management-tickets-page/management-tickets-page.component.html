@@ -1,0 +1,455 @@
+<div class="tck-container">
+  <section class="tck-hero" aria-labelledby="management-ticket-title">
+    <div>
+      <p class="tck-hero-kicker">&#272;i&#7873;u h&#224;nh kinh doanh / Ticket h&#7895; tr&#7907;</p>
+      <h1 id="management-ticket-title">Ticket h&#7895; tr&#7907;</h1>
+      <p>Tra c&#7913;u ti&#7871;n tr&#236;nh x&#7917; l&#253; s&#7921; c&#7889; &#273;&#7875; t&#432; v&#7845;n kh&#225;ch h&#224;ng ch&#237;nh x&#225;c.</p>
+    </div>
+    <span class="tck-readonly-chip">Ch&#7871; &#273;&#7897; ch&#7881; xem</span>
+  </section>
+
+  <div class="tck-header-row">
+    <div class="tck-search-section">
+      <div class="tck-search-wrapper">
+        <svg lucideSearch class="tck-search-icon" [attr.stroke-width]="2"></svg>
+        <input
+          type="text"
+          [value]="search"
+          (input)="onSearchInput($event)"
+          placeholder="T&#236;m m&#227; ticket, ti&#234;u &#273;&#7873;..."
+          class="tck-search-input"
+          aria-label="T&#236;m ki&#7871;m ticket"
+        />
+      </div>
+    </div>
+
+    <div class="tck-filter-row">
+      <select
+        class="tck-filter-select"
+        [ngModel]="status"
+        (ngModelChange)="onStatusFilterChange($event)"
+        aria-label="L&#7885;c tr&#7841;ng th&#225;i"
+      >
+        <option value="ALL">T&#7845;t c&#7843; tr&#7841;ng th&#225;i</option>
+        <option [value]="TicketStatus.OPEN">&#272;ang m&#7903;</option>
+        <option [value]="TicketStatus.IN_PROGRESS">&#272;ang x&#7917; l&#253;</option>
+        <option [value]="TicketStatus.RESOLVED">&#272;&#227; x&#7917; l&#253;</option>
+        <option [value]="TicketStatus.CLOSED">&#272;&#227; &#273;&#243;ng</option>
+      </select>
+
+      <select
+        class="tck-filter-select"
+        [ngModel]="priority"
+        (change)="onPriorityFilterChange($event)"
+        aria-label="L&#7885;c &#273;&#7897; &#432;u ti&#234;n"
+      >
+        <option value="ALL">M&#7885;i &#273;&#7897; &#432;u ti&#234;n</option>
+        <option [value]="TicketPriority.LOW">Th&#7845;p (LOW)</option>
+        <option [value]="TicketPriority.MEDIUM">Trung b&#236;nh</option>
+        <option [value]="TicketPriority.HIGH">Cao (HIGH)</option>
+        <option [value]="TicketPriority.CRITICAL">Nghi&#234;m tr&#7885;ng (CRIT)</option>
+      </select>
+
+      <div class="tck-filter-select-wrap">
+        <p-select
+          styleClass="assignee-dropdown-p"
+          [options]="assigneeFilterOptions()"
+          [ngModel]="assigneeEmail"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="T&#7845;t c&#7843; ng&#432;&#7901;i ph&#7909; tr&#225;ch"
+          (onChange)="onAssigneeFilterChange($event.value)"
+        >
+          <ng-template #selectedItem let-option>
+            <div class="assignee-filter-option assignee-filter-option--selected">
+              @if (option?.value === 'ALL') {
+                <span class="assignee-filter-name">T&#7845;t c&#7843; ng&#432;&#7901;i ph&#7909; tr&#225;ch</span>
+              } @else if (option?.value === 'UNASSIGNED') {
+                <div class="assignee-avatar-placeholder assignee-avatar-placeholder--small assignee-avatar-placeholder--unassigned">
+                  <svg lucideUser class="assignee-icon" [attr.stroke-width]="2"></svg>
+                </div>
+                <span class="assignee-filter-name">Ch&#432;a ph&#226;n c&#244;ng</span>
+              } @else {
+                @if (option?.imageUrl) {
+                  <img class="assignee-avatar-img" [src]="option.imageUrl" [alt]="option.displayName" referrerpolicy="no-referrer" />
+                } @else {
+                  <span class="assignee-avatar-placeholder assignee-avatar-placeholder--small" [style.background]="getAvatarGradient(option?.email || '')">
+                    {{ getInitials(option?.displayName || '') }}
+                  </span>
+                }
+                <span class="assignee-filter-name">{{ option?.displayName }}</span>
+              }
+            </div>
+          </ng-template>
+          <ng-template #item let-option>
+            <div class="assignee-filter-option">
+              @if (option.value === 'ALL') {
+                <span class="assignee-filter-name">T&#7845;t c&#7843; ng&#432;&#7901;i ph&#7909; tr&#225;ch</span>
+              } @else if (option.value === 'UNASSIGNED') {
+                <div class="assignee-avatar-placeholder assignee-avatar-placeholder--unassigned">
+                  <svg lucideUser class="assignee-icon" [attr.stroke-width]="2"></svg>
+                </div>
+                <span class="assignee-filter-name">Ch&#432;a ph&#226;n c&#244;ng</span>
+              } @else {
+                @if (option.imageUrl) {
+                  <img class="assignee-avatar-img" [src]="option.imageUrl" [alt]="option.displayName" referrerpolicy="no-referrer" />
+                } @else {
+                  <span class="assignee-avatar-placeholder" [style.background]="getAvatarGradient(option.email)">
+                    {{ getInitials(option.displayName) }}
+                  </span>
+                }
+                <div class="assignee-filter-copy">
+                  <span class="assignee-filter-name">{{ option.displayName }}</span>
+                  <span class="assignee-filter-email">{{ option.email }}</span>
+                </div>
+              }
+            </div>
+          </ng-template>
+        </p-select>
+      </div>
+
+      <div class="tck-filter-select-wrap">
+        <p-select
+          styleClass="tck-date-preset-dropdown"
+          [options]="datePresetOptions"
+          [ngModel]="dateFilterVal()"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Th&#7901;i gian"
+          (onChange)="onDatePresetChange($event.value)"
+        ></p-select>
+      </div>
+
+      <div class="tck-filter-actions">
+        @if (hasActiveFilters()) {
+          <button
+            type="button"
+            (click)="resetFilters()"
+            class="tck-btn-reset-link"
+            title="X&#243;a t&#7845;t c&#7843; b&#7897; l&#7885;c"
+            aria-label="X&#243;a t&#7845;t c&#7843; b&#7897; l&#7885;c"
+          >
+            <svg lucideX class="reset-icon-small" [attr.stroke-width]="2"></svg>
+          </button>
+        }
+        <button
+          type="button"
+          (click)="refreshTickets()"
+          class="tck-btn-refresh-link"
+          [disabled]="store.loading()"
+          title="T&#7843;i l&#7841;i danh s&#225;ch ticket"
+          aria-label="T&#7843;i l&#7841;i danh s&#225;ch ticket"
+        >
+          <svg lucideRotateCcw class="reset-icon-small" [attr.stroke-width]="2"></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (dateFilterVal() === TicketDateFilterOption.CUSTOM) {
+    <div class="tck-custom-dates-row">
+      <div class="tck-dates-wrap">
+        <input
+          type="date"
+          [(ngModel)]="startDateVal"
+          (change)="onDateRangeChange()"
+          class="tck-date-input"
+          title="T&#7915; ng&#224;y"
+        />
+        <span class="tck-date-sep">&#273;&#7871;n</span>
+        <input
+          type="date"
+          [(ngModel)]="endDateVal"
+          (change)="onDateRangeChange()"
+          class="tck-date-input"
+          title="&#272;&#7871;n ng&#224;y"
+        />
+      </div>
+    </div>
+  }
+
+  <div class="tck-table-card">
+    @if (store.loading()) {
+      <div class="tck-loading-state">
+        <p>&#272;ang t&#7843;i danh s&#225;ch ticket...</p>
+      </div>
+    } @else if (store.tickets().length === 0) {
+      <div class="tck-empty-state">
+        <p>Kh&#244;ng t&#236;m th&#7845;y ticket ph&#249; h&#7907;p.</p>
+      </div>
+    } @else {
+      <div class="tck-table-wrapper">
+        <table class="tck-table">
+          <thead>
+            <tr>
+              <th scope="col" class="tck-th">M&#227; Ticket</th>
+              <th scope="col" class="tck-th">Ti&#234;u &#273;&#7873;</th>
+              <th scope="col" class="tck-th">Kh&#225;ch h&#224;ng</th>
+              <th scope="col" class="tck-th">&#272;&#7897; &#432;u ti&#234;n</th>
+              <th scope="col" class="tck-th">Tr&#7841;ng th&#225;i</th>
+              <th scope="col" class="tck-th">Ng&#224;y b&#225;o c&#225;o</th>
+              <th scope="col" class="tck-th">Ng&#432;&#7901;i ph&#7909; tr&#225;ch</th>
+              <th scope="col" class="tck-th">S&#7921; c&#7889; li&#234;n k&#7871;t</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ticket of store.tickets(); track ticket.id) {
+              @let customerEmailValue = primaryCustomerEmail(ticket);
+              <tr class="tck-tr" (click)="selectTicket(ticket)">
+                <td class="tck-td tck-td--mono">{{ ticket.code || ticket.id }}</td>
+                <td class="tck-td tck-td--subject">{{ ticket.title }}</td>
+                <td class="tck-td">
+                  <div class="tck-operator-cell">
+                    @if (ticket.affectedUserEmails && ticket.affectedUserEmails.length > 1) {
+                      <div class="tck-avatar-stack">
+                        @for (email of ticket.affectedUserEmails.slice(0, 2); track email; let idx = $index) {
+                          <div class="tck-stack-avatar-wrapper" [style.z-index]="3 - idx">
+                            @if (profileFor(email)?.imageUrl) {
+                              <img class="tck-stack-avatar-img" [src]="profileFor(email)?.imageUrl" [alt]="displayNameForEmail(email)" referrerpolicy="no-referrer" />
+                            } @else {
+                              <span class="tck-stack-avatar-text" [style.background]="getAvatarGradient(email)">{{ getInitials(displayNameForEmail(email)) }}</span>
+                            }
+                          </div>
+                        }
+                        @if (ticket.affectedUserEmails.length > 2) {
+                          <div class="tck-stack-avatar-wrapper tck-stack-avatar-more" [style.z-index]="1">
+                            <span>+{{ ticket.affectedUserEmails.length - 2 }}</span>
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <div class="tck-operator-avatar-wrapper">
+                        @if (profileFor(customerEmailValue)?.imageUrl) {
+                          <img class="tck-operator-avatar-img" [src]="profileFor(customerEmailValue)?.imageUrl" [alt]="displayCustomerName(ticket, customerEmailValue)" referrerpolicy="no-referrer" />
+                        } @else {
+                          <span [style.background]="getAvatarGradient(customerEmailValue || ticket.createdByName)">
+                            {{ getInitials(displayCustomerName(ticket, customerEmailValue)) }}
+                          </span>
+                        }
+                      </div>
+                    }
+                    <div class="tck-operator-info">
+                      <div class="tck-customer-line">
+                        <span class="tck-operator-name">{{ displayCustomerName(ticket, customerEmailValue) }}</span>
+                        @if (ticket.affectedUserEmails && ticket.affectedUserEmails.length > 1) {
+                          <span class="tck-badge-affected">+{{ ticket.affectedUserEmails.length - 1 }} ng&#432;&#7901;i kh&#225;c</span>
+                        }
+                      </div>
+                      <span class="tck-operator-email">{{ customerEmailValue || ticket.createdByEmail || 'N/A' }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="tck-td">
+                  <span class="tck-badge-priority" [class]="'priority-' + ticket.priority.toLowerCase()">{{ ticket.priority }}</span>
+                </td>
+                <td class="tck-td">
+                  <span class="tck-badge-status" [class]="'status-' + ticket.status.toLowerCase()">{{ statusLabel(ticket.status) }}</span>
+                </td>
+                <td class="tck-td tck-td--time">{{ ticket.createdAt | date:'HH:mm dd/MM/yyyy' }}</td>
+                <td class="tck-td">
+                  <div class="tck-operator-cell tck-operator-cell--compact">
+                    <div class="tck-operator-avatar-wrapper tck-operator-avatar-wrapper--assignee">
+                      @if (ticket.assigneeImageUrl || profileFor(ticket.assigneeEmail)?.imageUrl) {
+                        <img class="tck-operator-avatar-img" [src]="ticket.assigneeImageUrl || profileFor(ticket.assigneeEmail)?.imageUrl" [alt]="getAssigneeName(ticket)" referrerpolicy="no-referrer" />
+                      } @else {
+                        <span [style.background]="getAvatarGradient(ticket.assigneeEmail || ticket.assigneeName)">
+                          {{ getInitials(getAssigneeName(ticket)) }}
+                        </span>
+                      }
+                    </div>
+                    <div class="tck-operator-info">
+                      <span class="tck-operator-name">{{ getAssigneeName(ticket) }}</span>
+                      <span class="tck-operator-email">{{ ticket.assigneeEmail || 'Ch&#432;a ph&#226;n c&#244;ng' }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="tck-td">
+                  @if (ticket.incidentCode) {
+                    <span class="tck-linked-incident-link">{{ ticket.incidentCode }}</span>
+                  } @else {
+                    <span class="tck-muted-text">Kh&#244;ng c&#243;</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tck-pagination-footer">
+        <div class="tck-pagination-info">
+          Hi&#7875;n th&#7883; <strong>{{ store.pageStart() }}</strong> - <strong>{{ store.pageEnd() }}</strong> tr&#234;n t&#7893;ng s&#7889; <strong>{{ store.totalElements() }}</strong> ticket
+        </div>
+        <div class="tck-pagination-controls">
+          <div class="tck-pagination-size-selector">
+            <span class="tck-size-label">S&#7889; d&#242;ng:</span>
+            <select [value]="store.query().size" (change)="changeSize($event)" class="tck-size-select" aria-label="S&#7889; d&#242;ng tr&#234;n m&#7895;i trang">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <div class="tck-pagination-buttons">
+            <button [disabled]="!store.canGoPrevious()" (click)="changePage(store.query().page - 1)" class="tck-pagination-btn" aria-label="Trang tr&#432;&#7899;c">
+              <svg lucideChevronLeft class="tck-pagination-btn-icon"></svg>
+            </button>
+            <span class="tck-pagination-current-page">Trang {{ store.query().page + 1 }} / {{ store.totalPages() || 1 }}</span>
+            <button [disabled]="!store.canGoNext()" (click)="changePage(store.query().page + 1)" class="tck-pagination-btn" aria-label="Trang sau">
+              <svg lucideChevronRight class="tck-pagination-btn-icon"></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
+@if (store.selectedTicket(); as ticket) {
+  <div class="tck-modal-backdrop" (click)="closeDetails()">
+    <div class="tck-modal-content" (click)="$event.stopPropagation()">
+      <div class="tck-modal-header">
+        <div class="tck-modal-heading">
+          <p class="tck-modal-kicker">Chi ti&#7871;t Ticket / {{ ticket.code || ticket.id }}</p>
+          <h3 class="tck-modal-title" [title]="ticket.title">{{ ticket.title }}</h3>
+        </div>
+        <button (click)="closeDetails()" class="tck-modal-close-btn" aria-label="&#272;&#243;ng">
+          <svg lucideX class="tck-modal-close-icon"></svg>
+        </button>
+      </div>
+
+      <div class="tck-modal-body">
+        <div class="tck-modal-operator-card">
+          <div class="tck-modal-row">
+            <span class="tck-modal-label">Tr&#7841;ng th&#225;i x&#7917; l&#253;</span>
+            <span class="tck-modal-readonly-value">{{ statusLabel(ticket.status) }}</span>
+          </div>
+          <span class="tck-badge-status" [class]="'status-' + ticket.status.toLowerCase()">{{ statusLabel(ticket.status) }}</span>
+        </div>
+
+        <div class="tck-modal-row">
+          <span class="tck-modal-label">M&#244; t&#7843; chi ti&#7871;t</span>
+          @if (ticket.description) {
+            <div class="tck-modal-description" [innerHTML]="ticket.description"></div>
+          } @else {
+            <div class="tck-modal-value--mono">Kh&#244;ng c&#243; m&#244; t&#7843; chi ti&#7871;t.</div>
+          }
+        </div>
+
+        <div class="tck-modal-info-grid">
+          <div class="tck-modal-row">
+            <span class="tck-modal-label">M&#227; Ticket</span>
+            <span class="tck-modal-value tck-modal-value--mono-inline">{{ ticket.code || ticket.id }}</span>
+          </div>
+          <div class="tck-modal-row">
+            <span class="tck-modal-label">&#272;&#7897; &#432;u ti&#234;n</span>
+            <div><span class="tck-badge-priority" [class]="'priority-' + ticket.priority.toLowerCase()">{{ ticket.priority }}</span></div>
+          </div>
+          <div class="tck-modal-row">
+            <span class="tck-modal-label">Ng&#224;y b&#225;o c&#225;o</span>
+            <span class="tck-modal-value">{{ ticket.createdAt | date:'HH:mm - dd/MM/yyyy' }}</span>
+          </div>
+          @if (ticket.resolvedAt) {
+            <div class="tck-modal-row">
+              <span class="tck-modal-label">Ng&#224;y ho&#224;n th&#224;nh</span>
+              <span class="tck-modal-value tck-modal-value--success">{{ ticket.resolvedAt | date:'HH:mm - dd/MM/yyyy' }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="tck-modal-info-grid">
+          <div class="tck-modal-row">
+            <div class="tck-affected-header">
+              <span class="tck-modal-label">Kh&#225;ch h&#224;ng b&#7883; &#7843;nh h&#432;&#7903;ng</span>
+              @if (ticket.affectedUserEmails && ticket.affectedUserEmails.length > 0) {
+                <span class="tck-affected-count-chip">{{ ticket.affectedUserEmails.length }} ng&#432;&#7901;i</span>
+              }
+            </div>
+            <div class="tck-affected-rank-list">
+              @if (ticket.affectedUserEmails && ticket.affectedUserEmails.length > 0) {
+                @for (email of ticket.affectedUserEmails; track email; let i = $index) {
+                  <div class="tck-rank-card" [class.tck-rank-card--first]="i === 0">
+                    <div class="tck-avatar-relative">
+                      @if (profileFor(email)?.imageUrl) {
+                      <img class="tck-profile-avatar-img" [src]="profileFor(email)?.imageUrl" [alt]="displayNameForEmail(email)" referrerpolicy="no-referrer" />
+                    } @else {
+                      <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(email)">{{ getInitials(displayNameForEmail(email)) }}</div>
+                    }
+                      <span class="tck-rank-badge-overlay" [class]="i === 0 ? 'tck-rank-badge-overlay--first' : 'tck-rank-badge-overlay--other'">{{ i + 1 }}</span>
+                    </div>
+                    <div class="tck-profile-info">
+                      <div class="tck-profile-heading-line">
+                        <span class="tck-profile-name">{{ displayCustomerName(ticket, email) }}</span>
+                        @if (i === 0) { <span class="tck-first-hit-chip">FIRST HIT</span> }
+                      </div>
+                      <span class="tck-profile-email">{{ email }}</span>
+                    </div>
+                  </div>
+                }
+              } @else {
+                <div class="tck-rank-card tck-rank-card--first">
+                  <div class="tck-avatar-relative">
+                    @if (ticket.createdByImageUrl || profileFor(ticket.createdByEmail)?.imageUrl) {
+                    <img class="tck-profile-avatar-img" [src]="ticket.createdByImageUrl || profileFor(ticket.createdByEmail)?.imageUrl" [alt]="displayCustomerName(ticket)" referrerpolicy="no-referrer" />
+                  } @else {
+                    <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(ticket.createdByEmail || ticket.createdByName)">{{ getInitials(displayCustomerName(ticket)) }}</div>
+                  }
+                    <span class="tck-rank-badge-overlay tck-rank-badge-overlay--first">1</span>
+                  </div>
+                  <div class="tck-profile-info">
+                    <span class="tck-profile-name">{{ displayCustomerName(ticket) }}</span>
+                    <span class="tck-profile-email">{{ ticket.createdByEmail || 'N/A' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="tck-modal-row">
+            <div class="tck-affected-header"><span class="tck-modal-label">Ng&#432;&#7901;i ph&#7909; tr&#225;ch</span></div>
+            <div class="tck-assignee-card">
+              @if (ticket.assigneeImageUrl || profileFor(ticket.assigneeEmail)?.imageUrl) {
+                <img class="tck-profile-avatar-img" [src]="ticket.assigneeImageUrl || profileFor(ticket.assigneeEmail)?.imageUrl" [alt]="getAssigneeName(ticket)" referrerpolicy="no-referrer" />
+              } @else {
+                <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(ticket.assigneeEmail || ticket.assigneeName)">{{ getInitials(getAssigneeName(ticket)) }}</div>
+              }
+              <div class="tck-profile-info">
+                <span class="tck-profile-name">{{ getAssigneeName(ticket) }}</span>
+                <span class="tck-profile-email">{{ ticket.assigneeEmail || 'Ch&#432;a ph&#226;n c&#244;ng' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        @if (splitImages(ticket.images).length > 0) {
+          <div class="tck-modal-row">
+            <span class="tck-modal-label">H&#236;nh &#7843;nh &#273;&#237;nh k&#232;m</span>
+            <div class="tck-image-grid">
+              @for (url of splitImages(ticket.images); track url) {
+                <button type="button" class="incident-image-item" (click)="openLightbox(url)">
+                  <img [src]="url" alt="&#272;&#237;nh k&#232;m ticket" />
+                  <span class="image-overlay"><svg lucideEye class="image-overlay-icon"></svg></span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        @if (ticket.incidentCode) {
+          <div class="tck-modal-row">
+            <span class="tck-modal-label">S&#7921; c&#7889; h&#7879; th&#7889;ng li&#234;n k&#7871;t</span>
+            <div><span class="tck-linked-incident-link">{{ ticket.incidentCode }}</span></div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@if (selectedLightboxImage()) {
+  <div class="tck-modal-backdrop" (click)="closeLightbox()">
+    <div class="lightbox-content" (click)="$event.stopPropagation()">
+      <button class="lightbox-close-btn" (click)="closeLightbox()" aria-label="&#272;&#243;ng"><svg lucideX></svg></button>
+      <img [src]="selectedLightboxImage()" alt="H&#236;nh &#7843;nh ph&#243;ng to" class="lightbox-img" />
+    </div>
+  </div>
+}
