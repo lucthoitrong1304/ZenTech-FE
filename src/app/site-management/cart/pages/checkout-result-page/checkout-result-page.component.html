@@ -10,7 +10,7 @@
   <main class="mx-auto grid max-w-4xl gap-6 px-4 py-12 sm:px-6 lg:px-8">
     <section class="rounded-[10px] bg-white p-8 shadow-[0_28px_90px_-70px_rgba(16,16,16,0.7)] ring-1 ring-[#d2c5ab]/20">
       <p class="text-[11px] font-black uppercase tracking-[0.2em] text-[#4b41e1]">
-        {{ gateway }} Result
+        Kết quả {{ gateway }}
       </p>
       <h1 class="mt-4 text-4xl font-black tracking-tight text-[#101010]">
         {{ headline }}
@@ -21,7 +21,7 @@
 
       @if (loading()) {
         <p class="mt-8 rounded-[8px] bg-[#f6f3f2] p-4 text-sm font-semibold text-[#4f4632]">
-          Loading order...
+          Đang tải thông tin đơn hàng...
         </p>
       } @else if (error()) {
         <p class="mt-8 rounded-[8px] border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">
@@ -31,7 +31,7 @@
         <div class="mt-8 grid gap-4 rounded-[8px] bg-[#f6f3f2] p-5">
           <div class="flex flex-wrap items-center justify-between gap-3">
             <span class="text-xs font-black uppercase tracking-[0.14em] text-[#81765f]">
-              Order
+              Mã đơn hàng
             </span>
             <strong class="text-sm font-black text-[#101010]">
               #{{ detail.orderId.slice(0, 8).toUpperCase() }}
@@ -39,19 +39,19 @@
           </div>
           <div class="grid gap-3 sm:grid-cols-2">
             <div>
-              <span class="text-xs font-bold uppercase tracking-[0.12em] text-[#81765f]">Payment</span>
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-[#81765f]">Thanh toán</span>
               <p class="mt-1 text-base font-black text-[#101010]">{{ detail.paymentStatus }}</p>
             </div>
             <div>
-              <span class="text-xs font-bold uppercase tracking-[0.12em] text-[#81765f]">Order status</span>
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-[#81765f]">Trạng thái đơn hàng</span>
               <p class="mt-1 text-base font-black text-[#101010]">{{ detail.orderStatus }}</p>
             </div>
             <div>
-              <span class="text-xs font-bold uppercase tracking-[0.12em] text-[#81765f]">Created</span>
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-[#81765f]">Ngày đặt</span>
               <p class="mt-1 text-base font-black text-[#101010]">{{ detail.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
             </div>
             <div>
-              <span class="text-xs font-bold uppercase tracking-[0.12em] text-[#81765f]">Amount</span>
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-[#81765f]">Tổng tiền</span>
               <p class="mt-1 text-base font-black text-[#101010]">
                 {{ detail.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}
               </p>
@@ -65,13 +65,13 @@
           routerLink="/account/orders"
           class="inline-flex min-h-12 items-center justify-center rounded-full bg-[#101010] px-6 text-xs font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#4b41e1]"
         >
-          View Orders
+          Xem đơn hàng của tôi
         </a>
         <a
           routerLink="/categories/keyboards"
           class="inline-flex min-h-12 items-center justify-center rounded-full border border-[#d2c5ab] px-6 text-xs font-black uppercase tracking-[0.16em] text-[#4f4632] transition hover:border-[#4b41e1] hover:text-[#4b41e1]"
         >
-          Continue Shopping
+          Tiếp tục mua sắm
         </a>
       </div>
     </section>

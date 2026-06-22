@@ -10,23 +10,26 @@
   <main class="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:px-8 lg:py-14 xl:grid-cols-[minmax(0,1fr)_26rem]">
     <section class="min-w-0">
       <div class="mb-10 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div class="min-w-0">
-          <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-            Checkout step 2
-          </p>
-          <h1 class="mt-3 break-words text-5xl font-black tracking-tight text-[#101010]">
-            Thanh toán
-          </h1>
-          <p class="mt-3 text-sm font-bold uppercase tracking-[0.16em] text-[#4f4632]">
-            Chọn địa chỉ, voucher và phương thức thanh toán
-          </p>
+        <div class="min-w-0 flex items-center gap-4">
+          <div class="grid h-14 w-14 place-items-center rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-[#d2c5ab]/20 text-[#4b41e1]">
+            <svg lucideCreditCard class="h-6 w-6" [attr.stroke-width]="2.4"></svg>
+          </div>
+          <div>
+            <h1 class="break-words text-4xl font-black tracking-tight text-[#101010]">
+              Thanh toán
+            </h1>
+            <p class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#81765f]">
+              Chọn địa chỉ, voucher và phương thức giao dịch
+            </p>
+          </div>
         </div>
 
         <a
           routerLink="/cart"
-          class="text-xs font-black uppercase tracking-[0.18em] text-[#81765f] transition hover:text-[#4b41e1]"
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#81765f] shadow-[0_2px_8px_rgba(16,16,16,0.08)] ring-1 ring-[#d2c5ab]/20 transition hover:bg-[#f6f3f2] hover:text-[#4b41e1]"
+          title="Quay lại giỏ hàng"
         >
-          Quay lại giỏ hàng
+          <svg lucideArrowLeft class="h-5 w-5" [attr.stroke-width]="2.4"></svg>
         </a>
       </div>
 
@@ -35,10 +38,10 @@
           <div class="flex items-center justify-between gap-4">
             <div>
               <p class="text-[11px] font-black uppercase tracking-[0.18em] text-[#4b41e1]">
-                Delivery
+                Vận chuyển
               </p>
               <h2 class="mt-1 text-xl font-black tracking-tight text-[#101010]">
-                Địa chỉ giao hàng
+                Địa chỉ nhận hàng
               </h2>
             </div>
             <a routerLink="/account/addresses" class="text-xs font-black uppercase tracking-[0.14em] text-[#4b41e1]">
@@ -88,7 +91,7 @@
 
         <section class="rounded-[10px] bg-white p-5 shadow-[0_28px_90px_-70px_rgba(16,16,16,0.7)] ring-1 ring-[#d2c5ab]/20">
           <p class="text-[11px] font-black uppercase tracking-[0.18em] text-[#4b41e1]">
-            Payment
+            Giao dịch
           </p>
           <h2 class="mt-1 text-xl font-black tracking-tight text-[#101010]">
             Phương thức thanh toán
@@ -118,7 +121,7 @@
           <div class="flex items-center justify-between gap-4">
             <div>
               <p class="text-[11px] font-black uppercase tracking-[0.18em] text-[#4b41e1]">
-                Voucher
+                Ưu đãi
               </p>
               <h2 class="mt-1 text-xl font-black tracking-tight text-[#101010]">
                 Mã giảm giá
@@ -137,11 +140,11 @@
 
           <form class="mt-5 flex gap-2" (submit)="$event.preventDefault(); applyVoucherCode()">
             <label class="min-w-0 flex-1">
-              <span class="sr-only">Voucher code</span>
+              <span class="sr-only">Mã giảm giá</span>
               <input
                 type="text"
                 class="h-12 w-full rounded-[8px] border border-[#d2c5ab]/50 bg-[#fcf9f8] px-4 font-mono text-sm font-black uppercase tracking-[0.1em] text-[#101010] outline-none transition focus:border-[#4b41e1] focus:bg-white"
-                placeholder="ENTER CODE"
+                placeholder="NHẬP MÃ GIẢM GIÁ"
                 [ngModel]="voucherCode()"
                 name="voucherCode"
                 (ngModelChange)="onVoucherCodeChange($event)"

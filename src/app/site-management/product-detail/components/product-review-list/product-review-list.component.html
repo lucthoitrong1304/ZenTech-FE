@@ -3,9 +3,9 @@
     <article class="min-w-0 rounded-[10px] border border-[#d2c5ab]/25 bg-white p-5">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
-          <h3 class="break-words font-bold text-[#1c1b1b]">{{ review.title }}</h3>
+          <h3 class="break-words font-bold text-[#1c1b1b]">{{ review.reviewerName }}</h3>
           <p class="mt-1 text-sm text-[#4f4632]">
-            {{ review.reviewerName }} · {{ review.createdAt | date: 'mediumDate' }}
+            {{ review.createdAt | date: 'mediumDate' }}
           </p>
         </div>
         <div class="text-sm font-bold text-[#9b6500]">

@@ -34,7 +34,7 @@ describe('SiteHeaderComponent', () => {
     fixture.componentRef.setInput('currentUser', null);
     fixture.detectChanges();
 
-    fixture.debugElement.query(By.css('[aria-label="Tai khoan"]')).nativeElement.click();
+    fixture.debugElement.query(By.css('[aria-label="Tài khoản"]')).nativeElement.click();
     fixture.detectChanges();
     await fixture.whenStable();
 

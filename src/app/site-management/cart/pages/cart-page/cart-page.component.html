@@ -10,16 +10,18 @@
   <main class="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:px-8 lg:py-14 xl:grid-cols-[minmax(0,1fr)_26rem]">
     <section class="min-w-0">
       <div class="mb-10 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div class="min-w-0">
-          <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-            ZenTech checkout queue
-          </p>
-          <h1 class="mt-3 break-words text-5xl font-black tracking-tight text-[#101010]">
-            Your Cart
-          </h1>
-          <p class="mt-3 text-sm font-bold uppercase tracking-[0.16em] text-[#4f4632]">
-            {{ cartStore.itemCount() }} items secured in your queue
-          </p>
+        <div class="min-w-0 flex items-center gap-4">
+          <div class="grid h-14 w-14 place-items-center rounded-2xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-[#d2c5ab]/20 text-[#4b41e1]">
+            <svg lucideShoppingCart class="h-6 w-6" [attr.stroke-width]="2.4"></svg>
+          </div>
+          <div>
+            <h1 class="break-words text-4xl font-black tracking-tight text-[#101010]">
+              Giỏ hàng
+            </h1>
+            <p class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#81765f]">
+              Có {{ cartStore.itemCount() }} sản phẩm trong giỏ hàng của bạn
+            </p>
+          </div>
         </div>
 
         @if (!cartStore.isEmpty()) {
@@ -28,7 +30,7 @@
             class="text-xs font-black uppercase tracking-[0.18em] text-[#81765f] transition hover:text-[#be0037]"
             (click)="cartStore.clearCart()"
           >
-            Clear cart
+            Xóa giỏ hàng
           </button>
         }
       </div>
@@ -37,7 +39,7 @@
         <div class="grid min-h-[24rem] place-items-center rounded-[10px] bg-white p-8 text-center shadow-[0_26px_90px_-70px_rgba(16,16,16,0.7)] ring-1 ring-[#d2c5ab]/20">
           <div class="max-w-xl">
             <p class="text-[11px] font-black uppercase tracking-[0.22em] text-[#4b41e1]">
-              Empty queue
+              Giỏ hàng trống
             </p>
             <h2 class="mt-4 text-3xl font-black tracking-tight text-[#101010]">
               Giỏ hàng của bạn đang trống.
@@ -47,9 +49,10 @@
             </p>
             <a
               routerLink="/categories/keyboards"
-              class="mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-[#101010] px-6 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#4b41e1]"
+              class="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#101010] px-6 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#4b41e1]"
             >
-              Continue Shopping
+              <svg lucideArrowLeft class="h-4 w-4" [attr.stroke-width]="2.4"></svg>
+              Tiếp tục mua sắm
             </a>
           </div>
         </div>
@@ -67,9 +70,10 @@
 
         <a
           routerLink="/categories/keyboards"
-          class="mt-8 inline-flex items-center text-xs font-black uppercase tracking-[0.18em] text-[#4b41e1] transition hover:text-[#332bc9]"
+          class="mt-8 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.18em] text-[#4b41e1] transition hover:text-[#332bc9]"
         >
-          Continue Shopping
+          <svg lucideArrowLeft class="h-4 w-4" [attr.stroke-width]="2.4"></svg>
+          Tiếp tục mua sắm
         </a>
       }
     </section>

@@ -17,10 +17,12 @@ import { BusinessEventService, BusinessEventType } from '../../data-access/servi
 import { CheckoutService } from '../../data-access/services/checkout.service';
 import { CartStore } from '../../data-access/store/cart.store';
 
+import { LucideArrowLeft, LucideCreditCard } from '@lucide/angular';
+
 @Component({
   selector: 'app-checkout-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SiteHeaderComponent, CartSummaryComponent],
+  imports: [CommonModule, FormsModule, RouterLink, SiteHeaderComponent, CartSummaryComponent, LucideArrowLeft, LucideCreditCard],
   templateUrl: './checkout-page.component.html',
   styleUrl: './checkout-page.component.css',
 })

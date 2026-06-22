@@ -368,3 +368,44 @@
     width: 2.35rem;
   }
 }
+
+/* Custom styling for Cart Drawer */
+::ng-deep .site-cart-drawer {
+  background-color: #0a0a0a !important;
+  color: #ffffff !important;
+}
+
+::ng-deep .site-cart-drawer .p-drawer-header {
+  background-color: #0a0a0a !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 1.25rem !important;
+  color: #ffffff !important;
+}
+
+::ng-deep .site-cart-drawer .p-drawer-content {
+  background-color: #0a0a0a !important;
+  padding: 0 !important;
+  color: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+::ng-deep .site-cart-drawer .p-drawer-close-button {
+  color: rgba(255, 255, 255, 0.6) !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 9999px !important;
+  width: 2rem !important;
+  height: 2rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+
+::ng-deep .site-cart-drawer .p-drawer-close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}

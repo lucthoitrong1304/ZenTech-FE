@@ -12,6 +12,8 @@ const session: StoredAuthSession = {
   email: 'customer@example.com',
   fullName: 'Customer One',
   roles: ['CUSTOMER'],
+  avatarUrl: null,
+  isPasswordSet: true,
 };
 
 describe('CartStore', () => {

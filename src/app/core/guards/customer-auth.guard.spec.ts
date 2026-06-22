@@ -45,6 +45,8 @@ describe('customerAuthGuard', () => {
       email: 'customer@zentech.vn',
       fullName: 'Customer User',
       roles: ['CUSTOMER'],
+      avatarUrl: null,
+      isPasswordSet: true,
     };
 
     const result = runGuard({

@@ -9,6 +9,8 @@ import { CartItemRowComponent } from '../../components/cart-item-row/cart-item-r
 import { CartSummaryComponent } from '../../components/cart-summary/cart-summary.component';
 import { CartStore } from '../../data-access/store/cart.store';
 
+import { LucideArrowLeft, LucideShoppingCart } from '@lucide/angular';
+
 @Component({
   selector: 'app-cart-page',
   standalone: true,
@@ -18,6 +20,8 @@ import { CartStore } from '../../data-access/store/cart.store';
     SiteHeaderComponent,
     CartItemRowComponent,
     CartSummaryComponent,
+    LucideArrowLeft,
+    LucideShoppingCart,
   ],
   templateUrl: './cart-page.component.html',
   styleUrl: './cart-page.component.css',

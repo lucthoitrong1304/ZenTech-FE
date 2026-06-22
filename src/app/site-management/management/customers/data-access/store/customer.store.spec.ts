@@ -139,6 +139,7 @@ function createCustomerSummary(): CustomerSummary {
     totalOrders: 3,
     totalSpent: 1500000,
     lastOrderAt: '2026-04-16T08:00:00Z',
+    imageUrl: null,
   };
 }
 
