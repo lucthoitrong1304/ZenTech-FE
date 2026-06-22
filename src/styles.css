@@ -384,3 +384,23 @@ app-site-header {
 .zt-confirm-dialog.p-dialog .p-dialog-footer p-button:last-child button:hover {
   background: #4338ca !important;
 }
+
+/* Global button and click pointer styling */
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
+button:disabled,
+[role="button"]:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled,
+input[type="reset"]:disabled,
+.cursor-not-allowed {
+  cursor: not-allowed !important;
+}
+

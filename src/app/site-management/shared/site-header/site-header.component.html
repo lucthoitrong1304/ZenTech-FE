@@ -79,14 +79,17 @@
       </button>
 
       @if (isAuthenticated()) {
-        <app-notification-bell class="flex items-center justify-center mr-2"></app-notification-bell>
+        <app-notification-bell
+          class="flex items-center justify-center mr-2"
+          (click)="accountMenu.hide()"
+        ></app-notification-bell>
       }
 
       <button
         #accountTrigger
         type="button"
         class="site-header__account-trigger"
-        (click)="accountMenu.toggle($event, accountTrigger)"
+        (click)="toggleAccountMenu($event, accountMenu, accountTrigger)"
         [attr.aria-label]="accountTriggerLabel()"
       >
         <span class="site-header__account-badge">

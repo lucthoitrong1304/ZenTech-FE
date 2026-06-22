@@ -12,8 +12,8 @@
   <form class="add-review-card" (ngSubmit)="submitReview.emit()">
     <header class="flex min-w-0 items-start justify-between gap-4">
       <div class="min-w-0">
-        <h2 id="add-review-title" class="text-2xl font-black text-[#101010]">
-          Write a Review
+        <h2 id="add-review-title" class="text-2xl font-bold text-[#101010]">
+          Viết đánh giá
         </h2>
         <p class="mt-1 truncate text-sm font-semibold text-[#81765f]">
           {{ productName() }}
@@ -39,7 +39,7 @@
             class="grid h-9 w-9 place-items-center rounded-full transition hover:bg-[#fff4bd] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4b41e1]"
             (click)="updateRating(rating)"
             [disabled]="submitting()"
-            [attr.aria-label]="'Rate ' + rating + ' stars'"
+            [attr.aria-label]="'Đánh giá ' + rating + ' sao'"
           >
             <svg
               lucideStar
@@ -66,7 +66,7 @@
         (ngModelChange)="updateField('comment', $event)"
         rows="5"
         class="add-review-textarea"
-        placeholder="Share your experience with this product..."
+        placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
         [disabled]="submitting()"
       ></textarea>
       @if (error()?.comment) {
@@ -80,7 +80,7 @@
       <!-- Upload Photos -->
       <div>
         <div class="flex items-center justify-between gap-4">
-          <p class="text-xs font-bold text-[#101010]">Upload Photos (Optional)</p>
+          <p class="text-xs font-bold text-[#101010]">Tải lên hình ảnh (Không bắt buộc)</p>
           <span class="text-[11px] font-bold text-[#81765f]">
             {{ reviewImages().length }}/{{ maxImagesAllowed }}
           </span>
@@ -109,7 +109,7 @@
       <!-- Upload Video -->
       <div>
         <div class="flex items-center justify-between gap-4">
-          <p class="text-xs font-bold text-[#101010]">Upload Video (Optional)</p>
+          <p class="text-xs font-bold text-[#101010]">Tải lên video (Không bắt buộc)</p>
           <span class="text-[11px] font-bold text-[#81765f]">
             {{ reviewVideo() ? '1/1' : '0/1' }}
           </span>
@@ -148,11 +148,11 @@
               />
               <div class="absolute inset-x-0 bottom-0 bg-[#101010]/80 px-2 py-1 text-[10px] font-bold text-white">
                 @if (image.status === 'uploading') {
-                  Uploading
+                  Đang tải lên...
                 } @else if (image.status === 'failed') {
-                  Failed
+                  Lỗi
                 } @else {
-                  Ready
+                  Sẵn sàng
                 }
               </div>
               <button
@@ -184,11 +184,11 @@
               </div>
               <div class="absolute inset-x-0 bottom-0 bg-[#101010]/80 px-2 py-1 text-[10px] font-bold text-white">
                 @if (video.status === 'uploading') {
-                  Uploading
+                  Đang tải lên...
                 } @else if (video.status === 'failed') {
-                  Failed
+                  Lỗi
                 } @else {
-                  Ready
+                  Sẵn sàng
                 }
               </div>
               <button
@@ -216,17 +216,17 @@
     <div class="mt-6 space-y-3">
       <button
         type="submit"
-        class="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#ffc700] px-5 text-sm font-black text-[#251a00] transition hover:bg-[#f5bf00] disabled:cursor-not-allowed disabled:opacity-60"
+        class="inline-flex h-12 w-full items-center justify-center rounded-full bg-[#ffc700] px-5 text-sm font-bold text-[#251a00] transition hover:bg-[#f5bf00] disabled:cursor-not-allowed disabled:opacity-60"
         [disabled]="submitting() || imageUploading() || videoUploading()"
       >
         @if (videoUploading()) {
-          Uploading video...
+          Đang tải video...
         } @else if (imageUploading()) {
-          Uploading photos...
+          Đang tải ảnh...
         } @else if (submitting()) {
-          Submitting...
+          Đang gửi...
         } @else {
-          Submit Review
+          Gửi đánh giá
         }
       </button>
       <button
@@ -235,7 +235,7 @@
         (click)="cancelReview.emit()"
         [disabled]="submitting()"
       >
-        Cancel
+        Hủy
       </button>
     </div>
   </form>

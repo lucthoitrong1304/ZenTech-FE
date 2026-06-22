@@ -3,12 +3,12 @@
     <article class="min-w-0 rounded-[10px] border border-[#d2c5ab]/25 bg-white p-5">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div class="min-w-0">
-          <h3 class="break-words font-black text-[#1c1b1b]">{{ review.title }}</h3>
+          <h3 class="break-words font-bold text-[#1c1b1b]">{{ review.title }}</h3>
           <p class="mt-1 text-sm text-[#4f4632]">
             {{ review.reviewerName }} · {{ review.createdAt | date: 'mediumDate' }}
           </p>
         </div>
-        <div class="text-sm font-black text-[#9b6500]">
+        <div class="text-sm font-bold text-[#9b6500]">
           {{ review.rating }}/5 ★
         </div>
       </div>
@@ -29,7 +29,7 @@
                 >
                   <img
                     [src]="imageUrl"
-                    alt="Review photo"
+                    alt="Ảnh đánh giá"
                     class="h-full w-full object-cover"
                     loading="lazy"
                   />
@@ -48,7 +48,7 @@
                 class="w-full max-h-72 object-contain"
                 aria-label="Review video"
               >
-                Your browser does not support the video tag.
+                Trình duyệt của bạn không hỗ trợ phát video.
               </video>
             </div>
           }

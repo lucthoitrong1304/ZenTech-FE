@@ -6,7 +6,7 @@ export interface ProductSortOption {
 }
 
 export const PRODUCT_SORT_OPTIONS: ProductSortOption[] = [
-  { value: 'featured', label: 'Featured' },
-  { value: 'price-asc', label: 'Price: Low to High' },
-  { value: 'price-desc', label: 'Price: High to Low' },
+  { value: 'featured', label: 'Nổi bật' },
+  { value: 'price-asc', label: 'Giá: Thấp đến Cao' },
+  { value: 'price-desc', label: 'Giá: Cao đến Thấp' },
 ];

@@ -3,7 +3,7 @@
     class="rounded-[14px] border border-[#d2c5ab]/30 bg-white p-8 text-center shadow-[0_24px_60px_-42px_rgba(16,16,16,0.4)] sm:p-12"
   >
     <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-[#4b41e1]">
-      {{ isInvalidCategory() ? 'Invalid Category' : 'Coming Soon' }}
+      {{ isInvalidCategory() ? 'Danh mục không hợp lệ' : 'Sắp ra mắt' }}
     </p>
     <h2 class="mt-4 text-3xl font-black uppercase italic tracking-[-0.04em] text-[#1c1b1b]">
       {{ title() }}
@@ -17,13 +17,13 @@
         routerLink="/"
         class="inline-flex items-center justify-center rounded-[10px] bg-[#101010] px-6 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#4b41e1]"
       >
-        Back to Home
+        Quay lại trang chủ
       </a>
       <a
         routerLink="/categories/keyboards"
         class="inline-flex items-center justify-center rounded-[10px] border border-[#d2c5ab] px-6 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-[#1c1b1b] transition hover:border-[#4b41e1] hover:text-[#4b41e1]"
       >
-        Browse Keyboards
+        Xem Bàn phím
       </a>
     </div>
   </div>

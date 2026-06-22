@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { 
   LucideBell, 
@@ -37,6 +37,14 @@ import { INotification, NotificationType } from '../../../core/models/notificati
 export class NotificationBellComponent {
   readonly store = inject(NotificationStore);
   private readonly router = inject(Router);
+
+  @ViewChild('op') op!: any;
+
+  hide(): void {
+    if (this.op) {
+      this.op.hide();
+    }
+  }
 
   toggle(event: any, op: any) {
     op.toggle(event);

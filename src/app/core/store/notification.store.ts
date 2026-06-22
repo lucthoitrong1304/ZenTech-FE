@@ -36,7 +36,12 @@ export const NotificationStore = signalStore(
       });
       return sorted;
     }),
-    hasUnread: computed(() => unreadCount() > 0),
+    calculatedUnreadCount: computed(() => {
+      return notificationEntities().filter(n => !n.isRead).length;
+    }),
+    hasUnread: computed(() => {
+      return notificationEntities().some(n => !n.isRead);
+    }),
     isPopoverOpen: computed(() => isOpen()),
   })),
   withMethods((

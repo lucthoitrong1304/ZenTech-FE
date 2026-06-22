@@ -8,7 +8,61 @@
   />
 
   <main>
-    @if (productListingStore.loading()) {
+    @if (productListingStore.category(); as category) {
+      <app-product-listing-hero
+        [category]="category"
+        [productCount]="productListingStore.loading() ? 0 : productListingStore.sortedProducts().length"
+      />
+
+      <app-product-listing-toolbar
+        [category]="category"
+        [productCount]="productListingStore.loading() ? 0 : productListingStore.sortedProducts().length"
+        [sortOptions]="sortOptions"
+        [selectedSort]="productListingStore.sortBy()"
+        (sortChange)="onSortChange($event)"
+      />
+
+      @if (productListingStore.loading()) {
+        <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+            @for (card of skeletonCards; track card) {
+              <div class="rounded-[10px] border border-[#d2c5ab]/25 bg-white p-4">
+                <div class="aspect-[4/3] animate-pulse rounded-[8px] bg-[#ebe7e7]"></div>
+                <div class="mt-5 h-3 w-24 animate-pulse rounded-full bg-[#ebe7e7]"></div>
+                <div class="mt-3 h-6 w-2/3 animate-pulse rounded-full bg-[#ebe7e7]"></div>
+                <div class="mt-4 h-5 w-32 animate-pulse rounded-full bg-[#ebe7e7]"></div>
+                <div class="mt-5 h-11 animate-pulse rounded-[10px] bg-[#ebe7e7]"></div>
+              </div>
+            }
+          </div>
+        </section>
+      } @else if (productListingStore.isEmpty()) {
+        <app-product-empty-state
+          [title]="'Danh mục ' + category.label + ' chưa có sản phẩm.'"
+          description="Catalog hiện chưa có sản phẩm trong danh mục này"
+        />
+      } @else {
+        <app-product-grid
+          [products]="productListingStore.sortedProducts()"
+          (addToCart)="onAddToCart($event)"
+        />
+
+        @if (productListingStore.hasNext()) {
+          <section class="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
+            <div class="flex justify-center">
+              <button
+                type="button"
+                (click)="onLoadMore()"
+                [disabled]="productListingStore.loadingMore()"
+                class="inline-flex min-w-44 items-center justify-center rounded-[10px] bg-[#101010] px-6 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#4b41e1] disabled:cursor-wait disabled:bg-[#81765f]"
+              >
+                {{ productListingStore.loadingMore() ? 'Đang tải...' : 'Xem thêm' }}
+              </button>
+            </div>
+          </section>
+        }
+      }
+    } @else if (productListingStore.loading()) {
       <section class="relative overflow-hidden bg-[#101010]">
         <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <div class="h-3 w-40 animate-pulse rounded-full bg-white/12"></div>
@@ -31,46 +85,6 @@
           }
         </div>
       </section>
-    } @else if (productListingStore.category(); as category) {
-      <app-product-listing-hero
-        [category]="category"
-        [productCount]="productListingStore.sortedProducts().length"
-      />
-
-      <app-product-listing-toolbar
-        [category]="category"
-        [productCount]="productListingStore.sortedProducts().length"
-        [sortOptions]="sortOptions"
-        [selectedSort]="productListingStore.sortBy()"
-        (sortChange)="onSortChange($event)"
-      />
-
-      @if (productListingStore.isEmpty()) {
-        <app-product-empty-state
-          [title]="'Danh mục ' + category.label + ' chưa có sản phẩm.'"
-          description="Catalog hiện chưa có sản phẩm trong danh mục này"
-        />
-      } @else {
-        <app-product-grid
-          [products]="productListingStore.sortedProducts()"
-          (addToCart)="onAddToCart($event)"
-        />
-
-        @if (productListingStore.hasNext()) {
-          <section class="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
-            <div class="flex justify-center">
-              <button
-                type="button"
-                (click)="onLoadMore()"
-                [disabled]="productListingStore.loadingMore()"
-                class="inline-flex min-w-44 items-center justify-center rounded-[10px] bg-[#101010] px-6 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition hover:bg-[#4b41e1] disabled:cursor-wait disabled:bg-[#81765f]"
-              >
-                {{ productListingStore.loadingMore() ? 'Đang tải...' : 'Load more' }}
-              </button>
-            </div>
-          </section>
-        }
-      }
     } @else {
       <app-product-empty-state
         [isInvalidCategory]="productListingStore.isInvalidCategory()"

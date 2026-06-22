@@ -104,13 +104,14 @@ export const ProductListingStore = signalStore(
 
     const handleEvent = (event: ProductListingEvent): void => {
       switch (event.type) {
-        case ProductListingEventType.CategoryLoadStarted:
+        case ProductListingEventType.CategoryLoadStarted: {
+          const cat = categoryNavigationStore.findCategoryBySlug(event.slug);
           patchState(
             store,
             removeAllEntities(PRODUCT_ENTITY_CONFIG),
             {
               categorySlug: event.slug,
-              category: null,
+              category: cat,
               page: 0,
               totalItems: 0,
               totalPages: 0,
@@ -124,6 +125,7 @@ export const ProductListingStore = signalStore(
             }
           );
           break;
+        }
 
         case ProductListingEventType.CategoryLoadSucceeded:
           patchState(
