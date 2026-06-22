@@ -29,10 +29,21 @@
               </td>
               <td>{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
               <td>
-                <span class="orders-customer">
-                  <strong>{{ order.customer.fullName }}</strong>
-                  <small>{{ order.customer.email }}</small>
-                </span>
+                <div class="user-cell">
+                  <div class="user-avatar-wrapper">
+                    @if (order.customer.imageUrl) {
+                      <img class="user-avatar-img" [src]="order.customer.imageUrl" [alt]="order.customer.fullName" referrerpolicy="no-referrer" />
+                    } @else {
+                      <span class="user-avatar-fallback" [style.background]="getAvatarGradient(order.customer.email || order.customer.fullName)">
+                        {{ getInitials(order.customer.fullName || order.customer.email || 'Khách hàng') }}
+                      </span>
+                    }
+                  </div>
+                  <div class="user-info">
+                    <span class="user-name">{{ order.customer.fullName }}</span>
+                    <span class="user-email">{{ order.customer.email }}</span>
+                  </div>
+                </div>
               </td>
               <td class="orders-table__money">
                 <strong>{{ order.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>

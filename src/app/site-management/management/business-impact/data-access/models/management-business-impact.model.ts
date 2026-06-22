@@ -24,6 +24,7 @@ export interface ManagementIncidentImpactDto {
   affectedUsers: number;
   severity: IncidentSeverity;
   aiSummary: string | null;
+  topAffectedUsers?: AffectedUserDetail[];
 }
 
 export interface ManagementImpactDashboardDto {

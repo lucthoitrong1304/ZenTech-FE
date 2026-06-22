@@ -408,4 +408,64 @@ export class ManagementTicketsPageComponent implements OnInit, OnDestroy {
       this.loadingProfileEmails.delete(email);
     });
   }
+
+  protected stripHtml(html: string | null | undefined): string {
+    if (!html) return '';
+    let tmp = html.replace(/<[^>]*>/g, '');
+    tmp = tmp.replace(/&nbsp;/g, ' ')
+             .replace(/&amp;/g, '&')
+             .replace(/&lt;/g, '<')
+             .replace(/&gt;/g, '>')
+             .replace(/&quot;/g, '"');
+    return tmp.trim();
+  }
+
+  protected getFriendlyTicketTitle(title: string | null | undefined): string {
+    if (!title) return 'Yêu cầu xử lý kỹ thuật';
+    
+    let friendly = title;
+    
+    if (friendly.includes('Cannot create MoMo payment') || friendly.includes('momo')) {
+      friendly = friendly.replace(/Cannot create MoMo payment/i, 'Không thể khởi tạo thanh toán qua ví MoMo');
+    }
+    if (friendly.includes('checkout') || friendly.includes('Cannot checkout')) {
+      friendly = friendly.replace(/Cannot checkout/i, 'Lỗi tiến trình đặt hàng & thanh toán (Checkout)');
+    }
+    if (friendly.includes('login') || friendly.includes('auth')) {
+      friendly = friendly.replace(/login/i, 'Đăng nhập hệ thống').replace(/auth/i, 'Xác thực tài khoản');
+    }
+    
+    friendly = friendly.replace(/^Sửa lỗi sự cố/i, 'Khắc phục lỗi');
+    
+    return friendly;
+  }
+
+  protected getFriendlyTicketDescription(desc: string | null | undefined): string {
+    if (!desc) return '';
+    const cleanDesc = this.stripHtml(desc);
+
+    if (cleanDesc.includes('/api/customers/me/checkout') || cleanDesc.includes('/checkout')) {
+      return 'Hệ thống tự động ghi nhận sự cố gián đoạn tại chức năng đặt hàng & thanh toán (Checkout).';
+    }
+    if (cleanDesc.includes('/api/payments/momo') || cleanDesc.includes('momo')) {
+      return 'Hệ thống tự động ghi nhận lỗi kết nối cổng thanh toán ví điện tử MoMo.';
+    }
+    if (cleanDesc.includes('/api/payments/vnpay') || cleanDesc.includes('vnpay')) {
+      return 'Hệ thống tự động ghi nhận lỗi kết nối cổng thanh toán VNPay.';
+    }
+    if (cleanDesc.includes('/api/cart') || cleanDesc.includes('/cart')) {
+      return 'Hệ thống tự động ghi nhận lỗi đồng bộ giỏ hàng của khách hàng.';
+    }
+    if (cleanDesc.includes('/api/products') || cleanDesc.includes('/products')) {
+      return 'Hệ thống tự động ghi nhận lỗi tải danh sách hoặc chi tiết sản phẩm.';
+    }
+    if (cleanDesc.includes('/api/auth') || cleanDesc.includes('/login') || cleanDesc.includes('/auth')) {
+      return 'Hệ thống tự động ghi nhận lỗi gián đoạn xác thực và đăng nhập tài khoản.';
+    }
+    if (cleanDesc.includes('Sự cố phát sinh tại API') || cleanDesc.includes('/api/')) {
+      return 'Hệ thống tự động phát hiện sự cố gián đoạn dịch vụ kỹ thuật.';
+    }
+
+    return cleanDesc;
+  }
 }

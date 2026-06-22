@@ -194,49 +194,68 @@
           </thead>
           <tbody>
             @for (ticket of store.tickets(); track ticket.id) {
-              @let customerEmailValue = primaryCustomerEmail(ticket);
               <tr class="tck-tr" (click)="selectTicket(ticket)">
                 <td class="tck-td tck-td--mono">{{ ticket.code || ticket.id }}</td>
-                <td class="tck-td tck-td--subject">{{ ticket.title }}</td>
+                <td class="tck-td tck-td--subject">{{ getFriendlyTicketTitle(ticket.title) }}</td>
                 <td class="tck-td">
                   <div class="tck-operator-cell">
-                    @if (ticket.affectedUserEmails && ticket.affectedUserEmails.length > 1) {
+                    @if (ticket.affectedUsers && ticket.affectedUsers.length > 1) {
                       <div class="tck-avatar-stack">
-                        @for (email of ticket.affectedUserEmails.slice(0, 2); track email; let idx = $index) {
+                        @for (user of ticket.affectedUsers.slice(0, 2); track user.email || user.fullName; let idx = $index) {
                           <div class="tck-stack-avatar-wrapper" [style.z-index]="3 - idx">
-                            @if (profileFor(email)?.imageUrl) {
-                              <img class="tck-stack-avatar-img" [src]="profileFor(email)?.imageUrl" [alt]="displayNameForEmail(email)" referrerpolicy="no-referrer" />
+                            @if (user.avatarUrl) {
+                              <img class="tck-stack-avatar-img" [src]="user.avatarUrl" [alt]="user.fullName" referrerpolicy="no-referrer" />
                             } @else {
-                              <span class="tck-stack-avatar-text" [style.background]="getAvatarGradient(email)">{{ getInitials(displayNameForEmail(email)) }}</span>
+                              <span class="tck-stack-avatar-text" [style.background]="getAvatarGradient(user.email || user.fullName)">{{ getInitials(user.fullName || user.email) }}</span>
                             }
                           </div>
                         }
-                        @if (ticket.affectedUserEmails.length > 2) {
+                        @if (ticket.affectedUsers.length > 2) {
                           <div class="tck-stack-avatar-wrapper tck-stack-avatar-more" [style.z-index]="1">
-                            <span>+{{ ticket.affectedUserEmails.length - 2 }}</span>
+                            <span>+{{ ticket.affectedUsers.length - 2 }}</span>
                           </div>
                         }
                       </div>
-                    } @else {
+                      <div class="tck-operator-info">
+                        <div class="tck-customer-line">
+                          <span class="tck-operator-name">{{ ticket.affectedUsers[0].fullName }}</span>
+                          <span class="tck-badge-affected">+{{ ticket.affectedUsers.length - 1 }} người khác</span>
+                        </div>
+                        <span class="tck-operator-email">{{ ticket.affectedUsers[0].email }}</span>
+                      </div>
+                    } @else if (ticket.affectedUsers && ticket.affectedUsers.length === 1) {
                       <div class="tck-operator-avatar-wrapper">
-                        @if (profileFor(customerEmailValue)?.imageUrl) {
-                          <img class="tck-operator-avatar-img" [src]="profileFor(customerEmailValue)?.imageUrl" [alt]="displayCustomerName(ticket, customerEmailValue)" referrerpolicy="no-referrer" />
+                        @if (ticket.affectedUsers[0].avatarUrl) {
+                          <img class="tck-operator-avatar-img" [src]="ticket.affectedUsers[0].avatarUrl" [alt]="ticket.affectedUsers[0].fullName" referrerpolicy="no-referrer" />
                         } @else {
-                          <span [style.background]="getAvatarGradient(customerEmailValue || ticket.createdByName)">
-                            {{ getInitials(displayCustomerName(ticket, customerEmailValue)) }}
+                          <span [style.background]="getAvatarGradient(ticket.affectedUsers[0].email || ticket.affectedUsers[0].fullName)">
+                            {{ getInitials(ticket.affectedUsers[0].fullName || ticket.affectedUsers[0].email) }}
                           </span>
                         }
                       </div>
-                    }
-                    <div class="tck-operator-info">
-                      <div class="tck-customer-line">
-                        <span class="tck-operator-name">{{ displayCustomerName(ticket, customerEmailValue) }}</span>
-                        @if (ticket.affectedUserEmails && ticket.affectedUserEmails.length > 1) {
-                          <span class="tck-badge-affected">+{{ ticket.affectedUserEmails.length - 1 }} ng&#432;&#7901;i kh&#225;c</span>
+                      <div class="tck-operator-info">
+                        <div class="tck-customer-line">
+                          <span class="tck-operator-name">{{ ticket.affectedUsers[0].fullName }}</span>
+                        </div>
+                        <span class="tck-operator-email">{{ ticket.affectedUsers[0].email }}</span>
+                      </div>
+                    } @else {
+                      <div class="tck-operator-avatar-wrapper">
+                        @if (ticket.createdByImageUrl) {
+                          <img class="tck-operator-avatar-img" [src]="ticket.createdByImageUrl" [alt]="ticket.createdByName || 'Khách hàng'" referrerpolicy="no-referrer" />
+                        } @else {
+                          <span [style.background]="getAvatarGradient(ticket.createdByEmail || ticket.createdByName)">
+                            {{ getInitials(ticket.createdByName || ticket.createdByEmail || 'Khách hàng') }}
+                          </span>
                         }
                       </div>
-                      <span class="tck-operator-email">{{ customerEmailValue || ticket.createdByEmail || 'N/A' }}</span>
-                    </div>
+                      <div class="tck-operator-info">
+                        <div class="tck-customer-line">
+                          <span class="tck-operator-name">{{ ticket.createdByName || 'Khách hàng' }}</span>
+                        </div>
+                        <span class="tck-operator-email">{{ ticket.createdByEmail || 'N/A' }}</span>
+                      </div>
+                    }
                   </div>
                 </td>
                 <td class="tck-td">
@@ -310,7 +329,7 @@
       <div class="tck-modal-header">
         <div class="tck-modal-heading">
           <p class="tck-modal-kicker">Chi ti&#7871;t Ticket / {{ ticket.code || ticket.id }}</p>
-          <h3 class="tck-modal-title" [title]="ticket.title">{{ ticket.title }}</h3>
+          <h3 class="tck-modal-title" [title]="getFriendlyTicketTitle(ticket.title)">{{ getFriendlyTicketTitle(ticket.title) }}</h3>
         </div>
         <button (click)="closeDetails()" class="tck-modal-close-btn" aria-label="&#272;&#243;ng">
           <svg lucideX class="tck-modal-close-icon"></svg>
@@ -329,7 +348,7 @@
         <div class="tck-modal-row">
           <span class="tck-modal-label">M&#244; t&#7843; chi ti&#7871;t</span>
           @if (ticket.description) {
-            <div class="tck-modal-description" [innerHTML]="ticket.description"></div>
+            <div class="tck-modal-description" [innerHTML]="getFriendlyTicketDescription(ticket.description)"></div>
           } @else {
             <div class="tck-modal-value--mono">Kh&#244;ng c&#243; m&#244; t&#7843; chi ti&#7871;t.</div>
           }

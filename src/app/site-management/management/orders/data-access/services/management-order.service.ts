@@ -34,18 +34,20 @@ export class ManagementOrderService {
 
     // Date range calculation
     const now = new Date();
-    let startDate: string | null = null;
-    let endDate: string | null = null;
+    let startDate: string | null = query.startDate || null;
+    let endDate: string | null = query.endDate || null;
 
-    if (query.dateFilter === 'today') {
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      startDate = start.toISOString();
-    } else if (query.dateFilter === 'last7days') {
-      const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      startDate = start.toISOString();
-    } else if (query.dateFilter === 'last30days') {
-      const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      startDate = start.toISOString();
+    if (!startDate && !endDate) {
+      if (query.dateFilter === 'today') {
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        startDate = start.toISOString();
+      } else if (query.dateFilter === 'last7days') {
+        const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        startDate = start.toISOString();
+      } else if (query.dateFilter === 'last30days') {
+        const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        startDate = start.toISOString();
+      }
     }
 
     if (startDate) {
@@ -130,6 +132,7 @@ interface OrderCustomerResponseDto {
   customerId: string;
   fullName: string | null;
   email: string | null;
+  imageUrl: string | null;
 }
 
 interface OrderSummaryResponseDto {
@@ -205,6 +208,7 @@ function toManagementOrderFromSummary(dto: OrderSummaryResponseDto): ManagementO
       fullName: dto.customer?.fullName?.trim() || 'Khách hàng chưa đặt tên',
       email: dto.customer?.email?.trim() || 'unknown@zentech.vn',
       shippingAddress: '',
+      imageUrl: dto.customer?.imageUrl || null,
     },
     paymentMethod: dto.paymentMethod,
     paymentStatus: dto.paymentStatus,
@@ -226,6 +230,7 @@ function toManagementOrderFromDetail(dto: OrderDetailResponseDto): ManagementOrd
       fullName: dto.customer?.fullName?.trim() || 'Khách hàng chưa đặt tên',
       email: dto.customer?.email?.trim() || 'unknown@zentech.vn',
       shippingAddress: formatAddress(dto.shippingAddress),
+      imageUrl: dto.customer?.imageUrl || null,
     },
     paymentMethod: dto.paymentMethod,
     paymentStatus: dto.paymentStatus,
