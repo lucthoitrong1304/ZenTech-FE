@@ -39,6 +39,8 @@ export class OrderHistoryPageComponent {
   protected statusClass(status: string): string {
     const normalizedStatus = status.toLowerCase();
     switch (normalizedStatus) {
+      case 'pending':
+        return 'bg-[#ffdf94] text-[#6e5400]';
       case 'processing':
         return 'bg-[#ffdf94] text-[#6e5400]';
       case 'cancelled':
@@ -48,6 +50,57 @@ export class OrderHistoryPageComponent {
       case 'shipped':
       default:
         return 'bg-[#e2dfff] text-[#3323cc]';
+    }
+  }
+
+  protected orderStatusLabel(status: string): string {
+    const normalized = status.toUpperCase();
+    switch (normalized) {
+      case 'CREATED':
+        return 'Mới tạo';
+      case 'PENDING':
+        return 'Chờ thanh toán';
+      case 'PROCESSING':
+        return 'Đang xử lý';
+      case 'SHIPPED':
+        return 'Đang giao hàng';
+      case 'DELIVERED':
+        return 'Đã giao hàng';
+      case 'CANCELLED':
+        return 'Đã hủy';
+      default:
+        return status;
+    }
+  }
+
+  protected paymentStatusLabel(status: string): string {
+    const normalized = status.toUpperCase();
+    switch (normalized) {
+      case 'PAID':
+        return 'Đã thanh toán';
+      case 'UNPAID':
+      case 'PENDING':
+        return 'Chưa thanh toán';
+      case 'REFUNDED':
+        return 'Đã hoàn tiền';
+      default:
+        return status;
+    }
+  }
+
+  protected paymentMethodLabel(method: string): string {
+    const normalized = method.toUpperCase();
+    switch (normalized) {
+      case 'COD':
+        return 'COD (Nhận hàng trả tiền)';
+      case 'VNPAY':
+        return 'Cổng VNPAY';
+      case 'MOMO':
+        return 'Ví MoMo';
+      case 'STRIPE':
+        return 'Thẻ Stripe';
+      default:
+        return method;
     }
   }
 

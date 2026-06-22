@@ -34,6 +34,42 @@ export class AccountOverviewPageComponent {
   protected isEditProfileOpen = false;
   protected editFullName = '';
 
+  protected orderStatusLabel(status: string): string {
+    const normalized = status.toUpperCase();
+    switch (normalized) {
+      case 'CREATED':
+        return 'Mới tạo';
+      case 'PENDING':
+        return 'Chờ thanh toán';
+      case 'PROCESSING':
+        return 'Đang xử lý';
+      case 'SHIPPED':
+        return 'Đang giao hàng';
+      case 'DELIVERED':
+        return 'Đã giao hàng';
+      case 'CANCELLED':
+        return 'Đã hủy';
+      default:
+        return status;
+    }
+  }
+
+  protected statusClass(status: string): string {
+    const normalizedStatus = status.toLowerCase();
+    switch (normalizedStatus) {
+      case 'pending':
+      case 'processing':
+        return 'bg-[#ffdf94] text-[#6e5400]';
+      case 'cancelled':
+        return 'bg-[#ffdad6] text-[#93000a]';
+      case 'delivered':
+        return 'bg-[#d8f5dd] text-[#166534]';
+      case 'shipped':
+      default:
+        return 'bg-[#e2dfff] text-[#3323cc]';
+    }
+  }
+
   protected openEditProfile(): void {
     const profile = this.accountStore.profile();
     if (profile) {
