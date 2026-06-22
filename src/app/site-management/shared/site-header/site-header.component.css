@@ -392,21 +392,4 @@
   height: 100% !important;
 }
 
-::ng-deep .site-cart-drawer .p-drawer-close-button {
-  color: rgba(255, 255, 255, 0.6) !important;
-  background-color: transparent !important;
-  border: none !important;
-  border-radius: 9999px !important;
-  width: 2rem !important;
-  height: 2rem !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  transition: all 0.2s ease !important;
-  cursor: pointer !important;
-}
 
-::ng-deep .site-cart-drawer .p-drawer-close-button:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-}
