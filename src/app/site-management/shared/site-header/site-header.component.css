@@ -247,6 +247,7 @@
   background:
     radial-gradient(circle at top, rgb(255 199 0 / 0.32), transparent 65%),
     linear-gradient(135deg, #1c1c1c, #090909);
+  background-clip: padding-box;
 }
 
 .site-header__account-icon {
