@@ -1,4 +1,5 @@
-﻿import { TicketPriority, TicketStatus } from '../../../../admin/data-access/models/admin.models';
+import { TicketPriority, TicketStatus } from '../../../../admin/data-access/models/admin.models';
+import { AffectedUserDetail } from '../../../business-impact/data-access/models/management-business-impact.model';
 
 export { TicketPriority, TicketStatus };
 
@@ -20,6 +21,7 @@ export interface ManagementTicket {
   createdByEmail?: string | null;
   createdByImageUrl?: string | null;
   affectedUserEmails?: string[];
+  affectedUsers?: AffectedUserDetail[];
   createdAt: string;
   resolvedAt?: string | null;
   images?: string | null;

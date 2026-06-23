@@ -14,6 +14,7 @@ export interface ManagementOrderCustomer {
   fullName: string;
   email: string;
   shippingAddress: string;
+  imageUrl?: string | null;
 }
 
 export interface ManagementOrderItem {
@@ -47,6 +48,8 @@ export interface ManagementOrderQuery {
   keyword: string;
   status: ManagementOrderStatusFilter;
   dateFilter: ManagementOrderDateFilter;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface ManagementOrderPage {
