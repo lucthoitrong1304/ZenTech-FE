@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
 import { DialogModule } from 'primeng/dialog';
 import { DatePicker } from 'primeng/datepicker';
-import { Subscription } from 'rxjs';
+import { Subscription, take } from 'rxjs';
 import {
   LucideCircleAlert,
   LucideEllipsisVertical,
@@ -16,11 +16,54 @@ import {
   LucideCheck,
   LucideAlertTriangle,
   LucideFileText,
+  LucideBot,
 } from '@lucide/angular';
 import { DashboardStore } from '../../data-access/store/dashboard.store';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { WebsocketService } from '../../../../../core/services/websocket.service';
-import { ReportPeriod, IAIOpsInsight } from '../../../reports/data-access/models/reports.model';
+import { ReportPeriod } from '../../../reports/data-access/models/reports.model';
+import { ReportsService } from '../../../reports/data-access/services/reports.service';
+import { ManagementBusinessImpactService } from '../../../business-impact/data-access/services/management-business-impact.service';
+import { ManagementOrder } from '../../../orders/data-access/models/management-order.models';
+
+type LiveEventType = 'incident' | 'ticket' | 'resolved' | 'system';
+type LiveChartMarker = 'normal' | 'incident' | 'ticket' | 'resolved';
+type LiveStatusState = 'safe' | 'alert' | 'working';
+
+interface LiveLogItem {
+  time: string;
+  dateTime: string;
+  type: LiveEventType;
+  title: string;
+  description: string;
+  code?: string;
+  timestamp?: number;
+  customerKey?: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerAvatarUrl?: string | null;
+}
+
+interface LiveChartPoint {
+  label: string;
+  value: number;
+  marker: LiveChartMarker;
+  eventTitle: string | null;
+  eventDescription: string | null;
+  eventDateTime: string | null;
+  timestamp: number;
+  isRevenueChangePoint?: boolean;
+}
+
+
+const LIVE_CHART_MAX_POINTS = 20;
+const LIVE_CHART_TICK_MS = 4000;
+const LIVE_DATA_REFRESH_MS = 15000;
+const LIVE_OCCURRENCE_REFRESH_MS = 15000;
+const LIVE_CHART_SEED_POINTS = 12;
+const LIVE_CHART_STORAGE_KEY = 'zentech.management.dashboard.liveRevenuePoints';
+const LIVE_CHART_HISTORY_TTL_MS = 2 * 60 * 60 * 1000;
+const LIVE_RESOLVED_DEDUPE_WINDOW_MS = 5000;
 
 @Component({
   selector: 'app-dashboard',
@@ -40,6 +83,7 @@ import { ReportPeriod, IAIOpsInsight } from '../../../reports/data-access/models
     LucideCheck,
     LucideAlertTriangle,
     LucideFileText,
+    LucideBot,
   ],
   providers: [DashboardStore],
   templateUrl: './dashboard.component.html',
@@ -50,25 +94,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
   private readonly websocketService = inject(WebsocketService);
+  private readonly reportsService = inject(ReportsService);
+  private readonly impactService = inject(ManagementBusinessImpactService);
 
   private readonly subscriptions: Subscription[] = [];
 
   // Live Operations Monitor State
-  protected readonly liveLogs = signal<{ time: string; type: 'incident' | 'ticket' | 'resolved' | 'system'; message: string }[]>([]);
-  protected readonly isSimulationRunning = signal<boolean>(false);
+  protected readonly liveLogs = signal<LiveLogItem[]>([]);
   protected readonly liveChartData = signal<any>({ labels: [], datasets: [] });
+  protected readonly liveRecentLogs = computed(() => this.liveLogs()
+    .filter((log) => log.type !== 'system' && this.isTodayTimestamp(log.timestamp))
+    .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0)));
+  protected readonly liveLatestLogs = computed(() => [...this.liveRecentLogs()]
+    .sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0)));
+  protected readonly showLiveMilestonesDialog = signal(false);
+  protected readonly activeIncidents = computed(() => this.store.activeIncidents());
+  protected readonly activeIncidentCount = computed(() => this.activeIncidents().length);
+  protected readonly activeAffectedUsers = computed(() => this.activeIncidents()
+    .reduce((total, incident: any) => total + Math.max(0, Number(incident?.affectedUsers ?? 0)), 0));
+  protected readonly backlogIncidentSince = computed(() => {
+    const todayStart = this.getTodayStart().getTime();
+    const backlogDates = this.activeIncidents()
+      .map((incident: any) => this.getEventDate(incident?.firstOccurredAt || incident?.occurredAt || incident?.createdAt))
+      .filter((date): date is Date => date instanceof Date && date.getTime() < todayStart)
+      .sort((a, b) => a.getTime() - b.getTime());
+    return backlogDates[0] ? this.formatShortDate(backlogDates[0]) : null;
+  });
+  private readonly liveStatusRevision = signal(0);
   protected activeLiveIncidentId: string | null = null;
+  protected activeLiveIncidentTitle: string | null = null;
   protected activeLiveTicketCode: string | null = null;
 
-  private liveLabels: string[] = [];
-  private liveRevenueValues: number[] = [];
-  private livePointRadii: number[] = [];
-  private livePointBgColors: string[] = [];
-  private livePointStyles: string[] = [];
-  private liveEventsHistory: (string | null)[] = [];
-  
-  private pendingLiveEvents: ('incident' | 'ticket' | 'resolved')[] = [];
+  private livePoints: LiveChartPoint[] = [];
+  private liveRevenueBaseline: number | null = null;
+  private processedLiveEventKeys = new Set<string>();
+  private lastOccurrenceFetchByIncident = new Map<string, number>();
   private liveTimerId: any = null;
+  private liveRefreshTimerId: any = null;
 
 
   // Expose enum to template
@@ -76,6 +138,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Custom date picker range model
   protected dateRange: Date[] | null = null;
+  protected readonly maxSelectableDate = new Date();
 
   // Computed chart data from store's revenueSeries
   protected readonly chartData = computed(() => {
@@ -132,20 +195,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     };
   });
 
-  // Prioritize warning AIOps insights over info/success reports
-  protected readonly activeInsight = computed(() => {
-    const list = this.store.insights();
-    const warning = list.find((x) => x.type === 'warning');
-    if (warning) return warning;
-    return list.length > 0 ? list[0] : null;
-  });
-
-  // Calculate AI Sales contribution amount
-  protected readonly aiSalesRevenue = computed(() => {
-    const totalRev = this.store.summary()?.totalRevenue ?? 0;
-    const autoRate = this.store.summary()?.autoFulfillmentRate ?? 0;
-    return (totalRev * autoRate) / 100;
-  });
 
   // Calculate critical and high priority technical tickets count
   protected readonly criticalTicketsCount = computed(() => {
@@ -271,74 +320,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.websocketService.connect();
     this.initLiveChart();
-    this.liveTimerId = setInterval(() => this.tickLiveChart(), 4000);
+    this.refreshLiveRevenueBaseline();
+    this.liveTimerId = setInterval(() => this.tickLiveChart(), LIVE_CHART_TICK_MS);
+    this.liveRefreshTimerId = setInterval(() => {
+      this.reloadDashboardSilently();
+      this.refreshLiveRevenueBaseline();
+    }, LIVE_DATA_REFRESH_MS);
 
     this.subscriptions.push(
       this.websocketService.subscribe<any>('/topic/admin.incidents').subscribe((payload) => {
-        this.store.loadDashboardData({
-          period: this.store.period(),
-          startDate: this.store.customStartDate(),
-          endDate: this.store.customEndDate(),
-          silent: true,
-        });
-        
-        if (payload) {
-          const time = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          if (payload.status === 'RESOLVED') {
-            this.activeLiveIncidentId = null;
-            this.activeLiveTicketCode = null;
-            this.pendingLiveEvents.push('resolved');
-            this.addLiveLog({
-              time,
-              type: 'resolved',
-              message: `✅ Sự cố [${payload.code || 'INC'}] đã được khắc phục. Doanh thu phục hồi.`
-            });
-            this.toast.success(`Khắc phục sự cố ${payload.code || 'INC'} thành công!`);
-          } else {
-            this.activeLiveIncidentId = payload.incidentId || payload.id;
-            this.pendingLiveEvents.push('incident');
-            this.addLiveLog({
-              time,
-              type: 'incident',
-              message: `🚨 Phát hiện Sự cố [${payload.code || 'INC-NEW'}]: Dịch vụ ${this.getFriendlyServiceName(payload)} gặp gián đoạn!`
-            });
-            this.toast.error(`Phát hiện sự cố hệ thống ${payload.code || 'INC-NEW'}!`);
-          }
+        this.reloadDashboardSilently();
+
+        if (!payload) {
+          return;
         }
+
+        this.recordIncidentEvent(payload, 'websocket');
       })
     );
 
     this.subscriptions.push(
       this.websocketService.subscribe<any>('/topic/admin.tickets').subscribe((payload) => {
-        this.store.loadDashboardData({
-          period: this.store.period(),
-          startDate: this.store.customStartDate(),
-          endDate: this.store.customEndDate(),
-          silent: true,
-        });
+        this.reloadDashboardSilently();
 
-        if (payload) {
-          const time = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          if (payload.status === 'RESOLVED') {
-            this.pendingLiveEvents.push('resolved');
-            this.activeLiveIncidentId = null;
-            this.activeLiveTicketCode = null;
-            this.addLiveLog({
-              time,
-              type: 'resolved',
-              message: `✅ Ticket [${payload.code || 'TCK'}] đã xử lý xong. Hệ thống hoạt động bình thường.`
-            });
-          } else {
-            this.activeLiveTicketCode = payload.code;
-            this.pendingLiveEvents.push('ticket');
-            this.addLiveLog({
-              time,
-              type: 'ticket',
-              message: `🔧 Đã tạo Ticket [${payload.code || 'TCK-NEW'}]: Giao cho kỹ thuật viên ${payload.assigneeName || 'chưa gán'}.`
-            });
-            this.toast.info(`Kỹ thuật viên bắt đầu xử lý Ticket ${payload.code || 'TCK-NEW'}.`);
-          }
+        if (!payload) {
+          return;
         }
+
+        this.recordTicketEvent(payload, 'websocket');
       })
     );
   }
@@ -348,8 +357,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.liveTimerId) {
       clearInterval(this.liveTimerId);
     }
+    if (this.liveRefreshTimerId) {
+      clearInterval(this.liveRefreshTimerId);
+    }
   }
 
+  protected openLiveMilestonesDialog(): void {
+    this.showLiveMilestonesDialog.set(true);
+  }
+
+  protected closeLiveMilestonesDialog(): void {
+    this.showLiveMilestonesDialog.set(false);
+  }
   protected changePeriod(period: ReportPeriod): void {
     this.store.setPeriod(period);
     if (period !== ReportPeriod.Custom) {
@@ -358,13 +377,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   protected onDateRangeChange(): void {
-    if (this.dateRange && this.dateRange.length === 2 && this.dateRange[0] && this.dateRange[1]) {
-      const start = this.dateRange[0].toISOString();
-      const end = this.dateRange[1].toISOString();
-      this.store.setCustomDates(start, end);
+    const [startDate, endDate] = this.dateRange ?? [];
+    if (!startDate || !endDate) {
+      return;
     }
+
+    this.store.setCustomDates(
+      this.toLocalStartOfDay(startDate).toISOString(),
+      this.toLocalEndOfDay(endDate).toISOString()
+    );
   }
 
+  private toLocalStartOfDay(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+  }
+
+  private toLocalEndOfDay(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+  }
   protected refreshData(): void {
     if (this.store.period() === ReportPeriod.Custom && this.store.customStartDate() && this.store.customEndDate()) {
       this.store.loadDashboardData({
@@ -378,15 +408,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.toast.success('Đồng bộ dữ liệu bảng điều khiển thành công.');
   }
 
-  protected toggleAutopilot(): void {
-    const nextState = !this.store.aiSalesModeActive();
-    this.store.toggleAiSalesMode(nextState);
-    if (nextState) {
-      this.toast.success('Đã kích hoạt chế độ AI Autopilot: Tự động đền bù & chốt đơn.');
-    } else {
-      this.toast.warning('Đã chuyển sang chế độ AI Vận hành Thủ công (Manual Mode).');
-    }
-  }
 
   protected viewOrderDetails(orderId: string): void {
     this.router.navigate(['/management/orders'], {
@@ -416,26 +437,137 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  protected confirmMitigateIncident(): void {
-    const inc = this.store.selectedIncident();
-    if (inc) {
-      this.store.runAiIncidentMitigation(inc.incidentId);
-      this.toast.success(`Đã kích hoạt khắc phục & đền bù tự động cho khách hàng bị ảnh hưởng bởi lỗi "${inc.incidentCode}"`);
+  protected readonly liveStatusState = computed<LiveStatusState>(() => {
+    this.liveStatusRevision();
+    if (this.getCurrentActiveTicket()) {
+      return 'working';
     }
-  }
-
-  protected requestAiActionExecution(insight: IAIOpsInsight): void {
-    this.store.setAiConfirmDialog(true, insight);
-  }
-
-  protected confirmAiAction(): void {
-    const insight = this.store.selectedInsight();
-    if (insight) {
-      this.store.executeAiInsightAction(insight);
-      this.toast.success(`Hệ thống đang triển khai đề xuất kinh doanh: "${insight.title}"`);
+    if (this.getCurrentActiveIncident()) {
+      return 'alert';
     }
+    return 'safe';
+  });
+
+  protected readonly liveStatusTitle = computed(() => {
+    this.liveStatusRevision();
+    const ticket = this.getCurrentActiveTicket();
+    if (ticket) {
+      return 'Đội kỹ thuật đang xử lý';
+    }
+
+    const incident = this.getCurrentActiveIncident();
+    if (incident) {
+      const title = incident.title || this.activeLiveIncidentTitle || this.toBusinessIncident(incident).title;
+      return `Đang có sự cố: ${title}`;
+    }
+
+    return 'Hệ thống an toàn';
+  });
+
+  private getCurrentActiveTicket(): any | null {
+    const activeTicket = this.store.activeTickets().find((ticket: any) => !this.isResolvedStatus(ticket?.status));
+    return activeTicket || (this.activeLiveTicketCode ? { code: this.activeLiveTicketCode } : null);
   }
 
+  private getCurrentActiveIncident(): any | null {
+    const activeIncident = this.activeIncidents()[0];
+    return activeIncident || (this.activeLiveIncidentId ? { title: this.activeLiveIncidentTitle, incidentId: this.activeLiveIncidentId } : null);
+  }
+
+  private bumpLiveStatus(): void {
+    this.liveStatusRevision.update((value) => value + 1);
+  }
+  private toBusinessIncident(payload: any): { title: string; description: string; displayCode?: string } {
+    const title = this.getBusinessIssueTitle(payload);
+    const displayCode = this.getSafeDisplayCode(payload.code || payload.incidentCode);
+    return {
+      title,
+      description: this.getBusinessIssueDescription(title),
+      displayCode,
+    };
+  }
+
+  private toBusinessTicket(payload: any): { title: string; description: string; displayCode?: string } {
+    const title = this.getBusinessIssueTitle(payload);
+    const displayCode = this.getSafeDisplayCode(payload.code);
+    return {
+      title,
+      description: displayCode
+        ? `Ticket ${displayCode} đã được tạo để đội kỹ thuật xử lý ${title.toLowerCase()}.`
+        : `Ticket đã được tạo để đội kỹ thuật xử lý ${title.toLowerCase()}.`,
+      displayCode,
+    };
+  }
+  private getBusinessIssueTitle(source: any): string {
+    const haystack = [
+      source?.apiPath,
+      source?.title,
+      source?.description,
+      source?.message,
+      source?.errorMessage,
+      source?.serviceName,
+      source?.category,
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    if (haystack.includes('checkout') || haystack.includes('payment') || haystack.includes('momo') || haystack.includes('vnpay')) {
+      return 'Lỗi đặt hàng và thanh toán';
+    }
+    if (haystack.includes('login') || haystack.includes('auth') || haystack.includes('token') || haystack.includes('unauthorized') || haystack.includes('401')) {
+      return 'Lỗi đăng nhập';
+    }
+    if (haystack.includes('cart')) {
+      return 'Lỗi giỏ hàng';
+    }
+    if (haystack.includes('product')) {
+      return 'Lỗi xem sản phẩm';
+    }
+    if (haystack.includes('chat') || haystack.includes('conversation') || haystack.includes('consult')) {
+      return 'Gián đoạn tư vấn khách hàng';
+    }
+    if (haystack.includes('ai-service') || haystack.includes('ai service') || haystack.includes('agent')) {
+      return 'Gián đoạn hỗ trợ AI';
+    }
+    return 'Lỗi vận hành hệ thống';
+  }
+
+  private getBusinessIssueDescription(title: string): string {
+    if (title === 'Lỗi đặt hàng và thanh toán') {
+      return 'Một số khách hàng có thể không hoàn tất đơn hàng hoặc thanh toán trong thời điểm này.';
+    }
+    if (title === 'Lỗi đăng nhập') {
+      return 'Một số phiên đăng nhập bị gián đoạn, người dùng có thể cần đăng nhập lại.';
+    }
+    if (title === 'Lỗi giỏ hàng') {
+      return 'Một số khách hàng có thể gặp khó khăn khi cập nhật hoặc kiểm tra giỏ hàng.';
+    }
+    if (title === 'Lỗi xem sản phẩm') {
+      return 'Một số khách hàng có thể gặp khó khăn khi xem danh sách hoặc chi tiết sản phẩm.';
+    }
+    if (title === 'Gián đoạn tư vấn khách hàng') {
+      return 'Một số cuộc tư vấn khách hàng có thể bị chậm hoặc cần kết nối lại.';
+    }
+    if (title === 'Gián đoạn hỗ trợ AI') {
+      return 'Một số tác vụ hỗ trợ tự động có thể phản hồi chậm hoặc tạm thời không khả dụng.';
+    }
+    return 'Hệ thống ghi nhận bất thường có thể ảnh hưởng đến trải nghiệm khách hàng.';
+  }
+
+  private getSafeDisplayCode(value: unknown): string | undefined {
+    const text = String(value || '').trim();
+    if (!text || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(text)) {
+      return undefined;
+    }
+    return text;
+  }
+
+  private getIncidentKey(payload: any): string {
+    return String(payload?.incidentId || payload?.id || payload?.code || payload?.incidentCode || 'active-incident');
+  }
+
+  private isResolvedStatus(status: unknown): boolean {
+    const normalized = String(status || '').toUpperCase();
+    return normalized === 'RESOLVED' || normalized === 'CLOSED' || normalized === 'DONE';
+  }
   protected getFriendlyServiceName(inc: any): string {
     if (!inc) return 'Lỗi hệ thống không xác định';
     const path = (inc.apiPath || '').toLowerCase();
@@ -497,9 +629,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   protected getFriendlyTicketTitle(title: string | null | undefined): string {
     if (!title) return 'Yêu cầu xử lý kỹ thuật';
-    
+
     let friendly = title;
-    
+
     if (friendly.includes('Cannot create MoMo payment') || friendly.includes('momo')) {
       friendly = friendly.replace(/Cannot create MoMo payment/i, 'Không thể khởi tạo thanh toán qua ví MoMo');
     }
@@ -509,9 +641,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (friendly.includes('login') || friendly.includes('auth')) {
       friendly = friendly.replace(/login/i, 'Đăng nhập hệ thống').replace(/auth/i, 'Xác thực tài khoản');
     }
-    
+
     friendly = friendly.replace(/^Sửa lỗi sự cố/i, 'Khắc phục lỗi');
-    
+
     return friendly;
   }
 
@@ -560,153 +692,675 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // Live Operations Monitor helper methods
   private initLiveChart(): void {
-    const now = new Date();
-    for (let i = 15; i > 0; i--) {
-      const timePoint = new Date(now.getTime() - i * 4000);
-      const timeStr = timePoint.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      this.liveLabels.push(timeStr);
-      const baseRev = 6000000 + Math.floor(Math.random() * 2000000);
-      this.liveRevenueValues.push(baseRev);
-      this.livePointRadii.push(2);
-      this.livePointBgColors.push('#4F46E5');
-      this.livePointStyles.push('circle');
-      this.liveEventsHistory.push(null);
+    if (!this.restoreLiveChartHistory()) {
+      this.seedLiveChartFromCurrentRevenue();
     }
-    this.updateLiveChartReference();
-    
     this.liveLogs.set([
       {
-        time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        time: this.formatLiveTime(),
+        dateTime: this.formatLiveDateTime(),
         type: 'system',
-        message: 'Hệ thống giám sát Live Ops đã khởi động thành công.'
-      }
+        timestamp: Date.now(),
+        title: 'Đang theo dõi doanh thu realtime',
+        description: 'Hệ thống sẽ đánh dấu sự cố, ticket và thời điểm khắc phục ngay trên biểu đồ.',
+      },
     ]);
   }
 
-  private tickLiveChart(): void {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    
-    let nextRev = 0;
-    if (this.activeLiveIncidentId) {
-      nextRev = 50000 + Math.floor(Math.random() * 250000);
-    } else {
-      nextRev = 6000000 + Math.floor(Math.random() * 2000000);
-    }
-    
-    let radius = 2;
-    let bgColor = '#4F46E5';
-    let style = 'circle';
-    let eventText: string | null = null;
-    
-    if (this.pendingLiveEvents.length > 0) {
-      const ev = this.pendingLiveEvents.shift();
-      if (ev === 'incident') {
-        radius = 8;
-        bgColor = '#E11D48';
-        style = 'rectRot';
-        eventText = `🚨 SỰ CỐ HỆ THỐNG: Doanh thu sụt giảm nghiêm trọng.`;
-      } else if (ev === 'ticket') {
-        radius = 8;
-        bgColor = '#F59E0B';
-        style = 'triangle';
-        eventText = `🔧 TICKET XỬ LÝ: Kỹ thuật viên đang khắc phục sự cố.`;
-      } else if (ev === 'resolved') {
-        radius = 8;
-        bgColor = '#10B981';
-        style = 'rect';
-        eventText = `✅ ĐÃ XỬ LÝ: Khôi phục hoạt động, doanh thu trở lại bình thường.`;
-      }
-    }
-    
-    this.liveLabels.push(timeStr);
-    this.liveRevenueValues.push(nextRev);
-    this.livePointRadii.push(radius);
-    this.livePointBgColors.push(bgColor);
-    this.livePointStyles.push(style);
-    this.liveEventsHistory.push(eventText);
-    
-    if (this.liveLabels.length > 20) {
-      this.liveLabels.shift();
-      this.liveRevenueValues.shift();
-      this.livePointRadii.shift();
-      this.livePointBgColors.shift();
-      this.livePointStyles.shift();
-      this.liveEventsHistory.shift();
-    }
-    
+  private seedLiveChartFromCurrentRevenue(): void {
+    const now = Date.now();
+    const baseRevenue = this.getCurrentLiveRevenue();
+
+    this.livePoints = Array.from({ length: LIVE_CHART_SEED_POINTS }, (_, index) => {
+      const timestamp = now - (LIVE_CHART_SEED_POINTS - index - 1) * LIVE_CHART_TICK_MS;
+      const pointTime = new Date(timestamp);
+      return {
+        label: this.formatLiveTime(pointTime),
+        value: baseRevenue,
+        marker: 'normal' as LiveChartMarker,
+        eventTitle: null,
+        eventDescription: null,
+        eventDateTime: null,
+        timestamp,
+      };
+    });
+
     this.updateLiveChartReference();
+    this.persistLiveChartHistory();
+  }
+
+
+  private restoreLiveChartHistory(): boolean {
+    try {
+      const raw = localStorage.getItem(LIVE_CHART_STORAGE_KEY);
+      if (!raw) {
+        return false;
+      }
+
+      const now = Date.now();
+      const parsed = JSON.parse(raw) as Partial<LiveChartPoint>[];
+      const restoredPoints = parsed
+        .filter((point) => typeof point.timestamp === 'number' && typeof point.value === 'number')
+        .filter((point) => {
+          const timestamp = point.timestamp as number;
+          return timestamp <= now + LIVE_CHART_TICK_MS
+            && now - timestamp <= LIVE_CHART_HISTORY_TTL_MS
+            && this.isTodayTimestamp(timestamp);
+        })
+        .map((point) => {
+          const timestamp = point.timestamp as number;
+          return {
+            label: this.formatLiveTime(new Date(timestamp)),
+            value: Math.max(0, Number(point.value ?? 0)),
+            marker: (point.marker || 'normal') as LiveChartMarker,
+            eventTitle: point.eventTitle || null,
+            eventDescription: point.eventDescription || null,
+            eventDateTime: point.eventDateTime || null,
+            timestamp,
+            isRevenueChangePoint: Boolean(point.isRevenueChangePoint),
+          };
+        })
+        .sort((a, b) => a.timestamp - b.timestamp)
+        .slice(-LIVE_CHART_MAX_POINTS);
+
+      if (restoredPoints.length < 2) {
+        return false;
+      }
+
+      for (let index = 1; index < restoredPoints.length; index++) {
+        if (Math.abs(restoredPoints[index].value - restoredPoints[index - 1].value) > 0) {
+          restoredPoints[index - 1].isRevenueChangePoint = true;
+          restoredPoints[index].isRevenueChangePoint = true;
+        }
+      }
+
+      this.livePoints = this.dedupeResolvedPoints(restoredPoints);
+      this.trimAndSortLivePoints();
+      this.updateLiveChartReference();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private persistLiveChartHistory(): void {
+    try {
+      localStorage.setItem(LIVE_CHART_STORAGE_KEY, JSON.stringify(this.livePoints));
+    } catch {
+      // Ignore storage quota/private mode errors; realtime chart can continue in memory.
+    }
+  }
+
+  private tickLiveChart(): void {
+    this.livePoints = this.livePoints.filter((point) => this.isTodayTimestamp(point.timestamp));
+    this.syncLiveEventsFromStore();
+    this.syncLiveRevenueFromOrders();
+
+    const now = new Date();
+    const currentRevenue = this.getCurrentLiveRevenue();
+    const latestRevenuePoint = [...this.livePoints]
+      .reverse()
+      .find((point) => point.marker === 'normal');
+    const isRevenueChangePoint = latestRevenuePoint
+      ? Math.abs(latestRevenuePoint.value - currentRevenue) > 0
+      : false;
+
+    if (isRevenueChangePoint && latestRevenuePoint) {
+      latestRevenuePoint.isRevenueChangePoint = true;
+    }
+
+    const shouldAppendCurrentPoint = !latestRevenuePoint
+      || Math.abs(latestRevenuePoint.timestamp - now.getTime()) > LIVE_CHART_TICK_MS - 250
+      || isRevenueChangePoint;
+
+    if (shouldAppendCurrentPoint) {
+      this.livePoints.push({
+        label: this.formatLiveTime(now),
+        value: currentRevenue,
+        marker: 'normal',
+        eventTitle: null,
+        eventDescription: null,
+        eventDateTime: null,
+        timestamp: now.getTime(),
+        isRevenueChangePoint,
+      });
+    }
+
+    this.trimAndSortLivePoints();
+    this.updateLiveChartReference();
+    this.persistLiveChartHistory();
+  }
+  private getCurrentLiveRevenue(): number {
+    return Math.max(0, this.getLiveRevenueBaseline());
+  }
+
+  private getLiveRevenueBaseline(): number {
+    if (this.liveRevenueBaseline !== null) {
+      return this.liveRevenueBaseline;
+    }
+
+    if (this.store.period() === ReportPeriod.Today) {
+      return Math.max(0, this.store.summary()?.totalRevenue ?? 0);
+    }
+
+    return 0;
+  }
+
+  private refreshLiveRevenueBaseline(): void {
+    const sub = this.reportsService.getSummary(ReportPeriod.Today).pipe(take(1)).subscribe({
+      next: (response) => {
+        const nextRevenue = Math.max(0, response.data?.totalRevenue ?? 0);
+        const previousRevenue = this.liveRevenueBaseline ?? 0;
+        this.liveRevenueBaseline = nextRevenue;
+
+        const hasEventMarkers = this.livePoints.some((point) => point.marker !== 'normal');
+        if (!hasEventMarkers && previousRevenue === 0 && nextRevenue > 0 && this.livePoints.every((point) => point.value === 0)) {
+          this.syncLiveRevenueFromOrders();
+          if (this.livePoints.length === 0) {
+            this.seedLiveChartFromCurrentRevenue();
+          }
+        } else if (previousRevenue !== nextRevenue) {
+          this.syncLiveRevenueFromOrders();
+          this.persistLiveChartHistory();
+        }
+      },
+      error: () => {
+        if (this.liveRevenueBaseline === null && this.store.period() === ReportPeriod.Today) {
+          this.liveRevenueBaseline = Math.max(0, this.store.summary()?.totalRevenue ?? 0);
+        }
+      },
+    });
+
+    this.subscriptions.push(sub);
+  }
+
+  private syncLiveRevenueFromOrders(): void {
+    const revenuePoints = this.buildTodayRevenuePointsFromOrders();
+    if (revenuePoints.length === 0) {
+      return;
+    }
+
+    const eventPoints = this.livePoints.filter((point) => point.marker !== 'normal');
+    this.livePoints = [...revenuePoints, ...eventPoints];
+    this.trimAndSortLivePoints();
+  }
+
+  private buildTodayRevenuePointsFromOrders(): LiveChartPoint[] {
+    const todayStart = this.getTodayStart();
+    const completedOrders = this.store.todayRevenueOrders()
+      .filter((order: ManagementOrder) => order.orderStatus === 'COMPLETED')
+      .map((order: ManagementOrder) => ({ order, date: this.getEventDate(order.createdAt) }))
+      .filter((entry): entry is { order: ManagementOrder; date: Date } => {
+        return entry.date instanceof Date && this.isTodayDate(entry.date);
+      })
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const points: LiveChartPoint[] = [{
+      label: this.formatLiveTime(todayStart),
+      value: 0,
+      marker: 'normal',
+      eventTitle: 'Bắt đầu ngày',
+      eventDescription: 'Doanh thu realtime được tính từ 00:00 hôm nay.',
+      eventDateTime: this.formatLiveDateTime(todayStart),
+      timestamp: todayStart.getTime(),
+      isRevenueChangePoint: false,
+    }];
+
+    let cumulativeRevenue = 0;
+    for (const { order, date } of completedOrders) {
+      cumulativeRevenue += Math.max(0, Number(order.finalPrice ?? 0));
+      points.push({
+        label: this.formatLiveTime(date),
+        value: cumulativeRevenue,
+        marker: 'normal',
+        eventTitle: `Đơn hoàn thành #${order.orderCode}`,
+        eventDescription: `Cộng ${this.formatCurrency(order.finalPrice)} vào doanh thu hôm nay.`,
+        eventDateTime: this.formatLiveDateTime(date),
+        timestamp: date.getTime(),
+        isRevenueChangePoint: true,
+      });
+    }
+
+    const currentRevenue = this.getCurrentLiveRevenue();
+    if (currentRevenue > cumulativeRevenue) {
+      const now = new Date();
+      points.push({
+        label: this.formatLiveTime(now),
+        value: currentRevenue,
+        marker: 'normal',
+        eventTitle: 'Tổng doanh thu hiện tại',
+        eventDescription: 'Tổng từ báo cáo cao hơn danh sách đơn đang tải, nên dashboard đồng bộ về số tổng hiện tại.',
+        eventDateTime: this.formatLiveDateTime(now),
+        timestamp: now.getTime(),
+        isRevenueChangePoint: currentRevenue !== cumulativeRevenue,
+      });
+    }
+
+    return points;
+  }
+  private syncLiveEventsFromStore(): void {
+    for (const incident of this.store.incidents()) {
+      this.syncIncidentOccurrencesFromAffectedUsers(incident);
+      this.recordIncidentEvent(incident, 'store');
+    }
+
+    for (const ticket of this.store.activeTickets()) {
+      this.recordTicketEvent(ticket, 'store');
+    }
+  }
+
+  private syncIncidentOccurrencesFromAffectedUsers(incident: any): void {
+    const incidentId = this.getIncidentKey(incident);
+    const now = Date.now();
+    const lastFetch = this.lastOccurrenceFetchByIncident.get(incidentId) ?? 0;
+
+    if (now - lastFetch < LIVE_OCCURRENCE_REFRESH_MS) {
+      return;
+    }
+
+    this.lastOccurrenceFetchByIncident.set(incidentId, now);
+
+    const sub = this.impactService.getAffectedUsers(incidentId).pipe(take(1)).subscribe({
+      next: (response) => {
+        const affectedUsers = response.data || [];
+        if (affectedUsers.length === 0) {
+          this.recordIncidentEvent(incident, 'store-fallback');
+          return;
+        }
+
+        const sortedAffectedUsers = [...affectedUsers].sort((a, b) => {
+          const firstTime = this.getEventDate(a?.lastEventAt)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+          const secondTime = this.getEventDate(b?.lastEventAt)?.getTime() ?? Number.MAX_SAFE_INTEGER;
+          return firstTime - secondTime;
+        });
+
+        for (const affectedUser of sortedAffectedUsers) {
+          this.recordIncidentOccurrenceEvent(incident, affectedUser);
+        }
+      },
+      error: () => {
+        this.recordIncidentEvent(incident, 'store-fallback');
+      },
+    });
+
+    this.subscriptions.push(sub);
+  }
+
+  private recordIncidentOccurrenceEvent(incident: any, affectedUser: any): void {
+    const eventDate = this.getEventDate(affectedUser?.lastEventAt);
+    if (!eventDate || !this.isTodayDate(eventDate)) {
+      return;
+    }
+
+    const issue = this.toBusinessIncident(incident);
+    const incidentId = this.getIncidentKey(incident);
+    const occurrenceKey = affectedUser?.traceId || `${affectedUser?.email || 'guest'}:${eventDate.toISOString()}`;
+    const eventKey = `incident-occurrence:${incidentId}:${occurrenceKey}:${eventDate.toISOString()}`;
+    if (this.processedLiveEventKeys.has(eventKey)) {
+      return;
+    }
+
+    const previousIncidentLogs = this.liveLogs().filter((log) => {
+      return log.type === 'incident'
+        && log.code === issue.displayCode
+        && log.title === issue.title
+        && (log.timestamp ?? 0) < eventDate.getTime();
+    });
+    const customerName = affectedUser?.fullName || affectedUser?.email || 'Một khách hàng';
+    const customerKey = String(affectedUser?.userId || affectedUser?.email || customerName).toLowerCase();
+    const hasPreviousOccurrence = previousIncidentLogs.length > 0;
+    const hasSameCustomerBefore = previousIncidentLogs.some((log) => log.customerKey === customerKey);
+    const customerEmail = affectedUser?.email || null;
+    const customerAvatarUrl = affectedUser?.avatarUrl || null;
+    const description = !hasPreviousOccurrence
+      ? 'Gặp lỗi này lần đầu trong quá trình mua hàng.'
+      : hasSameCustomerBefore
+        ? 'Tiếp tục gặp lỗi này trong quá trình mua hàng.'
+        : 'Cũng gặp lỗi này trong quá trình mua hàng.';
+    const logItem: LiveLogItem = {
+      time: this.formatLiveTime(eventDate),
+      dateTime: this.formatLiveDateTime(eventDate),
+      type: 'incident',
+      title: issue.title,
+      description,
+      code: issue.displayCode,
+      customerKey,
+      customerName,
+      customerEmail,
+      customerAvatarUrl,
+    };
+
+    this.removeDuplicateAggregateIncident(logItem, eventDate);
+    this.activeLiveIncidentId = incidentId;
+    this.activeLiveIncidentTitle = issue.title;
+    this.bumpLiveStatus();
+    this.recordLiveEvent(eventKey, logItem, 'incident', eventDate);
+  }
+
+  private removeDuplicateAggregateIncident(logItem: LiveLogItem, eventDate: Date): void {
+    const eventTimestamp = eventDate.getTime();
+    this.liveLogs.update((current) => current.filter((existing) => {
+      const sameIncidentMoment = existing.type === 'incident'
+        && existing.title === logItem.title
+        && existing.code === logItem.code
+        && existing.dateTime === logItem.dateTime;
+      return !sameIncidentMoment;
+    }));
+
+    this.livePoints = this.livePoints.filter((point) => {
+      const sameIncidentMoment = point.marker === 'incident'
+        && point.eventTitle === logItem.title
+        && point.eventDateTime === logItem.dateTime
+        && point.timestamp === eventTimestamp;
+      return !sameIncidentMoment;
+    });
+  }
+  private recordIncidentEvent(payload: any, source: 'store' | 'store-fallback' | 'websocket'): void {
+    const issue = this.toBusinessIncident(payload);
+    const resolved = this.isResolvedStatus(payload?.status);
+    const occurredAt = this.getEventDate(
+      source === 'store'
+        ? (payload?.firstOccurredAt || payload?.occurredAt || payload?.createdAt)
+        : (payload?.occurredAt || payload?.firstOccurredAt || payload?.createdAt)
+    );
+    const resolvedAt = this.getEventDate(payload?.resolvedAt);
+    const eventDate = resolved ? (resolvedAt || occurredAt || new Date()) : (occurredAt || new Date());
+    const eventKey = resolved
+      ? `incident:${this.getIncidentKey(payload)}:resolved`
+      : `incident:${this.getIncidentKey(payload)}:detected:${eventDate.toISOString()}`;
+
+    if (resolved) {
+      this.activeLiveIncidentId = null;
+      this.activeLiveIncidentTitle = null;
+      this.bumpLiveStatus();
+      this.recordLiveEvent(
+        eventKey,
+        {
+          time: this.formatLiveTime(eventDate),
+          dateTime: this.formatLiveDateTime(eventDate),
+          type: 'resolved',
+          title: 'Đã khắc phục sự cố',
+          description: `${issue.title} đã được xử lý, doanh thu có thể trở lại bình thường.`,
+          code: issue.displayCode,
+        },
+        'resolved',
+        eventDate
+      );
+      if (source === 'websocket') {
+        this.toast.success(`Đã khắc phục ${issue.title}.`);
+      }
+      return;
+    }
+
+    this.activeLiveIncidentId = this.getIncidentKey(payload);
+    this.activeLiveIncidentTitle = issue.title;
+    this.bumpLiveStatus();
+
+    if (source === 'store') {
+      return;
+    }
+
+    this.recordLiveEvent(
+      eventKey,
+      {
+        time: this.formatLiveTime(eventDate),
+        dateTime: this.formatLiveDateTime(eventDate),
+        type: 'incident',
+        title: issue.title,
+        description: issue.description,
+        code: issue.displayCode,
+      },
+      'incident',
+      eventDate
+    );
+    if (source === 'websocket') {
+      this.toast.error(`Phát hiện sự cố: ${issue.title}.`);
+    }
+  }
+
+  private recordTicketEvent(payload: any, source: 'store' | 'websocket'): void {
+    const ticket = this.toBusinessTicket(payload);
+    const resolved = this.isResolvedStatus(payload?.status);
+    const createdAt = this.getEventDate(payload?.createdAt);
+    const resolvedAt = this.getEventDate(payload?.resolvedAt);
+    const eventDate = resolved ? (resolvedAt || createdAt || new Date()) : (createdAt || new Date());
+    const ticketKey = payload?.id || payload?.code || payload?.incidentId || 'unknown';
+    const eventKey = resolved
+      ? `ticket:${ticketKey}:resolved`
+      : `ticket:${ticketKey}:created:${eventDate.toISOString()}`;
+
+    if (resolved) {
+      this.activeLiveTicketCode = null;
+      this.bumpLiveStatus();
+      this.recordLiveEvent(
+        eventKey,
+        {
+          time: this.formatLiveTime(eventDate),
+          dateTime: this.formatLiveDateTime(eventDate),
+          type: 'resolved',
+          title: 'Ticket đã khắc phục xong',
+          description: `${ticket.title} đã được xử lý.`,
+          code: ticket.displayCode,
+        },
+        'resolved',
+        eventDate
+      );
+      return;
+    }
+
+    this.activeLiveTicketCode = ticket.displayCode || 'ticket-active';
+    this.bumpLiveStatus();
+    this.recordLiveEvent(
+      eventKey,
+      {
+        time: this.formatLiveTime(eventDate),
+        dateTime: this.formatLiveDateTime(eventDate),
+        type: 'ticket',
+        title: 'Đội kỹ thuật đang xử lý',
+        description: ticket.description,
+        code: ticket.displayCode,
+      },
+      'ticket',
+      eventDate
+    );
+    if (source === 'websocket') {
+      this.toast.info(`Đội kỹ thuật đang xử lý ${ticket.title}.`);
+    }
+  }
+
+  private recordLiveEvent(
+    eventKey: string,
+    logItem: LiveLogItem,
+    marker: Exclude<LiveChartMarker, 'normal'>,
+    eventDate: Date
+  ): void {
+    if (!this.isTodayDate(eventDate)) {
+      return;
+    }
+
+    if (this.processedLiveEventKeys.has(eventKey)) {
+      return;
+    }
+
+    this.processedLiveEventKeys.add(eventKey);
+    this.addLiveLog({ ...logItem, timestamp: eventDate.getTime() });
+    this.livePoints.push({
+      label: this.formatLiveTime(eventDate),
+      value: this.getLiveRevenueAtTimestamp(eventDate.getTime()),
+      marker,
+      eventTitle: logItem.title,
+      eventDescription: logItem.description,
+      eventDateTime: logItem.dateTime,
+      timestamp: eventDate.getTime(),
+    });
+    this.trimAndSortLivePoints();
+    this.updateLiveChartReference();
+    this.persistLiveChartHistory();
+  }
+
+  private getLiveRevenueAtTimestamp(timestamp: number): number {
+    const orderRevenue = this.store.todayRevenueOrders()
+      .filter((order: ManagementOrder) => order.orderStatus === 'COMPLETED')
+      .reduce((total: number, order: ManagementOrder) => {
+        const orderDate = this.getEventDate(order.createdAt);
+        if (!orderDate || !this.isTodayDate(orderDate) || orderDate.getTime() > timestamp) {
+          return total;
+        }
+        return total + Math.max(0, Number(order.finalPrice ?? 0));
+      }, 0);
+
+    if (orderRevenue > 0) {
+      return orderRevenue;
+    }
+
+    const previousRevenuePoint = [...this.livePoints]
+      .filter((point) => point.marker === 'normal' && point.timestamp <= timestamp)
+      .sort((a, b) => b.timestamp - a.timestamp)[0];
+
+    return Math.max(0, previousRevenuePoint?.value ?? 0);
+  }
+  private dedupeResolvedPoints(points: LiveChartPoint[]): LiveChartPoint[] {
+    const sortedPoints = [...points].sort((a, b) => a.timestamp - b.timestamp);
+    return sortedPoints.filter((point, index, allPoints) => {
+      if (point.marker !== 'resolved') {
+        return true;
+      }
+
+      const firstResolvedIndex = allPoints.findIndex((candidate) => {
+        return candidate.marker === 'resolved'
+          && Math.abs(candidate.timestamp - point.timestamp) <= LIVE_RESOLVED_DEDUPE_WINDOW_MS;
+      });
+      return firstResolvedIndex === index;
+    });
+  }
+
+
+  private trimAndSortLivePoints(): void {
+    const sortedPoints = this.dedupeResolvedPoints(this.livePoints)
+      .sort((a, b) => a.timestamp - b.timestamp);
+    const protectedPoints = sortedPoints
+      .filter((point) => point.marker !== 'normal' || point.isRevenueChangePoint)
+      .slice(-LIVE_CHART_MAX_POINTS);
+    const protectedPointKeys = new Set(
+      protectedPoints.map((point) => `${point.timestamp}:${point.marker}:${point.value}`)
+    );
+    const normalPointLimit = Math.max(0, LIVE_CHART_MAX_POINTS - protectedPoints.length);
+    const normalCandidates = sortedPoints
+      .filter((point) => point.marker === 'normal')
+      .filter((point) => !protectedPointKeys.has(`${point.timestamp}:${point.marker}:${point.value}`));
+    const normalPoints = normalPointLimit > 0
+      ? normalCandidates.slice(-normalPointLimit)
+      : [];
+
+    this.livePoints = [...protectedPoints, ...normalPoints]
+      .sort((a, b) => a.timestamp - b.timestamp);
+  }
+
+  private getEventDate(value: unknown): Date | null {
+    if (!value) {
+      return null;
+    }
+    const date = new Date(String(value));
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private getTodayStart(): Date {
+    return this.toLocalStartOfDay(new Date());
+  }
+
+  private isTodayDate(date: Date): boolean {
+    const timestamp = date.getTime();
+    const start = this.getTodayStart().getTime();
+    const end = this.toLocalEndOfDay(new Date()).getTime();
+    return timestamp >= start && timestamp <= end;
+  }
+
+  private isTodayTimestamp(timestamp: number | undefined): boolean {
+    return typeof timestamp === 'number' && this.isTodayDate(new Date(timestamp));
+  }
+
+  private formatShortDate(date: Date): string {
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+  }
+  private reloadDashboardSilently(): void {
+    this.store.loadDashboardData({
+      period: this.store.period(),
+      startDate: this.store.customStartDate(),
+      endDate: this.store.customEndDate(),
+      silent: true,
+    });
   }
 
   private updateLiveChartReference(): void {
+    const pointRadius = this.livePoints.map((point) => point.marker === 'normal' ? (point.isRevenueChangePoint ? 5 : 2) : 8);
+    const pointBgColors = this.livePoints.map((point) => {
+      if (point.marker === 'incident') return '#E11D48';
+      if (point.marker === 'ticket') return '#F59E0B';
+      if (point.marker === 'resolved') return '#10B981';
+      return '#4F46E5';
+    });
+    const pointStyles = this.livePoints.map((point) => {
+      if (point.marker === 'incident') return 'rectRot';
+      if (point.marker === 'ticket') return 'triangle';
+      if (point.marker === 'resolved') return 'rect';
+      return 'circle';
+    });
+
     this.liveChartData.set({
-      labels: [...this.liveLabels],
+      labels: this.livePoints.map((point) => point.label),
       datasets: [
         {
-          label: 'Doanh thu trực tiếp',
-          data: [...this.liveRevenueValues],
+          label: 'Doanh thu truc tiep',
+          data: this.livePoints.map((point) => point.value),
           fill: true,
-          borderColor: this.activeLiveIncidentId ? '#E11D48' : '#4F46E5',
-          backgroundColor: this.activeLiveIncidentId ? 'rgba(225, 29, 72, 0.03)' : 'rgba(79, 70, 229, 0.03)',
-          tension: 0.4,
+          borderColor: '#4F46E5',
+          backgroundColor: 'rgba(79, 70, 229, 0.03)',
+          tension: 0,
+          stepped: 'after',
           borderWidth: 2,
-          pointRadius: [...this.livePointRadii],
-          pointHoverRadius: [...this.livePointRadii].map(r => r + 2),
-          pointBackgroundColor: [...this.livePointBgColors],
+          pointRadius,
+          pointHoverRadius: pointRadius.map((radius) => radius + 2),
+          pointBackgroundColor: pointBgColors,
           pointBorderColor: '#FFFFFF',
           pointBorderWidth: 1.5,
-          pointStyle: [...this.livePointStyles]
-        }
-      ]
+          pointStyle: pointStyles,
+        },
+      ],
     });
   }
 
-  private addLiveLog(logItem: { time: string; type: 'incident' | 'ticket' | 'resolved' | 'system'; message: string }): void {
+  private formatLiveTime(value: Date | string = new Date()): string {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  private formatLiveDateTime(value: Date | string = new Date()): string {
+    const date = value instanceof Date ? value : new Date(value);
+    const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+    return safeDate.toLocaleString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+  }
+
+  private addLiveLog(logItem: LiveLogItem): void {
     this.liveLogs.update(current => {
-      const updated = [logItem, ...current];
+      const dedupedCurrent = logItem.type === 'resolved'
+        ? current.filter((existing) => {
+          return existing.type !== 'resolved'
+            || Math.abs((existing.timestamp ?? 0) - (logItem.timestamp ?? 0)) > LIVE_RESOLVED_DEDUPE_WINDOW_MS;
+        })
+        : current;
+      const updated = [logItem, ...dedupedCurrent];
       return updated.slice(0, 30);
     });
-  }
-
-  protected runDemoOutageSimulation(): void {
-    if (this.isSimulationRunning()) return;
-    this.isSimulationRunning.set(true);
-
-    const time = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    this.activeLiveIncidentId = 'INC-DEMO';
-    this.pendingLiveEvents.push('incident');
-    this.addLiveLog({
-      time,
-      type: 'incident',
-      message: '🚨 [Giả lập] Phát hiện sự cố gián đoạn cổng thanh toán Checkout API!'
-    });
-    this.toast.error('Phát hiện sự cố hệ thống giả lập INC-DEMO!');
-
-    setTimeout(() => {
-      const time2 = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      this.activeLiveTicketCode = 'TCK-DEMO';
-      this.pendingLiveEvents.push('ticket');
-      this.addLiveLog({
-        time: time2,
-        type: 'ticket',
-        message: '🔧 [Giả lập] Tạo Ticket [TCK-DEMO]: Giao cho kỹ thuật viên Yang Kook xử lý.'
-      });
-      this.toast.info('Kỹ thuật viên bắt đầu xử lý Ticket giả lập TCK-DEMO.');
-    }, 12000);
-
-    setTimeout(() => {
-      const time3 = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      this.activeLiveIncidentId = null;
-      this.activeLiveTicketCode = null;
-      this.pendingLiveEvents.push('resolved');
-      this.addLiveLog({
-        time: time3,
-        type: 'resolved',
-        message: '✅ [Giả lập] Sự cố đã được xử lý xong. Tiến trình thanh toán khôi phục.'
-      });
-      this.toast.success('Xử lý sự cố giả lập thành công!');
-      this.isSimulationRunning.set(false);
-    }, 24000);
   }
 
   protected readonly liveChartOptions = {
@@ -722,15 +1376,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         backgroundColor: '#101010',
         titleFont: {
           family: 'Inter, sans-serif',
-          size: 11,
+          size: 13,
           weight: '700',
         },
         bodyFont: {
           family: 'Inter, sans-serif',
-          size: 11,
+          size: 13,
         },
-        padding: 8,
-        cornerRadius: 6,
+        padding: 12,
+        cornerRadius: 8,
         borderColor: 'rgba(255, 255, 255, 0.1)',
         borderWidth: 1,
         callbacks: {
@@ -747,8 +1401,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
           },
           afterBody: (context: any) => {
             const index = context[0].dataIndex;
-            const event = this.liveEventsHistory[index];
-            return event ? '\n' + event : '';
+            const point = this.livePoints[index];
+            if (!point?.eventTitle) {
+              return '';
+            }
+            const detailLines = [point.eventDateTime, point.eventDescription].filter(Boolean);
+            return '\n' + [point.eventTitle, ...detailLines].join('\n');
           },
         },
       },
@@ -759,10 +1417,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
           display: false,
         },
         ticks: {
-          color: '#9CA3AF',
+          color: '#64748B',
           font: {
             family: 'Inter, sans-serif',
-            size: 9,
+            size: 12,
+            weight: '700',
           },
           maxRotation: 0,
           autoSkip: true,
@@ -777,10 +1436,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
           color: 'rgba(229, 231, 235, 0.4)',
         },
         ticks: {
-          color: '#9CA3AF',
+          color: '#64748B',
           font: {
             family: 'Inter, sans-serif',
-            size: 9,
+            size: 12,
+            weight: '700',
           },
           callback: (value: any) => {
             if (value >= 1000000) return (value / 1000000) + 'M';

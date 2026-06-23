@@ -6,22 +6,22 @@
         <p class="m-0 text-[10px] font-black uppercase text-[rgba(79,70,50,0.58)]">
           Tổng quan hệ thống
         </p>
-        
+
         <!-- Live System Status LED indicator -->
-        <span 
+        <span
           class="status-led-badge inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold"
           [ngClass]="{
-            'bg-emerald-50 text-emerald-700 border border-emerald-200': store.incidents().length === 0,
-            'bg-rose-50 text-rose-700 border border-rose-200': store.incidents().length > 0
+            'bg-emerald-50 text-emerald-700 border border-emerald-200': activeIncidentCount() === 0,
+            'bg-rose-50 text-rose-700 border border-rose-200': activeIncidentCount() > 0
           }"
         >
-          <span 
-            class="w-1.5 h-1.5 rounded-full bg-emerald-500" 
-            [class.animate-pulse]="store.incidents().length === 0"
-            [class.bg-rose-500]="store.incidents().length > 0"
-            [class.animate-ping]="store.incidents().length > 0"
+          <span
+            class="w-1.5 h-1.5 rounded-full bg-emerald-500"
+            [class.animate-pulse]="activeIncidentCount() === 0"
+            [class.bg-rose-500]="activeIncidentCount() > 0"
+            [class.animate-ping]="activeIncidentCount() > 0"
           ></span>
-          {{ store.incidents().length === 0 ? 'VẬN HÀNH ỔN ĐỊNH' : 'HỆ THỐNG CÓ SỰ CỐ' }}
+          {{ activeIncidentCount() === 0 ? 'VẬN HÀNH ỔN ĐỊNH' : 'HỆ THỐNG CÓ SỰ CỐ' }}
         </span>
       </div>
       <h1 class="my-2 text-[clamp(30px,4vw,48px)] font-black leading-none">
@@ -34,10 +34,10 @@
 
     <!-- Right Controls: Period selectors -->
     <div class="flex flex-wrap items-center gap-3">
-      <button 
-        type="button" 
-        class="refresh-btn" 
-        (click)="refreshData()" 
+      <button
+        type="button"
+        class="refresh-btn"
+        (click)="refreshData()"
         [disabled]="store.loading()"
         title="Đồng bộ dữ liệu"
       >
@@ -45,29 +45,29 @@
       </button>
 
       <div class="segmented">
-        <button 
-          type="button" 
+        <button
+          type="button"
           [class.active]="store.period() === ReportPeriod.Today"
           (click)="changePeriod(ReportPeriod.Today)"
         >
           Hôm nay
         </button>
-        <button 
-          type="button" 
+        <button
+          type="button"
           [class.active]="store.period() === ReportPeriod.Last7Days"
           (click)="changePeriod(ReportPeriod.Last7Days)"
         >
           7 ngày qua
         </button>
-        <button 
-          type="button" 
+        <button
+          type="button"
           [class.active]="store.period() === ReportPeriod.Last30Days"
           (click)="changePeriod(ReportPeriod.Last30Days)"
         >
           30 ngày qua
         </button>
-        <button 
-          type="button" 
+        <button
+          type="button"
           [class.active]="store.period() === ReportPeriod.Custom"
           (click)="changePeriod(ReportPeriod.Custom)"
         >
@@ -80,8 +80,13 @@
         <p-datepicker
           [(ngModel)]="dateRange"
           selectionMode="range"
+          dateFormat="dd/mm/yy"
           [readonlyInput]="true"
-          placeholder="Chọn khoảng ngày..."
+          [showButtonBar]="true"
+          [maxDate]="maxSelectableDate"
+          appendTo="body"
+          panelStyleClass="dashboard-date-range-panel"
+          placeholder="Chọn khoảng ngày"
           (ngModelChange)="onDateRangeChange()"
           styleClass="custom-p-datepicker"
         ></p-datepicker>
@@ -121,14 +126,14 @@
             <svg lucideTrendingUp class="w-3 h-3" [attr.stroke-width]="2.5"></svg>
             {{ formatPercent(store.summary()?.growthRate) }} so kỳ trước
           </span>
-          <span 
-            *ngIf="(store.impactStats()?.totalLostRevenue ?? 0) > 0" 
+          <span
+            *ngIf="(store.impactStats()?.totalLostRevenue ?? 0) > 0"
             class="text-rose-600 font-medium"
           >
             Thất thoát lỗi: {{ formatCurrency(store.impactStats()?.totalLostRevenue) }}
           </span>
-          <span 
-            *ngIf="(store.impactStats()?.totalLostRevenue ?? 0) === 0" 
+          <span
+            *ngIf="(store.impactStats()?.totalLostRevenue ?? 0) === 0"
             class="text-gray-400"
           >
             Không phát sinh thất thoát
@@ -147,14 +152,14 @@
         </div>
         <div class="flex flex-col gap-1 mt-2 border-t border-gray-100 pt-2 text-[11px]">
           <span class="text-gray-600">AOV: {{ formatCurrency(store.summary()?.averageOrderValue) }}</span>
-          <span 
-            *ngIf="(store.impactStats()?.totalLostOrders ?? 0) > 0" 
+          <span
+            *ngIf="(store.impactStats()?.totalLostOrders ?? 0) > 0"
             class="text-rose-600 font-medium"
           >
             Đơn hàng lỗi: {{ store.impactStats()?.totalLostOrders }} đơn
           </span>
-          <span 
-            *ngIf="(store.impactStats()?.totalLostOrders ?? 0) === 0" 
+          <span
+            *ngIf="(store.impactStats()?.totalLostOrders ?? 0) === 0"
             class="text-gray-400"
           >
             Tỷ lệ lỗi đơn hàng: 0%
@@ -165,47 +170,52 @@
     </article>
 
     <!-- Card 3: Operational Incidents -->
-    <article 
+    <article
       class="metric-card"
-      [class.metric-card--alert]="(store.impactStats()?.totalIncidentsCount ?? 0) > 0" 
-      [class.metric-card--light]="(store.impactStats()?.totalIncidentsCount ?? 0) === 0"
+      [class.metric-card--alert]="activeIncidentCount() > 0"
+      [class.metric-card--light]="activeIncidentCount() === 0"
     >
       <div class="flex flex-col justify-between w-full">
         <div>
           <p>Sự cố Hệ thống</p>
-          <h2>{{ store.impactStats()?.totalIncidentsCount ?? 0 }} sự cố</h2>
+          <h2>{{ activeIncidentCount() }} sự cố</h2>
         </div>
         <div class="flex flex-col gap-1 mt-2 border-t border-gray-100 pt-2 text-[11px]">
-          <span 
-            *ngIf="(store.impactStats()?.totalIncidentsCount ?? 0) > 0" 
+          <span
+            *ngIf="activeIncidentCount() > 0"
             class="text-rose-600 font-semibold"
           >
             Yêu cầu khắc phục khẩn cấp
           </span>
-          <span 
-            *ngIf="(store.impactStats()?.totalIncidentsCount ?? 0) === 0" 
+          <span
+            *ngIf="activeIncidentCount() === 0"
             class="text-emerald-600 font-semibold flex items-center gap-0.5"
           >
             <svg lucideCheck class="w-3.5 h-3.5" [attr.stroke-width]="2.5"></svg>
             Vận hành ổn định tối ưu
           </span>
           <span class="text-gray-400">
-            Khách ảnh hưởng: {{ store.impactStats()?.totalAffectedUsers ?? 0 }} người
+            Khách đang ảnh hưởng: {{ activeAffectedUsers() }} người
           </span>
+          @if (backlogIncidentSince()) {
+            <span class="text-amber-700 font-semibold">
+              Tồn đọng từ {{ backlogIncidentSince() }}
+            </span>
+          }
         </div>
       </div>
-      <svg 
-        lucideAlertTriangle 
-        [attr.stroke-width]="2" 
-        [class.text-rose-600]="(store.impactStats()?.totalIncidentsCount ?? 0) > 0"
-        [class.text-gray-400]="(store.impactStats()?.totalIncidentsCount ?? 0) === 0"
+      <svg
+        lucideAlertTriangle
+        [attr.stroke-width]="2"
+        [class.text-rose-600]="activeIncidentCount() > 0"
+        [class.text-gray-400]="activeIncidentCount() === 0"
       ></svg>
     </article>
 
     <!-- Card 4: Technical Fix Tickets -->
-    <article 
-      class="metric-card" 
-      [class.metric-card--alert]="criticalTicketsCount() > 0" 
+    <article
+      class="metric-card"
+      [class.metric-card--alert]="criticalTicketsCount() > 0"
       [class.metric-card--light]="criticalTicketsCount() === 0"
     >
       <div class="flex flex-col justify-between w-full">
@@ -214,14 +224,14 @@
           <h2>{{ store.activeTickets().length }} ticket</h2>
         </div>
         <div class="flex flex-col gap-1 mt-2 border-t border-gray-100 pt-2 text-[11px]">
-          <span 
-            *ngIf="criticalTicketsCount() > 0" 
+          <span
+            *ngIf="criticalTicketsCount() > 0"
             class="text-rose-600 font-semibold"
           >
             {{ criticalTicketsCount() }} ticket mức độ cao/khẩn
           </span>
-          <span 
-            *ngIf="criticalTicketsCount() === 0" 
+          <span
+            *ngIf="criticalTicketsCount() === 0"
             class="text-gray-400"
           >
             Không có ticket ưu tiên cao
@@ -231,8 +241,8 @@
           </span>
         </div>
       </div>
-      <svg 
-        lucideFileText 
+      <svg
+        lucideFileText
         [attr.stroke-width]="2"
         [class.text-indigo-600]="store.activeTickets().length > 0"
         [class.text-gray-400]="store.activeTickets().length === 0"
@@ -240,6 +250,97 @@
     </article>
   </div>
 
+  <!-- Live Realtime Revenue & Incident Milestones Panel -->
+  <section class="panel live-ops-panel">
+    <div class="live-ops-header">
+      <div class="live-ops-title-group">
+        <span
+          class="live-ops-led"
+          [ngClass]="{
+            'live-ops-led--safe': liveStatusState() === 'safe',
+            'live-ops-led--alert': liveStatusState() === 'alert',
+            'live-ops-led--working': liveStatusState() === 'working'
+          }"
+        ></span>
+        <div class="live-ops-title-copy">
+          <p>Giám sát realtime</p>
+          <div class="live-ops-title-row">
+            <h3>Doanh thu & mốc sự cố theo thời gian thực</h3>
+            <span
+              class="live-ops-status"
+              [ngClass]="{
+                'live-ops-status--safe': liveStatusState() === 'safe',
+                'live-ops-status--alert': liveStatusState() === 'alert',
+                'live-ops-status--working': liveStatusState() === 'working'
+              }"
+            >
+              {{ liveStatusTitle() }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="live-ops-chart-card">
+      <div class="live-ops-chart-shell">
+        <p-chart type="line" [data]="liveChartData()" [options]="liveChartOptions" class="live-ops-chart"></p-chart>
+      </div>
+      <div class="live-ops-legend">
+        <span><i class="live-ops-dot live-ops-dot--normal"></i>Doanh thu realtime</span>
+        <span><i class="live-ops-dot live-ops-dot--incident"></i>Sự cố phát sinh</span>
+        <span><i class="live-ops-dot live-ops-dot--ticket"></i>Ticket xử lý</span>
+        <span><i class="live-ops-dot live-ops-dot--resolved"></i>Đã khắc phục</span>
+      </div>
+    </div>
+
+    <div class="live-ops-recent">
+      <div class="live-ops-recent__heading">
+        <span>Mốc gần đây</span>
+        <div class="live-ops-recent__summary">
+          <strong>{{ liveRecentLogs().length }} mốc</strong>
+          @if (liveRecentLogs().length > 3) {
+            <button type="button" class="live-ops-view-all" (click)="openLiveMilestonesDialog()">
+              Xem tất cả
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="live-ops-recent__list">
+        @for (log of liveLatestLogs().slice(0, 3); track log.time + log.title + log.description) {
+          <article class="live-ops-chip" [ngClass]="'live-ops-chip--' + log.type">
+            <span class="live-ops-chip__marker"></span>
+            <div>
+              <div class="live-ops-chip__meta">
+                <time>{{ log.dateTime }}</time>
+                @if (log.code) {
+                  <span>{{ log.code }}</span>
+                }
+              </div>
+              <h4 class="live-ops-event-title">{{ log.title }}</h4>
+              @if (log.customerName || log.customerEmail) {
+                <div class="live-ops-customer">
+                  <span class="live-ops-customer__avatar" [style.background]="log.customerAvatarUrl ? 'transparent' : getAvatarGradient(log.customerEmail || log.customerName)">
+                    @if (log.customerAvatarUrl) {
+                      <img [src]="log.customerAvatarUrl" [alt]="log.customerName || 'Khách hàng'" referrerpolicy="no-referrer" />
+                    } @else {
+                      {{ getInitials(log.customerName || log.customerEmail) }}
+                    }
+                  </span>
+                  <span class="live-ops-customer__info">
+                    <span class="live-ops-customer__name">{{ log.customerName || 'Khách hàng' }}</span>
+                    @if (log.customerEmail) {
+                      <small>{{ log.customerEmail }}</small>
+                    }
+                  </span>
+                </div>
+              }
+              <p>{{ log.description }}</p>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
   <!-- Mid-Section Grid (Revenue Chart & AI Sales Console) -->
   <div class="dashboard-grid">
     <!-- Chart Panel -->
@@ -274,8 +375,8 @@
         <div class="flex flex-col gap-3">
           <div *ngFor="let product of store.products()" class="flex items-center justify-between gap-3 text-xs">
             <div class="flex items-center gap-2">
-              <img 
-                [src]="product.imageUrl || 'assets/images/placeholder-product.png'" 
+              <img
+                [src]="product.imageUrl || 'assets/images/placeholder-product.png'"
                 [alt]="product.productName"
                 class="w-8 h-8 rounded object-cover bg-gray-50 border border-gray-100"
               >
@@ -291,7 +392,7 @@
               </span>
             </div>
           </div>
-          
+
           <div *ngIf="store.products().length === 0" class="text-center py-4 text-gray-400 text-xs">
             Chưa có số liệu sản phẩm bán chạy.
           </div>
@@ -309,37 +410,37 @@
     <!-- Tab Headers -->
     <div class="tab-panel-header flex flex-wrap items-center justify-between border-b border-gray-100 gap-4">
       <div class="flex gap-1 pb-1">
-        <button 
-          type="button" 
-          class="tab-btn" 
+        <button
+          type="button"
+          class="tab-btn"
           [class.active]="store.activeTab() === 'orders'"
           (click)="store.setActiveTab('orders')"
         >
           Đơn hàng gần đây
         </button>
-        <button 
-          type="button" 
-          class="tab-btn" 
+        <button
+          type="button"
+          class="tab-btn"
           [class.active]="store.activeTab() === 'incidents'"
           (click)="store.setActiveTab('incidents')"
         >
           Giám sát Sự cố & Thất thoát
-          <span 
-            *ngIf="store.incidents().length > 0" 
+          <span
+            *ngIf="activeIncidentCount() > 0"
             class="ml-1.5 px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[8px] font-bold"
           >
             {{ store.incidents().length }}
           </span>
         </button>
-        <button 
-          type="button" 
-          class="tab-btn" 
+        <button
+          type="button"
+          class="tab-btn"
           [class.active]="store.activeTab() === 'tickets'"
           (click)="store.setActiveTab('tickets')"
         >
           Ticket Khắc phục Kỹ thuật
-          <span 
-            *ngIf="store.activeTickets().length > 0" 
+          <span
+            *ngIf="store.activeTickets().length > 0"
             class="ml-1.5 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[8px] font-bold"
           >
             {{ store.activeTickets().length }}
@@ -348,28 +449,28 @@
       </div>
 
       <!-- Action helper button -->
-      <button 
-        *ngIf="store.activeTab() === 'orders'" 
-        type="button" 
-        class="view-all-btn" 
+      <button
+        *ngIf="store.activeTab() === 'orders'"
+        type="button"
+        class="view-all-btn"
         (click)="viewOrderDetails('')"
       >
         Quản lý Đơn hàng
         <svg lucideArrowUpRight class="w-3.5 h-3.5 inline" [attr.stroke-width]="2.5"></svg>
       </button>
-      <button 
-        *ngIf="store.activeTab() === 'incidents'" 
-        type="button" 
-        class="view-all-btn" 
+      <button
+        *ngIf="store.activeTab() === 'incidents'"
+        type="button"
+        class="view-all-btn"
         (click)="viewIncidentDetails()"
       >
         Phân tích Sự cố
         <svg lucideArrowUpRight class="w-3.5 h-3.5 inline" [attr.stroke-width]="2.5"></svg>
       </button>
-      <button 
-        *ngIf="store.activeTab() === 'tickets'" 
-        type="button" 
-        class="view-all-btn" 
+      <button
+        *ngIf="store.activeTab() === 'tickets'"
+        type="button"
+        class="view-all-btn"
         (click)="viewTicketDetails('')"
       >
         Xem toàn bộ Ticket
@@ -394,9 +495,9 @@
           @for (order of store.recentOrders(); track order.orderId) {
             <tr>
               <td>
-                <a 
-                  href="javascript:void(0)" 
-                  (click)="viewOrderDetails(order.orderId)" 
+                <a
+                  href="javascript:void(0)"
+                  (click)="viewOrderDetails(order.orderId)"
                   class="font-semibold text-indigo-600 hover:text-indigo-800"
                 >
                   #{{ order.orderCode }}
@@ -421,18 +522,18 @@
               </td>
               <td>{{ order.createdAt | date: 'dd/MM/yyyy HH:mm' }}</td>
               <td>
-                <span 
-                  class="status-pill text-[10px] font-bold px-2 py-0.5 rounded-full" 
+                <span
+                  class="status-pill text-[10px] font-bold px-2 py-0.5 rounded-full"
                   [ngClass]="{
                     'status-pill--pending': order.orderStatus === 'CREATED' || order.orderStatus === 'CONFIRMED',
                     'status-pill--success': order.orderStatus === 'COMPLETED' || order.orderStatus === 'SHIPPED',
                     'status-pill--risk': order.orderStatus === 'CANCELLED'
                   }"
                 >
-                  {{ 
-                    order.orderStatus === 'CREATED' ? 'MỚI TẠO' : 
-                    order.orderStatus === 'CONFIRMED' ? 'XÁC NHẬN' : 
-                    order.orderStatus === 'SHIPPED' ? 'ĐANG GIAO' : 
+                  {{
+                    order.orderStatus === 'CREATED' ? 'MỚI TẠO' :
+                    order.orderStatus === 'CONFIRMED' ? 'XÁC NHẬN' :
+                    order.orderStatus === 'SHIPPED' ? 'ĐANG GIAO' :
                     order.orderStatus === 'COMPLETED' ? 'HOÀN THÀNH' : 'ĐÃ HỦY'
                   }}
                 </span>
@@ -441,9 +542,9 @@
                 <strong class="text-gray-900 font-semibold">{{ formatCurrency(order.finalPrice) }}</strong>
               </td>
               <td>
-                <button 
-                  type="button" 
-                  class="table-action hover:bg-gray-100 rounded p-1 transition-colors" 
+                <button
+                  type="button"
+                  class="table-action hover:bg-gray-100 rounded p-1 transition-colors"
                   aria-label="Xem tác vụ đơn hàng"
                   (click)="viewOrderDetails(order.orderId)"
                 >
@@ -480,9 +581,9 @@
           @for (inc of store.incidents(); track inc.incidentId) {
             <tr>
               <td>
-                <a 
-                  href="javascript:void(0)" 
-                  (click)="openIncidentDetail(inc.incidentId)" 
+                <a
+                  href="javascript:void(0)"
+                  (click)="openIncidentDetail(inc.incidentId)"
                   class="font-semibold text-rose-600 hover:text-rose-800"
                 >
                   #{{ inc.incidentCode }}
@@ -491,7 +592,7 @@
               <td>
                 <span class="font-medium text-gray-900">{{ getFriendlyServiceName(inc) }}</span>
               </td>
-              <td>{{ inc.occurredAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ (inc.firstOccurredAt || inc.occurredAt) | date: 'dd/MM/yyyy HH:mm' }}</td>
               <td>
                 <strong class="text-rose-600 font-semibold">{{ formatCurrency(inc.revenueLoss) }}</strong>
               </td>
@@ -555,8 +656,8 @@
                 </div>
               </td>
               <td>
-                <span 
-                  class="status-pill text-[10px] font-bold px-2 py-0.5 rounded-full" 
+                <span
+                  class="status-pill text-[10px] font-bold px-2 py-0.5 rounded-full"
                   [ngClass]="{
                     'status-pill--risk animate-pulse': inc.status !== 'RESOLVED',
                     'status-pill--success': inc.status === 'RESOLVED'
@@ -596,9 +697,9 @@
           @for (ticket of store.activeTickets(); track ticket.id) {
             <tr>
               <td>
-                <a 
-                  href="javascript:void(0)" 
-                  (click)="viewTicketDetails(ticket.code)" 
+                <a
+                  href="javascript:void(0)"
+                  (click)="viewTicketDetails(ticket.code)"
                   class="font-semibold text-indigo-600 hover:text-indigo-800"
                 >
                   #{{ ticket.code }}
@@ -689,7 +790,7 @@
                 </div>
               </td>
               <td>
-                <span 
+                <span
                   class="text-[10px] font-bold px-2 py-0.5 rounded border"
                   [ngClass]="{
                     'bg-red-50 text-red-700 border-red-200': ticket.priority === 'CRITICAL' || ticket.priority === 'HIGH',
@@ -697,25 +798,25 @@
                     'bg-blue-50 text-blue-700 border-blue-200': ticket.priority === 'LOW'
                   }"
                 >
-                  {{ 
-                    ticket.priority === 'CRITICAL' ? 'KHẨN CẤP' : 
-                    ticket.priority === 'HIGH' ? 'CAO' : 
+                  {{
+                    ticket.priority === 'CRITICAL' ? 'KHẨN CẤP' :
+                    ticket.priority === 'HIGH' ? 'CAO' :
                     ticket.priority === 'MEDIUM' ? 'TRUNG BÌNH' : 'THẤP'
                   }}
                 </span>
               </td>
               <td>
-                <span 
-                  class="status-pill text-[10px] font-bold px-2 py-0.5 rounded-full" 
+                <span
+                  class="status-pill text-[10px] font-bold px-2 py-0.5 rounded-full"
                   [ngClass]="{
                     'status-pill--pending': ticket.status === 'OPEN',
                     'status-pill--risk': ticket.status === 'IN_PROGRESS',
                     'status-pill--success': ticket.status === 'RESOLVED' || ticket.status === 'CLOSED'
                   }"
                 >
-                  {{ 
-                    ticket.status === 'OPEN' ? 'MỚI MỞ' : 
-                    ticket.status === 'IN_PROGRESS' ? 'ĐANG SỬA' : 
+                  {{
+                    ticket.status === 'OPEN' ? 'MỚI MỞ' :
+                    ticket.status === 'IN_PROGRESS' ? 'ĐANG SỬA' :
                     ticket.status === 'RESOLVED' ? 'ĐÃ SỬA' : 'ĐÃ ĐÓNG'
                   }}
                 </span>
@@ -735,158 +836,68 @@
     </div>
   </article>
 
-  <!-- Live Outage Operations Monitor Panel -->
-  <section class="panel mt-6 relative overflow-hidden">
-    <!-- Header with Live status indicator -->
-    <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
-      <div class="flex items-center gap-2">
-        <span class="relative flex h-3 w-3">
-          <span 
-            class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-            [ngClass]="activeLiveIncidentId ? 'bg-rose-400' : 'bg-emerald-400'"
-          ></span>
-          <span 
-            class="relative inline-flex rounded-full h-3 w-3"
-            [ngClass]="activeLiveIncidentId ? 'bg-rose-500' : 'bg-emerald-500'"
-          ></span>
-        </span>
-        <h3 class="text-sm font-bold text-gray-900 tracking-wide uppercase flex items-center gap-1.5">
-          Giám sát Vận hành & Sự cố thời gian thực
-          <span 
-            *ngIf="activeLiveIncidentId" 
-            class="px-2 py-0.5 rounded bg-rose-100 text-rose-700 text-[10px] font-extrabold animate-pulse"
-          >
-            🚨 PHÁT HIỆN SỰ CỐ: {{ activeLiveIncidentId }}
-          </span>
-          <span 
-            *ngIf="activeLiveTicketCode" 
-            class="px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-extrabold"
-          >
-            🔧 ĐANG SỬA: {{ activeLiveTicketCode }}
-          </span>
-          <span 
-            *ngIf="!activeLiveIncidentId && !activeLiveTicketCode" 
-            class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-bold"
-          >
-            HỆ THỐNG AN TOÀN
-          </span>
-        </h3>
-      </div>
-      
-      <!-- Simulation control button -->
-      <button 
-        type="button" 
-        class="text-xs bg-gray-150 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-300 text-gray-600 hover:text-indigo-600 px-3 py-1.5 rounded-full transition-all flex items-center gap-1 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-        (click)="runDemoOutageSimulation()"
-        [disabled]="isSimulationRunning() || activeLiveIncidentId !== null"
-      >
-        <svg lucideTrendingUp class="w-3.5 h-3.5" [attr.stroke-width]="2.5"></svg>
-        Giả lập Sự cố (Demo Outage)
-      </button>
-    </div>
-
-    <!-- Panel content grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Live Chart (70%) -->
-      <div class="lg:col-span-2">
-        <div class="chart-wrapper h-64 relative bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-          <p-chart type="line" [data]="liveChartData()" [options]="liveChartOptions" class="absolute inset-0 p-4 h-full w-full"></p-chart>
-        </div>
-        <div class="flex items-center justify-between text-[10px] text-gray-400 mt-2 px-2">
-          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-indigo-600 inline-block"></span> Doanh thu bình thường</span>
-          <span class="flex items-center gap-1"><span class="w-2 h-2 rounded bg-rose-600 inline-block"></span> 🚨 Phát sinh Sự cố</span>
-          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-amber-500 rotate-45 inline-block"></span> 🔧 Đang sửa (Ticket)</span>
-          <span class="flex items-center gap-1"><span class="w-2 h-2 bg-emerald-500 inline-block"></span> ✅ Đã khắc phục</span>
-        </div>
-      </div>
-
-      <!-- Live Logs Feed (30%) -->
-      <div class="flex flex-col">
-        <span class="text-xs font-bold text-gray-700 uppercase mb-2 block tracking-wide">Nhật ký Vận hành trực tiếp</span>
-        <div class="live-log-container flex-1 overflow-y-auto max-h-64 border border-gray-100 rounded-xl p-3 bg-gray-50/50">
-          @for (log of liveLogs(); track log.time + log.message) {
-            <div class="live-log-item mb-2.5 last:mb-0 text-xs flex items-start gap-2.5">
-              <span class="text-[10px] text-gray-400 font-mono flex-shrink-0 pt-0.5">{{ log.time }}</span>
-              <div class="flex-1">
-                <span 
-                  class="font-medium text-wrap"
-                  [ngClass]="{
-                    'text-rose-600': log.type === 'incident',
-                    'text-amber-600': log.type === 'ticket',
-                    'text-emerald-600': log.type === 'resolved',
-                    'text-gray-500': log.type === 'system'
-                  }"
-                >
-                  {{ log.message }}
-                </span>
-              </div>
-            </div>
-          }
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Dialog 1: AI Insight Action Dialog -->
-  <p-dialog 
-    header="XÁC NHẬN TRIỂN KHAI AI" 
-    [visible]="store.showAiConfirmDialog()"
-    (visibleChange)="store.setAiConfirmDialog($event)"
-    [modal]="true" 
-    [style]="{ width: '450px', borderRadius: '12px' }" 
-    [closable]="!store.executingAiAction()"
-    styleClass="ai-dialog"
+  <p-dialog
+    header="TẤT CẢ MỐC VẬN HÀNH"
+    [visible]="showLiveMilestonesDialog()"
+    (visibleChange)="showLiveMilestonesDialog.set($event)"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="live-milestones-dialog"
+    [style]="{ width: 'min(760px, 94vw)' }"
   >
-    <div class="py-4" *ngIf="store.selectedInsight()">
-      <div class="flex items-start gap-4">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-500">
-          <svg lucideCircleAlert class="w-5 h-5" [attr.stroke-width]="2"></svg>
-        </div>
-        <div>
-          <h4 class="font-bold text-gray-900 text-sm mb-1">
-            Chạy kế hoạch: {{ store.selectedInsight()?.title }}
-          </h4>
-          <p class="text-xs text-gray-500 leading-relaxed mb-4">
-            {{ store.selectedInsight()?.description }}
-          </p>
-          <div class="bg-indigo-50/50 border border-indigo-100 p-3 rounded-lg text-[11px] text-indigo-700 leading-relaxed">
-            Hành động này sẽ mô phỏng việc ZenTech AI tự động điều phối hàng tồn kho, đàm phán nhập hàng hoặc tự động phân bổ coupon tới các khách hàng tương thích.
-          </div>
-        </div>
+    <div class="live-milestones-dialog__body">
+      <div class="live-milestones-dialog__summary">
+        <span>{{ liveRecentLogs().length }} mốc được ghi nhận</span>
+        <button type="button" class="live-milestones-dialog__close" (click)="closeLiveMilestonesDialog()">Đóng</button>
+      </div>
+
+      <div class="live-milestones-list">
+        @for (log of liveRecentLogs(); track log.time + log.title + log.description) {
+          <article class="live-milestones-item" [ngClass]="'live-milestones-item--' + log.type">
+            <span class="live-milestones-item__marker"></span>
+            <div class="live-milestones-item__content">
+              <div class="live-milestones-item__meta">
+                <time>{{ log.dateTime }}</time>
+                @if (log.code) {
+                  <span>{{ log.code }}</span>
+                }
+              </div>
+              <h4 class="live-ops-event-title">{{ log.title }}</h4>
+              @if (log.customerName || log.customerEmail) {
+                <div class="live-ops-customer">
+                  <span class="live-ops-customer__avatar" [style.background]="log.customerAvatarUrl ? 'transparent' : getAvatarGradient(log.customerEmail || log.customerName)">
+                    @if (log.customerAvatarUrl) {
+                      <img [src]="log.customerAvatarUrl" [alt]="log.customerName || 'Khách hàng'" referrerpolicy="no-referrer" />
+                    } @else {
+                      {{ getInitials(log.customerName || log.customerEmail) }}
+                    }
+                  </span>
+                  <span class="live-ops-customer__info">
+                    <span class="live-ops-customer__name">{{ log.customerName || 'Khách hàng' }}</span>
+                    @if (log.customerEmail) {
+                      <small>{{ log.customerEmail }}</small>
+                    }
+                  </span>
+                </div>
+              }
+              <p>{{ log.description }}</p>
+            </div>
+          </article>
+        } @empty {
+          <div class="live-milestones-empty">Chưa có mốc vận hành nào.</div>
+        }
       </div>
     </div>
-    
-    <ng-template pTemplate="footer">
-      <div class="flex items-center justify-end gap-3 pt-2">
-        <button 
-          type="button" 
-          class="dialog-cancel-btn" 
-          (click)="store.setAiConfirmDialog(false)" 
-          [disabled]="store.executingAiAction()"
-        >
-          Hủy bỏ
-        </button>
-        <button 
-          type="button" 
-          class="dialog-confirm-btn" 
-          (click)="confirmAiAction()" 
-          [disabled]="store.executingAiAction()"
-        >
-          <svg *ngIf="store.executingAiAction()" lucideRefreshCw class="animate-spin w-3 h-3 inline-block mr-1.5" [attr.stroke-width]="2.5"></svg>
-          {{ store.executingAiAction() ? 'Đang triển khai...' : 'Bắt đầu ngay' }}
-        </button>
-      </div>
-    </ng-template>
   </p-dialog>
-
-  <!-- Dialog 2: Incident detail & AI Compensation Dialog -->
-  <p-dialog 
-    header="BÁO CÁO SỰ CỐ KỸ THUẬT & ĐỀN BÙ" 
+  <!-- Incident detail & AI analysis dialog -->
+  <p-dialog
+    header="BÁO CÁO SỰ CỐ KỸ THUẬT"
     [visible]="store.showIncidentDialog()"
     (visibleChange)="store.setShowIncidentDialog($event)"
-    [modal]="true" 
-    [style]="{ width: '600px', borderRadius: '12px' }" 
-    [closable]="!store.executingAiAction()"
+    [modal]="true"
+    [style]="{ width: '600px', borderRadius: '12px' }"
+    [closable]="true"
     styleClass="ai-dialog"
   >
     <div class="py-2" *ngIf="store.selectedIncident()">
@@ -920,8 +931,8 @@
             <span class="text-xs font-bold text-gray-900 uppercase">AI Phân tích nguyên nhân lỗi</span>
           </div>
           <!-- Re-analyze button -->
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="text-[10px] text-indigo-600 hover:text-indigo-800 font-semibold border border-indigo-200 px-2 py-0.5 rounded hover:bg-indigo-50 transition-all"
             (click)="requestAiIncidentAnalysis()"
             [disabled]="store.loadingIncidentDetail()"
@@ -929,34 +940,34 @@
             Yêu cầu AI phân tích lại
           </button>
         </div>
-        
+
         <div *ngIf="store.loadingIncidentDetail()" class="text-center py-6 text-gray-400 text-xs">
           <svg lucideRefreshCw class="animate-spin w-5 h-5 mx-auto mb-2 text-indigo-600" [attr.stroke-width]="2"></svg>
           AI đang phân tích và viết báo cáo...
         </div>
 
-        <div 
+        <div
           *ngIf="!store.loadingIncidentDetail() && store.selectedIncident()?.aiSummary"
           class="bg-indigo-50/40 border border-indigo-100 p-3.5 rounded-xl text-xs text-gray-700 leading-relaxed"
         >
           {{ store.selectedIncident()?.aiSummary }}
         </div>
-        
-        <div 
+
+        <div
           *ngIf="!store.loadingIncidentDetail() && !store.selectedIncident()?.aiSummary"
           class="bg-gray-50 border border-gray-150 p-4 rounded-xl text-center text-xs text-gray-500"
         >
-          Chưa có báo cáo AI. Click nút trên để AI tự động phân tích và đề xuất phương án đền bù.
+          Chưa có báo cáo AI. Click nút trên để AI tự động phân tích và đề xuất phương án xử lý.
         </div>
       </div>
 
       <!-- Affected Users list -->
       <div>
         <span class="text-xs font-bold text-gray-900 uppercase block mb-2">Khách hàng bị ảnh hưởng đang chờ tư vấn ({{ store.affectedUsers().length }} người)</span>
-        
+
         <div class="max-h-40 overflow-y-auto border border-gray-100 rounded-xl">
-          <div 
-            *ngFor="let user of store.affectedUsers()" 
+          <div
+            *ngFor="let user of store.affectedUsers()"
             class="flex items-center justify-between gap-3 p-2.5 border-b border-gray-50 last:border-b-0 text-xs hover:bg-gray-50/50"
           >
             <div class="flex items-center gap-2">
@@ -971,34 +982,21 @@
               <span class="text-[9px] text-indigo-600 truncate max-w-40" [title]="user.lastEventUrl">{{ user.lastEventUrl }}</span>
             </div>
           </div>
-          
+
           <div *ngIf="store.affectedUsers().length === 0" class="text-center py-6 text-gray-400 text-xs">
             Không tìm thấy thông tin khách hàng bị gián đoạn.
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Mitigate buttons -->
     <ng-template pTemplate="footer">
       <div class="flex items-center justify-end gap-3 pt-2">
-        <button 
-          type="button" 
-          class="dialog-cancel-btn" 
+        <button
+          type="button"
+          class="dialog-cancel-btn"
           (click)="store.setShowIncidentDialog(false)"
-          [disabled]="store.executingAiAction()"
         >
           Đóng
-        </button>
-        <button 
-          *ngIf="store.selectedIncident()?.status !== 'RESOLVED'"
-          type="button" 
-          class="dialog-confirm-btn" 
-          (click)="confirmMitigateIncident()" 
-          [disabled]="store.executingAiAction()"
-        >
-          <svg *ngIf="store.executingAiAction()" lucideRefreshCw class="animate-spin w-3 h-3 inline-block mr-1.5" [attr.stroke-width]="2.5"></svg>
-          Tự động gửi coupon đền bù bằng AI
         </button>
       </div>
     </ng-template>

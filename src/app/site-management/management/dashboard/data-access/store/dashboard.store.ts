@@ -1,12 +1,11 @@
-import { computed, inject } from '@angular/core';
-import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { inject } from '@angular/core';
+import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, forkJoin, pipe, switchMap, tap } from 'rxjs';
 import {
   IReportsSummary,
   IRevenuePoint,
   IProductReport,
-  IAIOpsInsight,
   ReportPeriod,
 } from '../../../reports/data-access/models/reports.model';
 import { ReportsService } from '../../../reports/data-access/services/reports.service';
@@ -30,22 +29,46 @@ export interface DashboardUiState {
   summary: IReportsSummary | null;
   revenueSeries: IRevenuePoint[];
   products: IProductReport[];
-  insights: IAIOpsInsight[];
   recentOrders: ManagementOrder[];
+  todayRevenueOrders: ManagementOrder[];
   impactStats: ManagementImpactDashboardDto | null;
   incidents: ManagementIncidentImpactDto[];
+  activeIncidents: ManagementIncidentImpactDto[];
   activeTickets: ManagementTicket[];
   activeTab: 'orders' | 'incidents' | 'tickets';
-  aiSalesModeActive: boolean;
-  showAiConfirmDialog: boolean;
-  selectedInsight: IAIOpsInsight | null;
   selectedIncident: ManagementIncidentImpactDto | null;
   affectedUsers: AffectedUserDetail[];
   loadingIncidentDetail: boolean;
   showIncidentDialog: boolean;
-  executingAiAction: boolean;
 }
 
+function getLocalPeriodRange(period: ReportPeriod, startDate?: string | null, endDate?: string | null): { start?: string; end?: string } {
+  if (period === ReportPeriod.Custom) {
+    return {
+      start: startDate || undefined,
+      end: endDate || undefined,
+    };
+  }
+
+  const now = new Date();
+  const start = new Date(now);
+  const daysBack = period === ReportPeriod.Today
+    ? 0
+    : period === ReportPeriod.Last7Days
+      ? 6
+      : 29;
+
+  start.setDate(now.getDate() - daysBack);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+
+  return {
+    start: start.toISOString(),
+    end: end.toISOString(),
+  };
+}
 const INITIAL_STATE: DashboardUiState = {
   period: ReportPeriod.Last30Days,
   customStartDate: null,
@@ -55,20 +78,17 @@ const INITIAL_STATE: DashboardUiState = {
   summary: null,
   revenueSeries: [],
   products: [],
-  insights: [],
   recentOrders: [],
+  todayRevenueOrders: [],
   impactStats: null,
   incidents: [],
+  activeIncidents: [],
   activeTickets: [],
   activeTab: 'orders',
-  aiSalesModeActive: true,
-  showAiConfirmDialog: false,
-  selectedInsight: null,
   selectedIncident: null,
   affectedUsers: [],
   loadingIncidentDetail: false,
   showIncidentDialog: false,
-  executingAiAction: false,
 };
 
 export const DashboardStore = signalStore(
@@ -96,6 +116,9 @@ export const DashboardStore = signalStore(
         switchMap(({ period, startDate, endDate }) => {
           const customStart = startDate || undefined;
           const customEnd = endDate || undefined;
+          const periodRange = getLocalPeriodRange(period, startDate, endDate);
+          const effectiveStart = periodRange.start;
+          const effectiveEnd = periodRange.end;
 
           // Prepare order query
           const orderQuery: ManagementOrderQuery = {
@@ -113,6 +136,18 @@ export const DashboardStore = signalStore(
             endDate: customEnd,
           };
 
+          const todayOrderRange = getLocalPeriodRange(ReportPeriod.Today);
+          const todayRevenueOrderQuery: ManagementOrderQuery = {
+            page: 0,
+            size: 100,
+            sort: 'createdAt,asc',
+            keyword: '',
+            status: 'COMPLETED',
+            dateFilter: 'all',
+            startDate: todayOrderRange.start,
+            endDate: todayOrderRange.end,
+          };
+
           // Prepare system fix tickets query
           const ticketQuery: ManagementTicketQuery = {
             page: 0,
@@ -122,18 +157,19 @@ export const DashboardStore = signalStore(
             assigneeEmail: 'ALL',
             customerEmail: '',
             search: '',
-            startDate: customStart,
-            endDate: customEnd,
+            startDate: effectiveStart,
+            endDate: effectiveEnd,
           };
 
           return forkJoin({
             summary: reportsService.getSummary(period, customStart, customEnd),
             revenueSeries: reportsService.getRevenueSeries(period, customStart, customEnd),
             products: reportsService.getProductPerformance(period, customStart, customEnd),
-            insights: reportsService.getAIOpsInsights(period, customStart, customEnd),
             ordersPage: orderService.getOrders(orderQuery),
-            impactStats: impactService.getDashboardStats(customStart, customEnd),
-            incidentsPage: impactService.getIncidents(0, 5, null, customStart, customEnd),
+            todayRevenueOrdersPage: orderService.getOrders(todayRevenueOrderQuery),
+            impactStats: impactService.getDashboardStats(effectiveStart, effectiveEnd),
+            incidentsPage: impactService.getIncidents(0, 5, null, effectiveStart, effectiveEnd),
+            activeIncidentsPage: impactService.getIncidents(0, 50, null),
             ticketsPage: ticketService.getTickets(ticketQuery),
           }).pipe(
             tap({
@@ -142,15 +178,19 @@ export const DashboardStore = signalStore(
                 const activeTickets = (results.ticketsPage.content || []).filter(
                   (t) => t.status !== TicketStatus.RESOLVED
                 );
+                const activeIncidents = (results.activeIncidentsPage.data.content || []).filter(
+                  (incident) => !['RESOLVED', 'CLOSED', 'DONE'].includes(String(incident.status || '').toUpperCase())
+                );
 
                 patchState(store, {
                   summary: results.summary.data,
                   revenueSeries: results.revenueSeries.data,
                   products: (results.products.data || []).slice(0, 5), // Keep top 5 best sellers
-                  insights: results.insights.data,
                   recentOrders: results.ordersPage.orders,
+                  todayRevenueOrders: results.todayRevenueOrdersPage.orders || [],
                   impactStats: results.impactStats.data,
                   incidents: results.incidentsPage.data.content || [],
+                  activeIncidents,
                   activeTickets: activeTickets.slice(0, 5), // Keep top 5 active tickets
                   loading: false,
                 });
@@ -199,32 +239,6 @@ export const DashboardStore = signalStore(
       )
     );
 
-    const runAiIncidentMitigation = rxMethod<string>(
-      pipe(
-        tap(() => patchState(store, { executingAiAction: true })),
-        switchMap((incidentId) => {
-          // Simulate AI mitigation execution with 1.5s delay
-          return new Promise<void>((resolve) => setTimeout(resolve, 1500)).then(() => {
-            // Update selected incident state and local incidents list to resolved
-            const updatedIncidents = store.incidents().map((inc) => {
-              if (inc.incidentId === incidentId) {
-                return { ...inc, status: 'RESOLVED' as any, resolvedAt: new Date().toISOString() };
-              }
-              return inc;
-            });
-
-            patchState(store, {
-              executingAiAction: false,
-              showIncidentDialog: false,
-              selectedIncident: null,
-              affectedUsers: [],
-              incidents: updatedIncidents,
-            });
-          });
-        })
-      )
-    );
-
     const requestIncidentAiAnalysis = rxMethod<string>(
       pipe(
         tap(() => patchState(store, { loadingIncidentDetail: true })),
@@ -254,7 +268,6 @@ export const DashboardStore = signalStore(
     return {
       loadDashboardData,
       loadIncidentDetail,
-      runAiIncidentMitigation,
       requestIncidentAiAnalysis,
       setActiveTab(activeTab: 'orders' | 'incidents' | 'tickets') {
         patchState(store, { activeTab });
@@ -278,15 +291,6 @@ export const DashboardStore = signalStore(
           endDate,
         });
       },
-      toggleAiSalesMode(active: boolean) {
-        patchState(store, { aiSalesModeActive: active });
-      },
-      setAiConfirmDialog(show: boolean, insight: IAIOpsInsight | null = null) {
-        patchState(store, {
-          showAiConfirmDialog: show,
-          selectedInsight: insight,
-        });
-      },
       setShowIncidentDialog(show: boolean) {
         patchState(store, {
           showIncidentDialog: show,
@@ -294,21 +298,6 @@ export const DashboardStore = signalStore(
           affectedUsers: show ? store.affectedUsers() : [],
         });
       },
-      executeAiInsightAction: rxMethod<IAIOpsInsight>(
-        pipe(
-          tap(() => patchState(store, { executingAiAction: true })),
-          switchMap((insight) => {
-            return new Promise<void>((resolve) => setTimeout(resolve, 1200)).then(() => {
-              patchState(store, {
-                executingAiAction: false,
-                showAiConfirmDialog: false,
-                selectedInsight: null,
-                insights: store.insights().filter((x) => x.id !== insight.id),
-              });
-            });
-          })
-        )
-      ),
     };
   })
 );
