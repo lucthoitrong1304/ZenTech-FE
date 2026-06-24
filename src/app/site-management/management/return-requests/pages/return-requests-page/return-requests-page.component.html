@@ -1,0 +1,188 @@
+<div class="space-y-6">
+  <!-- Table Section -->
+  <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm text-gray-500">
+        <thead class="bg-gray-50 text-xs font-bold uppercase tracking-wider text-gray-700 border-b border-gray-200">
+          <tr>
+            <th class="px-6 py-4">Mã đơn hàng</th>
+            <th class="px-6 py-4">Khách hàng</th>
+            <th class="px-6 py-4">Lý do</th>
+            <th class="px-6 py-4">Ngày yêu cầu</th>
+            <th class="px-6 py-4">Trạng thái</th>
+            <th class="px-6 py-4 text-right">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (req of store.requests(); track req.id) {
+            <tr class="hover:bg-gray-50 transition">
+              <td class="px-6 py-4 font-mono font-bold text-gray-900">
+                #{{ getShortOrderId(req.orderId) }}
+              </td>
+              <td class="px-6 py-4 font-semibold text-gray-900">
+                {{ req.customerName }}
+              </td>
+              <td class="px-6 py-4 text-xs font-medium text-gray-700">
+                {{ req.reason }}
+              </td>
+              <td class="px-6 py-4 text-xs text-gray-500">
+                {{ req.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="getStatusClass(req.status)">
+                  {{ getStatusLabel(req.status) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <button
+                  type="button"
+                  class="inline-flex h-9 items-center rounded-full bg-white border border-[#4f46e5] px-4 text-xs font-bold text-[#4f46e5] transition hover:bg-[#f4f2ff] cursor-pointer"
+                  (click)="viewRequest(req)"
+                >
+                  Chi tiết
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="px-6 py-10 text-center font-semibold text-gray-400">
+                Không có yêu cầu trả hàng nào cần xử lý.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Detail Dialog -->
+  <p-dialog
+    header="Chi tiết yêu cầu trả hàng"
+    [(visible)]="isDetailOpen"
+    [modal]="true"
+    [style]="{ width: '840px' }"
+    [breakpoints]="{ '960px': '95vw' }"
+  >
+    @if (store.selectedRequest(); as req) {
+      <div class="grid md:grid-cols-2 gap-6 py-4">
+        <!-- Left Column: Info & Decision -->
+        <div class="space-y-5">
+          <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+            <div>
+              <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Mã đơn hàng</span>
+              <span class="font-mono text-sm font-bold text-gray-900">{{ req.orderId }}</span>
+            </div>
+            <div>
+              <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Khách hàng</span>
+              <span class="text-sm font-semibold text-gray-900">{{ req.customerName }}</span>
+            </div>
+            <div>
+              <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Ngày yêu cầu</span>
+              <span class="text-sm font-medium text-gray-700">{{ req.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div>
+              <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Lý do trả hàng</span>
+              <span class="inline-flex rounded-lg bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-800 mt-1">
+                {{ req.reason }}
+              </span>
+            </div>
+            @if (req.details) {
+              <div>
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Mô tả của khách hàng</span>
+                <p class="text-xs font-medium text-gray-600 mt-1 whitespace-pre-line leading-relaxed">
+                  {{ req.details }}
+                </p>
+              </div>
+            }
+          </div>
+
+          <!-- Decision Options (Only for PENDING status) -->
+          @if (req.status === 'PENDING') {
+            <div class="space-y-4">
+              <!-- Resellable Checkbox -->
+              <div class="p-4 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between">
+                <div class="pr-4">
+                  <h4 class="font-bold text-xs text-gray-900">Hoàn về kho bán hàng chính</h4>
+                  <p class="text-[10px] text-gray-500 mt-0.5">Sản phẩm còn mới và nguyên vẹn, có thể bán lại được.</p>
+                </div>
+                <input
+                  type="checkbox"
+                  [(ngModel)]="resellable"
+                  class="h-5 w-5 text-[#4f46e5] focus:ring-[#4f46e5] border-gray-300 rounded cursor-pointer"
+                />
+              </div>
+
+              <!-- Action buttons -->
+              <div class="flex justify-end gap-3 pt-3">
+                <button
+                  type="button"
+                  class="px-5 py-2.5 rounded-full border border-red-200 hover:bg-red-50 text-red-600 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                  (click)="handleReject(req.id)"
+                >
+                  <svg lucideX class="h-4 w-4" [attr.stroke-width]="2.5"></svg>
+                  Từ chối
+                </button>
+                <button
+                  type="button"
+                  class="px-6 py-2.5 rounded-full bg-[#ffc700] text-[#111827] hover:bg-[#ffd633] text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                  (click)="handleApprove(req.id)"
+                >
+                  <svg lucideCheck class="h-4 w-4" [attr.stroke-width]="2.5"></svg>
+                  Duyệt trả hàng
+                </button>
+              </div>
+            </div>
+          } @else {
+            <div class="p-4 rounded-xl border flex items-center gap-3"
+                 [ngClass]="req.status === 'APPROVED' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'">
+              <svg lucideInfo class="h-5 w-5 flex-shrink-0" [attr.stroke-width]="2"></svg>
+              <div>
+                <h4 class="font-bold text-xs">Yêu cầu đã được xử lý</h4>
+                <p class="text-[10px] mt-0.5">
+                  Trạng thái xử lý: <strong class="font-bold">{{ getStatusLabel(req.status) }}</strong>.
+                  @if (req.status === 'APPROVED') {
+                    Sản phẩm được đánh giá: <strong class="font-bold">{{ req.resellable ? 'Hoàn kho bán hàng chính' : 'Lỗi/hỏng (Hủy sản phẩm)' }}</strong>.
+                  }
+                </p>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Right Column: Evidence Media -->
+        <div class="space-y-4">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-gray-400 mb-2">Bằng chứng lỗi (Ảnh / Video)</h3>
+          
+          @if (req.proofFileUrls && req.proofFileUrls.length > 0) {
+            <div class="grid grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
+              @for (url of req.proofFileUrls; track url) {
+                <div class="relative aspect-square rounded-xl overflow-hidden bg-black border border-gray-200 flex items-center justify-center">
+                  @if (isImage(url)) {
+                    <a [href]="url" target="_blank" class="w-full h-full block">
+                      <img [src]="url" class="w-full h-full object-cover hover:scale-105 transition duration-300" />
+                    </a>
+                  } @else if (isVideo(url)) {
+                    <video controls class="w-full h-full object-cover">
+                      <source [src]="url" type="video/mp4">
+                      Trình duyệt không hỗ trợ xem video.
+                    </video>
+                  } @else {
+                    <div class="p-4 text-center text-xs text-white">
+                      <svg lucidePackage class="h-8 w-8 mx-auto text-gray-400 mb-1"></svg>
+                      <a [href]="url" target="_blank" class="underline hover:text-[#ffc700]">Tải tệp tin đính kèm</a>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="flex flex-col items-center justify-center p-10 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400">
+              <svg lucideAlertCircle class="h-8 w-8 mb-2" [attr.stroke-width]="1.5"></svg>
+              <p class="text-xs font-semibold">Không có hình ảnh hoặc video đính kèm.</p>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </p-dialog>
+</div>

@@ -14,87 +14,97 @@
       @if (order(); as selectedOrder) {
         @if (draft(); as currentDraft) {
           <div class="order-edit__body">
-            <section class="order-edit__section">
-              <h3>Thông tin khách hàng</h3>
+            <div class="order-edit-grid">
+              <!-- Left Column: Customer Form fields -->
+              <div class="order-edit-col-left">
+                <section class="order-edit__section">
+                  <h3>Thông tin khách hàng</h3>
 
-              <label class="order-edit__field">
-                <span>Tên khách hàng</span>
-                <input type="text" [value]="currentDraft.customerName" (input)="onCustomerNameInput($event)" />
-                @if (errors().customerName) {
-                  <small>{{ errors().customerName }}</small>
-                }
-              </label>
+                  <label class="order-edit__field">
+                    <span>Tên khách hàng</span>
+                    <input type="text" [value]="currentDraft.customerName" (input)="onCustomerNameInput($event)" [disabled]="order()?.orderStatus === 'COMPLETED' || order()?.orderStatus === 'CANCELLED'" />
+                    @if (errors().customerName) {
+                      <small>{{ errors().customerName }}</small>
+                    }
+                  </label>
 
-              <label class="order-edit__field">
-                <span>Địa chỉ giao hàng</span>
-                <textarea rows="3" [value]="currentDraft.shippingAddress" (input)="onShippingAddressInput($event)"></textarea>
-                @if (errors().shippingAddress) {
-                  <small>{{ errors().shippingAddress }}</small>
-                }
-              </label>
+                  <label class="order-edit__field">
+                    <span>Địa chỉ giao hàng</span>
+                    <textarea rows="3" [value]="currentDraft.shippingAddress" (input)="onShippingAddressInput($event)" [disabled]="order()?.orderStatus === 'COMPLETED' || order()?.orderStatus === 'CANCELLED'"></textarea>
+                    @if (errors().shippingAddress) {
+                      <small>{{ errors().shippingAddress }}</small>
+                    }
+                  </label>
 
-              <div class="order-edit__split">
-                <label class="order-edit__field">
-                  <span>Trạng thái đơn hàng</span>
-                  <select [value]="currentDraft.orderStatus" (change)="onStatusChange($event)">
-                    <option value="CREATED">Chờ thanh toán</option>
-                    <option value="CONFIRMED">Đang xử lý</option>
-                    <option value="SHIPPED">Đang giao</option>
-                    <option value="COMPLETED">Đã hoàn thành</option>
-                    <option value="CANCELLED">Đã hủy</option>
-                  </select>
-                </label>
+                  <div class="order-edit__split">
+                    <label class="order-edit__field">
+                      <span>Trạng thái đơn hàng</span>
+                      <select [value]="currentDraft.orderStatus" (change)="onStatusChange($event)" [disabled]="order()?.orderStatus === 'COMPLETED' || order()?.orderStatus === 'CANCELLED'">
+                        <option value="CREATED">Chờ thanh toán</option>
+                        <option value="CONFIRMED">Đã xác nhận</option>
+                        <option value="SHIPPED">Đang giao</option>
+                        <option value="COMPLETED">Đã hoàn thành</option>
+                        <option value="CANCELLED">Đã hủy</option>
+                      </select>
+                    </label>
 
-                <div class="order-edit__readonly">
-                  <span>Ngày đặt</span>
-                  <strong>{{ selectedOrder.createdAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
-                </div>
+                    <div class="order-edit__readonly">
+                      <span>Ngày đặt</span>
+                      <strong>{{ selectedOrder.createdAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+                    </div>
+                  </div>
+                </section>
               </div>
-            </section>
 
-            <section class="order-edit__items">
-              <h3>Sản phẩm đã đặt</h3>
-              @for (item of selectedOrder.items; track item.orderItemId) {
-                <article class="order-edit-item">
-                  <div class="order-edit-item__media">
-                    @if (item.productImage) {
-                      <img [src]="item.productImage" [alt]="item.productName" />
-                    } @else {
-                      <span>ZT</span>
+              <!-- Right Column: Ordered items & Payment summary -->
+              <div class="order-edit-col-right">
+                <section class="order-edit__items">
+                  <h3>Sản phẩm đã đặt</h3>
+                  <div class="order-edit-items-scroll">
+                    @for (item of selectedOrder.items; track item.orderItemId) {
+                      <article class="order-edit-item">
+                        <div class="order-edit-item__media">
+                          @if (item.productImage) {
+                            <img [src]="item.productImage" [alt]="item.productName" />
+                          } @else {
+                            <span>ZT</span>
+                          }
+                        </div>
+                        <div class="order-edit-item__copy">
+                          <h4>{{ item.productName }}</h4>
+                          <p>{{ item.variantName || 'Phiên bản tiêu chuẩn' }}</p>
+                        </div>
+                        <span class="order-edit-item__quantity">
+                          x{{ getDraftQuantity(item.orderItemId) }}
+                        </span>
+                        <strong>{{ item.unitPrice * getDraftQuantity(item.orderItemId) | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                      </article>
                     }
                   </div>
-                  <div class="order-edit-item__copy">
-                    <h4>{{ item.productName }}</h4>
-                    <p>{{ item.variantName || 'Phiên bản tiêu chuẩn' }}</p>
-                  </div>
-                  <span class="order-edit-item__quantity">
-                    x{{ getDraftQuantity(item.orderItemId) }}
-                  </span>
-                  <strong>{{ item.unitPrice * getDraftQuantity(item.orderItemId) | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-                </article>
-              }
-              @if (errors().items) {
-                <small class="order-edit__error">{{ errors().items }}</small>
-              }
-            </section>
+                  @if (errors().items) {
+                    <small class="order-edit__error">{{ errors().items }}</small>
+                  }
+                </section>
 
-            <section class="order-edit-summary">
-              <div>
-                <span>Tạm tính</span>
-                <strong>{{ selectedOrder.subtotal | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                <section class="order-edit-summary mt-4">
+                  <div>
+                    <span>Tạm tính</span>
+                    <strong>{{ selectedOrder.subtotal | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                  </div>
+                  <div>
+                    <span>Phí vận chuyển</span>
+                    <strong>{{ selectedOrder.shippingFee | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                  </div>
+                  <div class="order-edit-summary__total">
+                    <span>
+                      <small>Tổng thanh toán</small>
+                      <strong class="total-price-text">{{ selectedOrder.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                    </span>
+                    <em>Đã thanh toán</em>
+                  </div>
+                </section>
               </div>
-              <div>
-                <span>Phí vận chuyển</span>
-                <strong>{{ selectedOrder.shippingFee | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-              </div>
-              <div class="order-edit-summary__total">
-                <span>
-                  <small>Tổng thanh toán</small>
-                  <strong>{{ selectedOrder.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-                </span>
-                <em>Đã thanh toán</em>
-              </div>
-            </section>
+            </div>
 
             @if (errors().submit) {
               <p class="order-edit__submit-error">{{ errors().submit }}</p>

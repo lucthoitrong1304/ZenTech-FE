@@ -118,6 +118,33 @@ export class AccountService {
     );
   }
 
+  requestReturnEvidenceUploadPresign(
+    filename: string,
+    contentType: string,
+    fileSize: number
+  ): Observable<UploadPresignResponseDto> {
+    const payload: UploadPresignRequestDto = {
+      originalFilename: filename,
+      contentType,
+      fileSize,
+      purpose: 'RETURN_EVIDENCE',
+    };
+    return this.apiService.post<UploadPresignRequestDto, UploadPresignResponseDto>(
+      `${this.uploadsUrl}/presign`,
+      payload
+    );
+  }
+
+  submitReturnRequest(
+    orderId: string,
+    payload: { reason: string; details: string; proofFileKeys: string }
+  ): Observable<ApiResponseDto<unknown>> {
+    return this.apiService.post<unknown, ApiResponseDto<unknown>>(
+      `${this.baseUrl}/orders/${orderId}/return`,
+      payload
+    );
+  }
+
   uploadToR2(presign: UploadPresignResponseDto, file: File): Observable<string> {
     return this.apiService.putFile(presign.presignedUrl, file, {
       headers: new HttpHeaders(presign.requiredHeaders),

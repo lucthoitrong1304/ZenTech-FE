@@ -23,7 +23,7 @@
           }
         } @else {
           @for (order of orders(); track order.orderId) {
-            <tr>
+            <tr (click)="viewOrder.emit(order.orderId)" class="order-row">
               <td>
                 <strong class="orders-code">#{{ order.orderCode }}</strong>
               </td>
@@ -60,7 +60,7 @@
                     type="button"
                     class="orders-row-action"
                     aria-label="Xem chi tiết đơn hàng"
-                    (click)="viewOrder.emit(order.orderId)"
+                    (click)="viewOrder.emit(order.orderId); $event.stopPropagation()"
                   >
                     <svg lucideEye [attr.stroke-width]="2"></svg>
                   </button>
@@ -68,7 +68,7 @@
                     type="button"
                     class="orders-row-action orders-row-action--edit"
                     aria-label="Chỉnh sửa đơn hàng"
-                    (click)="editOrder.emit(order)"
+                    (click)="editOrder.emit(order); $event.stopPropagation()"
                   >
                     <svg lucidePencil [attr.stroke-width]="2"></svg>
                   </button>

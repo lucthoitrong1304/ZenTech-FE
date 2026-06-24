@@ -1,4 +1,4 @@
-export type ManagementOrderStatus = 'CREATED' | 'CONFIRMED' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
+export type ManagementOrderStatus = 'CREATED' | 'CONFIRMED' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED' | 'RETURN_REQUESTED' | 'RETURNED';
 
 export type ManagementPaymentStatus = 'PENDING' | 'SUCCESS' | 'REFUNDED';
 

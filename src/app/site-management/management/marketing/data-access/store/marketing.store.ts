@@ -70,7 +70,7 @@ interface MarketingUiState {
   formValue: CouponFormValue | null;
 
   issueDialogVisible: boolean;
-  issueFormValue: { couponId: string; customerId: string | null } | null;
+  issueFormValue: { couponId: string; customerId: string | null; customerIds: string[] } | null;
   issueSaving: boolean;
 }
 
@@ -448,6 +448,7 @@ export const MarketingStore = signalStore(
             issueFormValue: {
               couponId: event.couponId ?? '',
               customerId: null,
+              customerIds: [],
             },
           });
           break;
@@ -667,7 +668,11 @@ export const MarketingStore = signalStore(
             return EMPTY;
           }
 
-          return marketingService.issueVouchers({ couponId: form.couponId, customerId: form.customerId }).pipe(
+          return marketingService.issueVouchers({ 
+            couponId: form.couponId, 
+            customerId: form.customerId, 
+            customerIds: form.customerIds 
+          }).pipe(
             tap({
               next: () => {
                 handleEvent({ type: MarketingEventType.IssueVoucherSucceeded });
@@ -794,7 +799,7 @@ export const MarketingStore = signalStore(
       closeIssueDialog(): void {
         handleEvent({ type: MarketingEventType.IssueVoucherDialogClosed });
       },
-      updateIssueFormValue(patch: { couponId: string; customerId: string | null }): void {
+      updateIssueFormValue(patch: { couponId?: string; customerId?: string | null; customerIds?: string[] }): void {
         handleEvent({ type: MarketingEventType.IssueFormValueChanged, patch });
       },
       submitIssueForm(): void {

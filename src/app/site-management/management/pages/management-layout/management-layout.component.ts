@@ -201,6 +201,7 @@ export class ManagementLayoutComponent {
         { label: 'Tư vấn khách hàng', path: '/management/chat', icon: 'chat' },
         { label: 'Ticket hỗ trợ', path: '/management/tickets', icon: 'ticket' },
         { label: 'Đơn hàng', path: '/management/orders', icon: 'orders' },
+        { label: 'Yêu cầu trả hàng', path: '/management/return-requests', icon: 'orders' },
         {
           label: 'Sản phẩm',
           icon: 'products',

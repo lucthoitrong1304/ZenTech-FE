@@ -3,7 +3,7 @@
     <aside class="order-drawer" aria-label="Chi tiết đơn hàng" (click)="$event.stopPropagation()">
       <header class="order-drawer__header">
         <div>
-          <p>Order Snapshot</p>
+          <p>Đơn hàng: #{{ order()?.orderCode || '' }}</p>
           <h2>Chi tiết đơn hàng</h2>
         </div>
         <button type="button" class="order-drawer__icon" aria-label="Đóng chi tiết đơn hàng" (click)="close.emit()">
@@ -13,92 +13,202 @@
 
       @if (order(); as selectedOrder) {
         <div class="order-drawer__body">
-          <section class="order-drawer__section">
-            <h3>Thông tin khách hàng</h3>
-            <dl class="order-drawer__fields">
-              <div>
-                <dt>Tên khách hàng</dt>
-                <dd>{{ selectedOrder.customer.fullName }}</dd>
+          <!-- Order Stepper / Cancelled Banner (Top Span) -->
+          <div class="order-detail-top-span">
+            @if (selectedOrder.orderStatus === 'CANCELLED') {
+              <div class="order-cancelled-banner">
+                <svg lucideAlertTriangle class="cancelled-icon"></svg>
+                <div>
+                  <h4>Đơn hàng đã bị hủy</h4>
+                  <p>Đơn hàng này không còn hoạt động trên hệ thống.</p>
+                </div>
               </div>
-              <div>
-                <dt>Địa chỉ giao hàng</dt>
-                <dd>{{ selectedOrder.customer.shippingAddress }}</dd>
-              </div>
-              <div class="order-drawer__split">
-                <span>
-                  <dt>Phương thức</dt>
-                  <dd>
-                    <i aria-hidden="true"></i>
-                    {{ selectedOrder.paymentMethod }}
-                  </dd>
-                </span>
-                <span>
-                  <dt>Ngày đặt</dt>
-                  <dd>{{ selectedOrder.createdAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
-                </span>
-              </div>
-            </dl>
-          </section>
+            } @else {
+              <section class="order-stepper-container">
+                <div class="order-stepper">
+                  <!-- Progress Tracks -->
+                  <div class="stepper-track-bg"></div>
+                  <div class="stepper-track-active" [style.width]="getStepperProgressWidth()"></div>
 
-          <section class="order-drawer__items">
-            <h3>Sản phẩm đã đặt</h3>
-            @for (item of selectedOrder.items; track item.orderItemId) {
-              <article class="order-item">
-                <div class="order-item__media">
-                  @if (item.productImage) {
-                    <img [src]="item.productImage" [alt]="item.productName" />
-                  } @else {
-                    <span>ZT</span>
+                  <!-- Step 1: Created -->
+                  <div class="stepper-step" [class.active]="isStepActive('CREATED')" [class.completed]="isStepCompleted('CREATED')">
+                    <div class="step-circle">
+                      <svg lucideClock class="step-icon"></svg>
+                    </div>
+                    <span class="step-label">Chờ thanh toán</span>
+                    <span class="step-time">
+                      @if (getStepTime('CREATED'); as time) {
+                        {{ time | date: 'HH:mm dd/MM/yyyy' }}
+                      } @else {
+                        &nbsp;
+                      }
+                    </span>
+                  </div>
+                  
+                  <!-- Step 2: Confirmed -->
+                  <div class="stepper-step" [class.active]="isStepActive('CONFIRMED')" [class.completed]="isStepCompleted('CONFIRMED')">
+                    <div class="step-circle">
+                      <svg lucideClipboardCheck class="step-icon"></svg>
+                    </div>
+                    <span class="step-label">Đã xác nhận</span>
+                    <span class="step-time">
+                      @if (getStepTime('CONFIRMED'); as time) {
+                        {{ time | date: 'HH:mm dd/MM/yyyy' }}
+                      } @else {
+                        &nbsp;
+                      }
+                    </span>
+                  </div>
+                  
+                  <!-- Step 3: Shipped -->
+                  <div class="stepper-step" [class.active]="isStepActive('SHIPPED')" [class.completed]="isStepCompleted('SHIPPED')">
+                    <div class="step-circle">
+                      <svg lucideTruck class="step-icon"></svg>
+                    </div>
+                    <span class="step-label">Đang giao</span>
+                    <span class="step-time">
+                      @if (getStepTime('SHIPPED'); as time) {
+                        {{ time | date: 'HH:mm dd/MM/yyyy' }}
+                      } @else {
+                        &nbsp;
+                      }
+                    </span>
+                  </div>
+                  
+                  <!-- Step 4: Completed -->
+                  <div class="stepper-step step-completed-end" [class.active]="isStepActive('COMPLETED')" [class.completed]="isStepCompleted('COMPLETED')">
+                    <div class="step-circle">
+                      <svg lucideCheckCircle class="step-icon"></svg>
+                    </div>
+                    <span class="step-label">Đã hoàn thành</span>
+                    <span class="step-time">
+                      @if (getStepTime('COMPLETED'); as time) {
+                        {{ time | date: 'HH:mm dd/MM/yyyy' }}
+                      } @else {
+                        &nbsp;
+                      }
+                    </span>
+                  </div>
+                </div>
+              </section>
+            }
+          </div>
+
+          <!-- Two Column Grid -->
+          <div class="order-detail-grid">
+            <!-- Left Column: Customer details -->
+            <div class="order-detail-col-left">
+              <section class="order-drawer__section">
+                <h3>Thông tin khách hàng</h3>
+
+                <!-- Customer Profile Header Section -->
+                <div class="customer-profile-header">
+                  <span class="customer-avatar" [style.background-color]="(selectedOrder.customer.imageUrl && !isImageFailed(selectedOrder.orderId)) ? 'transparent' : '#4f46e5'">
+                    @if (selectedOrder.customer.imageUrl && !isImageFailed(selectedOrder.orderId)) {
+                      <img [src]="selectedOrder.customer.imageUrl" [alt]="selectedOrder.customer.fullName" class="customer-avatar-img" referrerpolicy="no-referrer" (error)="onImageError(selectedOrder.orderId)" />
+                    } @else {
+                      {{ getInitials(selectedOrder.customer.fullName) }}
+                    }
+                  </span>
+                  <div class="customer-profile-details">
+                    <span class="customer-profile-name">{{ selectedOrder.customer.fullName }}</span>
+                    <span class="customer-profile-email">{{ selectedOrder.customer.email || 'Không có email' }}</span>
+                  </div>
+                </div>
+
+                <dl class="order-drawer__fields">
+                  <div>
+                    <dt>Địa chỉ giao hàng</dt>
+                    <dd>{{ selectedOrder.customer.shippingAddress }}</dd>
+                  </div>
+                  <div>
+                    <dt>Mã định danh hệ thống (UUID)</dt>
+                    <dd class="system-uuid">{{ selectedOrder.orderId }}</dd>
+                  </div>
+                  <div class="order-drawer__split">
+                    <span>
+                      <dt>Phương thức</dt>
+                      <dd>
+                        <i aria-hidden="true"></i>
+                        {{ selectedOrder.paymentMethod }}
+                      </dd>
+                    </span>
+                    <span>
+                      <dt>Ngày đặt</dt>
+                      <dd>{{ selectedOrder.createdAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+                    </span>
+                  </div>
+                </dl>
+              </section>
+            </div>
+
+            <!-- Right Column: Products & Totals -->
+            <div class="order-detail-col-right">
+              <section class="order-drawer__items">
+                <h3>Sản phẩm đã đặt</h3>
+                <div class="order-items-scroll">
+                  @for (item of selectedOrder.items; track item.orderItemId) {
+                    <article class="order-item">
+                      <div class="order-item__media">
+                        @if (item.productImage) {
+                          <img [src]="item.productImage" [alt]="item.productName" />
+                        } @else {
+                          <span>ZT</span>
+                        }
+                        <strong>{{ item.quantity }}</strong>
+                      </div>
+                      <div class="order-item__copy">
+                        <h4>{{ item.productName }}</h4>
+                        <p>{{ item.variantName || 'Phiên bản tiêu chuẩn' }}</p>
+                      </div>
+                      <b>{{ item.unitPrice * item.quantity | currency: 'VND' : 'symbol' : '1.0-0' }}</b>
+                    </article>
                   }
-                  <strong>{{ item.quantity }}</strong>
                 </div>
-                <div class="order-item__copy">
-                  <h4>{{ item.productName }}</h4>
-                  <p>{{ item.variantName || 'Phiên bản tiêu chuẩn' }}</p>
-                </div>
-                <b>{{ item.unitPrice * item.quantity | currency: 'VND' : 'symbol' : '1.0-0' }}</b>
-              </article>
-            }
-          </section>
+              </section>
 
-          <section class="order-summary">
-            <div>
-              <span>Tạm tính</span>
-              <strong>{{ selectedOrder.subtotal | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+              <section class="order-summary mt-4">
+                <div>
+                  <span>Tạm tính</span>
+                  <strong>{{ selectedOrder.subtotal | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                </div>
+                <div>
+                  <span>Phí vận chuyển</span>
+                  <strong>{{ selectedOrder.shippingFee | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                </div>
+                @if (selectedOrder.discountAmount > 0) {
+                  <div>
+                    <span>Giảm giá</span>
+                    <strong>-{{ selectedOrder.discountAmount | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                  </div>
+                }
+                <div class="order-summary__total">
+                  <span>
+                    <small>Tổng thanh toán</small>
+                    <strong class="total-price-text">{{ selectedOrder.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                  </span>
+                  <em>{{ getPaymentStatusLabel(selectedOrder.paymentStatus) }}</em>
+                </div>
+              </section>
             </div>
-            <div>
-              <span>Phí vận chuyển</span>
-              <strong>{{ selectedOrder.shippingFee | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-            </div>
-            @if (selectedOrder.discountAmount > 0) {
-              <div>
-                <span>Giảm giá</span>
-                <strong>-{{ selectedOrder.discountAmount | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-              </div>
-            }
-            <div class="order-summary__total">
-              <span>
-                <small>Tổng thanh toán</small>
-                <strong>{{ selectedOrder.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-              </span>
-              <em>{{ getPaymentStatusLabel(selectedOrder.paymentStatus) }}</em>
-            </div>
-          </section>
+          </div>
         </div>
 
         <footer class="order-drawer__footer">
-          <button
-            type="button"
-            class="order-drawer__primary"
-            [disabled]="selectedOrder.orderStatus === 'COMPLETED' || selectedOrder.orderStatus === 'CANCELLED'"
-            (click)="markDelivered.emit(selectedOrder.orderId)"
-          >
-            Đánh dấu đã giao
-          </button>
-          <button type="button" class="order-drawer__secondary" (click)="printInvoice.emit(selectedOrder.orderId)">
-            <svg lucidePrinter [attr.stroke-width]="2"></svg>
-            <span>In hóa đơn</span>
-          </button>
+          <div class="order-footer-actions">
+            <button type="button" class="order-drawer__secondary" (click)="printInvoice.emit(selectedOrder.orderId)">
+              <svg lucidePrinter [attr.stroke-width]="2"></svg>
+              <span>In hóa đơn</span>
+            </button>
+            <button
+              type="button"
+              class="order-drawer__primary"
+              [disabled]="selectedOrder.orderStatus === 'COMPLETED' || selectedOrder.orderStatus === 'CANCELLED'"
+              (click)="markDelivered.emit(selectedOrder.orderId)"
+            >
+              Đánh dấu đã giao
+            </button>
+          </div>
         </footer>
       }
     </aside>

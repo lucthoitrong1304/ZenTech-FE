@@ -113,7 +113,7 @@ export interface UploadPresignRequestDto {
   originalFilename: string;
   contentType: string;
   fileSize: number;
-  purpose: 'CUSTOMER_AVATAR';
+  purpose: 'CUSTOMER_AVATAR' | 'RETURN_EVIDENCE';
 }
 
 export interface UploadPresignResponseDto {

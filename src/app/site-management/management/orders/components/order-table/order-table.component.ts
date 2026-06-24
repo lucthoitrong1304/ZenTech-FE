@@ -58,6 +58,10 @@ export class OrderTableComponent {
         return 'Đã hoàn thành';
       case 'CANCELLED':
         return 'Đã hủy';
+      case 'RETURN_REQUESTED':
+        return 'Yêu cầu trả hàng';
+      case 'RETURNED':
+        return 'Đã trả hàng';
       default:
         return status;
     }

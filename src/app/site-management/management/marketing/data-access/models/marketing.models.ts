@@ -67,6 +67,7 @@ export interface CouponRequest {
 export interface IssueVoucherRequest {
   couponId: string;
   customerId: string | null;
+  customerIds?: string[] | null;
 }
 
 export interface CouponFormValue {
