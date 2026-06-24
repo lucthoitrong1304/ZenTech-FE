@@ -29,8 +29,8 @@
 
 .product-group-dialog__header h2 {
   margin: 0;
-  font-size: 24px;
-  font-weight: 900;
+  font-size: 20px;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
@@ -58,7 +58,7 @@
 .product-picker__selected > span {
   color: rgba(79, 70, 50, 0.72);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -272,7 +272,7 @@
   color: #1c1b1b;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
   padding: 8px 11px;
 }
 
@@ -312,7 +312,7 @@
   border: 0;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .product-group-dialog__ghost {

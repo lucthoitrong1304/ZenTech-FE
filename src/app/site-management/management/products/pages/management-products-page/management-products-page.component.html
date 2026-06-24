@@ -16,37 +16,6 @@
     </button>
   </div>
 
-  <app-product-toolbar
-    [keyword]="store.query().keyword"
-    [categoryId]="store.query().categoryId"
-    [stockStatus]="store.query().stockStatus"
-    [sort]="store.query().sort"
-    [categories]="store.categories()"
-    [activeFilterCount]="store.activeFilterCount()"
-    [loading]="store.loading()"
-    (keywordChange)="store.setKeyword($event)"
-    (categoryChange)="store.setCategoryFilter($event)"
-    (stockStatusChange)="setStockFilter($event)"
-    (sortChange)="setSort($event)"
-    (applyFilters)="store.applyFilters()"
-    (resetFilters)="store.resetFilters()"
-  />
-
-  <app-product-table
-    [products]="store.products()"
-    [loading]="store.loading()"
-    [page]="store.query().page"
-    [totalPages]="store.totalPages()"
-    [totalElements]="store.totalElements()"
-    [pageStart]="store.pageStart()"
-    [pageEnd]="store.pageEnd()"
-    [canGoPrevious]="store.canGoPrevious()"
-    [canGoNext]="store.canGoNext()"
-    (editProduct)="editProduct($event)"
-    (deleteProduct)="confirmDeleteProduct($event)"
-    (pageChange)="store.goToPage($event)"
-  />
-
   <div class="product-stats-grid">
     <article>
       <span class="product-stat-icon product-stat-icon--secondary">
@@ -95,6 +64,38 @@
       </div>
     </article>
   </div>
+
+  <app-product-toolbar
+    [keyword]="store.query().keyword"
+    [categoryId]="store.query().categoryId"
+    [stockStatus]="store.query().stockStatus"
+    [sort]="store.query().sort"
+    [categories]="store.categories()"
+    [activeFilterCount]="store.activeFilterCount()"
+    [loading]="store.loading()"
+    (keywordChange)="store.setKeyword($event)"
+    (categoryChange)="store.setCategoryFilter($event)"
+    (stockStatusChange)="setStockFilter($event)"
+    (sortChange)="setSort($event)"
+    (applyFilters)="store.applyFilters()"
+    (resetFilters)="store.resetFilters()"
+  />
+
+  <app-product-table
+    [products]="store.products()"
+    [loading]="store.loading()"
+    [page]="store.query().page"
+    [totalPages]="store.totalPages()"
+    [totalElements]="store.totalElements()"
+    [pageStart]="store.pageStart()"
+    [pageEnd]="store.pageEnd()"
+    [canGoPrevious]="store.canGoPrevious()"
+    [canGoNext]="store.canGoNext()"
+    (editProduct)="editProduct($event)"
+    (deleteProduct)="confirmDeleteProduct($event)"
+    (pageChange)="store.goToPage($event)"
+  />
+
   <app-product-dialog
     [visible]="store.dialogVisible()"
     [mode]="store.dialogMode()"

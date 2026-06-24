@@ -5,24 +5,24 @@
   display: flex;
   flex-direction: column;
   gap: 22px;
-  padding: 24px;
-  color: #1c1b1b;
+  @apply bg-white min-h-screen text-[#1c1b1b] font-sans p-6;
 }
 
-/* Header & Controls Panel */
+/* Header & Controls Panel (Đồng bộ reports-command) */
 .pay-periods-command {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  min-height: 120px;
   padding: 24px;
   border: 1px solid rgba(210, 197, 171, 0.16);
-  border-radius: 12px;
+  border-radius: 10px;
   background:
-    linear-gradient(135deg, rgba(251, 188, 4, 0.08), transparent 45%),
-    linear-gradient(315deg, rgba(79, 70, 229, 0.04), transparent 40%),
+    linear-gradient(135deg, rgba(251, 188, 4, 0.12), transparent 40%),
+    linear-gradient(315deg, rgba(79, 70, 229, 0.08), transparent 36%),
     #ffffff;
-  box-shadow: 0 10px 30px rgba(28, 27, 27, 0.02);
+  box-shadow: 0 16px 42px rgba(28, 27, 27, 0.045);
 }
 
 .pay-periods-command__copy {
@@ -33,21 +33,20 @@
   color: rgba(79, 70, 50, 0.6);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .pay-periods-command h1 {
-  margin: 6px 0 8px 0;
+  margin: 8px 0;
   font-size: 24px;
   font-weight: 700;
-  line-height: 1.2;
-  color: #111827;
+  line-height: 1;
 }
 
 .pay-periods-command p {
   margin: 0;
-  color: #6b7280;
+  color: rgba(79, 70, 50, 0.72);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -57,8 +56,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 40px;
+  gap: 9px;
+  min-height: 44px;
   border: 0;
   border-radius: 999px;
   background: #fbbc04;
@@ -67,7 +66,7 @@
   font: inherit;
   font-size: 12px;
   font-weight: 700;
-  padding: 0 20px;
+  padding: 0 22px;
   text-transform: uppercase;
   white-space: nowrap;
   transition: all 0.15s ease;
@@ -85,22 +84,42 @@
 }
 
 .pay-periods-primary-action svg {
-  width: 16px;
-  height: 16px;
+  width: 17px;
+  height: 17px;
 }
 
-/* Premium surface cho danh sách kỳ công */
+/* Premium surface cho danh sách kỳ công (Đồng bộ reports-list-card) */
 .pay-periods-card {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(229, 231, 235, 0.8);
-  border-radius: 16px;
-  background: #ffffff;
-  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.02);
+  border: 1px solid rgba(79, 70, 229, 0.12);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 199, 0, 0.12), transparent 28%),
+    radial-gradient(circle at 92% 10%, rgba(79, 70, 229, 0.12), transparent 30%),
+    linear-gradient(145deg, #ffffff 0%, #f9fafb 64%, #eef2ff 100%);
+  box-shadow: 0 24px 70px rgba(17, 24, 39, 0.075);
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
+}
+
+.pay-periods-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 70, 229, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 70, 229, 0.04) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: linear-gradient(to bottom, #000, transparent 72%);
+  pointer-events: none;
+}
+
+.pay-periods-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .pay-periods-card-header {
@@ -120,15 +139,15 @@
   margin: 0;
   font-size: 13px;
   color: #6B7280;
-  line-height: 1.4;
 }
 
-/* Bảng Biểu dữ liệu Quản trị */
+/* Bảng Biểu dữ liệu Quản trị (Đồng bộ reports-table-wrapper) */
 .pay-periods-table-wrapper {
   overflow-x: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #ffffff;
+  border: 1px solid rgba(229, 231, 235, 0.78);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 16px 38px rgba(17, 24, 39, 0.045);
   width: 100%;
 }
 
@@ -140,11 +159,11 @@
 }
 
 .pay-periods-data-table th {
-  background: #f9fafb;
-  padding: 14px 18px;
+  background: rgba(249, 250, 251, 0.9);
+  padding: 14px 16px;
   font-weight: 700;
-  color: #4b5563;
-  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.92);
   text-transform: uppercase;
   font-size: 11px;
   letter-spacing: 0.04em;
@@ -152,9 +171,9 @@
 }
 
 .pay-periods-data-table td {
-  padding: 16px 18px;
-  border-bottom: 1px solid #f3f4f6;
-  color: #1f2937;
+  padding: 16px;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.72);
+  color: #111827;
   vertical-align: middle;
 }
 
@@ -163,11 +182,11 @@
 }
 
 .table-hover-row {
-  transition: background 0.15s ease;
+  transition: background 0.18s ease;
 }
 
 .table-hover-row:hover {
-  background: #f9fafb;
+  background: rgba(238, 242, 255, 0.52);
 }
 
 .period-name-cell {
@@ -296,6 +315,10 @@
   text-align: center;
   max-width: 440px;
   margin: 20px auto;
+  border: 1px solid rgba(229, 231, 235, 0.78);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 16px 38px rgba(17, 24, 39, 0.045);
 }
 
 .empty-state-illustration {

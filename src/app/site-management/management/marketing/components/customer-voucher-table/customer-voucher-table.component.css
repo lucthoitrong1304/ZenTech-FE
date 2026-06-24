@@ -8,14 +8,36 @@
 }
 
 .table-container {
-  @apply w-full overflow-hidden;
-  border: 1px solid rgba(229, 231, 235, 0.88);
-  border-radius: 22px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(79, 70, 229, 0.12);
+  border-radius: 24px;
   background:
-    radial-gradient(circle at 10% 0%, rgba(255, 199, 0, 0.09), transparent 28%),
-    radial-gradient(circle at 92% 8%, rgba(79, 70, 229, 0.1), transparent 30%),
-    rgba(255, 255, 255, 0.9);
-  box-shadow: 0 18px 46px rgba(17, 24, 39, 0.065);
+    radial-gradient(circle at 10% 0%, rgba(255, 199, 0, 0.12), transparent 28%),
+    radial-gradient(circle at 92% 10%, rgba(79, 70, 229, 0.12), transparent 30%),
+    linear-gradient(145deg, #ffffff 0%, #f9fafb 64%, #eef2ff 100%);
+  box-shadow: 0 24px 70px rgba(17, 24, 39, 0.075);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.table-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 70, 229, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 70, 229, 0.04) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: linear-gradient(to bottom, #000, transparent 72%);
+  pointer-events: none;
+}
+
+.table-container > * {
+  position: relative;
+  z-index: 1;
 }
 
 .table-loading {
@@ -46,11 +68,12 @@
 }
 
 .table-responsive {
-  @apply w-full overflow-x-auto;
-  display: block;
-  max-width: 100%;
-  -webkit-overflow-scrolling: touch;
-  background: rgba(255, 255, 255, 0.74);
+  overflow-x: auto;
+  border: 1px solid rgba(229, 231, 235, 0.78);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 16px 38px rgba(17, 24, 39, 0.045);
+  width: 100%;
 }
 
 .voucher-grid-table {
@@ -58,14 +81,22 @@
 }
 
 .voucher-grid-table th {
-  @apply border-b border-[#E5E7EB] px-6 py-4 text-xs font-bold text-[#6B7280] uppercase whitespace-nowrap;
   background: rgba(249, 250, 251, 0.9);
-  letter-spacing: 0.06em;
+  padding: 14px 16px;
+  font-weight: 700;
+  color: #374151;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.92);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .voucher-grid-table td {
-  @apply px-6 py-4 align-middle whitespace-nowrap;
+  padding: 16px;
   border-bottom: 1px solid rgba(229, 231, 235, 0.72);
+  color: #111827;
+  vertical-align: middle;
 }
 
 .voucher-grid-table tr {
@@ -144,8 +175,13 @@
 }
 
 .table-pagination {
-  @apply flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-[#E5E7EB];
-  background: rgba(249, 250, 251, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: transparent;
+  padding: 0;
+  margin-top: 6px;
 }
 
 .pagination-info {
@@ -157,7 +193,30 @@
 }
 
 .btn-page {
-  @apply px-4 py-2 rounded-full border border-[#E5E7EB] bg-white text-xs font-bold text-[#374151] hover:bg-[#EEF2FF] hover:text-[#4338CA] disabled:opacity-50 disabled:cursor-not-allowed transition-all;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 99px;
+  background: #ffffff;
+  color: #4b5563;
+  cursor: pointer;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.btn-page:hover:not(:disabled) {
+  background: #f9fafb;
+  color: #111827;
+  border-color: rgba(79, 70, 229, 0.2);
+}
+
+.btn-page:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .page-current {
@@ -188,6 +247,7 @@
 @media (max-width: 640px) {
   .table-pagination {
     align-items: stretch;
+    flex-direction: column;
   }
 
   .pagination-buttons {
