@@ -71,7 +71,7 @@
                 name="issueTarget"
               />
               <span class="radio-checkmark"></span>
-              <span class="radio-text">Gửi cho một khách hàng cụ thể</span>
+              <span class="radio-text">Gửi cho các khách hàng được chọn</span>
             </label>
           </div>
         </div>
@@ -100,8 +100,8 @@
               @for (cust of filteredCustomers(); track cust.customerId) {
                 <div
                   class="inline-customer-item"
-                  [class.selected]="formValue()!.customerId === cust.customerId"
-                  (click)="updateCustomer(cust.customerId)"
+                  [class.selected]="isCustomerSelected(cust.customerId)"
+                  (click)="toggleCustomerSelection(cust.customerId)"
                 >
                   <div class="customer-info-left">
                     <span class="cust-avatar" [style.background-color]="(cust.imageUrl && !isImageFailed(cust.customerId)) ? 'transparent' : getAvatarColor(cust.fullName)">
@@ -116,7 +116,7 @@
                       <span class="cust-email">{{ cust.email }}</span>
                     </div>
                   </div>
-                  @if (formValue()!.customerId === cust.customerId) {
+                  @if (isCustomerSelected(cust.customerId)) {
                     <span class="selected-badge">
                       <svg lucideCheck class="check-icon"></svg>
                     </span>
@@ -142,7 +142,7 @@
           <button type="button" class="btn-cancel" (click)="close.emit()" [disabled]="saving()">
             <span>Hủy</span>
           </button>
-          <button type="button" class="btn-save" (click)="onSubmit()" [disabled]="saving() || !formValue()!.couponId">
+          <button type="button" class="btn-save" (click)="onSubmit()" [disabled]="saving() || !formValue() || !formValue()!.couponId || (!issueToAll() && (!formValue()!.customerIds || formValue()!.customerIds.length === 0))">
             <span>{{ saving() ? 'Đang phát hành...' : 'Phát hành ngay' }}</span>
           </button>
         </footer>

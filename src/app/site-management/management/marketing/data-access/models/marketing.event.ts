@@ -115,6 +115,6 @@ export type MarketingEvent =
   | { type: MarketingEventType.IssueVoucherSubmitClicked }
   | { type: MarketingEventType.IssueVoucherSucceeded }
   | { type: MarketingEventType.IssueVoucherFailed; error: string }
-  | { type: MarketingEventType.IssueFormValueChanged; patch: { couponId: string; customerId: string | null } }
+  | { type: MarketingEventType.IssueFormValueChanged; patch: { couponId?: string; customerId?: string | null; customerIds?: string[] } }
   | { type: MarketingEventType.VoucherRevoked; customerVoucherId: string }
   | { type: MarketingEventType.VoucherRevokeFailed; error: string };

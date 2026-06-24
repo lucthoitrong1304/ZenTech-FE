@@ -16,13 +16,13 @@ export class IssueVoucherDialogComponent {
   visible = input<boolean>(false);
   coupons = input<ManagementCoupon[]>([]);
   customers = input<CustomerSummary[]>([]);
-  formValue = input<{ couponId: string; customerId: string | null } | null>(null);
+  formValue = input<{ couponId: string; customerId: string | null; customerIds: string[] } | null>(null);
   saving = input<boolean>(false);
   errors = input<Record<string, string>>({});
 
   close = output<void>();
   save = output<void>();
-  formValueChange = output<{ couponId: string; customerId: string | null }>();
+  formValueChange = output<{ couponId: string; customerId: string | null; customerIds: string[] }>();
 
   protected readonly issueToAll = signal<boolean>(true);
   protected readonly dropdownOpen = signal<boolean>(false);
@@ -49,7 +49,7 @@ export class IssueVoucherDialogComponent {
     effect(() => {
       if (this.visible()) {
         const current = this.formValue();
-        this.issueToAll.set(current ? current.customerId === null : true);
+        this.issueToAll.set(current ? (current.customerId === null && (!current.customerIds || current.customerIds.length === 0)) : true);
         this.dropdownOpen.set(false);
         this.searchTerm.set('');
       }
@@ -62,6 +62,7 @@ export class IssueVoucherDialogComponent {
       this.formValueChange.emit({
         couponId,
         customerId: current.customerId,
+        customerIds: current.customerIds || [],
       });
     }
   }
@@ -69,9 +70,11 @@ export class IssueVoucherDialogComponent {
   protected updateCustomer(customerId: string | null): void {
     const current = this.formValue();
     if (current) {
+      const customerIds = customerId ? [customerId] : [];
       this.formValueChange.emit({
         couponId: current.couponId,
         customerId,
+        customerIds,
       });
     }
   }
@@ -80,9 +83,38 @@ export class IssueVoucherDialogComponent {
     this.issueToAll.set(value);
     const current = this.formValue();
     if (current) {
+      const defaultCustomerId = value ? null : (this.customers().length > 0 ? this.customers()[0].customerId : null);
+      const defaultCustomerIds = defaultCustomerId ? [defaultCustomerId] : [];
       this.formValueChange.emit({
         couponId: current.couponId,
-        customerId: value ? null : (this.customers().length > 0 ? this.customers()[0].customerId : null),
+        customerId: defaultCustomerId,
+        customerIds: defaultCustomerIds,
+      });
+    }
+  }
+
+  protected isCustomerSelected(customerId: string): boolean {
+    const current = this.formValue();
+    if (!current) return false;
+    if (current.customerIds && current.customerIds.length > 0) {
+      return current.customerIds.includes(customerId);
+    }
+    return current.customerId === customerId;
+  }
+
+  protected toggleCustomerSelection(customerId: string): void {
+    const current = this.formValue();
+    if (current) {
+      let ids = current.customerIds || [];
+      if (ids.includes(customerId)) {
+        ids = ids.filter(id => id !== customerId);
+      } else {
+        ids = [...ids, customerId];
+      }
+      this.formValueChange.emit({
+        couponId: current.couponId,
+        customerId: ids.length > 0 ? ids[0] : null,
+        customerIds: ids,
       });
     }
   }
