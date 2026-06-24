@@ -4,6 +4,7 @@ import { ApiService } from '../../../../core/api/api.service';
 import { environment } from '../../../../../environments/environment';
 import {
   AdminDashboardData,
+  AdminObservabilityData,
   AdminResourceMetrics,
   ApiResponse,
   DashboardPeriod,
@@ -22,7 +23,18 @@ export class AdminDashboardService {
     return this.api.get<ApiResponse<AdminDashboardData>>(url);
   }
 
-  getResources(): Observable<ApiResponse<AdminResourceMetrics>> {
-    return this.api.get<ApiResponse<AdminResourceMetrics>>(`${this.baseUrl}/resources`);
+  getResources(period: DashboardPeriod, from?: string, to?: string): Observable<ApiResponse<AdminResourceMetrics>> {
+    let url = `${this.baseUrl}/resources?period=${period}`;
+    if (period === 'CUSTOM' && from && to) {
+      url += `&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+    }
+    return this.api.get<ApiResponse<AdminResourceMetrics>>(url);
   }
-}
+
+  getObservability(period: DashboardPeriod, from?: string, to?: string): Observable<ApiResponse<AdminObservabilityData>> {
+    let url = `${this.baseUrl}/observability?period=${period}`;
+    if (period === 'CUSTOM' && from && to) {
+      url += `&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+    }
+    return this.api.get<ApiResponse<AdminObservabilityData>>(url);
+  }}

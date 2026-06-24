@@ -201,6 +201,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  protected openResourceMonitoring(metric: 'cpu' | 'ram' | 'disk'): void {
+    this.router.navigate(['/admin/resource-monitoring'], { queryParams: { metric } });
+  }
   protected openIssue(_signature: string): void {
     this.router.navigate(['/admin/issues']);
   }
@@ -253,6 +256,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return value == null ? 0 : Math.min(100, Math.max(0, value));
   }
 
+  protected resourceHistoryPoints(metric: 'cpuUsagePercent' | 'ramUsagePercent' | 'diskUsagePercent'): string {
+    const values = (this.store.resources()?.history ?? [])
+      .map((point) => point[metric])
+      .filter((value): value is number => value != null && Number.isFinite(value));
+    if (values.length < 2) return '';
+
+    const width = 240;
+    const height = 38;
+    return values.map((value, index) => {
+      const x = (index / (values.length - 1)) * width;
+      const boundedValue = Math.min(100, Math.max(0, value));
+      const y = height - (boundedValue / 100) * height;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+  }
+
+  protected resourceHistoryLabel(): string {
+    return this.store.resources()?.historyAvailable
+      ? `Lịch sử Prometheus · ${this.periodLabel()}`
+      : 'Realtime trực tiếp · chưa có lịch sử Prometheus';
+  }
   protected formatBytes(value: number | null | undefined): string {
     if (value == null) return 'Không khả dụng';
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];

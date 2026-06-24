@@ -1,6 +1,7 @@
 export type DashboardPeriod = 'TODAY' | '7D' | '30D' | 'CUSTOM';
 export type DashboardHealth = 'HEALTHY' | 'DEGRADED' | 'CRITICAL';
 export type ResourceStatus = 'AVAILABLE' | 'UNAVAILABLE';
+export type ResourceMetricSource = 'PROMETHEUS' | 'DIRECT';
 
 export interface DashboardMetrics {
   issuesInPeriod: number;
@@ -82,8 +83,17 @@ export interface AdminDashboardData {
   topServices: DashboardServiceError[];
 }
 
+export interface ResourceHistoryPoint {
+  timestamp: string;
+  cpuUsagePercent: number | null;
+  ramUsagePercent: number | null;
+  diskUsagePercent: number | null;
+}
+
 export interface AdminResourceMetrics {
   status: ResourceStatus;
+  source: ResourceMetricSource;
+  historyAvailable: boolean;
   cpuUsagePercent: number | null;
   ramUsagePercent: number | null;
   diskUsagePercent: number | null;
@@ -94,10 +104,80 @@ export interface AdminResourceMetrics {
   diskPath: string | null;
   generatedAt: string;
   message: string | null;
+  history: ResourceHistoryPoint[];
 }
 
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
   message: string | null;
+}
+
+export interface ObservabilityHealthOverview {
+  cpuUsagePercent: number | null;
+  ramUsagePercent: number | null;
+  diskUsagePercent: number | null;
+  jvmHeapUsagePercent: number | null;
+  jvmHeapUsedBytes: number | null;
+  jvmHeapMaxBytes: number | null;
+  processCpuUsagePercent: number | null;
+  processUptimeSeconds: number | null;
+  liveThreads: number | null;
+  peakThreads: number | null;
+}
+
+export interface ObservabilityApiPerformance {
+  requestsPerMinute: number | null;
+  errorRatePercent: number | null;
+  p95LatencyMs: number | null;
+  averageLatencyMs: number | null;
+  activeRequests: number | null;
+}
+
+export interface ObservabilityHistoryPoint extends ResourceHistoryPoint {
+  jvmHeapUsagePercent: number | null;
+  requestsPerMinute: number | null;
+  errorRatePercent: number | null;
+  p95LatencyMs: number | null;
+}
+
+export interface ObservabilityApiAnomaly {
+  method: string;
+  uri: string;
+  status: string | null;
+  value: number;
+  unit: string;
+}
+
+export interface ObservabilityThresholdEvent {
+  timestamp: string;
+  metric: string;
+  value: number;
+  threshold: number;
+  severity: 'WARNING' | 'CRITICAL';
+}
+
+export interface ObservabilityDependency {
+  name: string;
+  status: 'UP' | 'DEGRADED' | 'DOWN';
+  detail: string;
+  primaryValue: number | null;
+  primaryUnit: string | null;
+  secondaryValue: number | null;
+  secondaryUnit: string | null;
+}
+
+export interface AdminObservabilityData {
+  period: DashboardPeriod;
+  from: string;
+  to: string;
+  generatedAt: string;
+  prometheusAvailable: boolean;
+  health: ObservabilityHealthOverview;
+  api: ObservabilityApiPerformance;
+  history: ObservabilityHistoryPoint[];
+  slowApis: ObservabilityApiAnomaly[];
+  errorApis: ObservabilityApiAnomaly[];
+  thresholdEvents: ObservabilityThresholdEvent[];
+  dependencies: ObservabilityDependency[];
 }

@@ -70,6 +70,16 @@ export const adminRoutes: Routes = [
           import('./tickets/pages/tickets/tickets.component').then(m => m.TicketsComponent)
       },
       {
+        path: 'resource-monitoring',
+        data: {
+          eyebrow: 'Giám sát hệ thống',
+          title: 'Giám sát tài nguyên',
+          description: 'Phân tích CPU, RAM và Disk theo thời gian thực cùng dữ liệu lịch sử được thu thập bởi Prometheus.'
+        },
+        loadComponent: () =>
+          import('./resource-monitoring/pages/resource-monitoring/resource-monitoring.component').then(m => m.ResourceMonitoringComponent)
+      },
+      {
         path: 'statistics',
         data: {
           eyebrow: 'Thống kê hệ thống',

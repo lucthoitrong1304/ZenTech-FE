@@ -78,7 +78,11 @@ export const AdminDashboardStore = signalStore(
     loadResources: rxMethod<void>(
       pipe(
         tap(() => patchState(store, { isRefreshingResources: true, resourceError: null })),
-        switchMap(() => service.getResources().pipe(
+        switchMap(() => service.getResources(
+          store.period(),
+          store.customFrom() ?? undefined,
+          store.customTo() ?? undefined,
+        ).pipe(
           tap((response) => patchState(store, {
             resources: response.data,
             isRefreshingResources: false,
@@ -101,11 +105,13 @@ export const AdminDashboardStore = signalStore(
     setPeriod(period: Exclude<DashboardPeriod, 'CUSTOM'>) {
       patchState(store, { period, customFrom: null, customTo: null });
       this.loadDashboard({});
+      this.loadResources();
     },
 
     setCustomRange(from: string, to: string) {
       patchState(store, { period: 'CUSTOM', customFrom: from, customTo: to });
       this.loadDashboard({});
+      this.loadResources();
     },
 
     refreshAll() {
