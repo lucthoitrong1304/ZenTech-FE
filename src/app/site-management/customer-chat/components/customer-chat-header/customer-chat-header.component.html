@@ -42,15 +42,17 @@
   </div>
 
   @if (!compact() && product(); as currentProduct) {
-    <a
-      [routerLink]="['/products', currentProduct.id]"
-      class="hidden min-w-0 flex-col justify-center text-center transition hover:opacity-80 lg:flex"
-    >
-      <strong class="block truncate text-sm font-bold text-[#111827]">{{ currentProduct.name }}</strong>
-      <small class="block truncate text-[11px] font-semibold text-zinc-500 mt-0.5">
-        {{ currentProduct.stockLabel }}
-      </small>
-    </a>
+    @if (currentProduct.id !== 'default-product') {
+      <a
+        [routerLink]="['/products', currentProduct.id]"
+        class="hidden min-w-0 flex-col justify-center text-center transition hover:opacity-80 lg:flex"
+      >
+        <strong class="block truncate text-sm font-bold text-[#111827]">{{ currentProduct.name }}</strong>
+        <small class="block truncate text-[11px] font-semibold text-zinc-500 mt-0.5">
+          {{ currentProduct.stockLabel }}
+        </small>
+      </a>
+    }
   }
 
   <div class="flex shrink-0 items-center gap-2">

@@ -1,4 +1,4 @@
-﻿import { ChatProductRecommendation } from '../../../../shared/components/chat-product-recommendations/chat-product-recommendations.model';
+import { ChatProductRecommendation } from '../../../../shared/components/chat-product-recommendations/chat-product-recommendations.model';
 
 export type CustomerChatSessionStatus = 'BOT_CONSULTING' | 'WAITING_FOR_AGENT' | 'AGENT_HANDLING' | 'CLOSED';
 
@@ -296,15 +296,13 @@ export function mapToCustomerChatSession(
     (p) =>
       p.status === ParticipantStatus.ACTIVE &&
       (p.userType === ParticipantType.EMPLOYEE || p.userType === ParticipantType.EXPERT)
-  );
-
-  const customer: CustomerChatParticipant = {
+  );  const customer: CustomerChatParticipant = {
     id: customerPart?.referenceId || conv.customerId || '',
     email: resolveParticipantEmail(customerPart) || conv.customerEmail || null,
-    name: customerPart?.displayName || conv.customerName || 'Báº¡n',
-    roleLabel: 'KhÃ¡ch hÃ ng',
+    name: customerPart?.displayName || conv.customerName || 'Bạn',
+    roleLabel: 'Khách hàng',
     avatarUrl: customerPart?.avatarUrl || null,
-    initials: getInitials(customerPart?.displayName || conv.customerName || 'Báº¡n'),
+    initials: getInitials(customerPart?.displayName || conv.customerName || 'Bạn'),
     online: true,
   };
 
@@ -312,7 +310,7 @@ export function mapToCustomerChatSession(
     id: botPart?.referenceId || 'zentech-ai',
     email: resolveParticipantEmail(botPart),
     name: botPart?.displayName || 'ZenTech AI',
-    roleLabel: 'Trá»£ lÃ½ AI',
+    roleLabel: 'Trợ lý AI',
     avatarUrl: null,
     initials: 'AI',
     online: true,
@@ -322,17 +320,17 @@ export function mapToCustomerChatSession(
     ? {
         id: staffPart.referenceId,
         email: resolveParticipantEmail(staffPart),
-        name: staffPart.displayName || 'NhÃ¢n viÃªn há»— trá»£',
-        roleLabel: 'TÆ° váº¥n viÃªn',
+        name: staffPart.displayName || 'Nhân viên hỗ trợ',
+        roleLabel: 'Tư vấn viên',
         avatarUrl: staffPart.avatarUrl || null,
-        initials: getInitials(staffPart.displayName || 'NhÃ¢n viÃªn há»— trá»£'),
+        initials: getInitials(staffPart.displayName || 'Nhân viên hỗ trợ'),
         online: true,
       }
     : null;
 
   const mappedMessages: CustomerChatMessage[] = messages.map((m) => {
     const senderPart = participants.find((p) => p.referenceId === m.senderReferenceId);
-    let senderName = senderPart?.displayName || 'NgÆ°á»i dÃ¹ng';
+    let senderName = senderPart?.displayName || 'Người dùng';
     let sender: CustomerChatMessageSender = 'CUSTOMER';
 
     if (m.senderType === ParticipantType.BOT) {
@@ -340,7 +338,7 @@ export function mapToCustomerChatSession(
       senderName = 'ZenTech AI';
     } else if (m.senderType === ParticipantType.CUSTOMER) {
       sender = 'CUSTOMER';
-      senderName = m.senderReferenceId === currentUserAccountId ? 'Báº¡n' : senderName;
+      senderName = m.senderReferenceId === currentUserAccountId ? 'Bạn' : senderName;
     } else {
       sender = 'STAFF';
     }
@@ -388,12 +386,12 @@ export function mapToCustomerChatSession(
       id: 'default-product',
       name: 'ZenTech Support',
       imageUrl: '',
-      priceLabel: 'Há»— trá»£',
-      stockLabel: 'Trung tÃ¢m há»— trá»£ khÃ¡ch hÃ ng',
+      priceLabel: 'Hỗ trợ',
+      stockLabel: 'Trung tâm hỗ trợ khách hàng',
     },
     messages: mappedMessages,
     sharedItems,
-    lastActivityLabel: conv.updatedAt ? formatTime(conv.updatedAt) : 'Vá»«a xong',
+    lastActivityLabel: conv.updatedAt ? formatTime(conv.updatedAt) : 'Vừa xong',
   };
 }
 

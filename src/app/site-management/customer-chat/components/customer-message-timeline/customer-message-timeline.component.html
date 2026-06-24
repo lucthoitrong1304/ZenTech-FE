@@ -14,140 +14,140 @@
     }
 
     @for (message of messages(); track message.id) {
-      <article
-        [id]="'msg-' + message.id"
-        class="message-bubble flex gap-3"
-        [class.ai-message]="message.sender === 'AI'"
-        [class.max-w-[960px]]="message.sender === 'AI'"
-        [class.max-w-[72%]]="message.sender !== 'AI'"
-        [class.ml-auto]="message.sender === 'CUSTOMER'"
-        [class.flex-row-reverse]="message.sender === 'CUSTOMER'"
-      >
-        <span
-          class="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-[8px]"
-          [class.bg-[#ffc700]]="message.sender === 'CUSTOMER'"
-          [class.text-[#101010]]="message.sender === 'CUSTOMER'"
-          [class.bg-[#101010]]="message.sender === 'AI'"
-          [class.text-[#ffc700]]="message.sender === 'AI'"
-          [class.shadow-[0_12px_28px_-18px_rgba(16,16,16,0.85)]]="message.sender === 'AI'"
-          [class.bg-[#4b41e1]]="message.sender === 'STAFF'"
-          [class.text-white]="message.sender === 'STAFF'"
+      @if (message.messageType === 'SYSTEM') {
+        <div class="mx-auto my-2 inline-flex items-center gap-2 rounded-full bg-[#101010]/5 px-4 py-1.5 text-xs font-medium text-[#4f4632]">
+          {{ message.body }}
+        </div>
+      } @else {
+        <article
+          [id]="'msg-' + message.id"
+          class="message-bubble flex gap-3"
+          [class.ai-message]="message.sender === 'AI'"
+          [class.max-w-[960px]]="message.sender === 'AI'"
+          [class.max-w-[72%]]="message.sender !== 'AI'"
+          [class.ml-auto]="message.sender === 'CUSTOMER'"
+          [class.flex-row-reverse]="message.sender === 'CUSTOMER'"
         >
-          @if (message.sender === 'AI') {
-            <svg lucideBot class="h-4 w-4" [attr.stroke-width]="2"></svg>
-          } @else if (message.sender === 'STAFF') {
-            <svg lucideUserRound class="h-4 w-4" [attr.stroke-width]="2"></svg>
-          } @else {
-            <span class="text-[10px] font-semibold">{{ customer()?.initials || 'BN' }}</span>
-          }
-        </span>
-
-        <div class="grid min-w-0 gap-1" [class.justify-items-end]="message.sender === 'CUSTOMER'">
-          <div
-            class="flex items-baseline gap-2"
-            [class.flex-row-reverse]="message.sender === 'CUSTOMER'"
+          <span
+            class="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-[8px]"
+            [class.bg-[#ffc700]]="message.sender === 'CUSTOMER'"
+            [class.text-[#101010]]="message.sender === 'CUSTOMER'"
+            [class.bg-[#101010]]="message.sender === 'AI'"
+            [class.text-[#ffc700]]="message.sender === 'AI'"
+            [class.shadow-[0_12px_28px_-18px_rgba(16,16,16,0.85)]]="message.sender === 'AI'"
+            [class.bg-[#4b41e1]]="message.sender === 'STAFF'"
+            [class.text-white]="message.sender === 'STAFF'"
           >
-            <strong class="truncate text-sm font-semibold text-[#101010]">
-              {{ message.senderName }}
-            </strong>
-            <span class="shrink-0 text-[10px] font-medium text-[#4f4632]/70">
-              {{ message.sentAtLabel }}
-            </span>
-          </div>
-
-          <div
-            class="grid max-w-full gap-3 rounded-[8px] px-3 py-2.5 text-sm leading-relaxed"
-            [class.rounded-tr-sm]="message.sender === 'CUSTOMER'"
-            [class.rounded-tl-sm]="message.sender !== 'CUSTOMER'"
-            [class.bg-[#F3F4F6]]="message.sender === 'CUSTOMER'"
-            [class.text-[#111827]]="message.sender === 'CUSTOMER'"
-            [class.pl-4]="message.sender === 'AI'"
-            [class.border]="message.sender === 'AI'"
-            [class.border-[#efe7cf]]="message.sender === 'AI'"
-            [class.bg-[#fffdf7]]="message.sender === 'AI'"
-            [class.text-[#1f2937]]="message.sender === 'AI'"
-            [class.shadow-[0_18px_46px_-34px_rgba(16,16,16,0.6)]]="message.sender === 'AI'"
-            [class.bg-white]="message.sender === 'STAFF'"
-            [class.text-[#111827]]="message.sender === 'STAFF'"
-            [class.shadow-[0_18px_42px_-34px_rgba(16,16,16,0.7)]]="message.sender !== 'AI'"
-          >
-            @if (message.messageType === 'CALL' && message.callData) {
-              <div class="flex items-center gap-3">
-                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#111827] shadow-sm">
-                  <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
-                </span>
-                <div class="flex flex-col">
-                  <strong class="text-sm font-semibold">{{ message.callData.status === 'ENDED' ? 'Cuộc gọi kết thúc' : (message.callData.status === 'BUSY' ? 'Máy bận' : 'Cuộc gọi nhỡ') }}</strong>
-                  <span class="text-xs font-medium opacity-80">{{ message.callData.duration }}</span>
-                </div>
-              </div>
+            @if (message.sender === 'AI') {
+              <svg lucideBot class="h-4 w-4" [attr.stroke-width]="2"></svg>
+            } @else if (message.sender === 'STAFF') {
+              <svg lucideUserRound class="h-4 w-4" [attr.stroke-width]="2"></svg>
             } @else {
-              @if (message.sender === 'AI') {
-                <markdown class="customer-ai-markdown" [data]="message.body"></markdown>
-              } @else {
-                <p>{{ message.body }}</p>
-              }
+              <span class="text-[10px] font-semibold">{{ customer()?.initials || 'BN' }}</span>
+            }
+          </span>
 
-              @if (message.recommendedProducts; as products) {
-                @if (products.length > 0) {
-                  <app-chat-product-recommendations [products]="products" />
+          <div class="grid min-w-0 gap-1" [class.justify-items-end]="message.sender === 'CUSTOMER'">
+            <div
+              class="flex items-baseline gap-2"
+              [class.flex-row-reverse]="message.sender === 'CUSTOMER'"
+            >
+              <strong class="truncate text-sm font-semibold text-[#101010]">
+                {{ message.senderName }}
+              </strong>
+              <span class="shrink-0 text-[10px] font-medium text-[#4f4632]/70">
+                {{ message.sentAtLabel }}
+              </span>
+            </div>
+
+            <div
+              class="grid max-w-full gap-3 rounded-[8px] px-3 py-2.5 text-sm leading-relaxed"
+              [class.rounded-tr-sm]="message.sender === 'CUSTOMER'"
+              [class.rounded-tl-sm]="message.sender !== 'CUSTOMER'"
+              [class.bg-[#F3F4F6]]="message.sender === 'CUSTOMER'"
+              [class.text-[#111827]]="message.sender === 'CUSTOMER'"
+              [class.pl-4]="message.sender === 'AI'"
+              [class.border]="message.sender === 'AI'"
+              [class.border-[#efe7cf]]="message.sender === 'AI'"
+              [class.bg-[#fffdf7]]="message.sender === 'AI'"
+              [class.text-[#1f2937]]="message.sender === 'AI'"
+              [class.shadow-[0_18px_46px_-34px_rgba(16,16,16,0.6)]]="message.sender === 'AI'"
+              [class.bg-white]="message.sender === 'STAFF'"
+              [class.text-[#111827]]="message.sender === 'STAFF'"
+              [class.shadow-[0_18px_42px_-34px_rgba(16,16,16,0.7)]]="message.sender !== 'AI'"
+            >
+              @if (message.messageType === 'CALL' && message.callData) {
+                <div class="flex items-center gap-3">
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#111827] shadow-sm">
+                    <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                  </span>
+                  <div class="flex flex-col">
+                    <strong class="text-sm font-semibold">{{ message.callData.status === 'ENDED' ? 'Cuộc gọi kết thúc' : (message.callData.status === 'BUSY' ? 'Máy bận' : 'Cuộc gọi nhỡ') }}</strong>
+                    <span class="text-xs font-medium opacity-80">{{ message.callData.duration }}</span>
+                  </div>
+                </div>
+              } @else {
+                @if (message.sender === 'AI') {
+                  <markdown class="customer-ai-markdown" [data]="message.body"></markdown>
+                } @else {
+                  <p>{{ message.body }}</p>
+                }
+
+                @if (message.recommendedProducts; as products) {
+                  @if (products.length > 0) {
+                    <app-chat-product-recommendations [products]="products" />
+                  }
+                }
+
+                @if (message.attachments.length > 0) {
+                  <div class="grid gap-2">
+                    @for (attachment of message.attachments; track attachment.id) {
+                      @if (isPreviewable(attachment)) {
+                        <button
+                          type="button"
+                          class="flex min-w-0 items-center gap-2 rounded-[6px] border-0 bg-[#f6f3f2] p-2 text-left text-[#101010]"
+                          [title]="attachment.title"
+                          (click)="requestPreview(attachment)"
+                        >
+                          @if (attachment.type === 'IMAGE' && attachment.thumbnailUrl) {
+                            <img
+                              [src]="attachment.thumbnailUrl"
+                              [alt]="attachment.title"
+                              class="h-12 w-12 rounded-[5px] object-cover"
+                            />
+                          } @else {
+                            <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] bg-[#ebe7e7] text-[#4f4632]">
+                              <svg lucideImage class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                            </span>
+                          }
+                          <span class="min-w-0 truncate text-xs font-semibold">{{ attachment.title }}</span>
+                        </button>
+                      } @else {
+                        <a
+                          [href]="attachment.url"
+                          [attr.download]="attachment.type === 'FILE' ? attachment.title : null"
+                          [attr.target]="attachment.type === 'LINK' ? '_blank' : null"
+                          rel="noreferrer"
+                          class="flex min-w-0 items-center gap-2 rounded-[6px] bg-[#f6f3f2] p-2 text-[#101010]"
+                        >
+                          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] bg-[#ebe7e7] text-[#4f4632]">
+                            @if (attachment.type === 'FILE') {
+                              <svg lucideFileText class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                            } @else {
+                              <svg lucideImage class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                            }
+                          </span>
+                          <span class="min-w-0 truncate text-xs font-semibold">{{ attachment.title }}</span>
+                        </a>
+                      }
+                    }
+                  </div>
                 }
               }
-
-              @if (message.attachments.length > 0) {
-                <div class="grid gap-2">
-                  @for (attachment of message.attachments; track attachment.id) {
-                    @if (isPreviewable(attachment)) {
-                      <button
-                        type="button"
-                        class="flex min-w-0 items-center gap-2 rounded-[6px] border-0 bg-[#f6f3f2] p-2 text-left text-[#101010]"
-                        [title]="attachment.title"
-                        (click)="requestPreview(attachment)"
-                      >
-                        @if (attachment.type === 'IMAGE' && attachment.thumbnailUrl) {
-                          <img
-                            [src]="attachment.thumbnailUrl"
-                            [alt]="attachment.title"
-                            class="h-12 w-12 rounded-[5px] object-cover"
-                          />
-                        } @else {
-                          <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] bg-[#ebe7e7] text-[#4f4632]">
-                            <svg lucideImage class="h-5 w-5" [attr.stroke-width]="2"></svg>
-                          </span>
-                        }
-                        <span class="min-w-0 truncate text-xs font-semibold">{{ attachment.title }}</span>
-                      </button>
-                    } @else {
-                      <a
-                        [href]="attachment.url"
-                        [attr.download]="attachment.type === 'FILE' ? attachment.title : null"
-                        [attr.target]="attachment.type === 'LINK' ? '_blank' : null"
-                        rel="noreferrer"
-                        class="flex min-w-0 items-center gap-2 rounded-[6px] bg-[#f6f3f2] p-2 text-[#101010]"
-                      >
-                        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-[5px] bg-[#ebe7e7] text-[#4f4632]">
-                          @if (attachment.type === 'FILE') {
-                            <svg lucideFileText class="h-5 w-5" [attr.stroke-width]="2"></svg>
-                          } @else {
-                            <svg lucideImage class="h-5 w-5" [attr.stroke-width]="2"></svg>
-                          }
-                        </span>
-                        <span class="min-w-0 truncate text-xs font-semibold">{{ attachment.title }}</span>
-                      </a>
-                    }
-                  }
-                </div>
-              }
-            }
+            </div>
           </div>
-        </div>
-      </article>
-    }
-
-    @if (staff(); as currentStaff) {
-      <div class="mx-auto inline-flex items-center gap-2 rounded-full bg-[#101010] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#ffc700]">
-        {{ currentStaff.name }} đã tham gia cuộc trò chuyện
-      </div>
+        </article>
+      }
     }
   </div>
 </section>

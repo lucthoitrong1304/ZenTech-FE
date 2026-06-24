@@ -35,6 +35,7 @@ import {
   ConversationResponse,
   ConversationStatus,
   ParticipantType,
+  ParticipantStatus,
   formatTime,
   ChatMessageType,
   ChatAttachmentType,
@@ -543,6 +544,11 @@ export const ManagementChatStore = signalStore(
               messageSub = websocketService
                 .subscribe<ChatMessageResponse>(`/topic/conversations.${id}`)
                 .subscribe((msg) => {
+                  // Check if this is a chat message response, not a conversation status update
+                  if (!msg || !msg.messageType) {
+                    return;
+                  }
+
                   if (msg.messageType as any === 'TEXT_STREAM_CHUNK') {
                     const streamingMsg = store.messages().find((m) => m.id === 'ai-streaming');
                     if (!streamingMsg) {
@@ -602,6 +608,11 @@ export const ManagementChatStore = signalStore(
               conversationSub = websocketService
                 .subscribe<ConversationResponse>(`/topic/conversations.${id}`)
                 .subscribe((updatedConv) => {
+                  // Check if this is a conversation status update, not a chat message response
+                  if (!updatedConv || (updatedConv as any).messageType) {
+                    return;
+                  }
+
                   const mapped = managementChatService.mapToManagementChatConversation(updatedConv);
                   patchState(
                     store,
