@@ -64,7 +64,10 @@ export interface DashboardTicket {
 export interface DashboardServiceError {
   service: string;
   occurrences: number;
+  errorOccurrences: number;
+  warningOccurrences: number;
   latestIssueTitle: string;
+  latestIssueLevel: 'WARN' | 'ERROR' | string;
   lastSeen: string;
 }
 

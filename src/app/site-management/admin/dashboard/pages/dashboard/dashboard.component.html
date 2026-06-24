@@ -180,13 +180,20 @@
     <article class="chart-card">
       <div class="section-heading section-heading--compact">
         <div>
-          <span class="section-kicker">Operational trend</span>
-          <h2>Xu hướng vận hành</h2>
-          <p>Issues phát sinh và tiến độ xử lý incident trong {{ periodLabel().toLowerCase() }}.</p>
+          <span class="section-kicker">DIỄN BIẾN VẬN HÀNH</span>
+          <h2>Diễn biến vận hành</h2>
+          <p>Theo dõi vấn đề phát sinh và tiến độ xử lý sự cố trong {{ periodLabel().toLowerCase() }}.</p>
         </div>
         <span class="resolution-badge">
-          {{ store.metrics()?.incidentResolutionRate ?? 0 }}% xử lý
+          Tỷ lệ xử lý {{ store.metrics()?.incidentResolutionRate ?? 0 }}%
         </span>
+      </div>
+      <div class="trend-legend" aria-label="Bật hoặc tắt đường dữ liệu trên biểu đồ">
+        @for (series of trendSeries; track series.key) {
+          <button type="button" [class.trend-legend__item--hidden]="isTrendSeriesHidden(series.key)" (click)="toggleTrendSeries(series.key)" [attr.aria-pressed]="!isTrendSeriesHidden(series.key)">
+            <span [style.--legend-color]="series.color"></span>{{ series.label }}
+          </button>
+        }
       </div>
       <div class="chart-container">
         @if (store.trend().length) {
@@ -200,9 +207,9 @@
     <article class="services-card">
       <div class="section-heading section-heading--compact">
         <div>
-          <span class="section-kicker">Error concentration</span>
-          <h2>Dịch vụ / API cần chú ý</h2>
-          <p>Nơi tập trung nhiều WARN và ERROR nhất trong kỳ.</p>
+          <span class="section-kicker">ĐIỂM NÓNG CẢNH BÁO</span>
+          <h2>Dịch vụ có cảnh báo nổi bật</h2>
+          <p>Ưu tiên theo số ERROR và WARN ghi nhận trong kỳ.</p>
         </div>
         <svg lucideGauge class="heading-icon" [attr.stroke-width]="2"></svg>
       </div>
@@ -214,14 +221,22 @@
       } @else {
         <div class="service-list">
           @for (service of store.topServices(); track service.service; let rank = $index) {
-            <div class="service-row">
-              <span class="service-rank">{{ rank + 1 }}</span>
-              <span class="service-copy">
-                <strong>{{ service.service }}</strong>
-                <small>{{ service.latestIssueTitle }}</small>
-              </span>
-              <span class="service-count">{{ service.occurrences }}</span>
-            </div>
+            <article class="service-alert" [class.service-alert--error]="serviceSeverity(service) === 'error'" [class.service-alert--warning]="serviceSeverity(service) === 'warning'">
+              <div class="service-alert__top">
+                <span class="service-rank">{{ rank + 1 }}</span>
+                <span class="service-copy">
+                  <span class="service-name-row"><strong>{{ service.service }}</strong><em [class.level-error]="service.latestIssueLevel === 'ERROR'">{{ service.latestIssueLevel || 'WARN' }} gần nhất</em></span>
+                  <small [attr.title]="service.latestIssueTitle">{{ service.latestIssueTitle }}</small>
+                </span>
+                <span class="service-total"><b>{{ service.occurrences }}</b><small>tổng</small></span>
+              </div>
+              <div class="service-breakdown">
+                <span class="service-breakdown__error"><b>{{ service.errorOccurrences }}</b> ERROR</span>
+                <span class="service-breakdown__warning"><b>{{ service.warningOccurrences }}</b> WARN</span>
+                <small>{{ ageLabel(service.lastSeen) }}</small>
+              </div>
+              <div class="service-severity-track" aria-hidden="true"><span [style.width.%]="serviceErrorPercent(service)"></span></div>
+            </article>
           }
         </div>
       }

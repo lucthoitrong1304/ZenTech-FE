@@ -123,18 +123,18 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#111827', padding: 12, cornerRadius: 10,
+          backgroundColor: '#111827', padding: 13, cornerRadius: 10, titleFont: { size: 13 }, bodyFont: { size: 12, weight: '600' },
           callbacks: { label: (context: { dataset: { label?: string }; parsed: { y: number | null } }) =>
             `${context.dataset.label}: ${context.parsed.y == null ? 'N/A' : this.formatMetric(context.parsed.y, metric.unit)}` },
         },
       },
       scales: {
-        x: { grid: { display: false }, ticks: { color: '#94a3b8', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } },
+        x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 12, weight: '600' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 } },
         y: {
           beginAtZero: true,
           suggestedMax: metric.unit === '%' ? 100 : Math.ceil(maxValue * 1.15),
           max: metric.unit === '%' ? 100 : undefined,
-          ticks: { color: '#94a3b8', callback: (value: number | string) => this.formatMetric(Number(value), metric.unit) },
+          ticks: { color: '#64748b', font: { size: 12, weight: '600' }, callback: (value: number | string) => this.formatMetric(Number(value), metric.unit) },
           grid: { color: 'rgba(226,232,240,.75)' },
         },
       },
@@ -243,7 +243,7 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
 
   protected dependencyValueLabel(value: number, unit: string | null): string {
     const labels: Record<string, string> = {
-      active: 'đang dùng', pending: 'đang chờ', connections: 'kết nối', channels: 'kênh xử lý',
+      active: 'đang xử lý', idle: 'sẵn sàng', pending: 'đang chờ', connections: 'kết nối', channels: 'kênh xử lý',
     };
     return `${value.toFixed(value % 1 === 0 ? 0 : 1)} ${labels[unit ?? ''] ?? unit ?? ''}`.trim();
   }
@@ -281,6 +281,16 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
     const history = this.data()?.history ?? [];
     if (!history.length) return 'Chưa có dữ liệu lịch sử';
     return `Dữ liệu thực từ ${new Date(history[0].timestamp).toLocaleString('vi-VN')} đến ${new Date(history.at(-1)!.timestamp).toLocaleString('vi-VN')}`;
+  }
+
+  protected businessDependencies() {
+    const names = new Set(['MySQL', 'RabbitMQ', 'Qdrant']);
+    return (this.data()?.dependencies ?? []).filter((dependency) => names.has(dependency.name));
+  }
+
+  protected observabilityDependencies() {
+    const names = new Set(['Prometheus', 'Loki', 'Alloy']);
+    return (this.data()?.dependencies ?? []).filter((dependency) => names.has(dependency.name));
   }
 
   protected dependencyClass(status: string): string { return `dependency-card dependency-card--${status.toLowerCase()}`; }

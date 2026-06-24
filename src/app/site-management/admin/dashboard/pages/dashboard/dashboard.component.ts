@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnDestroy, OnInit, computed, inject } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -65,13 +65,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private overviewTimer: ReturnType<typeof setInterval> | null = null;
   private resourceTimer: ReturnType<typeof setInterval> | null = null;
 
+  protected readonly trendSeries = [
+    { key: 'issues', label: 'Vấn đề phát sinh', color: '#F59E0B' },
+    { key: 'created', label: 'Sự cố phát sinh', color: '#E11D48' },
+    { key: 'resolved', label: 'Sự cố đã xử lý', color: '#10B981' },
+  ] as const;
+  protected readonly hiddenTrendSeries = signal<Set<string>>(new Set());
+
   protected readonly chartData = computed(() => {
     const trend = this.store.trend();
     return {
       labels: trend.map((point) => point.label),
       datasets: [
         {
-          label: 'Issues',
+          label: 'Vấn đề phát sinh',
           data: trend.map((point) => point.issues),
           borderColor: '#F59E0B',
           backgroundColor: 'rgba(245, 158, 11, 0.12)',
@@ -80,9 +87,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
           borderWidth: 2,
           pointRadius: 2,
           pointHoverRadius: 5,
+          hidden: this.hiddenTrendSeries().has('issues'),
         },
         {
-          label: 'Incidents mới',
+          label: 'Sự cố phát sinh',
           data: trend.map((point) => point.incidentsCreated),
           borderColor: '#E11D48',
           backgroundColor: 'rgba(225, 29, 72, 0.04)',
@@ -91,9 +99,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
           borderWidth: 2,
           pointRadius: 2,
           pointHoverRadius: 5,
+          hidden: this.hiddenTrendSeries().has('created'),
         },
         {
-          label: 'Đã xử lý',
+          label: 'Sự cố đã xử lý',
           data: trend.map((point) => point.incidentsResolved),
           borderColor: '#10B981',
           backgroundColor: 'rgba(16, 185, 129, 0.04)',
@@ -102,6 +111,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           borderWidth: 2,
           pointRadius: 2,
           pointHoverRadius: 5,
+          hidden: this.hiddenTrendSeries().has('resolved'),
         },
       ],
     };
@@ -112,36 +122,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
     maintainAspectRatio: false,
     interaction: { mode: 'index', intersect: false },
     plugins: {
-      legend: {
-        position: 'top',
-        align: 'end',
-        labels: {
-          usePointStyle: true,
-          boxWidth: 8,
-          color: '#475569',
-          font: { family: 'Inter, sans-serif', size: 11, weight: '600' },
-        },
-      },
+      legend: { display: false },
       tooltip: {
         backgroundColor: '#111827',
         padding: 12,
         cornerRadius: 10,
-        titleFont: { family: 'Inter, sans-serif', size: 12, weight: '700' },
-        bodyFont: { family: 'Inter, sans-serif', size: 12 },
+        titleFont: { family: 'Inter, sans-serif', size: 13, weight: '700' },
+        bodyFont: { family: 'Inter, sans-serif', size: 12, weight: '600' },
       },
     },
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: '#94A3B8', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 },
+        ticks: { color: '#64748B', font: { size: 12, weight: '600' }, maxRotation: 0, autoSkip: true, maxTicksLimit: 10 },
       },
       y: {
         beginAtZero: true,
-        ticks: { color: '#94A3B8', precision: 0 },
+        ticks: { color: '#64748B', font: { size: 12, weight: '600' }, precision: 0 },
         grid: { color: 'rgba(226, 232, 240, 0.7)' },
       },
     },
   };
+
+  protected serviceSeverity(service: { errorOccurrences: number; warningOccurrences: number }): 'error' | 'warning' {
+    return service.errorOccurrences > 0 ? 'error' : 'warning';
+  }
+
+  protected serviceErrorPercent(service: { occurrences: number; errorOccurrences: number }): number {
+    return service.occurrences > 0 ? Math.min(100, service.errorOccurrences * 100 / service.occurrences) : 0;
+  }
+
+  protected toggleTrendSeries(key: string): void {
+    const hidden = new Set(this.hiddenTrendSeries());
+    if (hidden.has(key)) hidden.delete(key);
+    else hidden.add(key);
+    this.hiddenTrendSeries.set(hidden);
+  }
+
+  protected isTrendSeriesHidden(key: string): boolean {
+    return this.hiddenTrendSeries().has(key);
+  }
 
   ngOnInit(): void {
     this.store.loadDashboard({});
