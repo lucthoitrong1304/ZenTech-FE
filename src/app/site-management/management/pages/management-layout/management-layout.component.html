@@ -1,7 +1,17 @@
 ﻿<div class="management-shell" [class.management-shell--chat-sidebar]="chatSidebarActive()">
   <header class="management-topbar">
     <nav class="management-breadcrumb" aria-label="Management breadcrumb">
-      <a routerLink="/management/dashboard" class="management-breadcrumb__brand">ZenTech</a>
+      <a routerLink="/management/dashboard" class="management-breadcrumb__brand" aria-label="ZenTech management home">
+        <span class="management-brand-mark" aria-hidden="true">
+          <span class="management-brand-mark__inner">
+            <span class="management-brand-mark__text">ZT</span>
+          </span>
+        </span>
+        <span class="management-brand-wordmark">
+          <span>Zen</span>
+          <span>Tech</span>
+        </span>
+      </a>
       <span class="management-breadcrumb__separator" aria-hidden="true">&gt;</span>
       <span class="management-breadcrumb__section">{{ header().eyebrow }}</span>
       <span class="management-breadcrumb__separator" aria-hidden="true">&gt;</span>

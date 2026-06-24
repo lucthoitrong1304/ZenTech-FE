@@ -19,8 +19,11 @@
   align-items: center;
   min-height: 72px;
   padding: 0 28px;
-  border-bottom: 1px solid rgba(210, 197, 171, 0.18);
-  background: rgba(252, 249, 248, 0.86);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 199, 0, 0.12), transparent 28%),
+    rgba(10, 10, 10, 0.92);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(18px);
 }
 
@@ -28,16 +31,77 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .management-breadcrumb__brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 11px;
+  min-width: 0;
   text-decoration: none;
-  font-size: 22px;
-  font-weight: 900;
+  outline: none;
+}
+
+.management-breadcrumb__brand:focus-visible {
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px rgba(255, 199, 0, 0.28);
+}
+
+.management-brand-mark {
+  display: inline-flex;
+  width: 42px;
+  height: 38px;
+  flex: 0 0 auto;
+  transform: skewX(-15deg);
+  border-radius: 6px;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #ffc700, #ff8a00);
+  box-shadow: 0 0 20px rgba(255, 183, 0, 0.18);
+}
+
+.management-brand-mark__inner {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: #0a0a0a;
+}
+
+.management-brand-mark__text {
+  transform: skewX(15deg);
+  font-size: 13px;
+  font-weight: 950;
+  font-style: italic;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #ffc700, #ff8a00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.management-brand-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.06em;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 950;
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.management-brand-wordmark span:last-child {
+  color: rgba(255, 255, 255, 0.42);
 }
 
 .management-breadcrumb__separator {
-  color: rgba(79, 70, 50, 0.42);
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .management-breadcrumb__section,
@@ -49,16 +113,26 @@
 }
 
 .management-breadcrumb__section {
-  border-radius: 7px;
-  background: #eef2ff;
-  color: #4f46e5;
+  border: 1px solid rgba(255, 199, 0, 0.18);
+  border-radius: 9999px;
+  background: rgba(255, 199, 0, 0.12);
+  color: #ffc700;
   font-size: 11px;
   font-weight: 800;
-  padding: 6px 10px;
+  padding: 7px 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .management-breadcrumb__page {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.055);
+  padding: 9px 14px;
   font-size: 13px;
+  font-weight: 650;
+  color: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .management-topbar__actions {
@@ -75,12 +149,25 @@
 
 .management-icon-button {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   place-items: center;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.72);
-  color: #4f4632;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.78);
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.management-icon-button:hover {
+  border-color: rgba(255, 199, 0, 0.28);
+  background: rgba(255, 255, 255, 0.11);
+  color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(255, 199, 0, 0.05);
 }
 
 .management-icon-button:disabled {
@@ -97,24 +184,24 @@
 }
 
 .management-notification-button app-notification-bell {
-  --notification-bell-color: #4f4632;
-  --notification-bell-hover-color: #1c1b1b;
-  --notification-bell-hover-bg: rgba(79, 70, 50, 0.08);
-  --notification-bell-size: 38px;
+  --notification-bell-color: rgba(255, 255, 255, 0.78);
+  --notification-bell-hover-color: #ffffff;
+  --notification-bell-hover-bg: rgba(255, 255, 255, 0.08);
+  --notification-bell-size: 42px;
 }
 
 :host ::ng-deep .management-notification-button .notification-bell-trigger {
-  color: #4f4632 !important;
+  color: rgba(255, 255, 255, 0.78) !important;
   background: transparent !important;
 }
 
 :host ::ng-deep .management-notification-button .notification-bell-trigger:hover {
-  color: #1c1b1b !important;
-  background: rgba(79, 70, 50, 0.08) !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 :host ::ng-deep .management-notification-button .notification-bell-icon {
-  color: #4f4632 !important;
+  color: currentColor !important;
   stroke: currentColor !important;
 }
 
@@ -123,8 +210,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid rgba(210, 197, 171, 0.16);
-  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.07);
   border-radius: 9999px;
   padding: 6px 14px 6px 6px;
   cursor: pointer;
@@ -134,9 +221,9 @@
 }
 
 .management-account-trigger:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(79, 70, 50, 0.24);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 199, 0, 0.36);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
 }
 
 .management-avatar {
@@ -145,8 +232,8 @@
   height: 32px;
   place-items: center;
   border-radius: 9999px;
-  background: #111111;
-  color: #fbbc04;
+  background: #0a0a0a;
+  color: #ffc700;
   font-size: 11px;
   font-weight: 900;
   flex-shrink: 0;
@@ -161,11 +248,11 @@
 .management-account-name {
   font-size: 13px;
   font-weight: 600;
-  color: #1c1b1b;
+  color: #ffffff;
 }
 
 .management-account-role {
-  color: rgba(79, 70, 50, 0.62);
+  color: rgba(255, 255, 255, 0.48);
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
@@ -175,12 +262,12 @@
 .management-account-chevron {
   width: 14px;
   height: 14px;
-  color: rgba(79, 70, 50, 0.42);
+  color: rgba(255, 255, 255, 0.42);
   transition: transform 0.2s ease;
 }
 
 .management-account-trigger:hover .management-account-chevron {
-  color: #1c1b1b;
+  color: #ffffff;
 }
 
 .management-sidebar {
