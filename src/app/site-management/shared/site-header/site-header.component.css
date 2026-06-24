@@ -313,6 +313,10 @@
   color: #ffc700;
 }
 
+.site-header__menu-item--search {
+  display: none !important;
+}
+
 @media (max-width: 1439px) {
   .site-header__inner {
     padding-inline: 1.5rem;
@@ -364,9 +368,25 @@
     width: 2.15rem;
   }
 
+  .site-header__brand {
+    gap: 0;
+  }
+
+  .site-header__wordmark {
+    display: none;
+  }
+
   .site-header__brand-mark {
     height: 2.15rem;
     width: 2.35rem;
+  }
+
+  .site-header__search-trigger {
+    display: none !important;
+  }
+
+  .site-header__menu-item--search {
+    display: flex !important;
   }
 }
 
