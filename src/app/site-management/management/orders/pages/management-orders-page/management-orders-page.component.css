@@ -1,10 +1,13 @@
+@import "tailwindcss" reference;
+
 .orders-page {
   display: grid;
   gap: 22px;
+  @apply bg-white min-h-screen text-[#1c1b1b] font-sans p-6;
 }
 
 .orders-command,
-.orders-stats article {
+.orders-page__error {
   border: 1px solid rgba(210, 197, 171, 0.16);
   border-radius: 10px;
   background: #ffffff;
@@ -28,19 +31,18 @@
   min-width: 0;
 }
 
-.orders-kicker,
-.orders-stats span {
+.orders-kicker {
   color: rgba(79, 70, 50, 0.6);
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .orders-command h1 {
   margin: 8px 0;
-  font-size: 32px;
-  font-weight: 950;
+  font-size: 24px;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -64,10 +66,16 @@
   cursor: pointer;
   font: inherit;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 700;
   padding: 0 22px;
   text-transform: uppercase;
   white-space: nowrap;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.orders-primary-action:hover {
+  background: #ffd633;
 }
 
 .orders-primary-action svg {
@@ -82,15 +90,64 @@
 }
 
 .orders-stats article {
+  position: relative;
+  overflow: hidden;
   display: grid;
   gap: 8px;
-  padding: 18px 20px;
+  min-height: 104px;
+  padding: 18px 18px 18px 20px;
+  border: 1px solid rgba(79, 70, 229, 0.1);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(79, 70, 229, 0.12), transparent 34%),
+    radial-gradient(circle at 12% 0%, rgba(255, 199, 0, 0.12), transparent 30%),
+    linear-gradient(145deg, #ffffff 0%, #f9fafb 70%, #eef2ff 100%);
+  box-shadow: 0 18px 46px rgba(17, 24, 39, 0.065);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.orders-stats article::before {
+  content: '';
+  position: absolute;
+  inset: auto -34px -48px auto;
+  width: 124px;
+  height: 124px;
+  border-radius: 999px;
+  background: rgba(79, 70, 229, 0.1);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.orders-stats article:hover {
+  transform: translateY(-3px);
+  border-color: rgba(79, 70, 229, 0.18);
+  box-shadow: 0 24px 58px rgba(79, 70, 229, 0.12);
+}
+
+.orders-stats article:hover::before {
+  transform: scale(1.08);
+  background: rgba(255, 199, 0, 0.16);
+}
+
+.orders-stats span,
+.orders-stats strong {
+  position: relative;
+  z-index: 1;
+}
+
+.orders-stats span {
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .orders-stats strong {
-  color: #1c1b1b;
-  font-size: 24px;
-  font-weight: 950;
+  color: #111827;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 @media (max-width: 760px) {
