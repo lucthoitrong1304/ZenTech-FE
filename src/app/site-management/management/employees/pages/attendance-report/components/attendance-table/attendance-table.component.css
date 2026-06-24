@@ -1,0 +1,309 @@
+.att-wrapper {
+  overflow-x: auto;
+}
+
+/* ===== TABLE ===== */
+.att-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.att-table th {
+  background: rgba(249, 250, 251, 0.9);
+  padding: 14px 16px;
+  font-weight: 700;
+  color: #374151;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.92);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.att-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.72);
+  color: #111827;
+  vertical-align: middle;
+}
+
+/* Date separator */
+.att-date-sep td {
+  background: rgba(238, 242, 255, 0.45);
+  font-size: 12px;
+  font-weight: 700;
+  color: #4f46e5;
+  padding: 9px 16px;
+  border-top: 1px solid rgba(79, 70, 229, 0.1);
+  border-bottom: 1px solid rgba(79, 70, 229, 0.1);
+  letter-spacing: 0.01em;
+}
+
+/* Data row */
+.att-row {
+  transition: background 0.15s ease;
+}
+
+.att-row:hover {
+  background: rgba(238, 242, 255, 0.4);
+}
+
+/* Name cell */
+.att-cell-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.att-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #6b7280;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  outline: none;
+}
+
+.att-expand-btn:hover {
+  background: rgba(79, 70, 229, 0.08);
+  color: #4f46e5;
+  border-color: rgba(79, 70, 229, 0.2);
+}
+
+/* Shift badge */
+.att-shift-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: rgba(249, 250, 251, 0.9);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #374151;
+  white-space: nowrap;
+}
+
+/* Time cells */
+.att-cell-time {
+  font-variant-numeric: tabular-nums;
+  color: #4b5563;
+}
+
+.att-cell-hours {
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Late/early penalty */
+.att-cell-penalty {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.att-penalty-late  { font-size: 11px; font-weight: 700; color: #dc2626; }
+.att-penalty-early { font-size: 11px; font-weight: 700; color: #d97706; }
+.att-penalty-none  { font-size: 12px; color: #9ca3af; }
+
+/* ===== STATUS BADGES ===== */
+.att-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.att-status-badge--sm {
+  font-size: 10px;
+  padding: 2px 8px;
+}
+
+.att-status--on-time   { background: rgba(22, 163, 74, 0.1);  color: #15803d; }
+.att-status--late      { background: rgba(220, 38, 38, 0.1);  color: #b91c1c; }
+.att-status--early     { background: rgba(217, 119, 6, 0.1);  color: #b45309; }
+.att-status--late-early{ background: rgba(234, 88, 12, 0.1);  color: #c2410c; }
+.att-status--miss-in   { background: rgba(124, 58, 237, 0.1); color: #7c3aed; }
+.att-status--miss-out  { background: rgba(37, 99, 235, 0.1);  color: #1d4ed8; }
+.att-status--absent    { background: rgba(244, 63, 94, 0.1);  color: #be123c; }
+.att-status--excused   { background: rgba(20, 184, 166, 0.1); color: #0f766e; }
+.att-status--off       { background: rgba(107, 114, 128, 0.1);color: #4b5563; }
+
+/* Empty state */
+.att-empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* ===== EXPANDABLE DETAIL ROW ===== */
+.att-detail-row td {
+  background: rgba(238, 242, 255, 0.25);
+  border-bottom: 1px solid rgba(79, 70, 229, 0.1);
+  padding: 0;
+}
+
+.att-timeline {
+  padding: 20px 24px 20px 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.att-timeline-title {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+}
+
+.att-timeline-track {
+  position: relative;
+  border-left: 2px dashed rgba(79, 70, 229, 0.2);
+  padding-left: 24px;
+  margin-left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.att-timeline-event {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.att-timeline-dot {
+  position: absolute;
+  left: -33px;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.att-timeline-dot::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.att-timeline-dot--indigo { color: #4f46e5; }
+.att-timeline-dot--green  { color: #10b981; }
+.att-timeline-dot--red    { color: #ef4444; background: rgba(254, 242, 242, 0.8); }
+.att-timeline-dot--amber  { color: #f59e0b; }
+
+.att-timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.att-timeline-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.att-timeline-label--error { color: #ef4444; }
+
+.att-timeline-content strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.att-timeline-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.att-summary-late  { font-weight: 700; color: #dc2626; }
+.att-summary-early { font-weight: 700; color: #d97706; }
+
+/* ===== PAGINATION ===== */
+.att-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(229, 231, 235, 0.72);
+  background: rgba(249, 250, 251, 0.6);
+}
+
+.att-pagination__info {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.att-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.att-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+  outline: none;
+}
+
+.att-page-btn:hover:not(:disabled) {
+  background: rgba(79, 70, 229, 0.08);
+  border-color: rgba(79, 70, 229, 0.2);
+  color: #4f46e5;
+}
+
+.att-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.att-page-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  min-width: 60px;
+  text-align: center;
+}

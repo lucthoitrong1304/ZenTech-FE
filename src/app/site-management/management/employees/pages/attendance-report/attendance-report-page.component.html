@@ -1,0 +1,65 @@
+<div class="atr-page">
+
+  <!-- Header -->
+  <div class="atr-command">
+    <div class="atr-command__copy">
+      <span class="atr-kicker">Điều hành kinh doanh</span>
+      <h1>Báo cáo chấm công</h1>
+      <p>Theo dõi thống kê và chi tiết lịch sử chấm công của nhân viên.</p>
+    </div>
+
+    <!-- Date Filter -->
+    <div class="atr-filter-bar">
+      <div class="atr-filter-group">
+        <label class="atr-filter-label">Từ</label>
+        <input type="date" [(ngModel)]="startDate" class="atr-filter-input" />
+      </div>
+      <div class="atr-filter-sep"></div>
+      <div class="atr-filter-group">
+        <label class="atr-filter-label">Đến</label>
+        <input type="date" [(ngModel)]="endDate" class="atr-filter-input" />
+      </div>
+      <button (click)="onFilter()" class="atr-filter-btn">
+        Lọc dữ liệu
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (store.isLoading()) {
+    <div class="atr-loading">
+      <div class="atr-spinner"></div>
+      <p>Đang tải dữ liệu chấm công...</p>
+    </div>
+  } @else if (store.error()) {
+    <div class="atr-error-banner">
+      <svg lucideAlertCircle class="w-5 h-5"></svg>
+      <div>
+        <h3>Đã có lỗi xảy ra</h3>
+        <p>{{ store.error() }}</p>
+      </div>
+    </div>
+  } @else {
+
+    <!-- Statistics Cards -->
+    <app-attendance-statistics-cards [statistics]="store.statistics()"></app-attendance-statistics-cards>
+
+    <!-- Data Table Card -->
+    <div class="atr-table-card">
+      <div class="atr-table-card-header">
+        <h3>Chi tiết chấm công</h3>
+        <p>Nhấn vào từng hàng để xem dòng thời gian sự kiện chi tiết trong ngày.</p>
+      </div>
+      <div class="atr-table-wrap">
+        <app-attendance-table
+          [records]="store.records()"
+          [totalRecords]="store.totalRecords()"
+          [page]="store.page()"
+          [size]="store.size()"
+          (pageChange)="onPageChange($event)">
+        </app-attendance-table>
+      </div>
+    </div>
+
+  }
+</div>
