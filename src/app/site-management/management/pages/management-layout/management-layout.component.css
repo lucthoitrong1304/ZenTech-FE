@@ -277,74 +277,84 @@
   display: flex;
   width: 256px;
   flex-direction: column;
-  gap: 18px;
+  gap: 0;
   overflow-y: auto;
-  border-right: 1px solid rgba(210, 197, 171, 0.16);
-  background: #f6f3f2;
-  padding: 24px 16px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 199, 0, 0.11), transparent 36%),
+    linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(10, 10, 10, 0.98));
+  box-shadow: 18px 0 52px rgba(0, 0, 0, 0.2);
+  padding: 18px 14px 24px;
 }
 
-.management-sidebar__heading {
-  padding: 0 14px 8px;
-}
-
-.management-sidebar__heading h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.management-sidebar__heading p,
 .management-nav__section > p {
-  margin: 7px 0 0;
-  color: rgba(79, 70, 50, 0.58);
+  margin: 0 0 7px;
+  color: rgba(255, 255, 255, 0.38);
   font-size: 10px;
   font-weight: 900;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
 .management-nav {
   display: grid;
-  gap: 18px;
+  gap: 22px;
 }
 
 .management-nav__section {
   display: grid;
-  gap: 6px;
+  gap: 9px;
 }
 
 .management-nav__section > p {
-  padding: 0 14px;
+  padding: 0 12px;
 }
 
 .management-nav__link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   justify-content: flex-start;
-  min-height: 44px;
+  min-height: 46px;
   width: 100%;
-  border: 0;
-  padding: 0 14px;
-  background: transparent;
-  color: rgba(79, 70, 50, 0.72);
+  border: 1px solid transparent;
+  border-radius: 13px;
+  padding: 0 13px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(255, 255, 255, 0.62);
   cursor: pointer;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 650;
   text-decoration: none;
   text-transform: uppercase;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .management-nav__link:hover {
-  background: rgba(255, 255, 255, 0.66);
-  color: #1c1b1b;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
 }
 
 .management-nav__link--active {
-  border-left: 4px solid #fbbc04;
-  background: rgba(251, 188, 4, 0.12);
-  color: #1c1b1b;
-  padding-left: 10px;
+  border-color: rgba(255, 199, 0, 0.32);
+  background:
+    linear-gradient(90deg, rgba(255, 199, 0, 0.2), rgba(255, 199, 0, 0.07)),
+    rgba(255, 255, 255, 0.055);
+  color: #ffffff;
+  box-shadow:
+    inset 3px 0 0 #ffc700,
+    0 10px 28px rgba(255, 199, 0, 0.08);
+}
+
+.management-nav__link--active svg {
+  color: #ffc700;
+  stroke: currentColor;
 }
 
 .management-nav__link--button {
@@ -361,7 +371,7 @@
 .management-nav__chevron {
   width: 14px;
   height: 14px;
-  color: rgba(79, 70, 50, 0.48);
+  color: rgba(255, 255, 255, 0.42);
   transition: transform 0.2s ease;
 }
 
@@ -371,32 +381,39 @@
 
 .management-nav__children {
   display: grid;
-  gap: 2px;
-  padding: 0 0 6px;
+  gap: 7px;
+  padding: 4px 0 8px;
 }
 
 .management-nav__child-link {
   display: flex;
   align-items: center;
-  min-height: 36px;
-  border-left: 4px solid transparent;
-  padding: 0 14px 0 44px;
-  color: rgba(79, 70, 50, 0.72);
+  min-height: 38px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  padding: 0 13px 0 42px;
+  color: rgba(255, 255, 255, 0.54);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 550;
+  letter-spacing: 0;
   text-decoration: none;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .management-nav__child-link:hover {
-  background: rgba(255, 255, 255, 0.58);
-  color: #1c1b1b;
+  border-color: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.86);
 }
 
 .management-nav__child-link--active {
-  border-left-color: #fbbc04;
-  background: rgba(251, 188, 4, 0.12);
-  color: #1c1b1b;
-  font-weight: 900;
+  border-color: rgba(255, 199, 0, 0.2);
+  background: rgba(255, 199, 0, 0.1);
+  color: #ffc700;
+  font-weight: 650;
 }
 
 .management-main {
@@ -429,7 +446,6 @@
     padding-inline: 12px;
   }
 
-  .management-sidebar__heading,
   .management-nav__section > p,
   .management-nav__link span,
   .management-nav__children,
@@ -443,7 +459,7 @@
   }
 
   .management-nav__link--active {
-    border-left: 0;
+    box-shadow: 0 8px 22px rgba(255, 199, 0, 0.08);
   }
 
   .management-main {
