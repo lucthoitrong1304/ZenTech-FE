@@ -76,6 +76,13 @@ export class OrderHistoryPageComponent {
     this.isDetailOpen = true;
   }
 
+  protected cancelOrder(orderId: string, event: Event): void {
+    event.stopPropagation();
+    if (confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
+      this.accountStore.cancelOrder(orderId);
+    }
+  }
+
   protected openReturnDialog(order: any, event: Event): void {
     event.stopPropagation();
     this.returningOrder = order;

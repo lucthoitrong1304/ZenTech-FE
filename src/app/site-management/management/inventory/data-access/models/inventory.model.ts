@@ -34,6 +34,7 @@ export interface InventorySummary {
   originalPrice: number;
   salePrice: number | null;
   stockQuantity: number;
+  faultyQuantity: number;
   representativeImageUrl: string | null;
 }
 
@@ -50,6 +51,7 @@ export interface InventoryTransaction {
   createdByName: string | null;
   createdByEmail: string | null;
   createdByAvatar: string | null;
+  targetWarehouse?: string | null;
 }
 
 export interface InventoryAdjustmentRequest {
@@ -58,6 +60,7 @@ export interface InventoryAdjustmentRequest {
   quantity: number;
   reason: InventoryTransactionReason;
   note: string;
+  targetWarehouse?: 'MAIN' | 'FAULTY';
 }
 
 export interface InventoryQuery {
@@ -83,6 +86,9 @@ export interface InventoryStats {
   totalItems: number;
   lowStockCount: number;
   outOfStockCount: number;
+  totalFaultyVariants: number;
+  totalFaultyQuantity: number;
+  highFaultyAlertCount: number;
 }
 
 export interface PageResponse<T> {

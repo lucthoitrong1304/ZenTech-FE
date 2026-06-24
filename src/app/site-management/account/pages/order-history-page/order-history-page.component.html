@@ -6,6 +6,18 @@
     </p>
   </header>
 
+  @if (accountStore.actionMessage()) {
+    <div class="mb-6 rounded-[12px] bg-[#d8f5dd] px-5 py-4 text-sm font-semibold text-[#166534] flex justify-between items-center">
+      <span>{{ accountStore.actionMessage() }}</span>
+      <button (click)="accountStore.clearActionMessage()" class="text-xs uppercase tracking-wider opacity-65 font-bold hover:opacity-100 cursor-pointer">Đóng</button>
+    </div>
+  }
+  @if (accountStore.error()) {
+    <div class="mb-6 rounded-[12px] bg-[#ffdad6] px-5 py-4 text-sm font-semibold text-[#93000a]">
+      {{ accountStore.error() }}
+    </div>
+  }
+
   <section class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center">
     <div class="flex flex-wrap gap-2 rounded-[14px] bg-[#f6f3f2] p-1">
       @for (filter of filters; track filter.value) {
@@ -86,6 +98,15 @@
               (click)="openReturnDialog(order, $event)"
             >
               Yêu cầu trả hàng
+            </button>
+          }
+          @if (order.orderStatus === 'CREATED' && order.paymentStatus === 'PENDING') {
+            <button
+              type="button"
+              class="inline-flex h-11 items-center rounded-full border border-red-600 px-6 text-sm font-bold text-red-600 transition hover:bg-red-50 cursor-pointer"
+              (click)="cancelOrder(order.orderId, $event)"
+            >
+              Hủy đơn
             </button>
           }
           <button
@@ -231,6 +252,18 @@
             <span>{{ detail.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
           </div>
         </div>
+
+        @if (detail.orderStatus === 'CREATED' && detail.paymentStatus === 'PENDING') {
+          <div class="flex justify-end pt-4">
+            <button
+              type="button"
+              class="w-full sm:w-auto inline-flex h-11 items-center justify-center rounded-full border border-red-600 px-6 text-sm font-bold text-red-600 transition hover:bg-red-50 cursor-pointer"
+              (click)="cancelOrder(detail.orderId, $event); isDetailOpen = false;"
+            >
+              Hủy đơn hàng này
+            </button>
+          </div>
+        }
       </div>
     } @else if (accountStore.loading()) {
       <div class="flex h-[200px] items-center justify-center">

@@ -1,42 +1,145 @@
-<div class="space-y-6">
+<section class="return-requests-page">
+  <!-- Command Banner Section -->
+  <div class="return-requests-command">
+    <div class="return-requests-command__copy">
+      <span class="return-requests-kicker">Return Control Center</span>
+      <h1>Quản lý Yêu cầu trả hàng</h1>
+      <p>Theo dõi, xử lý và cập nhật trạng thái các yêu cầu trả hàng trong hệ thống.</p>
+    </div>
+
+    <button type="button" class="return-requests-primary-action" (click)="exportReport()">
+      <svg lucideFileDown [attr.stroke-width]="2.2"></svg>
+      <span>Xuất báo cáo</span>
+    </button>
+  </div>
+  <!-- Toolbar Section -->
+  <div class="return-requests-toolbar">
+    <label class="return-requests-toolbar__search">
+      <svg lucideSearch [attr.stroke-width]="2"></svg>
+      <input
+        type="search"
+        [value]="store.searchKeyword()"
+        placeholder="Tìm theo mã đơn hoặc tên khách hàng..."
+        (input)="onKeywordInput($event)"
+      />
+    </label>
+
+    <div class="return-requests-toolbar__filters">
+      <!-- Lọc trạng thái -->
+      <label>
+        <svg lucideSlidersHorizontal [attr.stroke-width]="2"></svg>
+        <select [value]="store.statusFilter()" (change)="onStatusChange($event)">
+          <option value="ALL">Tất cả trạng thái</option>
+          <option value="PENDING">Chờ duyệt</option>
+          <option value="APPROVED">Đã duyệt</option>
+          <option value="REJECTED">Từ chối</option>
+        </select>
+      </label>
+
+      <!-- Lọc thời gian -->
+      <label>
+        <svg lucideCalendar [attr.stroke-width]="2"></svg>
+        <select [value]="store.dateFilter()" (change)="onDateFilterChange($event)">
+          <option value="ALL">Mọi thời gian</option>
+          <option value="TODAY">Hôm nay</option>
+          <option value="LAST7DAYS">7 ngày gần đây</option>
+          <option value="LAST30DAYS">30 ngày gần đây</option>
+          <option value="CUSTOM">Khoảng thời gian tự chọn...</option>
+        </select>
+      </label>
+
+      <!-- Ngày tự chọn -->
+      @if (store.dateFilter() === 'CUSTOM') {
+        <div class="return-requests-toolbar__date-group">
+          <label class="return-requests-toolbar__date-picker">
+            <span>Từ:</span>
+            <input
+              type="date"
+              [value]="store.startDate() || ''"
+              (change)="onStartDateChange($event)"
+            />
+          </label>
+          <label class="return-requests-toolbar__date-picker">
+            <span>Đến:</span>
+            <input
+              type="date"
+              [value]="store.endDate() || ''"
+              (change)="onEndDateChange($event)"
+            />
+          </label>
+        </div>
+      }
+
+      <!-- Sắp xếp -->
+      <label>
+        <select [value]="store.sortOrder()" (change)="onSortChange($event)">
+          <option value="NEWEST">Mới nhất</option>
+          <option value="OLDEST">Cũ nhất</option>
+        </select>
+      </label>
+
+      <!-- Reset -->
+      <button
+        type="button"
+        class="return-requests-toolbar__reset"
+        (click)="onResetFilters()"
+      >
+        <svg lucideX [attr.stroke-width]="2"></svg>
+        <span>Xóa bộ lọc</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Table Section -->
-  <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-    <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm text-gray-500">
-        <thead class="bg-gray-50 text-xs font-bold uppercase tracking-wider text-gray-700 border-b border-gray-200">
+  <div class="requests-card">
+    <div class="table-wrapper">
+      <table class="requests-table">
+        <thead class="table-header">
           <tr>
-            <th class="px-6 py-4">Mã đơn hàng</th>
-            <th class="px-6 py-4">Khách hàng</th>
-            <th class="px-6 py-4">Lý do</th>
-            <th class="px-6 py-4">Ngày yêu cầu</th>
-            <th class="px-6 py-4">Trạng thái</th>
-            <th class="px-6 py-4 text-right">Thao tác</th>
+            <th class="table-header-cell">Mã đơn hàng</th>
+            <th class="table-header-cell">Khách hàng</th>
+            <th class="table-header-cell">Lý do</th>
+            <th class="table-header-cell">Ngày yêu cầu</th>
+            <th class="table-header-cell">Trạng thái</th>
+            <th class="table-header-cell text-right">Thao tác</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
-          @for (req of store.requests(); track req.id) {
-            <tr class="hover:bg-gray-50 transition">
-              <td class="px-6 py-4 font-mono font-bold text-gray-900">
+          @for (req of store.paginatedRequests(); track req.id) {
+            <tr class="table-row clickable-row" (click)="viewRequest(req)">
+              <td class="table-cell-order">
                 #{{ getShortOrderId(req.orderId) }}
               </td>
-              <td class="px-6 py-4 font-semibold text-gray-900">
-                {{ req.customerName }}
+              <td class="table-cell-customer">
+                <div class="customer-info-cell">
+                  @if (req.customerAvatarUrl) {
+                    <img [src]="req.customerAvatarUrl" class="customer-avatar-sm" alt="Avatar" />
+                  } @else {
+                    <div class="customer-avatar-sm-fallback">
+                      {{ getInitials(req.customerName) }}
+                    </div>
+                  }
+                  <div class="customer-meta-sm">
+                    <span class="customer-name-sm">{{ req.customerName }}</span>
+                    <span class="customer-email-sm">{{ req.customerEmail || 'Chưa cung cấp email' }}</span>
+                  </div>
+                </div>
               </td>
-              <td class="px-6 py-4 text-xs font-medium text-gray-700">
+              <td class="table-cell-reason">
                 {{ req.reason }}
               </td>
-              <td class="px-6 py-4 text-xs text-gray-500">
+              <td class="table-cell-date">
                 {{ req.createdAt | date: 'dd/MM/yyyy HH:mm' }}
               </td>
-              <td class="px-6 py-4">
-                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="getStatusClass(req.status)">
+              <td class="table-cell-status">
+                <span class="status-badge" [ngClass]="getStatusClass(req.status)">
                   {{ getStatusLabel(req.status) }}
                 </span>
               </td>
-              <td class="px-6 py-4 text-right">
+              <td class="table-cell-action" (click)="$event.stopPropagation()">
                 <button
                   type="button"
-                  class="inline-flex h-9 items-center rounded-full bg-white border border-[#4f46e5] px-4 text-xs font-bold text-[#4f46e5] transition hover:bg-[#f4f2ff] cursor-pointer"
+                  class="btn-detail"
                   (click)="viewRequest(req)"
                 >
                   Chi tiết
@@ -45,14 +148,27 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="6" class="px-6 py-10 text-center font-semibold text-gray-400">
-                Không có yêu cầu trả hàng nào cần xử lý.
+              <td colspan="6" class="table-cell-empty">
+                Không có yêu cầu trả hàng nào phù hợp với bộ lọc.
               </td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+
+    <!-- Pagination -->
+    @if (store.totalElements() > 0) {
+      <p-paginator
+        styleClass="return-requests-paginator"
+        [first]="store.page() * store.pageSize()"
+        [rows]="store.pageSize()"
+        [totalRecords]="store.totalElements()"
+        (onPageChange)="handlePageChange($event)"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Hiển thị {first} - {last} trong số {totalRecords} yêu cầu"
+      />
+    }
   </div>
 
   <!-- Detail Dialog -->
@@ -60,129 +176,232 @@
     header="Chi tiết yêu cầu trả hàng"
     [(visible)]="isDetailOpen"
     [modal]="true"
-    [style]="{ width: '840px' }"
+    [style]="{ width: '880px' }"
     [breakpoints]="{ '960px': '95vw' }"
   >
     @if (store.selectedRequest(); as req) {
-      <div class="grid md:grid-cols-2 gap-6 py-4">
-        <!-- Left Column: Info & Decision -->
-        <div class="space-y-5">
-          <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
-            <div>
-              <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Mã đơn hàng</span>
-              <span class="font-mono text-sm font-bold text-gray-900">{{ req.orderId }}</span>
-            </div>
-            <div>
-              <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Khách hàng</span>
-              <span class="text-sm font-semibold text-gray-900">{{ req.customerName }}</span>
-            </div>
-            <div>
-              <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Ngày yêu cầu</span>
-              <span class="text-sm font-medium text-gray-700">{{ req.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
-            </div>
-            <div>
-              <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Lý do trả hàng</span>
-              <span class="inline-flex rounded-lg bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-800 mt-1">
-                {{ req.reason }}
-              </span>
-            </div>
-            @if (req.details) {
-              <div>
-                <span class="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Mô tả của khách hàng</span>
-                <p class="text-xs font-medium text-gray-600 mt-1 whitespace-pre-line leading-relaxed">
-                  {{ req.details }}
-                </p>
-              </div>
-            }
-          </div>
-
-          <!-- Decision Options (Only for PENDING status) -->
-          @if (req.status === 'PENDING') {
-            <div class="space-y-4">
-              <!-- Resellable Checkbox -->
-              <div class="p-4 rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-between">
-                <div class="pr-4">
-                  <h4 class="font-bold text-xs text-gray-900">Hoàn về kho bán hàng chính</h4>
-                  <p class="text-[10px] text-gray-500 mt-0.5">Sản phẩm còn mới và nguyên vẹn, có thể bán lại được.</p>
+      <div class="dialog-content-wrapper">
+        <!-- Top Section: 2 Columns (Info & Media) -->
+        <div class="dialog-grid">
+          <!-- Left Column: Info -->
+          <div class="dialog-info-column">
+            <!-- Customer details header -->
+            <div class="customer-detail-header">
+              @if (req.customerAvatarUrl) {
+                <img [src]="req.customerAvatarUrl" class="customer-detail-header__avatar" alt="Avatar" />
+              } @else {
+                <div class="customer-detail-header__avatar-fallback">
+                  {{ getInitials(req.customerName) }}
                 </div>
-                <input
-                  type="checkbox"
-                  [(ngModel)]="resellable"
-                  class="h-5 w-5 text-[#4f46e5] focus:ring-[#4f46e5] border-gray-300 rounded cursor-pointer"
-                />
-              </div>
-
-              <!-- Action buttons -->
-              <div class="flex justify-end gap-3 pt-3">
-                <button
-                  type="button"
-                  class="px-5 py-2.5 rounded-full border border-red-200 hover:bg-red-50 text-red-600 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
-                  (click)="handleReject(req.id)"
-                >
-                  <svg lucideX class="h-4 w-4" [attr.stroke-width]="2.5"></svg>
-                  Từ chối
-                </button>
-                <button
-                  type="button"
-                  class="px-6 py-2.5 rounded-full bg-[#ffc700] text-[#111827] hover:bg-[#ffd633] text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
-                  (click)="handleApprove(req.id)"
-                >
-                  <svg lucideCheck class="h-4 w-4" [attr.stroke-width]="2.5"></svg>
-                  Duyệt trả hàng
-                </button>
+              }
+              <div class="customer-detail-header__info">
+                <h4 class="customer-detail-header__name">{{ req.customerName }}</h4>
+                <p class="customer-detail-header__email">{{ req.customerEmail || 'Chưa cung cấp email' }}</p>
               </div>
             </div>
-          } @else {
-            <div class="p-4 rounded-xl border flex items-center gap-3"
-                 [ngClass]="req.status === 'APPROVED' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'">
-              <svg lucideInfo class="h-5 w-5 flex-shrink-0" [attr.stroke-width]="2"></svg>
+
+            <!-- Request details card -->
+            <div class="info-card">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <span class="info-label">Mã đơn hàng</span>
+                  <span class="info-value-mono text-xs break-all">{{ req.orderId }}</span>
+                </div>
+                <div>
+                  <span class="info-label">Ngày yêu cầu</span>
+                  <span class="info-value-medium">{{ req.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                </div>
+              </div>
               <div>
-                <h4 class="font-bold text-xs">Yêu cầu đã được xử lý</h4>
-                <p class="text-[10px] mt-0.5">
-                  Trạng thái xử lý: <strong class="font-bold">{{ getStatusLabel(req.status) }}</strong>.
-                  @if (req.status === 'APPROVED') {
-                    Sản phẩm được đánh giá: <strong class="font-bold">{{ req.resellable ? 'Hoàn kho bán hàng chính' : 'Lỗi/hỏng (Hủy sản phẩm)' }}</strong>.
-                  }
-                </p>
+                <span class="info-label">Lý do trả hàng</span>
+                <span class="reason-badge">
+                  {{ req.reason }}
+                </span>
               </div>
-            </div>
-          }
-        </div>
-
-        <!-- Right Column: Evidence Media -->
-        <div class="space-y-4">
-          <h3 class="font-bold text-xs uppercase tracking-wider text-gray-400 mb-2">Bằng chứng lỗi (Ảnh / Video)</h3>
-          
-          @if (req.proofFileUrls && req.proofFileUrls.length > 0) {
-            <div class="grid grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
-              @for (url of req.proofFileUrls; track url) {
-                <div class="relative aspect-square rounded-xl overflow-hidden bg-black border border-gray-200 flex items-center justify-center">
-                  @if (isImage(url)) {
-                    <a [href]="url" target="_blank" class="w-full h-full block">
-                      <img [src]="url" class="w-full h-full object-cover hover:scale-105 transition duration-300" />
-                    </a>
-                  } @else if (isVideo(url)) {
-                    <video controls class="w-full h-full object-cover">
-                      <source [src]="url" type="video/mp4">
-                      Trình duyệt không hỗ trợ xem video.
-                    </video>
-                  } @else {
-                    <div class="p-4 text-center text-xs text-white">
-                      <svg lucidePackage class="h-8 w-8 mx-auto text-gray-400 mb-1"></svg>
-                      <a [href]="url" target="_blank" class="underline hover:text-[#ffc700]">Tải tệp tin đính kèm</a>
-                    </div>
-                  }
+              @if (req.details) {
+                <div>
+                  <span class="info-label">Mô tả của khách hàng</span>
+                  <p class="info-description">
+                    {{ req.details }}
+                  </p>
                 </div>
               }
             </div>
-          } @else {
-            <div class="flex flex-col items-center justify-center p-10 border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400">
-              <svg lucideAlertCircle class="h-8 w-8 mb-2" [attr.stroke-width]="1.5"></svg>
-              <p class="text-xs font-semibold">Không có hình ảnh hoặc video đính kèm.</p>
+          </div>
+
+          <!-- Right Column: Evidence Media -->
+          <div class="evidence-column">
+            <h3 class="evidence-title">Bằng chứng lỗi (Ảnh / Video)</h3>
+            
+            @if (req.proofFileUrls && req.proofFileUrls.length > 0) {
+              <div class="media-grid">
+                @for (url of req.proofFileUrls; track url) {
+                  <div class="media-item-wrapper">
+                    @if (isImage(url)) {
+                      <a [href]="url" target="_blank" class="media-image-link">
+                        <img [src]="url" class="media-image" />
+                      </a>
+                    } @else if (isVideo(url)) {
+                      <video controls class="media-video">
+                        <source [src]="url" type="video/mp4">
+                        Trình duyệt không hỗ trợ xem video.
+                      </video>
+                    } @else {
+                      <div class="media-file-fallback">
+                        <svg lucidePackage class="media-fallback-icon"></svg>
+                        <a [href]="url" target="_blank" class="media-fallback-link">Tải tệp tin đính kèm</a>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="no-media-card">
+                <svg lucideAlertCircle class="no-media-icon" [attr.stroke-width]="1.5"></svg>
+                <p class="no-media-text">Không có hình ảnh hoặc video đính kèm.</p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Middle Section: Full-width Order Items -->
+        <div class="order-items-section">
+          <h3 class="order-items-title">Sản phẩm trong đơn hàng</h3>
+          <div class="order-items-card">
+            <table class="order-items-table">
+              <thead class="order-items-table__header">
+                <tr>
+                  <th class="order-items-table__header-cell">Sản phẩm</th>
+                  <th class="order-items-table__header-cell text-right">Đơn giá</th>
+                  <th class="order-items-table__header-cell text-center">SL</th>
+                  <th class="order-items-table__header-cell text-right">Thành tiền</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of req.orderItems; track item.orderItemId) {
+                  <tr class="order-items-table__row">
+                    <td class="order-items-table__cell">
+                      <div class="order-product-info">
+                        @if (item.productImage) {
+                          <img [src]="item.productImage" class="order-product-info__img" alt="Sản phẩm" />
+                        } @else {
+                          <div class="order-product-info__fallback">
+                            <svg lucidePackage></svg>
+                          </div>
+                        }
+                        <div class="order-product-info__meta">
+                          <span class="order-product-info__name">{{ item.productName }}</span>
+                          @if (item.variantName) {
+                            <span class="order-product-info__variant">{{ item.variantName }}</span>
+                          }
+                        </div>
+                      </div>
+                    </td>
+                    <td class="order-items-table__cell text-right order-items-table__price">
+                      {{ item.priceAtPurchase | currency: 'VND':'symbol':'1.0-0' }}
+                    </td>
+                    <td class="order-items-table__cell text-center order-items-table__quantity">
+                      {{ item.quantity }}
+                    </td>
+                    <td class="order-items-table__cell text-right order-items-table__total">
+                      {{ item.lineTotal | currency: 'VND':'symbol':'1.0-0' }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="px-4 py-6 text-center font-semibold text-gray-400">
+                      Không tìm thấy danh sách sản phẩm.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="order-pricing-summary">
+          <div class="order-pricing-summary__row">
+            <span>Tổng tiền hàng:</span>
+            <span class="order-pricing-summary__value">
+              {{ req.originalTotalPrice | currency: 'VND':'symbol':'1.0-0' }}
+            </span>
+          </div>
+          @if (req.discountAmount > 0) {
+            <div class="order-pricing-summary__row text-emerald-600">
+              <span>Giảm giá khuyến mãi:</span>
+              <span class="order-pricing-summary__value text-emerald-600">
+                -{{ req.discountAmount | currency: 'VND':'symbol':'1.0-0' }}
+              </span>
             </div>
           }
+          <div class="order-pricing-summary__row">
+            <span>Phí vận chuyển:</span>
+            <span class="order-pricing-summary__value">
+              {{ req.shippingFee | currency: 'VND':'symbol':'1.0-0' }}
+            </span>
+          </div>
+          <div class="order-pricing-summary__row order-pricing-summary__row--total">
+            <span>Tổng thanh toán đơn hàng:</span>
+            <span class="order-pricing-summary__value order-pricing-summary__value--total">
+              {{ req.finalPrice | currency: 'VND':'symbol':'1.0-0' }}
+            </span>
+          </div>
         </div>
+
+        <!-- Bottom Section: Decision Actions -->
+        @if (req.status === ReturnRequestStatus.PENDING) {
+          <div class="decision-section pt-4 border-t border-gray-150 mt-4">
+            <!-- Resellable Checkbox -->
+            <div class="checkbox-card">
+              <div class="checkbox-info">
+                <h4 class="decision-title">Hoàn về kho bán hàng chính</h4>
+                <p class="decision-description">Sản phẩm còn mới và nguyên vẹn, có thể bán lại được.</p>
+              </div>
+              <input
+                type="checkbox"
+                [(ngModel)]="resellable"
+                class="decision-checkbox"
+              />
+            </div>
+
+            <!-- Action buttons -->
+            <div class="action-buttons-wrapper">
+              <button
+                type="button"
+                class="btn-reject"
+                (click)="handleReject(req.id)"
+              >
+                <svg lucideX class="h-4 w-4" [attr.stroke-width]="2.5"></svg>
+                Từ chối
+              </button>
+              <button
+                type="button"
+                class="btn-approve"
+                (click)="handleApprove(req.id)"
+              >
+                <svg lucideCheck class="h-4 w-4" [attr.stroke-width]="2.5"></svg>
+                Duyệt trả hàng
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="processed-alert mt-4"
+               [ngClass]="req.status === ReturnRequestStatus.APPROVED ? 'processed-alert--approved' : 'processed-alert--rejected'">
+            <svg lucideInfo class="processed-alert-icon" [attr.stroke-width]="2"></svg>
+            <div>
+              <h4 class="processed-alert-title">Yêu cầu đã được xử lý</h4>
+              <p class="processed-alert-description">
+                Trạng thái xử lý: <strong class="font-bold">{{ getStatusLabel(req.status) }}</strong>.
+                @if (req.status === ReturnRequestStatus.APPROVED) {
+                  Sản phẩm được đánh giá: <strong class="font-bold">{{ req.resellable ? 'Hoàn kho bán hàng chính' : 'Lỗi/hỏng (Hủy sản phẩm)' }}</strong>.
+                }
+              </p>
+            </div>
+          </div>
+        }
       </div>
     }
   </p-dialog>
-</div>
+</section>
+

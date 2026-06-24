@@ -54,6 +54,29 @@
           </div>
         }
 
+        <!-- Kho áp dụng -->
+        <div class="form-group">
+          <label class="form-label">Kho áp dụng <strong class="required-asterisk">*</strong></label>
+          <div class="toggle-buttons">
+            <button
+              type="button"
+              class="toggle-btn toggle-btn--main"
+              [class.active]="targetWarehouse() === 'MAIN'"
+              (click)="setWarehouse('MAIN')"
+            >
+              <span>Kho chính (Tồn kho bán lẻ)</span>
+            </button>
+            <button
+              type="button"
+              class="toggle-btn toggle-btn--faulty"
+              [class.active]="targetWarehouse() === 'FAULTY'"
+              (click)="setWarehouse('FAULTY')"
+            >
+              <span>Kho hàng lỗi (Lỗi/Hỏng)</span>
+            </button>
+          </div>
+        </div>
+
         <!-- 1. Chọn loại giao dịch -->
         <div class="form-group">
           <label class="form-label">Loại giao dịch <strong class="required-asterisk">*</strong></label>

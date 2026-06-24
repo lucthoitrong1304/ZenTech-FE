@@ -88,6 +88,13 @@ export class AccountService {
     );
   }
 
+  cancelOrder(orderId: string): Observable<ApiResponseDto<CustomerOrderDetailResponse>> {
+    return this.apiService.post<unknown, ApiResponseDto<CustomerOrderDetailResponse>>(
+      `${this.baseUrl}/orders/${orderId}/cancel`,
+      {}
+    );
+  }
+
   getVouchers(
     page: number,
     size: number,
