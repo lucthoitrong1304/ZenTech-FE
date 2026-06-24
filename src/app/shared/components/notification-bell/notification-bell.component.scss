@@ -37,6 +37,28 @@
   width: 1.05rem;
 }
 
+.notification-bell-badge {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  padding: 0 0.25rem;
+  border: 2px solid var(--notification-bell-badge-border, #202020);
+  border-radius: 999px;
+  background: #f04452;
+  box-shadow: 0 2px 6px rgba(240, 68, 82, 0.35);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  pointer-events: none;
+}
+
 ::ng-deep {
   .notification-popover.p-popover {
     background: #121212 !important;
