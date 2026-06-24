@@ -68,6 +68,18 @@
           <div *ngIf="notification.type === 'CONVERSATION_TRANSFER'" class="w-8 h-8 rounded-lg bg-purple-950/40 text-purple-400 flex items-center justify-center">
             <svg lucideArrowRightLeft class="w-4 h-4" [attr.stroke-width]="2.2"></svg>
           </div>
+          <div *ngIf="notification.type === 'REQUEST_SUBMITTED'" class="w-8 h-8 rounded-lg bg-amber-950/40 text-amber-400 flex items-center justify-center">
+            <svg lucideClock class="w-4 h-4" [attr.stroke-width]="2.2"></svg>
+          </div>
+          <div *ngIf="notification.type === 'REQUEST_APPROVED'" class="w-8 h-8 rounded-lg bg-emerald-950/40 text-emerald-400 flex items-center justify-center">
+            <svg lucideCheckCircle class="w-4 h-4" [attr.stroke-width]="2.2"></svg>
+          </div>
+          <div *ngIf="notification.type === 'REQUEST_REJECTED'" class="w-8 h-8 rounded-lg bg-red-950/40 text-red-400 flex items-center justify-center">
+            <svg lucideXCircle class="w-4 h-4" [attr.stroke-width]="2.2"></svg>
+          </div>
+          <div *ngIf="notification.type === 'WORK_SCHEDULE'" class="w-8 h-8 rounded-lg bg-blue-950/40 text-blue-400 flex items-center justify-center">
+            <svg lucideCalendar class="w-4 h-4" [attr.stroke-width]="2.2"></svg>
+          </div>
         </div>
         
         <!-- Text content -->
