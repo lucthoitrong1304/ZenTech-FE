@@ -19,11 +19,9 @@
   align-items: center;
   min-height: 72px;
   padding: 0 28px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background:
-    radial-gradient(circle at 12% 0%, rgba(255, 199, 0, 0.12), transparent 28%),
-    rgba(10, 10, 10, 0.92);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.22);
+  border-bottom: 1px solid #e5e7eb;
+  background: rgba(246, 248, 251, 0.96);
+  box-shadow: none;
   backdrop-filter: blur(18px);
 }
 
@@ -38,7 +36,7 @@
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 11px;
+  gap: 0.06em;
   min-width: 0;
   text-decoration: none;
   outline: none;
@@ -49,44 +47,11 @@
   box-shadow: 0 0 0 3px rgba(255, 199, 0, 0.28);
 }
 
-.management-brand-mark {
-  display: inline-flex;
-  width: 42px;
-  height: 38px;
-  flex: 0 0 auto;
-  transform: skewX(-15deg);
-  border-radius: 6px;
-  padding: 1.5px;
-  background: linear-gradient(135deg, #ffc700, #ff8a00);
-  box-shadow: 0 0 20px rgba(255, 183, 0, 0.18);
-}
-
-.management-brand-mark__inner {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  justify-content: center;
-  border-radius: 5px;
-  background: #0a0a0a;
-}
-
-.management-brand-mark__text {
-  transform: skewX(15deg);
-  font-size: 13px;
-  font-weight: 950;
-  font-style: italic;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #ffc700, #ff8a00);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
 .management-brand-wordmark {
   display: inline-flex;
   align-items: baseline;
   gap: 0.06em;
-  color: #ffffff;
+  color: #111827;
   font-size: 20px;
   font-weight: 950;
   font-style: italic;
@@ -97,11 +62,11 @@
 }
 
 .management-brand-wordmark span:last-child {
-  color: rgba(255, 255, 255, 0.42);
+  color: #8a8172;
 }
 
 .management-breadcrumb__separator {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(75, 85, 99, 0.42);
 }
 
 .management-breadcrumb__section,
@@ -113,10 +78,10 @@
 }
 
 .management-breadcrumb__section {
-  border: 1px solid rgba(255, 199, 0, 0.18);
-  border-radius: 9999px;
-  background: rgba(255, 199, 0, 0.12);
-  color: #ffc700;
+  border: 1px solid #ead9a8;
+  border-radius: 10px;
+  background: #fff8df;
+  color: #9a6b00;
   font-size: 11px;
   font-weight: 800;
   padding: 7px 12px;
@@ -125,14 +90,15 @@
 }
 
 .management-breadcrumb__page {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid #e5e7eb;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.055);
+  background: #ffffff;
   padding: 9px 14px;
   font-size: 13px;
   font-weight: 650;
-  color: rgba(255, 255, 255, 0.82);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: #4b5563;
+  box-shadow: none;
+  text-transform: uppercase;
 }
 
 .management-topbar__actions {
@@ -152,10 +118,10 @@
   width: 42px;
   height: 42px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.78);
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #374151;
   transition:
     background-color 0.18s ease,
     border-color 0.18s ease,
@@ -164,10 +130,10 @@
 }
 
 .management-icon-button:hover {
-  border-color: rgba(255, 199, 0, 0.28);
-  background: rgba(255, 255, 255, 0.11);
-  color: #ffffff;
-  box-shadow: 0 0 0 1px rgba(255, 199, 0, 0.05);
+  border-color: #d1d5db;
+  background: #f9fafb;
+  color: #111827;
+  box-shadow: none;
 }
 
 .management-icon-button:disabled {
@@ -184,20 +150,20 @@
 }
 
 .management-notification-button app-notification-bell {
-  --notification-bell-color: rgba(255, 255, 255, 0.78);
-  --notification-bell-hover-color: #ffffff;
-  --notification-bell-hover-bg: rgba(255, 255, 255, 0.08);
+  --notification-bell-color: #374151;
+  --notification-bell-hover-color: #111827;
+  --notification-bell-hover-bg: rgba(255, 199, 0, 0.12);
   --notification-bell-size: 42px;
 }
 
 :host ::ng-deep .management-notification-button .notification-bell-trigger {
-  color: rgba(255, 255, 255, 0.78) !important;
+  color: #374151 !important;
   background: transparent !important;
 }
 
 :host ::ng-deep .management-notification-button .notification-bell-trigger:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.08) !important;
+  color: #111827 !important;
+  background: rgba(255, 199, 0, 0.12) !important;
 }
 
 :host ::ng-deep .management-notification-button .notification-bell-icon {
@@ -210,8 +176,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
   border-radius: 9999px;
   padding: 6px 14px 6px 6px;
   cursor: pointer;
@@ -221,9 +187,9 @@
 }
 
 .management-account-trigger:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 199, 0, 0.36);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+  background: #f9fafb;
+  border-color: #d1d5db;
+  box-shadow: none;
 }
 
 .management-avatar {
@@ -232,7 +198,7 @@
   height: 32px;
   place-items: center;
   border-radius: 9999px;
-  background: #0a0a0a;
+  background: #111827;
   color: #ffc700;
   font-size: 11px;
   font-weight: 900;
@@ -248,11 +214,11 @@
 .management-account-name {
   font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
+  color: #111827;
 }
 
 .management-account-role {
-  color: rgba(255, 255, 255, 0.48);
+  color: #8a8172;
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
@@ -262,12 +228,12 @@
 .management-account-chevron {
   width: 14px;
   height: 14px;
-  color: rgba(255, 255, 255, 0.42);
+  color: #9ca3af;
   transition: transform 0.2s ease;
 }
 
 .management-account-trigger:hover .management-account-chevron {
-  color: #ffffff;
+  color: #111827;
 }
 
 .management-sidebar {
@@ -279,35 +245,48 @@
   flex-direction: column;
   gap: 0;
   overflow-y: auto;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(255, 199, 0, 0.11), transparent 36%),
-    linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(10, 10, 10, 0.98));
-  box-shadow: 18px 0 52px rgba(0, 0, 0, 0.2);
+  border-right: 1px solid #e5e7eb;
+  background: #fbfaf8;
+  box-shadow: none;
   padding: 18px 14px 24px;
 }
 
-.management-nav__section > p {
-  margin: 0 0 7px;
-  color: rgba(255, 255, 255, 0.38);
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+/* Custom modern scrollbar for the sidebar */
+.management-sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.management-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.management-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 99px;
+}
+
+.management-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.15);
 }
 
 .management-nav {
   display: grid;
-  gap: 22px;
+  gap: 28px;
 }
 
 .management-nav__section {
   display: grid;
-  gap: 9px;
+  gap: 8px;
 }
 
 .management-nav__section > p {
+  margin: 0 0 8px;
   padding: 0 12px;
+  color: #8b867c;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: uppercase;
 }
 
 .management-nav__link {
@@ -316,16 +295,17 @@
   align-items: center;
   gap: 12px;
   justify-content: flex-start;
-  min-height: 46px;
+  min-height: 42px;
   width: 100%;
   border: 1px solid transparent;
-  border-radius: 13px;
-  padding: 0 13px;
-  background: rgba(255, 255, 255, 0.035);
-  color: rgba(255, 255, 255, 0.62);
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: transparent;
+  color: #596272;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-decoration: none;
   text-transform: uppercase;
   transition:
@@ -336,24 +316,21 @@
 }
 
 .management-nav__link:hover {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  border-color: transparent;
+  background: #ffffff;
+  color: #111827;
 }
 
 .management-nav__link--active {
-  border-color: rgba(255, 199, 0, 0.32);
-  background:
-    linear-gradient(90deg, rgba(255, 199, 0, 0.2), rgba(255, 199, 0, 0.07)),
-    rgba(255, 255, 255, 0.055);
-  color: #ffffff;
-  box-shadow:
-    inset 3px 0 0 #ffc700,
-    0 10px 28px rgba(255, 199, 0, 0.08);
+  border-color: transparent;
+  border-left-color: #8b867c;
+  background: transparent;
+  color: #111827;
+  box-shadow: inset 3px 0 0 #8b867c;
 }
 
 .management-nav__link--active svg {
-  color: #ffc700;
+  color: #8b867c;
   stroke: currentColor;
 }
 
@@ -371,7 +348,7 @@
 .management-nav__chevron {
   width: 14px;
   height: 14px;
-  color: rgba(255, 255, 255, 0.42);
+  color: #9ca3af;
   transition: transform 0.2s ease;
 }
 
@@ -381,22 +358,23 @@
 
 .management-nav__children {
   display: grid;
-  gap: 7px;
-  padding: 4px 0 8px;
+  gap: 6px;
+  padding: 4px 0 6px;
 }
 
 .management-nav__child-link {
   display: flex;
   align-items: center;
-  min-height: 38px;
+  min-height: 34px;
   border: 1px solid transparent;
-  border-radius: 11px;
-  padding: 0 13px 0 42px;
-  color: rgba(255, 255, 255, 0.54);
+  border-radius: 6px;
+  padding: 6px 12px 6px 42px;
+  color: #6b7280;
   font-size: 12px;
-  font-weight: 550;
-  letter-spacing: 0;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-decoration: none;
+  text-transform: uppercase;
   transition:
     background-color 0.18s ease,
     border-color 0.18s ease,
@@ -404,16 +382,17 @@
 }
 
 .management-nav__child-link:hover {
-  border-color: rgba(255, 255, 255, 0.07);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.86);
+  border-color: transparent;
+  background: #ffffff;
+  color: #111827;
 }
 
 .management-nav__child-link--active {
-  border-color: rgba(255, 199, 0, 0.2);
-  background: rgba(255, 199, 0, 0.1);
-  color: #ffc700;
-  font-weight: 650;
+  border-color: transparent;
+  border-left-color: #8b867c;
+  background: transparent;
+  color: #111827;
+  box-shadow: inset 3px 0 0 #8b867c;
 }
 
 .management-main {
@@ -459,7 +438,7 @@
   }
 
   .management-nav__link--active {
-    box-shadow: 0 8px 22px rgba(255, 199, 0, 0.08);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   }
 
   .management-main {
