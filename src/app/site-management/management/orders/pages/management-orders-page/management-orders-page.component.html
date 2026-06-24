@@ -12,21 +12,6 @@
     </button>
   </div>
 
-  <app-order-toolbar
-    [keyword]="store.query().keyword"
-    [status]="store.query().status"
-    [dateFilter]="store.query().dateFilter"
-    [sort]="store.query().sort"
-    [activeFilterCount]="store.activeFilterCount()"
-    [loading]="store.loading()"
-    (keywordChange)="setKeyword($event)"
-    (statusChange)="setStatusFilter($event)"
-    (dateFilterChange)="setDateFilter($event)"
-    (sortChange)="setSort($event)"
-    (applyFilters)="store.applyFilters()"
-    (resetFilters)="store.resetFilters()"
-  />
-
   <div class="orders-stats">
     <article>
       <span>Tổng đơn hàng</span>
@@ -41,6 +26,21 @@
       <strong>{{ store.orders().length }}</strong>
     </article>
   </div>
+
+  <app-order-toolbar
+    [keyword]="store.query().keyword"
+    [status]="store.query().status"
+    [dateFilter]="store.query().dateFilter"
+    [sort]="store.query().sort"
+    [activeFilterCount]="store.activeFilterCount()"
+    [loading]="store.loading()"
+    (keywordChange)="setKeyword($event)"
+    (statusChange)="setStatusFilter($event)"
+    (dateFilterChange)="setDateFilter($event)"
+    (sortChange)="setSort($event)"
+    (applyFilters)="store.applyFilters()"
+    (resetFilters)="store.resetFilters()"
+  />
 
   <app-order-table
     [orders]="store.orders()"

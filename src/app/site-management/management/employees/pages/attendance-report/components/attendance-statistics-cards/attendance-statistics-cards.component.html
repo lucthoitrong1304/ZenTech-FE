@@ -1,0 +1,71 @@
+@if (statistics()) {
+  <div class="asc-grid">
+
+    <!-- Tổng ngày công -->
+    <div class="asc-card asc-card--blue">
+      <div class="asc-card__icon">
+        <svg lucideUsers class="w-5 h-5"></svg>
+      </div>
+      <div class="asc-card__body">
+        <span class="asc-card__label">Tổng ngày công</span>
+        <strong class="asc-card__value">{{ statistics()!.totalRecords }}</strong>
+      </div>
+    </div>
+
+    <!-- Tổng giờ làm -->
+    <div class="asc-card asc-card--indigo">
+      <div class="asc-card__icon">
+        <svg lucideClock class="w-5 h-5"></svg>
+      </div>
+      <div class="asc-card__body">
+        <span class="asc-card__label">Tổng giờ làm</span>
+        <strong class="asc-card__value">{{ statistics()!.totalWorkingHours | number:'1.1-1' }}h</strong>
+      </div>
+    </div>
+
+    <!-- Đúng giờ -->
+    <div class="asc-card asc-card--green">
+      <div class="asc-card__icon">
+        <svg lucideCheckCircle2 class="w-5 h-5"></svg>
+      </div>
+      <div class="asc-card__body">
+        <span class="asc-card__label">Đúng giờ</span>
+        <strong class="asc-card__value">{{ statistics()!.totalOnTime }}</strong>
+      </div>
+    </div>
+
+    <!-- Muộn / Sớm -->
+    <div class="asc-card asc-card--red">
+      <div class="asc-card__icon">
+        <svg lucideAlertCircle class="w-5 h-5"></svg>
+      </div>
+      <div class="asc-card__body">
+        <span class="asc-card__label">Muộn / Sớm</span>
+        <strong class="asc-card__value">{{ statistics()!.totalLate }}/{{ statistics()!.totalEarly }}</strong>
+      </div>
+    </div>
+
+    <!-- Vắng không phép -->
+    <div class="asc-card asc-card--rose">
+      <div class="asc-card__icon">
+        <svg lucideCalendarDays class="w-5 h-5"></svg>
+      </div>
+      <div class="asc-card__body">
+        <span class="asc-card__label">Vắng không phép</span>
+        <strong class="asc-card__value">{{ statistics()!.totalAbsent }}</strong>
+      </div>
+    </div>
+
+    <!-- Nghỉ có phép -->
+    <div class="asc-card asc-card--teal">
+      <div class="asc-card__icon">
+        <svg lucideHeartHandshake class="w-5 h-5"></svg>
+      </div>
+      <div class="asc-card__body">
+        <span class="asc-card__label">Nghỉ có phép</span>
+        <strong class="asc-card__value">{{ statistics()!.totalLeave }}</strong>
+      </div>
+    </div>
+
+  </div>
+}

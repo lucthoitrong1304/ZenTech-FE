@@ -1,0 +1,148 @@
+<div class="pay-periods-page animate-fade-in">
+  <!-- Top Header Panel -->
+  <div class="pay-periods-command">
+    <div class="pay-periods-command__copy">
+      <span class="pay-periods-kicker">Công cụ quản trị</span>
+      <h1>Quản lý kỳ công</h1>
+      <p>Tạo kỳ công mới và quản lý trạng thái khóa dữ liệu tính công hàng tháng cho nhân viên.</p>
+    </div>
+    <button (click)="openCreateModal()" class="pay-periods-primary-action">
+      <svg lucidePlus class="w-4 h-4"></svg>
+      <span>Tạo kỳ công</span>
+    </button>
+  </div>
+
+  <!-- Table Card -->
+  <div class="pay-periods-card">
+    <div class="pay-periods-card-header">
+      <h3>Danh sách kỳ công</h3>
+      <p>Các chu kỳ chấm công hàng tháng. Trạng thái "Đang mở" cho phép ghi nhận công và sửa đổi, "Đã khóa" sẽ đóng băng dữ liệu để chốt lương.</p>
+    </div>
+
+    @if (periods().length > 0) {
+      <div class="pay-periods-table-wrapper">
+        <table class="pay-periods-data-table">
+          <thead>
+            <tr>
+              <th>Tên kỳ công</th>
+              <th>Ngày bắt đầu</th>
+              <th>Ngày kết thúc</th>
+              <th>Trạng thái</th>
+              <th>Chi tiết khóa</th>
+              <th class="text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (period of periods(); track period.id) {
+              <tr class="table-hover-row">
+                <td class="period-name-cell">{{ period.name }}</td>
+                <td class="date-cell">{{ period.startDate | date:'dd/MM/yyyy' }}</td>
+                <td class="date-cell">{{ period.endDate | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  @if (period.locked) {
+                    <span class="status-badge status-badge--locked">
+                      <svg lucideLock class="w-3.5 h-3.5"></svg>
+                      <span>Đã khóa</span>
+                    </span>
+                  } @else {
+                    <span class="status-badge status-badge--open">
+                      <svg lucideUnlock class="w-3.5 h-3.5"></svg>
+                      <span>Đang mở</span>
+                    </span>
+                  }
+                </td>
+                <td class="lock-detail-cell">
+                  @if (period.locked && period.lockedBy) {
+                    <div class="lock-detail-content">
+                      <span class="lock-by">Khóa bởi <strong>{{ period.lockedBy.fullName }}</strong></span>
+                      <span class="lock-time">vào {{ period.lockedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                    </div>
+                  } @else {
+                    <span class="lock-detail-empty">—</span>
+                  }
+                </td>
+                <td class="text-right action-cell">
+                  <button (click)="toggleLock(period)" 
+                          [disabled]="submittingId() === period.id"
+                          [ngClass]="period.locked ? 'btn-action btn-action--unlock' : 'btn-action btn-action--lock'">
+                    @if (submittingId() === period.id) {
+                      <svg lucideLoader2 class="w-3.5 h-3.5 animate-spin mr-1.5"></svg>
+                      <span>Đang xử lý...</span>
+                    } @else {
+                      @if (period.locked) {
+                        <svg lucideUnlock class="w-3.5 h-3.5 mr-1.5"></svg>
+                        <span>Mở khóa</span>
+                      } @else {
+                        <svg lucideLock class="w-3.5 h-3.5 mr-1.5"></svg>
+                        <span>Khóa kỳ công</span>
+                      }
+                    }
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <!-- Elegant Empty State -->
+      <div class="empty-state-container">
+        <div class="empty-state-illustration">
+          <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+            <path d="M8 14h.01"></path>
+            <path d="M12 14h.01"></path>
+            <path d="M16 14h.01"></path>
+            <path d="M8 18h.01"></path>
+            <path d="M12 18h.01"></path>
+            <path d="M16 18h.01"></path>
+          </svg>
+        </div>
+        <h4>Chưa có kỳ công nào</h4>
+        <p>Hệ thống chưa ghi nhận chu kỳ tính công nào. Hãy tạo mới một kỳ công để bắt đầu quản lý chấm công và lương thưởng.</p>
+        <button (click)="openCreateModal()" class="empty-state-btn">
+          <svg lucidePlus class="w-4 h-4"></svg>
+          <span>Tạo kỳ công đầu tiên</span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Create Modal -->
+  @if (modalOpen()) {
+    <div class="modal-backdrop" (click)="closeCreateModal()">
+      <div class="modal-dialog animate-slide-down" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+          <h2>Tạo kỳ công mới</h2>
+          <button (click)="closeCreateModal()" class="modal-close-btn" aria-label="Đóng">✕</button>
+        </header>
+        
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Tên kỳ công</label>
+            <input type="text" [(ngModel)]="newPeriod.name" placeholder="Ví dụ: Kỳ công Tháng 06/2026" class="form-input" />
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Ngày bắt đầu</label>
+              <input type="date" [(ngModel)]="newPeriod.startDate" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ngày kết thúc</label>
+              <input type="date" [(ngModel)]="newPeriod.endDate" class="form-input" />
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-footer">
+          <button (click)="closeCreateModal()" class="modal-btn modal-btn--secondary">Hủy</button>
+          <button (click)="createPeriod()" class="modal-btn modal-btn--primary">Tạo mới</button>
+        </footer>
+      </div>
+    </div>
+  }
+</div>

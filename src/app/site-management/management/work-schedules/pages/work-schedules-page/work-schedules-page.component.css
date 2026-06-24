@@ -7,17 +7,17 @@
 .work-schedules-toolbar,
 .work-schedules-panel,
 .work-schedules-shift-card {
-  border: none;
-  border-radius: 12px; /* rounded-xl for Card */
+  border: 1px solid rgba(210, 197, 171, 0.16);
+  border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.04);
 }
 
 .work-schedules-modal {
   border: none;
-  border-radius: 16px; /* rounded-2xl for Modal */
+  border-radius: 16px;
   background: #ffffff;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .work-schedules-command {
@@ -27,10 +27,14 @@
   gap: 20px;
   min-height: 120px;
   padding: 24px 32px;
-  background: linear-gradient(135deg, #18181b 0%, #09090b 100%);
-  color: #FFFFFF;
-  border-radius: 16px;
-  border: 1px solid #27272a;
+  background:
+    linear-gradient(135deg, rgba(251, 188, 4, 0.12), transparent 40%),
+    linear-gradient(315deg, rgba(79, 70, 229, 0.08), transparent 36%),
+    #ffffff;
+  color: #1c1b1b;
+  border-radius: 10px;
+  border: 1px solid rgba(210, 197, 171, 0.16);
+  box-shadow: 0 16px 42px rgba(28, 27, 27, 0.045);
 }
 
 .work-schedules-command__copy {
@@ -59,9 +63,9 @@
 .work-schedules-kicker,
 .work-schedules-panel__heading p,
 .work-schedules-modal__header p {
-  color: #6B7280;
-  font-size: 12px;
-  font-weight: 600;
+  color: rgba(79, 70, 50, 0.6);
+  font-size: 10px;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -71,14 +75,15 @@
   font-size: 24px;
   font-weight: 700;
   line-height: 1;
+  color: #1c1b1b;
 }
 
-.work-schedules-command p,
+.work-schedules-command > .work-schedules-command__copy > p,
 .work-schedules-empty p,
 .work-schedules-helper {
   margin: 0;
-  color: #9CA3AF;
-  font-size: 14px;
+  color: rgba(79, 70, 50, 0.72);
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -188,24 +193,42 @@
 }
 
 .work-schedules-primary-action {
-  background: #FFC700;
-  color: #111827;
+  background: #fbbc04;
+  color: #1c1b1b;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
-.work-schedules-primary-action:hover {
-  background: #FFD633;
+.work-schedules-primary-action:hover:not(:disabled) {
+  background: #ffd633;
+  box-shadow: 0 6px 20px rgba(251, 188, 4, 0.3);
 }
 
 .work-schedules-secondary-action {
-  background: #F9FAFB;
+  background: rgba(249, 250, 251, 0.9);
   color: #374151;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 .work-schedules-secondary-action:hover {
-  background: #E5E7EB;
+  background: #f3f4f6;
 }
 
 .work-schedules-filter-action {
-  background: #F9FAFB;
-  color: #111827;
+  background: rgba(249, 250, 251, 0.9);
+  color: #374151;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.work-schedules-filter-action:hover {
+  background: rgba(79, 70, 229, 0.07);
+  border-color: rgba(79, 70, 229, 0.2);
+  color: #4f46e5;
 }
 
 .work-schedules-icon-action,
@@ -243,7 +266,7 @@
 
 .work-schedules-legend {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
 }
 
@@ -252,6 +275,15 @@
   align-items: center;
   gap: 12px;
   padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(229, 231, 235, 0.72);
+  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.04);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.work-schedules-shift-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.08);
 }
 
 .work-schedules-shift-card__swatch {
@@ -282,18 +314,44 @@
 }
 
 .work-schedules-panel {
+  position: relative;
   overflow: hidden;
+  border: 1px solid rgba(79, 70, 229, 0.12);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 199, 0, 0.12), transparent 28%),
+    radial-gradient(circle at 92% 10%, rgba(79, 70, 229, 0.12), transparent 30%),
+    linear-gradient(145deg, #ffffff 0%, #f9fafb 64%, #eef2ff 100%);
+  box-shadow: 0 24px 70px rgba(17, 24, 39, 0.075);
+}
+
+.work-schedules-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 70, 229, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 70, 229, 0.04) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: linear-gradient(to bottom, #000, transparent 56%);
+  pointer-events: none;
+}
+
+.work-schedules-panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 .work-schedules-panel__heading {
-  padding: 20px 22px;
+  padding: 20px 24px;
 }
 
 .work-schedules-panel__heading h3,
 .work-schedules-modal__header h2 {
   margin: 5px 0 0;
-  font-size: 22px;
-  font-weight: 950;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
 }
 
 .work-schedules-loading {
@@ -321,18 +379,23 @@
 
 .work-schedules-grid th,
 .work-schedules-grid td {
-  border-top: 1px solid rgba(210, 197, 171, 0.16);
+  border-top: 1px solid rgba(229, 231, 235, 0.72);
   padding: 14px;
   text-align: left;
   vertical-align: middle;
 }
 
+.work-schedules-grid tr:hover td {
+  background: rgba(238, 242, 255, 0.3);
+}
+
 .work-schedules-grid th {
-  background: #f6f3f2;
+  background: rgba(249, 250, 251, 0.9);
   color: rgba(79, 70, 50, 0.62);
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .work-schedules-grid th span,
@@ -367,15 +430,16 @@ th.work-schedules-grid__employee {
 
 .work-schedules-employee span {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   place-items: center;
-  border-radius: 9999px;
-  background: #111111;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1c1b1b 0%, #374151 100%);
   color: #fbbc04;
   font-size: 11px;
   font-weight: 900;
   flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
 .work-schedules-cell {
@@ -457,16 +521,16 @@ th.work-schedules-grid__employee {
 }
 
 .work-schedules-pagination {
-  border-top: 1px solid rgba(210, 197, 171, 0.16);
-  background: rgba(246, 243, 242, 0.54);
-  padding: 16px 22px;
+  border-top: 1px solid rgba(229, 231, 235, 0.72);
+  background: rgba(249, 250, 251, 0.6);
+  padding: 16px 24px;
 }
 
 .work-schedules-pagination p {
   margin: 0;
-  color: rgba(79, 70, 50, 0.72);
+  color: #6b7280;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .work-schedules-page-buttons {
@@ -480,12 +544,22 @@ th.work-schedules-grid__employee {
   height: 34px;
   background: #ffffff;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 700;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  transition: all 0.15s;
+}
+
+.work-schedules-page-button:hover:not(:disabled) {
+  background: rgba(79, 70, 229, 0.08);
+  border-color: rgba(79, 70, 229, 0.2);
+  color: #4f46e5;
 }
 
 .work-schedules-page-button--active {
   background: #fbbc04;
   color: #1c1b1b;
+  border-color: #fbbc04;
+  box-shadow: 0 3px 10px rgba(251, 188, 4, 0.3);
 }
 
 .work-schedules-modal-backdrop {
@@ -510,7 +584,8 @@ th.work-schedules-grid__employee {
 }
 
 .work-schedules-modal__header {
-  background: #f6f3f2;
+  background: rgba(249, 250, 251, 0.9);
+  border-bottom: 1px solid rgba(229, 231, 235, 0.72);
   padding: 22px;
 }
 
@@ -518,6 +593,14 @@ th.work-schedules-grid__employee {
   width: 36px;
   height: 36px;
   background: #ffffff;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  transition: all 0.15s;
+}
+
+.work-schedules-modal__close:hover {
+  background: rgba(254, 242, 242, 0.8);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #dc2626;
 }
 
 .work-schedules-modal__body {
@@ -586,8 +669,8 @@ th.work-schedules-grid__employee {
 }
 
 .work-schedules-modal__footer {
-  border-top: 1px solid rgba(210, 197, 171, 0.16);
-  background: rgba(246, 243, 242, 0.54);
+  border-top: 1px solid rgba(229, 231, 235, 0.72);
+  background: rgba(249, 250, 251, 0.6);
   padding: 18px 22px;
 }
 
@@ -602,8 +685,14 @@ th.work-schedules-grid__employee {
   align-items: end;
   gap: 12px;
   border-radius: 12px;
-  background: #F9FAFB;
+  background: rgba(249, 250, 251, 0.9);
+  border: 1px solid rgba(229, 231, 235, 0.72);
   padding: 14px;
+  transition: border-color 0.15s;
+}
+
+.work-schedules-settings-row:hover {
+  border-color: rgba(79, 70, 229, 0.16);
 }
 
 .work-schedules-settings-row--new {

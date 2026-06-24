@@ -38,7 +38,7 @@
 }
 
 .marketing-eyebrow {
-  @apply flex items-center gap-2 text-[10px] font-black uppercase;
+  @apply flex items-center gap-2 text-[10px] font-bold uppercase;
   margin-bottom: 8px;
   color: rgba(79, 70, 50, 0.6);
   letter-spacing: 0;
@@ -51,9 +51,9 @@
 .marketing-header h1 {
   margin: 0;
   color: #111827;
-  font-size: 32px;
-  font-weight: 950;
-  letter-spacing: -0.03em;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   line-height: 1;
 }
 
@@ -71,13 +71,13 @@
 }
 
 .btn-create-header {
-  @apply inline-flex items-center justify-center gap-2 rounded-full border-0 bg-[#FBBC04] text-[#111827] text-xs font-black uppercase transition-all whitespace-nowrap;
+  @apply inline-flex items-center justify-center gap-2 rounded-full border-0 bg-[#FBBC04] text-[#111827] text-xs font-bold uppercase transition-all whitespace-nowrap;
   min-height: 52px;
   padding: 0 26px;
 }
 
 .btn-issue-header {
-  @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#C7D2FE] bg-[#EEF2FF] text-[#4338CA] text-xs font-black uppercase transition-all whitespace-nowrap;
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-[#C7D2FE] bg-[#EEF2FF] text-[#4338CA] text-xs font-bold uppercase transition-all whitespace-nowrap;
   min-height: 52px;
   padding: 0 24px;
   box-shadow: 0 10px 24px rgba(79, 70, 229, 0.1);
@@ -163,9 +163,9 @@
   display: block;
   margin-top: 6px;
   color: #111827;
-  font-size: clamp(21px, 2vw, 27px);
-  font-weight: 950;
-  letter-spacing: -0.04em;
+  font-size: clamp(16px, 1.5vw, 20px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
   line-height: 1.12;
   overflow-wrap: anywhere;
 }
@@ -239,7 +239,7 @@
   padding: 12px 18px;
   color: rgba(79, 70, 50, 0.6);
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -345,7 +345,7 @@
   padding: 0 0 0 20px !important;
   color: #374151 !important;
   font-size: 12px !important;
-  font-weight: 750 !important;
+  font-weight: 700 !important;
 }
 
 :host ::ng-deep .marketing-filter-select .p-select-dropdown {
@@ -376,7 +376,7 @@
   border-radius: 12px !important;
   color: #374151 !important;
   font-size: 12px !important;
-  font-weight: 750 !important;
+  font-weight: 700 !important;
   transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
 }
 
@@ -399,7 +399,7 @@
 }
 
 .v-btn-apply {
-  @apply rounded-full bg-[#4F46E5] px-5 text-white text-xs font-black uppercase transition-all hover:bg-[#4338CA];
+  @apply rounded-full bg-[#4F46E5] px-5 text-white text-xs font-bold uppercase transition-all hover:bg-[#4338CA];
   min-height: 44px;
 }
 

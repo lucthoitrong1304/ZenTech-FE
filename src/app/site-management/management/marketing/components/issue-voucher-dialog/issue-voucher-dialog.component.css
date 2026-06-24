@@ -55,7 +55,7 @@
 }
 
 .form-label {
-  @apply text-[11px] font-black text-[#374151] uppercase;
+  @apply text-[11px] font-bold text-[#374151] uppercase;
   letter-spacing: 0.04em;
 }
 
@@ -153,7 +153,7 @@
 }
 
 .btn-save {
-  @apply px-6 py-2.5 rounded-full bg-[#FFC700] text-[#111827] text-sm font-black hover:bg-[#FFD633] disabled:opacity-50 disabled:cursor-not-allowed transition-all;
+  @apply px-6 py-2.5 rounded-full bg-[#FFC700] text-[#111827] text-sm font-bold hover:bg-[#FFD633] disabled:opacity-50 disabled:cursor-not-allowed transition-all;
 }
 
 /* INLINE CUSTOM SEARCHABLE CUSTOMER SELECTOR */

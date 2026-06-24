@@ -29,7 +29,7 @@
 .customer-dialog__eyebrow {
   color: rgba(79, 70, 50, 0.6);
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -37,7 +37,7 @@
 .customer-dialog__title {
   margin: 0;
   font-size: 20px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .customer-dialog__loading,
@@ -74,7 +74,7 @@
 .customer-dialog__error strong {
   color: #b91c1c;
   font-size: 15px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .customer-dialog__error span {
@@ -135,7 +135,7 @@
   background: #f3f4f6;
   color: #374151;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .customer-profile__details {
@@ -146,7 +146,7 @@
 .customer-profile__details h3 {
   margin: 0;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .customer-profile__details p {
@@ -160,7 +160,7 @@
   display: inline-flex;
   border-radius: 999px;
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   padding: 6px 10px;
   text-transform: uppercase;
   background: rgba(22, 163, 74, 0.12);
@@ -187,14 +187,14 @@
 .customer-dialog__metrics span {
   color: rgba(79, 70, 50, 0.6);
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .customer-dialog__metrics strong {
   font-size: 20px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .customer-dialog__actions {
@@ -214,7 +214,7 @@
   border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 700;
   padding: 0 16px;
   text-transform: uppercase;
   transition: background-color 0.2s, transform 0.1s;
@@ -260,7 +260,7 @@
 .customer-dialog__section h3 {
   margin: 0;
   font-size: 16px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .customer-section-badge {
@@ -268,7 +268,7 @@
   background: rgba(79, 70, 50, 0.08);
   border-radius: 999px;
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   padding: 4px 10px;
   text-transform: uppercase;
   color: rgba(79, 70, 50, 0.72);
@@ -309,7 +309,7 @@
 
 .customer-address-card strong {
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -319,7 +319,7 @@
   background: #fbbc04;
   color: #1c1b1b;
   font-size: 9px;
-  font-weight: 950;
+  font-weight: 700;
   padding: 4px 8px;
   border-radius: 4px;
   text-transform: uppercase;
@@ -375,7 +375,7 @@
 
 .customer-order-summary__id strong {
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   color: #4f46e5;
 }
 
@@ -395,7 +395,7 @@
   display: inline-flex;
   border-radius: 999px;
   font-size: 9px;
-  font-weight: 950;
+  font-weight: 700;
   padding: 4px 8px;
   text-transform: uppercase;
 }
@@ -412,7 +412,7 @@
 
 .customer-order-summary__price {
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .customer-order-summary__count {
@@ -458,7 +458,7 @@
   place-items: center;
   color: #374151;
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .customer-order-item__product {
@@ -469,7 +469,7 @@
 
 .customer-order-item__product strong {
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -500,7 +500,7 @@
 
 .customer-order-item__total {
   font-size: 13px;
-  font-weight: 950;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -533,7 +533,7 @@
 .customer-dialog-page-info {
   color: rgba(79, 70, 50, 0.72);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 @keyframes customer-spin {

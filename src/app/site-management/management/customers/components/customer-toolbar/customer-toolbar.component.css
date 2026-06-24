@@ -19,14 +19,14 @@
 .customer-toolbar__summary span {
   color: rgba(79, 70, 50, 0.6);
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .customer-toolbar__summary strong {
   font-size: 14px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .customer-toolbar__search,

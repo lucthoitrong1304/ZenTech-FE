@@ -31,15 +31,15 @@
 .reports-kicker {
   color: rgba(79, 70, 50, 0.6);
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .reports-command h1 {
   margin: 8px 0;
-  font-size: 32px;
-  font-weight: 950;
+  font-size: 24px;
+  font-weight: 700;
   line-height: 1;
 }
 
@@ -68,7 +68,7 @@
 
 .reports-period-btn {
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   color: rgba(79, 70, 50, 0.6);
   padding: 8px 16px;
@@ -103,7 +103,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 700;
   padding: 0 22px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -149,7 +149,7 @@
 
 .custom-date-range-label {
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   color: rgba(79, 70, 50, 0.6);
 }
@@ -196,7 +196,7 @@
   background: #4f46e5;
   color: #ffffff;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   padding: 0 20px;
   cursor: pointer;
@@ -316,16 +316,16 @@
 .reports-stats span {
   color: #6b7280;
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .reports-stats strong {
   color: #111827;
-  font-size: clamp(18px, 1.7vw, 24px);
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  font-size: clamp(16px, 1.5vw, 20px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
   line-height: 1.15;
   max-width: calc(100% - 42px);
   overflow-wrap: normal;
@@ -333,12 +333,12 @@
 }
 
 .reports-stats article:first-child strong {
-  font-size: clamp(17px, 1.45vw, 22px);
+  font-size: clamp(15px, 1.35vw, 18px);
 }
 
 .reports-stat-growth {
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 700;
   margin-top: 2px;
 }
 
@@ -370,7 +370,7 @@
   border-bottom: 2px solid transparent;
   color: rgba(79, 70, 50, 0.6);
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
@@ -442,8 +442,8 @@
 
 .reports-card-header h3 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: #111827;
 }
 
@@ -491,9 +491,9 @@
 }
 
 .reports-chart-hero-header h3 {
-  font-size: clamp(18px, 2vw, 24px);
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: clamp(16px, 1.8vw, 20px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .reports-chart-hero-metric {
@@ -510,15 +510,15 @@
 .reports-chart-hero-metric span {
   color: #ffc700;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .reports-chart-hero-metric strong {
   color: #ffffff;
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .reports-chart-wrapper {
@@ -554,8 +554,8 @@
 .reports-quick-metrics-card h3,
 .reports-payment-card h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
   color: #111827;
 }
 
@@ -603,8 +603,8 @@
 .reports-eyebrow {
   display: inline-flex;
   margin-bottom: 6px;
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #4f46e5;
@@ -619,7 +619,7 @@
   color: #ffc700;
   padding: 7px 12px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   box-shadow: 0 12px 26px rgba(17, 24, 39, 0.16);
 }
 
@@ -656,9 +656,9 @@
 
 .quick-metrics-hero strong {
   color: #111827;
-  font-size: clamp(24px, 3vw, 36px);
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .quick-metrics-hero p,
@@ -702,8 +702,8 @@
 
 .quick-metric-row--tile strong {
   color: #111827;
-  font-size: 18px;
-  font-weight: 850;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .quick-metric-icon,
@@ -756,8 +756,8 @@
   align-items: center;
   gap: 8px;
   color: #374151;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -769,8 +769,8 @@
 
 .payment-share-info--premium strong {
   color: #111827;
-  font-size: 16px;
-  font-weight: 900;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .reports-progress-container--premium {
@@ -825,7 +825,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-weight: 950;
+  font-weight: 700;
   color: rgba(79, 70, 50, 0.82);
 }
 
@@ -838,7 +838,7 @@
 .payment-share-info span:last-child strong,
 .category-share-info span:last-child strong {
   color: #1c1b1b;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .payment-share-info span:last-child span,
@@ -937,9 +937,9 @@
 
 .reports-categories-card h3 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 850;
-  letter-spacing: -0.03em;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: #111827;
 }
 
@@ -997,16 +997,16 @@
 
 .reports-inventory-stat-copy span {
   color: #6b7280;
-  font-size: 12px;
-  font-weight: 750;
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1.35;
 }
 
 .reports-inventory-stat-copy strong {
   color: #111827;
-  font-size: clamp(17px, 1.45vw, 22px);
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  font-size: clamp(15px, 1.3vw, 18px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
   line-height: 1.12;
   overflow-wrap: normal;
   word-break: normal;
@@ -1069,11 +1069,11 @@
 .reports-data-table th {
   background: rgba(249, 250, 251, 0.9);
   padding: 14px 16px;
-  font-weight: 800;
+  font-weight: 700;
   color: #374151;
   border-bottom: 1px solid rgba(229, 231, 235, 0.92);
   text-transform: uppercase;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.04em;
   white-space: nowrap;
 }
@@ -1115,7 +1115,7 @@
 
 .variant-pill {
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   background: #f3f4f6;
   color: rgba(79, 70, 50, 0.8);
   border: 1px solid rgba(210, 197, 171, 0.14);
@@ -1125,7 +1125,7 @@
 }
 
 .stock-status {
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .stock-status--alert {
@@ -1134,7 +1134,7 @@
 
 .table-action-details-btn {
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 700;
   color: #4f46e5;
   cursor: pointer;
   background: transparent;
@@ -1492,7 +1492,7 @@
 
 .alert-box-badge {
   font-size: 9px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   border-radius: 99px;
   padding: 2px 8px;
@@ -1517,7 +1517,7 @@
 .alert-box-title {
   margin: 0;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 700;
   color: #1c1b1b;
 }
 
@@ -1541,7 +1541,7 @@
 
 .low-stock-order-trigger-btn {
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   color: #16a34a;
   background: #d1fae5;
@@ -1571,8 +1571,8 @@
 }
 
 ::ng-deep .reports-custom-dialog .p-dialog-header-title {
-  font-size: 13px !important;
-  font-weight: 950 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
   text-transform: uppercase !important;
   color: #1c1b1b !important;
 }
@@ -1601,8 +1601,8 @@
 
 .dialog-meta-title {
   margin: 0;
-  font-size: 14px;
-  font-weight: 950;
+  font-size: 13px;
+  font-weight: 700;
   color: #1c1b1b;
 }
 
@@ -1615,7 +1615,7 @@
 
 .dialog-stock-tag {
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 700;
   color: rgba(79, 70, 50, 0.72);
 }
 
@@ -1645,21 +1645,21 @@
 
 .dialog-label {
   font-size: 9px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   color: #4f46e5;
   letter-spacing: 0.5px;
 }
 
 .dialog-value {
-  font-size: 16px;
-  font-weight: 950;
+  font-size: 14px;
+  font-weight: 700;
   color: #1c1b1b;
 }
 
 .dialog-value-small {
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 700;
   color: #1c1b1b;
 }
 
@@ -1697,7 +1697,7 @@
   background: #f3f4f6;
   color: rgba(79, 70, 50, 0.82);
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   padding: 0 20px;
   cursor: pointer;
@@ -1715,7 +1715,7 @@
   background: #4f46e5;
   color: #ffffff;
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 700;
   text-transform: uppercase;
   padding: 0 20px;
   cursor: pointer;
@@ -1764,7 +1764,7 @@
 
 .wizard-check-text {
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 700;
   color: rgba(79, 70, 50, 0.82);
 }
 

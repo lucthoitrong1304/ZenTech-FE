@@ -1,0 +1,388 @@
+@import "tailwindcss" reference;
+
+.approvals-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  @apply bg-white min-h-screen text-[#1c1b1b] font-sans p-6;
+}
+
+.approvals-command {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 120px;
+  padding: 24px;
+  border: 1px solid rgba(210, 197, 171, 0.16);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(251, 188, 4, 0.12), transparent 40%),
+    linear-gradient(315deg, rgba(79, 70, 229, 0.08), transparent 36%),
+    #ffffff;
+  box-shadow: 0 16px 42px rgba(28, 27, 27, 0.045);
+}
+
+.approvals-command__copy {
+  min-width: 0;
+}
+
+.approvals-kicker {
+  color: rgba(79, 70, 50, 0.6);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.approvals-command h1 {
+  margin: 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.approvals-command p {
+  margin: 0;
+  color: rgba(79, 70, 50, 0.72);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.approvals-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 99px;
+  background: #ffffff;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  outline: none;
+}
+
+.approvals-refresh-btn:hover {
+  background: #f9fafb;
+  color: #111827;
+  border-color: rgba(79, 70, 229, 0.2);
+}
+
+.approvals-refresh-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.approvals-tabs-bar {
+  display: flex;
+  border-bottom: 1px solid rgba(210, 197, 171, 0.16);
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.approvals-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: rgba(79, 70, 50, 0.6);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.approvals-tab-btn:hover {
+  color: #1c1b1b;
+}
+
+.approvals-tab-btn--active {
+  border-color: #4f46e5;
+  color: #4f46e5;
+}
+
+.approvals-table-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(79, 70, 229, 0.12);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 199, 0, 0.12), transparent 28%),
+    radial-gradient(circle at 92% 10%, rgba(79, 70, 229, 0.12), transparent 30%),
+    linear-gradient(145deg, #ffffff 0%, #f9fafb 64%, #eef2ff 100%);
+  box-shadow: 0 24px 70px rgba(17, 24, 39, 0.075);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.approvals-table-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 70, 229, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 70, 229, 0.04) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: linear-gradient(to bottom, #000, transparent 72%);
+  pointer-events: none;
+}
+
+.approvals-table-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.approvals-table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgba(229, 231, 235, 0.78);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 16px 38px rgba(17, 24, 39, 0.045);
+  width: 100%;
+}
+
+.approvals-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.approvals-table th {
+  background: rgba(249, 250, 251, 0.9);
+  padding: 14px 16px;
+  font-weight: 700;
+  color: #374151;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.92);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.approvals-table td {
+  padding: 16px;
+  border-top: none;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.72);
+  color: #111827;
+  vertical-align: middle;
+}
+
+.approvals-table tr {
+  transition: background-color 0.18s ease;
+}
+
+.approvals-table tbody tr:hover {
+  background: rgba(238, 242, 255, 0.52);
+}
+
+.approvals-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 99px;
+  background: #ffffff;
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.approvals-action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.approvals-action-btn--approve {
+  background: rgba(22, 163, 74, 0.08);
+  color: #16a34a;
+  border-color: rgba(22, 163, 74, 0.16);
+}
+
+.approvals-action-btn--approve:hover {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.16);
+}
+
+.approvals-action-btn--reject {
+  background: rgba(220, 38, 38, 0.08);
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.16);
+}
+
+.approvals-action-btn--reject:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.16);
+}
+
+.approvals-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(17, 24, 39, 0.4);
+  backdrop-filter: blur(4px);
+  padding: 16px;
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+.approvals-modal-dialog {
+  width: 100%;
+  max-width: 440px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  box-shadow: 0 24px 64px rgba(28, 27, 27, 0.12);
+  display: flex;
+  flex-direction: column;
+  animation: slideDown 0.2s ease-out forwards;
+}
+
+.approvals-modal-header {
+  background: #fafafa;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.approvals-modal-header h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #1c1b1b;
+  letter-spacing: 0.05em;
+}
+
+.approvals-modal-close-btn {
+  background: transparent;
+  border: 0;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 16px;
+  transition: color 0.15s;
+  outline: none;
+}
+
+.approvals-modal-close-btn:hover {
+  color: #111827;
+}
+
+.approvals-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.approvals-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.approvals-form-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(79, 70, 50, 0.6);
+  letter-spacing: 0.02em;
+}
+
+.approvals-form-textarea {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1f2937;
+  background: #ffffff;
+  outline: none;
+  transition: all 0.15s ease;
+  resize: vertical;
+}
+
+.approvals-form-textarea:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+
+.approvals-modal-footer {
+  background: #fafafa;
+  border-top: 1px solid #e5e7eb;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.approvals-modal-btn {
+  min-height: 38px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  outline: none;
+}
+
+.approvals-modal-btn--secondary {
+  background: #f3f4f6;
+  color: rgba(79, 70, 50, 0.82);
+}
+
+.approvals-modal-btn--secondary:hover {
+  background: #e5e7eb;
+}
+
+.approvals-modal-btn--primary {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.approvals-modal-btn--primary:hover {
+  background: #b91c1c;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .approvals-command {
+    flex-direction: column;
+    align-items: stretch;
+    min-height: auto;
+  }
+}

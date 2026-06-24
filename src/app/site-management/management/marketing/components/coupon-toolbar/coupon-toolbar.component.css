@@ -32,7 +32,7 @@
 }
 
 .filter-label {
-  @apply text-[10px] font-black text-[#6B7280] uppercase whitespace-nowrap;
+  @apply text-[10px] font-bold text-[#6B7280] uppercase whitespace-nowrap;
   letter-spacing: 0.04em;
 }
 
@@ -79,7 +79,7 @@
   padding: 0 0 0 20px !important;
   color: #374151 !important;
   font-size: 12px !important;
-  font-weight: 750 !important;
+  font-weight: 700 !important;
 }
 
 :host ::ng-deep .marketing-filter-select .p-select-dropdown {
@@ -110,7 +110,7 @@
   border-radius: 12px !important;
   color: #374151 !important;
   font-size: 12px !important;
-  font-weight: 750 !important;
+  font-weight: 700 !important;
   transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
 }
 
@@ -133,7 +133,7 @@
 }
 
 .btn-apply {
-  @apply rounded-full bg-[#4F46E5] px-5 text-white text-xs font-black uppercase transition-all hover:bg-[#4338CA] disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply rounded-full bg-[#4F46E5] px-5 text-white text-xs font-bold uppercase transition-all hover:bg-[#4338CA] disabled:opacity-50 disabled:cursor-not-allowed;
   min-height: 44px;
 }
 
