@@ -55,7 +55,7 @@
 }
 
 .step-number {
-  @apply flex items-center justify-center w-7 h-7 rounded-full border-2 border-[#D1D5DB] bg-white text-[#9CA3AF] font-black text-xs transition-all;
+  @apply flex items-center justify-center w-7 h-7 rounded-full border-2 border-[#D1D5DB] bg-white text-[#9CA3AF] font-bold text-xs transition-all;
 }
 
 .step-label {
@@ -100,7 +100,7 @@
 }
 
 .form-label {
-  @apply text-[11px] font-black text-[#374151] uppercase;
+  @apply text-[11px] font-bold text-[#374151] uppercase;
   letter-spacing: 0.04em;
 }
 
@@ -172,7 +172,7 @@
 }
 
 .time-separator {
-  @apply text-[#6B7280] font-black text-sm select-none mx-0.5;
+  @apply text-[#6B7280] font-bold text-sm select-none mx-0.5;
 }
 
 .inline-calendar-shell {
@@ -212,7 +212,7 @@
   width: 30px !important;
   height: 30px !important;
   border-radius: 10px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
 }
 
 ::ng-deep .marketing-inline-datepicker .p-datepicker-day-selected,
@@ -246,7 +246,7 @@
 :host ::ng-deep .datetime-select .p-select-label {
   color: #111827 !important;
   font-size: 14px !important;
-  font-weight: 900 !important;
+  font-weight: 700 !important;
   line-height: 46px !important;
   padding: 0 8px 0 12px !important;
 }
@@ -311,7 +311,7 @@
   border-radius: 10px !important;
   color: #374151 !important;
   font-size: 13px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
 }
 
 ::ng-deep .datetime-select-panel .p-select-option.p-select-option-selected,
@@ -403,7 +403,7 @@
 ::ng-deep .marketing-datepicker-panel .p-datepicker-select-year {
   color: #111827 !important;
   font-size: 12px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
 }
 
 :host ::ng-deep .marketing-datepicker .p-datepicker-calendar,
@@ -490,7 +490,7 @@
 ::ng-deep .marketing-datepicker-panel .p-button {
   border-radius: 999px !important;
   font-size: 11px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
 }
 
 .form-empty-condition {
@@ -564,7 +564,7 @@
 }
 
 .btn-save {
-  @apply px-5 py-2.5 rounded-full bg-[#FFC700] text-[#111827] text-sm font-black hover:bg-[#FFD633] disabled:opacity-50 disabled:cursor-not-allowed transition-all;
+  @apply px-5 py-2.5 rounded-full bg-[#FFC700] text-[#111827] text-sm font-bold hover:bg-[#FFD633] disabled:opacity-50 disabled:cursor-not-allowed transition-all;
 }
 
 @media (max-width: 640px) {
