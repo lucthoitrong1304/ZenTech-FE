@@ -18,7 +18,8 @@ import {
   LucideSearch,
   LucideBell,
   LucideCommand,
-  LucideShieldAlert
+  LucideShieldAlert,
+  LucideGauge
 } from '@lucide/angular';
 import { PopoverModule } from 'primeng/popover';
 import { filter } from 'rxjs';
@@ -73,7 +74,8 @@ const DEFAULT_HEADER: AdminHeaderState = {
     LucideSearch,
     LucideBell,
     LucideCommand,
-    LucideShieldAlert
+    LucideShieldAlert,
+    LucideGauge
   ],
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.css'
@@ -104,7 +106,8 @@ export class AdminLayoutComponent {
         { label: 'Logs', path: '/admin/logs', icon: 'logs' },
         { label: 'Issues', path: '/admin/issues', icon: 'issues' },
         { label: 'Incidents', path: '/admin/incidents', icon: 'incidents' },
-        { label: 'Tickets', path: '/admin/tickets', icon: 'tickets' }
+        { label: 'Tickets', path: '/admin/tickets', icon: 'tickets' },
+        { label: 'Giám sát tài nguyên', path: '/admin/resource-monitoring', icon: 'resource-monitoring' }
       ]
     },
     {
