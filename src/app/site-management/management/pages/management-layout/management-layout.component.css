@@ -19,8 +19,9 @@
   align-items: center;
   min-height: 72px;
   padding: 0 28px;
-  border-bottom: 1px solid rgba(210, 197, 171, 0.18);
-  background: rgba(252, 249, 248, 0.86);
+  border-bottom: 1px solid #e5e7eb;
+  background: rgba(246, 248, 251, 0.96);
+  box-shadow: none;
   backdrop-filter: blur(18px);
 }
 
@@ -28,16 +29,44 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .management-breadcrumb__brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 0.06em;
+  min-width: 0;
   text-decoration: none;
-  font-size: 22px;
-  font-weight: 900;
+  outline: none;
+}
+
+.management-breadcrumb__brand:focus-visible {
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px rgba(255, 199, 0, 0.28);
+}
+
+.management-brand-wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.06em;
+  color: #111827;
+  font-size: 20px;
+  font-weight: 950;
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.management-brand-wordmark span:last-child {
+  color: #8a8172;
 }
 
 .management-breadcrumb__separator {
-  color: rgba(79, 70, 50, 0.42);
+  color: rgba(75, 85, 99, 0.42);
 }
 
 .management-breadcrumb__section,
@@ -49,16 +78,27 @@
 }
 
 .management-breadcrumb__section {
-  border-radius: 7px;
-  background: #eef2ff;
-  color: #4f46e5;
+  border: 1px solid #ead9a8;
+  border-radius: 10px;
+  background: #fff8df;
+  color: #9a6b00;
   font-size: 11px;
   font-weight: 800;
-  padding: 6px 10px;
+  padding: 7px 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .management-breadcrumb__page {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 9px 14px;
   font-size: 13px;
+  font-weight: 650;
+  color: #4b5563;
+  box-shadow: none;
+  text-transform: uppercase;
 }
 
 .management-topbar__actions {
@@ -75,12 +115,25 @@
 
 .management-icon-button {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   place-items: center;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.72);
-  color: #4f4632;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #374151;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.management-icon-button:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+  color: #111827;
+  box-shadow: none;
 }
 
 .management-icon-button:disabled {
@@ -97,24 +150,24 @@
 }
 
 .management-notification-button app-notification-bell {
-  --notification-bell-color: #4f4632;
-  --notification-bell-hover-color: #1c1b1b;
-  --notification-bell-hover-bg: rgba(79, 70, 50, 0.08);
-  --notification-bell-size: 38px;
+  --notification-bell-color: #374151;
+  --notification-bell-hover-color: #111827;
+  --notification-bell-hover-bg: rgba(255, 199, 0, 0.12);
+  --notification-bell-size: 42px;
 }
 
 :host ::ng-deep .management-notification-button .notification-bell-trigger {
-  color: #4f4632 !important;
+  color: #374151 !important;
   background: transparent !important;
 }
 
 :host ::ng-deep .management-notification-button .notification-bell-trigger:hover {
-  color: #1c1b1b !important;
-  background: rgba(79, 70, 50, 0.08) !important;
+  color: #111827 !important;
+  background: rgba(255, 199, 0, 0.12) !important;
 }
 
 :host ::ng-deep .management-notification-button .notification-bell-icon {
-  color: #4f4632 !important;
+  color: currentColor !important;
   stroke: currentColor !important;
 }
 
@@ -123,8 +176,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1px solid rgba(210, 197, 171, 0.16);
-  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
   border-radius: 9999px;
   padding: 6px 14px 6px 6px;
   cursor: pointer;
@@ -134,9 +187,9 @@
 }
 
 .management-account-trigger:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(79, 70, 50, 0.24);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  background: #f9fafb;
+  border-color: #d1d5db;
+  box-shadow: none;
 }
 
 .management-avatar {
@@ -145,8 +198,8 @@
   height: 32px;
   place-items: center;
   border-radius: 9999px;
-  background: #111111;
-  color: #fbbc04;
+  background: #111827;
+  color: #ffc700;
   font-size: 11px;
   font-weight: 900;
   flex-shrink: 0;
@@ -161,11 +214,11 @@
 .management-account-name {
   font-size: 13px;
   font-weight: 600;
-  color: #1c1b1b;
+  color: #111827;
 }
 
 .management-account-role {
-  color: rgba(79, 70, 50, 0.62);
+  color: #8a8172;
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
@@ -175,12 +228,12 @@
 .management-account-chevron {
   width: 14px;
   height: 14px;
-  color: rgba(79, 70, 50, 0.42);
+  color: #9ca3af;
   transition: transform 0.2s ease;
 }
 
 .management-account-trigger:hover .management-account-chevron {
-  color: #1c1b1b;
+  color: #111827;
 }
 
 .management-sidebar {
@@ -190,74 +243,95 @@
   display: flex;
   width: 256px;
   flex-direction: column;
-  gap: 18px;
+  gap: 0;
   overflow-y: auto;
-  border-right: 1px solid rgba(210, 197, 171, 0.16);
-  background: #f6f3f2;
-  padding: 24px 16px;
+  border-right: 1px solid #e5e7eb;
+  background: #fbfaf8;
+  box-shadow: none;
+  padding: 18px 14px 24px;
 }
 
-.management-sidebar__heading {
-  padding: 0 14px 8px;
+/* Custom modern scrollbar for the sidebar */
+.management-sidebar::-webkit-scrollbar {
+  width: 5px;
 }
 
-.management-sidebar__heading h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 800;
+.management-sidebar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.management-sidebar__heading p,
-.management-nav__section > p {
-  margin: 7px 0 0;
-  color: rgba(79, 70, 50, 0.58);
-  font-size: 10px;
-  font-weight: 900;
-  text-transform: uppercase;
+.management-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.08);
+  border-radius: 99px;
+}
+
+.management-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.15);
 }
 
 .management-nav {
   display: grid;
-  gap: 18px;
+  gap: 28px;
 }
 
 .management-nav__section {
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .management-nav__section > p {
-  padding: 0 14px;
+  margin: 0 0 8px;
+  padding: 0 12px;
+  color: #8b867c;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: normal;
+  text-transform: uppercase;
 }
 
 .management-nav__link {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   justify-content: flex-start;
-  min-height: 44px;
+  min-height: 42px;
   width: 100%;
-  border: 0;
-  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 14px;
   background: transparent;
-  color: rgba(79, 70, 50, 0.72);
+  color: #596272;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-decoration: none;
   text-transform: uppercase;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .management-nav__link:hover {
-  background: rgba(255, 255, 255, 0.66);
-  color: #1c1b1b;
+  border-color: transparent;
+  background: #ffffff;
+  color: #111827;
 }
 
 .management-nav__link--active {
-  border-left: 4px solid #fbbc04;
-  background: rgba(251, 188, 4, 0.12);
-  color: #1c1b1b;
-  padding-left: 10px;
+  border-color: transparent;
+  border-left-color: #8b867c;
+  background: transparent;
+  color: #111827;
+  box-shadow: inset 3px 0 0 #8b867c;
+}
+
+.management-nav__link--active svg {
+  color: #8b867c;
+  stroke: currentColor;
 }
 
 .management-nav__link--button {
@@ -274,7 +348,7 @@
 .management-nav__chevron {
   width: 14px;
   height: 14px;
-  color: rgba(79, 70, 50, 0.48);
+  color: #9ca3af;
   transition: transform 0.2s ease;
 }
 
@@ -284,32 +358,41 @@
 
 .management-nav__children {
   display: grid;
-  gap: 2px;
-  padding: 0 0 6px;
+  gap: 6px;
+  padding: 4px 0 6px;
 }
 
 .management-nav__child-link {
   display: flex;
   align-items: center;
-  min-height: 36px;
-  border-left: 4px solid transparent;
-  padding: 0 14px 0 44px;
-  color: rgba(79, 70, 50, 0.72);
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 6px 12px 6px 42px;
+  color: #6b7280;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .management-nav__child-link:hover {
-  background: rgba(255, 255, 255, 0.58);
-  color: #1c1b1b;
+  border-color: transparent;
+  background: #ffffff;
+  color: #111827;
 }
 
 .management-nav__child-link--active {
-  border-left-color: #fbbc04;
-  background: rgba(251, 188, 4, 0.12);
-  color: #1c1b1b;
-  font-weight: 900;
+  border-color: transparent;
+  border-left-color: #8b867c;
+  background: transparent;
+  color: #111827;
+  box-shadow: inset 3px 0 0 #8b867c;
 }
 
 .management-main {
@@ -342,7 +425,6 @@
     padding-inline: 12px;
   }
 
-  .management-sidebar__heading,
   .management-nav__section > p,
   .management-nav__link span,
   .management-nav__children,
@@ -356,7 +438,7 @@
   }
 
   .management-nav__link--active {
-    border-left: 0;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   }
 
   .management-main {

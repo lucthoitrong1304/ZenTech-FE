@@ -1,7 +1,12 @@
 ﻿<div class="management-shell" [class.management-shell--chat-sidebar]="chatSidebarActive()">
   <header class="management-topbar">
     <nav class="management-breadcrumb" aria-label="Management breadcrumb">
-      <a routerLink="/management/dashboard" class="management-breadcrumb__brand">ZenTech</a>
+      <a routerLink="/management/dashboard" class="management-breadcrumb__brand" aria-label="ZenTech management home">
+        <span class="management-brand-wordmark">
+          <span>Zen</span>
+          <span>Tech</span>
+        </span>
+      </a>
       <span class="management-breadcrumb__separator" aria-hidden="true">&gt;</span>
       <span class="management-breadcrumb__section">{{ header().eyebrow }}</span>
       <span class="management-breadcrumb__separator" aria-hidden="true">&gt;</span>
@@ -49,11 +54,6 @@
 
   @if (showAdminSidebar()) {
   <aside class="management-sidebar">
-    <div class="management-sidebar__heading">
-      <h2>ZenTech Management</h2>
-      <p>Quản lý cửa hàng</p>
-    </div>
-
     <nav class="management-nav" aria-label="Management workspace">
       @for (section of navSections; track section.title) {
         <section class="management-nav__section">
