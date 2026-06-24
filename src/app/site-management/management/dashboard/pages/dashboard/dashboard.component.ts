@@ -888,7 +888,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private buildTodayRevenuePointsFromOrders(): LiveChartPoint[] {
     const todayStart = this.getTodayStart();
     const completedOrders = this.store.todayRevenueOrders()
-      .filter((order: ManagementOrder) => order.orderStatus === 'COMPLETED')
+      .filter((order: ManagementOrder) => {
+        const isCompleted = order.orderStatus === 'COMPLETED';
+        const isPaidOnline = order.paymentStatus === 'SUCCESS' &&
+          order.orderStatus !== 'CANCELLED' &&
+          order.orderStatus !== 'RETURNED';
+        return isCompleted || isPaidOnline;
+      })
       .map((order: ManagementOrder) => ({ order, date: this.getEventDate(order.createdAt) }))
       .filter((entry): entry is { order: ManagementOrder; date: Date } => {
         return entry.date instanceof Date && this.isTodayDate(entry.date);
@@ -909,12 +915,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     let cumulativeRevenue = 0;
     for (const { order, date } of completedOrders) {
       cumulativeRevenue += Math.max(0, Number(order.finalPrice ?? 0));
+      const isCompleted = order.orderStatus === 'COMPLETED';
       points.push({
         label: this.formatLiveTime(date),
         value: cumulativeRevenue,
         marker: 'normal',
-        eventTitle: `Đơn hoàn thành #${order.orderCode}`,
-        eventDescription: `Cộng ${this.formatCurrency(order.finalPrice)} vào doanh thu hôm nay.`,
+        eventTitle: isCompleted ? `Đơn hoàn thành #${order.orderCode}` : `Đơn thanh toán #${order.orderCode}`,
+        eventDescription: isCompleted
+          ? `Cộng ${this.formatCurrency(order.finalPrice)} vào doanh thu hôm nay.`
+          : `Cộng ${this.formatCurrency(order.finalPrice)} vào doanh thu hôm nay (Thanh toán online).`,
         eventDateTime: this.formatLiveDateTime(date),
         timestamp: date.getTime(),
         isRevenueChangePoint: true,

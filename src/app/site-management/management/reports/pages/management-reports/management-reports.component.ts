@@ -17,6 +17,7 @@ import {
   LucidePackage,
   LucideBot,
   LucideCalendar,
+  LucideAlertTriangle,
 } from '@lucide/angular';
 import { ReportsStore } from '../../data-access/store/reports.store';
 import { ReportPeriod, ReportsTab, IProductReport, ICustomerSegment } from '../../data-access/models/reports.model';
@@ -72,6 +73,7 @@ interface ChartData {
     LucidePackage,
     LucideBot,
     LucideCalendar,
+    LucideAlertTriangle,
   ],
   providers: [ReportsStore],
   templateUrl: './management-reports.component.html',

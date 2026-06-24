@@ -1859,3 +1859,48 @@
     transform: translateY(0);
   }
 }
+
+/* Faulty Warehouse Section */
+.reports-faulty-warehouse-card {
+  @apply mt-6 mb-6 p-6 rounded-2xl border border-rose-100 bg-rose-50/20 flex flex-col md:flex-row md:items-center justify-between gap-6;
+}
+
+.reports-faulty-warehouse-info {
+  @apply flex items-start gap-4;
+}
+
+.reports-faulty-warehouse-icon-wrapper {
+  @apply p-3 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0;
+}
+
+.reports-faulty-warehouse-title {
+  @apply text-base font-semibold text-gray-900 flex items-center gap-2;
+}
+
+.reports-faulty-warehouse-badge {
+  @apply px-2.5 py-0.5 text-xs font-semibold rounded-full bg-rose-100 text-rose-700;
+}
+
+.reports-faulty-warehouse-description {
+  @apply text-sm text-gray-600 mt-1.5 max-w-2xl leading-relaxed;
+}
+
+.reports-faulty-warehouse-stats-wrapper {
+  @apply flex items-center gap-6 shrink-0;
+}
+
+.reports-faulty-warehouse-divider {
+  @apply w-px h-8 bg-rose-200/80;
+}
+
+.reports-faulty-warehouse-stat {
+  @apply flex flex-col items-start;
+}
+
+.reports-faulty-warehouse-stat-label {
+  @apply text-xs font-semibold text-gray-500 uppercase tracking-wider;
+}
+
+.reports-faulty-warehouse-stat-value {
+  @apply text-xl font-bold text-rose-600 mt-1;
+}
