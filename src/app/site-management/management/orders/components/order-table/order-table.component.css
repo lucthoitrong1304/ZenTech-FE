@@ -269,3 +269,12 @@
   font-size: 11px;
   color: #6b7280;
 }
+
+.order-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.order-row:hover {
+  background-color: #f9fafb;
+}

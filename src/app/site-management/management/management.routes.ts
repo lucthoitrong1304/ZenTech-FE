@@ -134,6 +134,18 @@ export const managementRoutes: Routes = [
           ),
       },
       {
+        path: 'return-requests',
+        data: {
+          eyebrow: 'Điều hành kinh doanh',
+          title: 'Yêu cầu trả hàng',
+          description: 'Xét duyệt các yêu cầu trả hàng và hoàn tiền từ khách hàng.',
+        },
+        loadComponent: () =>
+          import('./return-requests/pages/return-requests-page/return-requests-page.component').then(
+            m => m.ReturnRequestsPageComponent
+          ),
+      },
+      {
         path: 'products',
         data: {
           eyebrow: 'Điều hành kinh doanh',

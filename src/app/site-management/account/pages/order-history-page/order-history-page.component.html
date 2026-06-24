@@ -79,6 +79,15 @@
           <span class="inline-flex h-8 items-center rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.14em]" [ngClass]="statusClass(order.orderStatus)">
             {{ orderStatusLabel(order.orderStatus) }}
           </span>
+          @if (order.orderStatus === 'COMPLETED') {
+            <button
+              type="button"
+              class="inline-flex h-11 items-center rounded-full border border-[#4f46e5] px-6 text-sm font-bold text-[#4f46e5] transition hover:bg-[#f4f2ff] cursor-pointer"
+              (click)="openReturnDialog(order, $event)"
+            >
+              Yêu cầu trả hàng
+            </button>
+          }
           <button
             type="button"
             class="inline-flex h-11 items-center rounded-full bg-[#ffc700] px-6 text-sm font-bold text-[#251a00] transition hover:bg-[#f5bf00] cursor-pointer"
@@ -226,6 +235,129 @@
     } @else if (accountStore.loading()) {
       <div class="flex h-[200px] items-center justify-center">
         <div class="text-sm font-semibold text-[#4f4632]">Đang tải chi tiết đơn hàng...</div>
+      </div>
+    }
+  </p-dialog>
+
+  <!-- Return Request Dialog -->
+  <p-dialog
+    header="Yêu cầu trả hàng & hoàn tiền"
+    [(visible)]="isReturnDialogOpen"
+    [modal]="true"
+    [style]="{ width: '650px' }"
+    [breakpoints]="{ '960px': '95vw' }"
+  >
+    @if (returningOrder) {
+      <div class="space-y-6 py-4">
+        <!-- Warning / Information alert -->
+        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium">
+          Lưu ý: Bạn đang gửi yêu cầu trả hàng cho đơn hàng <strong class="font-bold">{{ returningOrder.orderId }}</strong>.
+          Yêu cầu sẽ được gửi tới bộ phận chăm sóc khách hàng và kiểm kho của ZenTech để xét duyệt.
+        </div>
+
+        <!-- Step 1: Reason -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#81765f] mb-3">Lý do trả hàng <span class="text-red-500">*</span></label>
+          <div class="grid grid-cols-2 gap-3">
+            @for (reason of reasonOptions; track reason) {
+              <button
+                type="button"
+                class="px-4 py-3 rounded-xl border transition text-left text-xs font-semibold cursor-pointer"
+                [class]="returnReason === reason ? 'border-[#4f46e5] bg-[#f4f2ff] text-[#4f46e5] ring-2 ring-[#4f46e5]/10' : 'border-gray-200 bg-white hover:border-[#4f46e5] text-gray-700'"
+                (click)="selectReason(reason)"
+              >
+                {{ reason }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Step 2: Description -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#81765f] mb-2">Mô tả chi tiết lỗi</label>
+          <textarea
+            rows="4"
+            class="w-full rounded-xl border border-gray-200 p-4 text-sm outline-none focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] resize-none"
+            placeholder="Mô tả cụ thể tình trạng lỗi, hư hỏng của sản phẩm để được hỗ trợ nhanh nhất..."
+            [(ngModel)]="returnDetails"
+          ></textarea>
+        </div>
+
+        <!-- Step 3: Media upload -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#81765f] mb-2">Hình ảnh / Video bằng chứng lỗi</label>
+          
+          <!-- Upload Box -->
+          <label class="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-6 bg-gray-50 hover:bg-gray-100 cursor-pointer transition">
+            <svg lucideUploadCloud class="h-10 w-10 text-gray-400 mb-2" [attr.stroke-width]="1.5"></svg>
+            <span class="text-xs font-bold text-gray-700">Tải lên hình ảnh hoặc video bằng chứng</span>
+            <span class="text-[10px] text-gray-500 mt-1">Hỗ trợ JPG, PNG, WEBP (tối đa 5MB) và MP4, WEBM (tối đa 50MB)</span>
+            <input type="file" multiple accept="image/*,video/*" class="hidden" (change)="onFilesSelected($event)" />
+          </label>
+
+          <!-- Upload error -->
+          @if (uploadError) {
+            <p class="text-red-600 text-xs font-medium mt-2 flex items-center gap-1">
+              <svg lucideAlertCircle class="h-4 w-4" [attr.stroke-width]="2"></svg>
+              {{ uploadError }}
+            </p>
+          }
+
+          <!-- Uploaded files previews -->
+          @if (uploadedFiles.length > 0 || isUploading) {
+            <div class="grid grid-cols-4 gap-3 mt-4">
+              @for (file of uploadedFiles; track file.fileKey; let idx = $index) {
+                <div class="relative group aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
+                  @if (file.type.startsWith('image/')) {
+                    <img [src]="file.previewUrl" class="w-full h-full object-cover" />
+                  } @else {
+                    <div class="w-full h-full flex flex-col items-center justify-center p-2 text-center text-[10px] font-bold text-gray-500">
+                      <svg lucidePackage class="h-8 w-8 text-[#4f46e5] mb-1"></svg>
+                      {{ file.fileName | slice:0:15 }}...
+                    </div>
+                  }
+                  <button
+                    type="button"
+                    class="absolute top-1 right-1 h-6 w-6 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-md transition opacity-0 group-hover:opacity-100 cursor-pointer"
+                    (click)="removeUploadedFile(idx)"
+                  >
+                    <svg lucideTrash2 class="h-3.5 w-3.5" [attr.stroke-width]="2"></svg>
+                  </button>
+                </div>
+              }
+              @if (isUploading) {
+                <div class="aspect-square rounded-xl border border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center text-xs font-semibold text-gray-500">
+                  <div class="animate-spin rounded-full h-5 w-5 border-2 border-[#4f46e5] border-t-transparent mb-2"></div>
+                  Đang tải...
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <button
+            type="button"
+            class="px-5 py-2.5 rounded-full border border-gray-300 hover:bg-gray-50 text-sm font-semibold transition cursor-pointer"
+            (click)="isReturnDialogOpen = false"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            type="button"
+            class="px-6 py-2.5 rounded-full bg-[#ffc700] text-[#111827] hover:bg-[#ffd633] text-sm font-bold transition flex items-center gap-2 cursor-pointer"
+            [disabled]="isSubmitting || !returnReason || isUploading"
+            [class.opacity-50]="isSubmitting || !returnReason || isUploading"
+            [class.cursor-not-allowed]="isSubmitting || !returnReason || isUploading"
+            (click)="submitReturn()"
+          >
+            @if (isSubmitting) {
+              <div class="animate-spin rounded-full h-4 w-4 border-2 border-[#111827] border-t-transparent"></div>
+            }
+            Gửi yêu cầu
+          </button>
+        </div>
       </div>
     }
   </p-dialog>

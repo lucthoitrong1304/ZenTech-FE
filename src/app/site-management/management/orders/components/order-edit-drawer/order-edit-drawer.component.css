@@ -3,23 +3,25 @@
   inset: 0;
   z-index: 90;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
   background: rgba(28, 27, 27, 0.24);
   backdrop-filter: blur(10px);
-  padding: 10px;
+  padding: 20px;
 }
 
 .order-edit {
   display: flex;
-  width: min(500px, 100%);
-  height: calc(100vh - 20px);
+  width: min(840px, 95%);
+  height: auto;
+  max-height: min(850px, 90vh);
   flex-direction: column;
   overflow: hidden;
   border: 0;
-  border-radius: 10px;
+  border-radius: 16px;
   background: #fcf9f8;
   box-shadow: 0 26px 80px rgba(28, 27, 27, 0.22);
-  animation: order-edit-slide-in 0.24s ease-out;
+  animation: order-edit-fade-in 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .order-edit__header,
@@ -39,6 +41,8 @@
 
 .order-edit__footer {
   border-top: 1px solid rgba(210, 197, 171, 0.16);
+  justify-content: flex-end;
+  flex-direction: row;
 }
 
 .order-edit__header p,
@@ -121,6 +125,16 @@
   font-weight: 750;
   outline: 0;
   padding: 11px 12px;
+}
+
+.order-edit__field input:disabled,
+.order-edit__field textarea:disabled,
+.order-edit__field select:disabled {
+  cursor: not-allowed;
+  background: #e4e4e7;
+  color: #71717a;
+  border-color: #d4d4d8;
+  opacity: 0.85;
 }
 
 .order-edit__field textarea {
@@ -266,21 +280,27 @@
 .order-edit__secondary {
   display: inline-flex;
   min-height: 48px;
-  flex: 1;
+  padding: 0 24px;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  gap: 10px;
+  border-radius: 9999px;
   cursor: pointer;
   font: inherit;
   font-size: 12px;
   font-weight: 950;
   text-transform: uppercase;
+  transition: all 0.2s ease;
 }
 
 .order-edit__primary {
-  border: 0;
-  background: #fbbc04;
-  color: #1c1b1b;
+  border: 1px solid transparent;
+  background: #FFC700;
+  color: #111827;
+}
+
+.order-edit__primary:hover:not(:disabled) {
+  background: #FFD633;
 }
 
 .order-edit__secondary {
@@ -289,10 +309,18 @@
   color: #4f4632;
 }
 
+.order-edit__secondary:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: rgba(210, 197, 171, 0.5);
+}
+
 .order-edit__primary:disabled,
 .order-edit__secondary:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  background: #e4e4e7;
+  color: #71717a;
+  border: 1px solid #d4d4d8;
+  opacity: 0.7;
 }
 
 .order-edit__submit-error {
@@ -302,13 +330,81 @@
   padding: 12px;
 }
 
-@keyframes order-edit-slide-in {
+@keyframes order-edit-fade-in {
   from {
-    transform: translateX(100%);
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-@media (max-width: 680px) {
+/* ==================== TWO COLUMN GRID LAYOUT ==================== */
+.order-edit-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.order-edit-col-left,
+.order-edit-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.order-edit-items-scroll {
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* Custom Scrollbar */
+.order-edit-items-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.order-edit-items-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.order-edit-items-scroll::-webkit-scrollbar-thumb {
+  background: rgba(79, 70, 229, 0.15);
+  border-radius: 999px;
+}
+
+.order-edit-items-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 70, 229, 0.3);
+}
+
+/* ==================== RESPONSIVE MEDIA QUERIES ==================== */
+@media (max-width: 768px) {
+  .order-edit-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .order-edit {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .order-edit__footer {
+    width: 100%;
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .order-edit__primary,
+  .order-edit__secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
   .order-edit-backdrop {
     padding: 0;
   }
@@ -322,9 +418,5 @@
   .order-edit__split,
   .order-edit-item {
     grid-template-columns: 1fr;
-  }
-
-  .order-edit__footer {
-    flex-direction: column;
   }
 }
