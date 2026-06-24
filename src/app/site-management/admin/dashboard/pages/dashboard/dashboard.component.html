@@ -1,151 +1,301 @@
-<div class="db-container">
-  <section class="db-hero-panel" [class.db-hero-panel--warn]="store.unresolvedIncidentsCount() > 0">
-    <div class="db-hero-content">
-      <span class="db-hero-eyebrow">System Health</span>
-      <h2 class="db-hero-title">
-        {{ store.unresolvedIncidentsCount() > 0 ? 'Có tín hiệu vận hành cần xử lý ngay' : 'Toàn bộ hệ thống đang vận hành ổn định' }}
-      </h2>
-      <p class="db-hero-desc">
-        {{ store.unresolvedIncidentsCount() > 0 ? 'Hiện có ' + store.unresolvedIncidentsCount() + ' sự cố đang mở. Ưu tiên kiểm tra log, ticket và người phụ trách.' : 'Không ghi nhận sự cố nghiêm trọng trong phiên giám sát gần nhất. Tiếp tục theo dõi tài nguyên và phản hồi ticket.' }}
-      </p>
+<div class="command-dashboard">
+  <section class="dashboard-toolbar" aria-label="Bộ lọc thời gian Dashboard">
+    <div class="period-tabs">
+      <button type="button" [class.period-tab--active]="store.period() === 'TODAY'" (click)="selectPeriod('TODAY')">Hôm nay</button>
+      <button type="button" [class.period-tab--active]="store.period() === '7D'" (click)="selectPeriod('7D')">7 ngày</button>
+      <button type="button" [class.period-tab--active]="store.period() === '30D'" (click)="selectPeriod('30D')">30 ngày</button>
+      <div class="custom-period" [class.custom-period--active]="store.period() === 'CUSTOM'">
+        <svg lucideCalendarDays [attr.stroke-width]="2"></svg>
+        <p-datepicker
+          [(ngModel)]="dateRange"
+          selectionMode="range"
+          [readonlyInput]="true"
+          [maxDate]="maxDate"
+          dateFormat="dd/mm/yy"
+          placeholder="Tùy chọn"
+          appendTo="body"
+          panelStyleClass="admin-dashboard-calendar"
+          (onSelect)="onCustomRangeChange()"
+        />
+      </div>
     </div>
 
-    <div class="db-hero-actions">
-      <span class="db-live-chip">Live monitoring</span>
-      <span class="db-uptime-tag">API {{ apiUptime }}</span>
-    </div>
-  </section>
-
-  <section class="db-stats-grid" aria-label="Chỉ số vận hành nhanh">
-    <a class="db-stat-card db-stat-card--errors" routerLink="/admin/logs">
-      <span class="db-stat-icon-wrapper"><svg lucideAlertCircle [attr.stroke-width]="2"></svg></span>
-      <span class="db-stat-info">
-        <span class="db-stat-kicker">Errors</span>
-        <span class="db-stat-value">{{ store.totalErrorsCount() }}</span>
-        <span class="db-stat-label">Lỗi hệ thống mới</span>
+    <div class="toolbar-meta">
+      <span class="sync-time">
+        @if (store.generatedAt()) {
+          Cập nhật {{ store.generatedAt() | date:'HH:mm:ss dd/MM/yyyy' }}
+        } @else {
+          Chưa đồng bộ
+        }
       </span>
-    </a>
-
-    <a class="db-stat-card db-stat-card--incidents" routerLink="/admin/incidents">
-      <span class="db-stat-icon-wrapper"><svg lucideActivity [attr.stroke-width]="2"></svg></span>
-      <span class="db-stat-info">
-        <span class="db-stat-kicker">Incidents</span>
-        <span class="db-stat-value">{{ store.unresolvedIncidentsCount() }}</span>
-        <span class="db-stat-label">Sự cố đang mở</span>
-      </span>
-    </a>
-
-    <a class="db-stat-card db-stat-card--tickets" routerLink="/admin/tickets">
-      <span class="db-stat-icon-wrapper"><svg lucideTicket [attr.stroke-width]="2"></svg></span>
-      <span class="db-stat-info">
-        <span class="db-stat-kicker">Support</span>
-        <span class="db-stat-value">{{ store.openTicketsCount() }}</span>
-        <span class="db-stat-label">Ticket chờ phản hồi</span>
-      </span>
-    </a>
-
-    <div class="db-stat-card db-stat-card--system">
-      <span class="db-stat-icon-wrapper"><svg lucideServer [attr.stroke-width]="2"></svg></span>
-      <span class="db-stat-info">
-        <span class="db-stat-kicker">Uptime</span>
-        <span class="db-stat-value db-stat-value--compact">{{ systemUptime }}</span>
-        <span class="db-stat-label">Thời gian máy chủ chạy</span>
-      </span>
+      <button type="button" class="refresh-button" (click)="refresh()" [disabled]="store.isLoading()" aria-label="Làm mới Dashboard">
+        <svg lucideRefreshCw [class.animate-spin]="store.isLoading()" [attr.stroke-width]="2"></svg>
+        <span>Làm mới</span>
+      </button>
     </div>
   </section>
 
-  <section class="db-resource-card" aria-labelledby="resource-title">
-    <div class="db-section-header">
+  @if (store.error()) {
+    <section class="dashboard-error" role="alert">
+      <svg lucideCircleAlert [attr.stroke-width]="2"></svg>
+      <span>{{ store.error() }}</span>
+      <button type="button" (click)="refresh()">Thử lại</button>
+    </section>
+  }
+
+  <section class="command-grid" [class.command-grid--loading]="store.isLoading() && !store.data()">
+    <button
+      type="button"
+      class="health-card"
+      [class.health-card--healthy]="store.health() === 'HEALTHY'"
+      [class.health-card--degraded]="store.health() === 'DEGRADED'"
+      [class.health-card--critical]="store.health() === 'CRITICAL'"
+      (click)="scrollToQueues()"
+    >
+      <span class="health-icon">
+        @if (store.health() === 'HEALTHY') {
+          <svg lucideShieldCheck [attr.stroke-width]="2"></svg>
+        } @else {
+          <svg lucideAlertTriangle [attr.stroke-width]="2"></svg>
+        }
+      </span>
+      <span class="health-copy">
+        <span class="health-kicker"><span class="health-pulse"></span>System health · {{ periodLabel() }}</span>
+        <strong>{{ healthTitle() }}</strong>
+        <small>{{ healthDescription() }}</small>
+      </span>
+      <svg lucideArrowRight class="health-arrow" [attr.stroke-width]="2"></svg>
+    </button>
+
+    <a class="command-kpi command-kpi--issues" routerLink="/admin/issues">
+      <span class="kpi-icon"><svg lucideCircleAlert [attr.stroke-width]="2"></svg></span>
+      <span class="kpi-copy">
+        <small>Issues trong kỳ</small>
+        <strong>{{ store.metrics()?.issuesInPeriod ?? 0 }}</strong>
+        <span>{{ store.metrics()?.errorsInPeriod ?? 0 }} lần ERROR</span>
+      </span>
+    </a>
+
+    <a class="command-kpi command-kpi--incidents" routerLink="/admin/incidents">
+      <span class="kpi-icon"><svg lucideActivity [attr.stroke-width]="2"></svg></span>
+      <span class="kpi-copy">
+        <small>Incidents đang mở</small>
+        <strong>{{ store.metrics()?.openIncidents ?? 0 }}</strong>
+        <span>{{ store.metrics()?.highPriorityIncidents ?? 0 }} mức cao · {{ store.metrics()?.unassignedIncidents ?? 0 }} chưa giao</span>
+      </span>
+    </a>
+
+    <a class="command-kpi command-kpi--tickets" routerLink="/admin/tickets">
+      <span class="kpi-icon"><svg lucideTicket [attr.stroke-width]="2"></svg></span>
+      <span class="kpi-copy">
+        <small>Tickets cần xử lý</small>
+        <strong>{{ store.metrics()?.actionableTickets ?? 0 }}</strong>
+        <span>{{ store.metrics()?.staleTickets ?? 0 }} ticket quá 24 giờ</span>
+      </span>
+    </a>
+  </section>
+
+  <section class="resource-card" aria-labelledby="resource-title">
+    <div class="section-heading">
       <div>
-        <span class="db-section-kicker">ZenTech Host</span>
-        <h3 id="resource-title" class="db-section-title">Tài nguyên máy chủ</h3>
+        <span class="section-kicker">ZenTech Host</span>
+        <h2 id="resource-title">Tài nguyên máy chủ</h2>
+        <p>Số liệu toàn máy chủ đang chạy ZenTech, tự động cập nhật mỗi 15 giây.</p>
       </div>
-      <span class="db-section-meta">Realtime snapshot</span>
+      <div class="resource-snapshot">
+        <span class="snapshot-dot" [class.snapshot-dot--offline]="store.resources()?.status === 'UNAVAILABLE'"></span>
+        {{ store.resources()?.status === 'UNAVAILABLE' ? 'Không khả dụng' : 'Realtime snapshot' }}
+      </div>
     </div>
 
-    <div class="db-resource-grid">
-      <div class="db-resource-item">
-        <div class="db-resource-item-header">
-          <div class="db-resource-label-area"><svg lucideCpu [attr.stroke-width]="2"></svg><span>CPU</span></div>
-          <span class="db-resource-value-text">{{ cpuUsage }}%</span>
-        </div>
-        <div class="db-progress-bar-container"><div class="db-progress-bar" [style.width.%]="cpuUsage"></div></div>
+    @if (store.resourceError()) {
+      <div class="resource-unavailable">
+        <svg lucideAlertTriangle [attr.stroke-width]="2"></svg>
+        {{ store.resourceError() }}
       </div>
+    }
 
-      <div class="db-resource-item">
-        <div class="db-resource-item-header">
-          <div class="db-resource-label-area"><svg lucideDatabase [attr.stroke-width]="2"></svg><span>RAM</span></div>
-          <span class="db-resource-value-text">{{ ramUsage }}%</span>
+    <div class="resource-grid">
+      <article class="resource-item">
+        <div class="resource-header">
+          <span><svg lucideCpu [attr.stroke-width]="2"></svg>CPU</span>
+          <strong>{{ resourceValue(store.resources()?.cpuUsagePercent) }}</strong>
         </div>
-        <div class="db-progress-bar-container"><div class="db-progress-bar" [style.width.%]="ramUsage" [class.db-progress-bar--warn]="ramUsage > 80"></div></div>
-      </div>
+        <div class="resource-track">
+          <span
+            [class]="'resource-fill resource-fill--' + resourceTone(store.resources()?.cpuUsagePercent)"
+            [style.width.%]="resourceWidth(store.resources()?.cpuUsagePercent)"
+          ></span>
+        </div>
+        <small>Tải xử lý toàn host</small>
+      </article>
 
-      <div class="db-resource-item">
-        <div class="db-resource-item-header">
-          <div class="db-resource-label-area"><svg lucideServer [attr.stroke-width]="2"></svg><span>Disk</span></div>
-          <span class="db-resource-value-text">{{ diskUsage }}%</span>
+      <article class="resource-item">
+        <div class="resource-header">
+          <span><svg lucideDatabase [attr.stroke-width]="2"></svg>RAM</span>
+          <strong>{{ resourceValue(store.resources()?.ramUsagePercent) }}</strong>
         </div>
-        <div class="db-progress-bar-container"><div class="db-progress-bar" [style.width.%]="diskUsage"></div></div>
-      </div>
+        <div class="resource-track">
+          <span
+            [class]="'resource-fill resource-fill--' + resourceTone(store.resources()?.ramUsagePercent)"
+            [style.width.%]="resourceWidth(store.resources()?.ramUsagePercent)"
+          ></span>
+        </div>
+        <small>{{ formatBytes(store.resources()?.ramUsedBytes) }} / {{ formatBytes(store.resources()?.ramTotalBytes) }}</small>
+      </article>
+
+      <article class="resource-item">
+        <div class="resource-header">
+          <span><svg lucideServer [attr.stroke-width]="2"></svg>Disk</span>
+          <strong>{{ resourceValue(store.resources()?.diskUsagePercent) }}</strong>
+        </div>
+        <div class="resource-track">
+          <span
+            [class]="'resource-fill resource-fill--' + resourceTone(store.resources()?.diskUsagePercent)"
+            [style.width.%]="resourceWidth(store.resources()?.diskUsagePercent)"
+          ></span>
+        </div>
+        <small>{{ store.resources()?.diskPath || 'Phân vùng ứng dụng' }} · {{ formatBytes(store.resources()?.diskUsedBytes) }} đã dùng</small>
+      </article>
     </div>
   </section>
 
-  <section class="db-content-columns">
-    <article class="db-column-card">
-      <div class="db-section-header db-section-header--compact">
+  <section class="analytics-grid">
+    <article class="chart-card">
+      <div class="section-heading section-heading--compact">
         <div>
-          <span class="db-section-kicker">Priority queue</span>
-          <h3 class="db-section-title">Sự cố khẩn cấp gần đây</h3>
+          <span class="section-kicker">Operational trend</span>
+          <h2>Xu hướng vận hành</h2>
+          <p>Issues phát sinh và tiến độ xử lý incident trong {{ periodLabel().toLowerCase() }}.</p>
         </div>
-        <a routerLink="/admin/incidents" class="db-view-more-link">Quản lý sự cố</a>
+        <span class="resolution-badge">
+          {{ store.metrics()?.incidentResolutionRate ?? 0 }}% xử lý
+        </span>
+      </div>
+      <div class="chart-container">
+        @if (store.trend().length) {
+          <p-chart type="line" [data]="chartData()" [options]="chartOptions" />
+        } @else {
+          <div class="empty-state">Chưa có dữ liệu xu hướng trong khoảng thời gian này.</div>
+        }
+      </div>
+    </article>
+
+    <article class="services-card">
+      <div class="section-heading section-heading--compact">
+        <div>
+          <span class="section-kicker">Error concentration</span>
+          <h2>Dịch vụ / API cần chú ý</h2>
+          <p>Nơi tập trung nhiều WARN và ERROR nhất trong kỳ.</p>
+        </div>
+        <svg lucideGauge class="heading-icon" [attr.stroke-width]="2"></svg>
       </div>
 
-      <div class="db-incident-list">
-        @if (store.filteredIncidents().length === 0) {
-          <div class="db-empty-state">Không có sự cố nào cần xử lý.</div>
-        } @else {
-          @for (inc of store.filteredIncidents().slice(0, 3); track inc.id) {
-            <div class="db-incident-item">
-              <div class="db-incident-header">
-                <span class="db-incident-id">{{ inc.id }}</span>
-                <span class="db-incident-severity" [class]="'severity-' + inc.severity.toLowerCase()">{{ inc.severity }}</span>
-              </div>
-              <h4 class="db-incident-subject">{{ inc.title }}</h4>
-              <p class="db-incident-meta">{{ inc.reportedAt | date:'HH:mm dd/MM' }} · {{ inc.assignee }}</p>
-              <span class="db-incident-status" [class]="'status-' + inc.status.toLowerCase()">
-                {{ inc.status === IncidentStatus.OPEN ? 'Đang mở' : inc.status === IncidentStatus.INVESTIGATING ? 'Đang điều tra' : 'Đã xử lý' }}
+      @if (!store.logsAvailable()) {
+        <div class="inline-warning">Loki đang không khả dụng, danh sách này tạm thời chưa có dữ liệu.</div>
+      } @else if (!store.topServices().length) {
+        <div class="empty-state empty-state--small">Không ghi nhận dịch vụ lỗi nổi bật.</div>
+      } @else {
+        <div class="service-list">
+          @for (service of store.topServices(); track service.service; let rank = $index) {
+            <div class="service-row">
+              <span class="service-rank">{{ rank + 1 }}</span>
+              <span class="service-copy">
+                <strong>{{ service.service }}</strong>
+                <small>{{ service.latestIssueTitle }}</small>
               </span>
+              <span class="service-count">{{ service.occurrences }}</span>
             </div>
           }
-        }
-      </div>
-    </article>
-
-    <article class="db-column-card">
-      <div class="db-section-header db-section-header--compact">
-        <div>
-          <span class="db-section-kicker">Error stream</span>
-          <h3 class="db-section-title">Nhật ký lỗi hệ thống</h3>
         </div>
-        <a routerLink="/admin/logs" class="db-view-more-link">Xem tất cả logs</a>
-      </div>
-
-      <div class="db-log-list">
-        @if (store.filteredLogs().length === 0) {
-          <div class="db-empty-state">Không tìm thấy lỗi trong nhật ký.</div>
-        } @else {
-          @for (log of store.filteredLogs().slice(0, 4); track log.id) {
-            <div class="db-log-item">
-              <div class="db-log-meta">
-                <span class="db-log-level" [class]="'level-' + log.level.toLowerCase()">{{ log.level }}</span>
-                <span class="db-log-time">{{ log.timestamp | date:'HH:mm:ss dd/MM' }}</span>
-                <span class="db-log-cat">{{ log.category }}</span>
-              </div>
-              <p class="db-log-msg">{{ log.message }}</p>
-            </div>
-          }
-        }
-      </div>
+      }
     </article>
+  </section>
+
+  <section id="dashboard-priority-queues" class="priority-section">
+    <div class="priority-heading">
+      <div>
+        <span class="section-kicker">Action center</span>
+        <h2>Hàng đợi ưu tiên</h2>
+        <p>Đi từ tín hiệu ban đầu đến công việc khắc phục: Issues → Incidents → Tickets.</p>
+      </div>
+      <div class="priority-summary">
+        <span>{{ store.metrics()?.unassignedIncidents ?? 0 }} incident chưa giao</span>
+        <span>{{ store.metrics()?.unassignedTickets ?? 0 }} ticket chưa giao</span>
+      </div>
+    </div>
+
+    <div class="queue-grid">
+      <article class="queue-card queue-card--issues">
+        <div class="queue-header">
+          <div><span>01</span><h3>Issues nổi bật</h3></div>
+          <a routerLink="/admin/issues">Xem tất cả <svg lucideArrowRight></svg></a>
+        </div>
+        @if (!store.logsAvailable()) {
+          <div class="empty-state empty-state--small">Không thể kết nối Loki để tổng hợp Issues.</div>
+        } @else if (!store.topIssues().length) {
+          <div class="empty-state empty-state--small">Không có issue WARN/ERROR trong kỳ.</div>
+        } @else {
+          <div class="queue-list">
+            @for (issue of store.topIssues(); track issue.signature) {
+              <button type="button" class="queue-item" (click)="openIssue(issue.signature)">
+                <span class="queue-badge" [class.queue-badge--critical]="issue.level === 'ERROR'">{{ issue.level }}</span>
+                <span class="queue-copy">
+                  <strong>{{ issue.title }}</strong>
+                  <small>{{ issue.category }} · {{ issue.occurrences }} lần · {{ ageLabel(issue.lastSeen) }}</small>
+                </span>
+                <svg lucideArrowRight></svg>
+              </button>
+            }
+          </div>
+        }
+      </article>
+
+      <article class="queue-card queue-card--incidents">
+        <div class="queue-header">
+          <div><span>02</span><h3>Incidents ưu tiên</h3></div>
+          <a routerLink="/admin/incidents">Xem tất cả <svg lucideArrowRight></svg></a>
+        </div>
+        @if (!store.priorityIncidents().length) {
+          <div class="empty-state empty-state--small">Không có incident nào đang mở.</div>
+        } @else {
+          <div class="queue-list">
+            @for (incident of store.priorityIncidents(); track incident.id) {
+              <button type="button" class="queue-item" (click)="openIncident(incident.id)">
+                <span [class]="'queue-badge severity-' + incident.severity.toLowerCase()">{{ incident.severity }}</span>
+                <span class="queue-copy">
+                  <strong>{{ incident.code }} · {{ incident.title }}</strong>
+                  <small>{{ incident.assignee || 'Chưa phân công' }} · {{ ageLabel(incident.firstOccurredAt || incident.createdAt) }}</small>
+                </span>
+                <svg lucideArrowRight></svg>
+              </button>
+            }
+          </div>
+        }
+      </article>
+
+      <article class="queue-card queue-card--tickets">
+        <div class="queue-header">
+          <div><span>03</span><h3>Tickets cần xử lý</h3></div>
+          <a routerLink="/admin/tickets">Xem tất cả <svg lucideArrowRight></svg></a>
+        </div>
+        @if (!store.priorityTickets().length) {
+          <div class="empty-state empty-state--small">Không có ticket nào cần xử lý.</div>
+        } @else {
+          <div class="queue-list">
+            @for (ticket of store.priorityTickets(); track ticket.id) {
+              <button type="button" class="queue-item" (click)="openTicket(ticket.code)">
+                <span [class]="'queue-badge severity-' + ticket.priority.toLowerCase()">{{ ticket.priority }}</span>
+                <span class="queue-copy">
+                  <strong>{{ ticket.code }} · {{ ticket.title }}</strong>
+                  <small>{{ ticket.assigneeName || 'Chưa phân công' }} · {{ ageLabel(ticket.createdAt) }}</small>
+                </span>
+                <svg lucideArrowRight></svg>
+              </button>
+            }
+          </div>
+        }
+      </article>
+    </div>
   </section>
 </div>
