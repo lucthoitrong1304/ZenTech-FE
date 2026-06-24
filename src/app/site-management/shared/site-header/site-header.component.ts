@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input, output, ViewChild, inject, OnDestroy } from '@angular/core';
+import { Component, computed, input, output, ViewChild, inject, OnDestroy, HostListener, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, takeUntil } from 'rxjs/operators';
 import {
   LucideChevronDown,
   LucideCircleUserRound,
@@ -21,6 +23,8 @@ import { DrawerModule } from 'primeng/drawer';
 import { HeaderNavItem } from '../site-navigation.models';
 import { NotificationBellComponent } from '../../../shared/components/notification-bell/notification-bell.component';
 import { CartStore } from '../../cart/data-access/store/cart.store';
+import { ProductCatalogService } from '../../product-catalog/data-access/services/product-catalog.service';
+import { ProductListItem } from '../../product-catalog/data-access/models/product-catalog.models';
 
 export interface HeaderUser {
   isAuthenticated: boolean;
@@ -57,6 +61,41 @@ export interface HeaderUser {
 export class SiteHeaderComponent implements OnDestroy {
   private readonly router = inject(Router);
   protected readonly cartStore = inject(CartStore);
+  private readonly productCatalogService = inject(ProductCatalogService);
+  private readonly searchSubject = new Subject<string>();
+  private readonly destroy$ = new Subject<void>();
+
+  protected readonly searchVisible = signal(false);
+  protected readonly searchQuery = signal('');
+  protected readonly instantResults = signal<ProductListItem[]>([]);
+  protected readonly loadingResults = signal(false);
+
+  constructor() {
+    this.searchSubject.pipe(
+      takeUntil(this.destroy$),
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(query => {
+        if (!query.trim()) {
+          this.instantResults.set([]);
+          this.loadingResults.set(false);
+          return of(null);
+        }
+        this.loadingResults.set(true);
+        return this.productCatalogService.getProducts({ search: query, size: 5 }).pipe(
+          catchError(() => {
+            this.loadingResults.set(false);
+            return of(null);
+          })
+        );
+      })
+    ).subscribe(response => {
+      this.loadingResults.set(false);
+      if (response) {
+        this.instantResults.set(response.items);
+      }
+    });
+  }
 
   @ViewChild(NotificationBellComponent) bellComponent?: NotificationBellComponent;
 
@@ -128,7 +167,49 @@ export class SiteHeaderComponent implements OnDestroy {
     return item.slug;
   }
 
+  openSearch(): void {
+    this.searchVisible.set(true);
+    this.searchQuery.set('');
+    this.instantResults.set([]);
+    this.loadingResults.set(false);
+    document.body.classList.add('p-overflow-hidden');
+  }
+
+  closeSearch(): void {
+    this.searchVisible.set(false);
+    document.body.classList.remove('p-overflow-hidden');
+  }
+
+  onSearchInput(event: Event): void {
+    const query = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(query);
+    this.searchSubject.next(query);
+  }
+
+  triggerSearch(): void {
+    const query = this.searchQuery().trim();
+    if (query) {
+      this.closeSearch();
+      this.router.navigate(['/products'], { queryParams: { search: query } });
+    }
+  }
+
+  onInstantResultClick(productSlug: string): void {
+    this.closeSearch();
+    this.router.navigate(['/products', productSlug]);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey(): void {
+    if (this.searchVisible()) {
+      this.closeSearch();
+    }
+  }
+
   ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
     // Clean up PrimeNG drawer mask if it's left in the DOM on navigation
     const masks = document.querySelectorAll('.p-drawer-mask, .p-overlay-mask');
     masks.forEach(mask => {

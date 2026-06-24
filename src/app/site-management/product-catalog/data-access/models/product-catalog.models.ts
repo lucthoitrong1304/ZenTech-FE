@@ -41,7 +41,7 @@ export interface ProductGroupItem {
 }
 
 export interface ProductCategoryListing {
-  category: ProductCategory;
+  category: ProductCategory | null;
   products: ProductListItem[];
   page: number;
   size: number;

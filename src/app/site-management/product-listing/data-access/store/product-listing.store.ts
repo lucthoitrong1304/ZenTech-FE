@@ -23,6 +23,7 @@ import { ProductSortOptionValue } from '../models/product-sort-option.model';
 interface ProductListingUiState {
   categorySlug: string | null;
   category: ProductCategory | null;
+  searchQuery: string | null;
   sortBy: ProductSortOptionValue;
   page: number;
   size: number;
@@ -48,6 +49,7 @@ const PRODUCT_ENTITY_CONFIG = {
 const INITIAL_STATE: ProductListingUiState = {
   categorySlug: null,
   category: null,
+  searchQuery: null,
   sortBy: 'featured',
   page: 0,
   size: 10,
@@ -85,6 +87,7 @@ export const ProductListingStore = signalStore(
     const applyListingMetadata = (listing: ProductCategoryListing): ProductListingUiState => ({
       categorySlug: store.categorySlug(),
       category: listing.category,
+      searchQuery: store.searchQuery(),
       sortBy: store.sortBy(),
       page: listing.page,
       size: listing.size,
@@ -112,6 +115,7 @@ export const ProductListingStore = signalStore(
             {
               categorySlug: event.slug,
               category: cat,
+              searchQuery: null,
               page: 0,
               totalItems: 0,
               totalPages: 0,
@@ -278,18 +282,133 @@ export const ProductListingStore = signalStore(
       )
     );
 
+    const searchProducts = rxMethod<{ query: string; sortBy: ProductSortOptionValue }>(
+      pipe(
+        tap(({ query }) => {
+          patchState(
+            store,
+            removeAllEntities(PRODUCT_ENTITY_CONFIG),
+            {
+              categorySlug: null,
+              category: null,
+              searchQuery: query,
+              page: 0,
+              totalItems: 0,
+              totalPages: 0,
+              hasNext: false,
+              hasPrevious: false,
+              loading: true,
+              loadingMore: false,
+              sorting: false,
+              error: null,
+              isInvalidCategory: false,
+            }
+          );
+        }),
+        switchMap(({ query, sortBy }) =>
+          productCatalogService.getProducts({
+            search: query,
+            page: 0,
+            size: store.size(),
+            sort: toApiSort(sortBy),
+          }).pipe(
+            tap({
+              next: response => {
+                const listing: ProductCategoryListing = {
+                  category: null,
+                  products: response.items,
+                  page: response.page,
+                  size: response.size,
+                  totalItems: response.totalItems,
+                  totalPages: response.totalPages,
+                  hasNext: response.hasNext,
+                  hasPrevious: response.hasPrevious,
+                };
+                patchState(
+                  store,
+                  setAllEntities(
+                    listing.products.map(product => ({ ...product })),
+                    PRODUCT_ENTITY_CONFIG
+                  ),
+                  applyListingMetadata(listing)
+                );
+              },
+              error: () => {
+                patchState(
+                  store,
+                  removeAllEntities(PRODUCT_ENTITY_CONFIG),
+                  {
+                    category: null,
+                    page: 0,
+                    totalItems: 0,
+                    totalPages: 0,
+                    hasNext: false,
+                    hasPrevious: false,
+                    loading: false,
+                    loadingMore: false,
+                    sorting: false,
+                    error: 'Không thể tải danh sách sản phẩm lúc này.',
+                    isInvalidCategory: false,
+                  }
+                );
+              },
+            }),
+            catchError(() => EMPTY)
+          )
+        )
+      )
+    );
+
     const loadMore = rxMethod<void>(
       pipe(
         switchMap(() => {
-          const slug = store.categorySlug();
-          const category = slug ? categoryNavigationStore.findCategoryBySlug(slug) : null;
+          if (store.loading() || store.loadingMore() || !store.hasNext()) {
+            return EMPTY;
+          }
 
-          if (!category || store.loading() || store.loadingMore() || !store.hasNext()) {
+          const slug = store.categorySlug();
+          const query = store.searchQuery();
+
+          if (query) {
+            handleEvent({ type: ProductListingEventType.MoreProductsLoadStarted });
+            return productCatalogService
+              .getProducts({
+                search: query,
+                page: store.page() + 1,
+                size: store.size(),
+                sort: toApiSort(store.sortBy()),
+              })
+              .pipe(
+                tap({
+                  next: response => {
+                    const listing: ProductCategoryListing = {
+                      category: null,
+                      products: response.items,
+                      page: response.page,
+                      size: response.size,
+                      totalItems: response.totalItems,
+                      totalPages: response.totalPages,
+                      hasNext: response.hasNext,
+                      hasPrevious: response.hasPrevious,
+                    };
+                    handleEvent({
+                      type: ProductListingEventType.MoreProductsLoadSucceeded,
+                      listing,
+                    });
+                  },
+                  error: () =>
+                    handleEvent({ type: ProductListingEventType.MoreProductsLoadFailed }),
+                }),
+                catchError(() => EMPTY)
+              );
+          }
+
+          const category = slug ? categoryNavigationStore.findCategoryBySlug(slug) : null;
+          if (!category) {
             return EMPTY;
           }
 
           handleEvent({ type: ProductListingEventType.MoreProductsLoadStarted });
-
           return productCatalogService
             .getCategoryListing(category, {
               page: store.page() + 1,
@@ -316,10 +435,40 @@ export const ProductListingStore = signalStore(
       pipe(
         switchMap(sortBy => {
           const slug = store.categorySlug();
-          const category = slug ? categoryNavigationStore.findCategoryBySlug(slug) : null;
+          const query = store.searchQuery();
 
           handleEvent({ type: ProductListingEventType.SortRefreshStarted, sortBy });
 
+          if (query) {
+            return productCatalogService
+              .getProducts({
+                search: query,
+                page: 0,
+                size: store.size(),
+                sort: toApiSort(sortBy),
+              })
+              .pipe(
+                tap({
+                  next: response => {
+                    const listing: ProductCategoryListing = {
+                      category: null,
+                      products: response.items,
+                      page: response.page,
+                      size: response.size,
+                      totalItems: response.totalItems,
+                      totalPages: response.totalPages,
+                      hasNext: response.hasNext,
+                      hasPrevious: response.hasPrevious,
+                    };
+                    handleEvent({ type: ProductListingEventType.SortRefreshSucceeded, listing });
+                  },
+                  error: () => handleEvent({ type: ProductListingEventType.SortRefreshFailed }),
+                }),
+                catchError(() => EMPTY)
+              );
+          }
+
+          const category = slug ? categoryNavigationStore.findCategoryBySlug(slug) : null;
           if (!category) {
             handleEvent({ type: ProductListingEventType.SortRefreshFailed });
             return EMPTY;
@@ -346,6 +495,7 @@ export const ProductListingStore = signalStore(
     return {
       dispatch: handleEvent,
       loadCategory,
+      searchProducts,
       loadMore,
       changeSort,
       addProductToCart: rxMethod<ProductListItem>(
