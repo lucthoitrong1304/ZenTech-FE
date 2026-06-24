@@ -60,7 +60,7 @@
     </a>
 
     <div class="site-header__actions">
-      <button type="button" class="site-header__icon-button" aria-label="Search products">
+      <button type="button" class="site-header__icon-button" (click)="openSearch()" aria-label="Search products">
         <svg lucideSearch class="site-header__action-icon" [attr.stroke-width]="2"></svg>
       </button>
 
@@ -336,3 +336,81 @@
     }
   </div>
 </p-drawer>
+
+<!-- Command Palette Search Overlay -->
+@if (searchVisible()) {
+  <div class="site-search-overlay" (click)="closeSearch()">
+    <div class="site-search-container" (click)="$event.stopPropagation()">
+      <!-- Search Input Header -->
+      <div class="site-search-header">
+        <svg lucideSearch class="site-search-header-icon" [attr.stroke-width]="2.5"></svg>
+        <input
+          #searchInput
+          type="text"
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+          (keydown.enter)="triggerSearch()"
+          placeholder="Tìm kiếm sản phẩm..."
+          class="site-search-input"
+          autofocus
+        />
+        <div class="site-search-meta">
+          <button type="button" class="site-search-close" (click)="closeSearch()" aria-label="Close search">
+            <svg lucideX class="site-search-close-icon" [attr.stroke-width]="2"></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Results Area -->
+      <div class="site-search-body">
+        @if (loadingResults()) {
+          <div class="site-search-loading">
+            <div class="site-search-spinner"></div>
+            <span class="site-search-loading-text">Đang tìm kiếm sản phẩm...</span>
+          </div>
+        } @else if (searchQuery().trim() === '') {
+          <div class="site-search-placeholder">
+            <svg lucideSearch class="site-search-placeholder-icon animate-pulse-slow" [attr.stroke-width]="1.5"></svg>
+            <p class="site-search-placeholder-title">Tìm kiếm trên ZenTech</p>
+            <p class="site-search-placeholder-desc">Nhập tên sản phẩm để tìm kiếm nhanh chóng</p>
+          </div>
+        } @else if (instantResults().length === 0) {
+          <div class="site-search-empty">
+            <p class="site-search-empty-title">Không tìm thấy kết quả</p>
+            <p class="site-search-empty-desc">Không có sản phẩm nào phù hợp với từ khóa "{{ searchQuery() }}"</p>
+          </div>
+        } @else {
+          <div class="site-search-results-section">
+            <h3 class="site-search-section-title">Sản phẩm gợi ý</h3>
+            <div class="site-search-list">
+              @for (product of instantResults(); track product.id) {
+                <div class="site-search-item" (click)="onInstantResultClick(product.slug)">
+                  <div class="site-search-item-image-wrapper">
+                    <img [src]="product.image" [alt]="product.name" class="site-search-item-image" />
+                  </div>
+                  <div class="site-search-item-info">
+                    <h4 class="site-search-item-name">{{ product.name }}</h4>
+                    <p class="site-search-item-price">
+                      {{ product.price | currency: 'VND' : 'symbol' : '1.0-0' }}
+                      @if (product.originalPrice) {
+                        <span class="site-search-item-original-price">
+                          {{ product.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}
+                        </span>
+                      }
+                    </p>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+          
+          <!-- Footer "See all results" -->
+          <div class="site-search-footer" (click)="triggerSearch()">
+            <span>Xem tất cả kết quả cho "{{ searchQuery() }}"</span>
+            <kbd class="site-search-kbd">ENTER</kbd>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

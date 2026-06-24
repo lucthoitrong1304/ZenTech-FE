@@ -16,6 +16,13 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'products',
+    loadComponent: () =>
+      import('./site-management/product-listing/pages/product-listing-page/product-listing-page.component').then(
+        m => m.ProductListingPageComponent
+      )
+  },
+  {
     path: 'products/:slug',
     loadComponent: () =>
       import('./site-management/product-detail/pages/product-detail-page/product-detail-page.component').then(

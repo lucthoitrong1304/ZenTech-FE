@@ -68,6 +68,30 @@ export class ProductCatalogService {
       );
   }
 
+  getProducts(query: {
+    search?: string;
+    sort?: string;
+    page?: number;
+    size?: number;
+  }): Observable<PagedResponse<ProductListItem>> {
+    return this.apiService
+      .get<PagedResponse<CategoryProductListItemResponseDto>>(this.productsBaseUrl, {
+        params: {
+          search: query.search ?? '',
+          sort: query.sort ?? 'NEWEST',
+          page: query.page ?? 0,
+          size: query.size ?? 10,
+        },
+        context: publicCatalogContext(),
+      })
+      .pipe(
+        map(response => ({
+          ...response,
+          items: response.items.map(item => toProductListItem('', item)),
+        }))
+      );
+  }
+
   getProductDetail(productId: string): Observable<ProductDetail> {
     return this.apiService
       .get<ProductDetailResponseDto>(`${this.productsBaseUrl}/${productId}`, publicCatalogOptions())

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, effect, inject, untracked, HostListener } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { distinctUntilChanged, map } from 'rxjs';
@@ -54,19 +54,34 @@ export class ProductListingPageComponent {
     ),
     { initialValue: '' }
   );
+  private readonly searchQuery = toSignal(
+    this.route.queryParamMap.pipe(
+      map(params => params.get('search')?.trim() ?? ''),
+      distinctUntilChanged()
+    ),
+    { initialValue: '' }
+  );
+
+  protected searchSortDropdownOpen = false;
 
   constructor() {
     effect(() => {
       const slug = this.categorySlug();
+      const query = this.searchQuery();
 
-      if (slug) {
-        untracked(() => {
+      untracked(() => {
+        if (slug) {
           this.productListingStore.loadCategory({
             slug,
             sortBy: this.productListingStore.sortBy(),
           });
-        });
-      }
+        } else {
+          this.productListingStore.searchProducts({
+            query,
+            sortBy: this.productListingStore.sortBy(),
+          });
+        }
+      });
     });
 
     effect(() => {
@@ -114,6 +129,19 @@ export class ProductListingPageComponent {
         });
       }
     });
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('#searchSortToolbar') && this.searchSortDropdownOpen) {
+      this.searchSortDropdownOpen = false;
+    }
+  }
+
+  getSortLabel(value: ProductSortOptionValue): string {
+    const current = this.sortOptions.find(opt => opt.value === value);
+    return current ? current.label : '';
   }
 
   onSortChange(sortBy: ProductSortOptionValue): void {
