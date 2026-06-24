@@ -517,6 +517,33 @@
           </div>
         </div>
 
+        <!-- Thống kê Kho hàng lỗi (Faulty Warehouse) -->
+        <div class="reports-faulty-warehouse-card">
+          <div class="reports-faulty-warehouse-info">
+            <div class="reports-faulty-warehouse-icon-wrapper">
+              <svg lucideAlertTriangle></svg>
+            </div>
+            <div>
+              <h4 class="reports-faulty-warehouse-title">
+                Thống kê Kho hàng lỗi (Faulty Warehouse)
+                <span class="reports-faulty-warehouse-badge">Hao hụt/Hỏng</span>
+              </h4>
+              <p class="reports-faulty-warehouse-description">Ghi nhận lượng sản phẩm bị lỗi, hỏng hóc hoặc trả về do lỗi kỹ thuật chưa thanh lý. Giá trị này hiển thị riêng biệt để quản lý tổn thất, không tính gộp vào tài sản tồn kho bán lẻ.</p>
+            </div>
+          </div>
+          <div class="reports-faulty-warehouse-stats-wrapper">
+            <div class="reports-faulty-warehouse-stat">
+              <span class="reports-faulty-warehouse-stat-label">Tổng lượng lỗi</span>
+              <strong class="reports-faulty-warehouse-stat-value">{{ store.inventoryStats()?.totalFaultyItems | number:'1.0-0' }}</strong>
+            </div>
+            <div class="reports-faulty-warehouse-divider"></div>
+            <div class="reports-faulty-warehouse-stat">
+              <span class="reports-faulty-warehouse-stat-label">Tổng giá trị vốn</span>
+              <strong class="reports-faulty-warehouse-stat-value">{{ store.inventoryStats()?.totalFaultyValue | number:'1.0-0' }}đ</strong>
+            </div>
+          </div>
+        </div>
+
         <div class="reports-grid-one-col">
           <div class="reports-list-card">
             <div class="reports-card-header">

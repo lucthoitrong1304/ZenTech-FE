@@ -19,6 +19,14 @@
         <button
           type="button"
           class="inventory-mode-btn"
+          [class.inventory-mode-btn--active]="store.activeTab() === 'faulty'"
+          (click)="setTab('faulty')"
+        >
+          Kho lỗi
+        </button>
+        <button
+          type="button"
+          class="inventory-mode-btn"
           [class.inventory-mode-btn--active]="store.activeTab() === 'logs'"
           (click)="setTab('logs')"
         >
@@ -87,6 +95,57 @@
               <div class="metric-progress-fill metric-progress-fill--warning" [style.width.%]="getLowStockPercentage()"></div>
             </div>
             <span class="metric-progress-text">{{ getLowStockPercentage() }}% dưới 10 sản phẩm</span>
+          </div>
+        </div>
+      </article>
+    } @else if (store.activeTab() === 'faulty') {
+      <!-- Faulty Stats 1: Faulty Variants -->
+      <article class="metric-card metric-card--locked bg-rose-50/20 border-rose-100/50">
+        <div class="metric-card__icon bg-rose-100/50 text-rose-600">
+          <svg lucideTriangleAlert class="stat-icon"></svg>
+        </div>
+        <div class="metric-card__content">
+          <p class="metric-card__label text-rose-800/60">Biến thể bị lỗi</p>
+          <strong class="metric-card__value text-rose-600">{{ store.stats().totalFaultyVariants }}</strong>
+          <div class="metric-progress-wrapper">
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--danger" [style.width.%]="getFaultyVariantsPercentage()"></div>
+            </div>
+            <span class="metric-progress-text">{{ getFaultyVariantsPercentage() }}% biến thể có hàng hỏng</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Faulty Stats 2: Total Faulty Quantity -->
+      <article class="metric-card metric-card--warning bg-amber-50/20 border-amber-100/50">
+        <div class="metric-card__icon bg-amber-100/50 text-amber-600">
+          <svg lucidePackage class="stat-icon"></svg>
+        </div>
+        <div class="metric-card__content">
+          <p class="metric-card__label text-amber-800/60">Tổng số lượng lỗi</p>
+          <strong class="metric-card__value text-amber-600">{{ store.stats().totalFaultyQuantity }}</strong>
+          <div class="metric-progress-wrapper">
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--warning" style="width: 100%"></div>
+            </div>
+            <span class="metric-progress-text">Sản phẩm lỗi đang lưu kho</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Faulty Stats 3: High Faulty Alert Count -->
+      <article class="metric-card metric-card--locked bg-red-50/30 border-red-200/50">
+        <div class="metric-card__icon bg-red-100 text-red-600">
+          <svg lucideTriangleAlert class="stat-icon"></svg>
+        </div>
+        <div class="metric-card__content">
+          <p class="metric-card__label text-red-800/70">Mặt hàng lỗi nhiều (>= 10)</p>
+          <strong class="metric-card__value text-red-600">{{ store.stats().highFaultyAlertCount }}</strong>
+          <div class="metric-progress-wrapper">
+            <div class="metric-progress-bar">
+              <div class="metric-progress-fill metric-progress-fill--danger" [style.width.%]="getHighFaultyAlertPercentage()"></div>
+            </div>
+            <span class="metric-progress-text">Cần tiêu hủy hoặc thanh lý gấp</span>
           </div>
         </div>
       </article>
@@ -189,6 +248,15 @@
     <button
       type="button"
       class="inventory-tab-link"
+      [class.inventory-tab-link--active]="store.activeTab() === 'faulty'"
+      (click)="setTab('faulty')"
+    >
+      <svg lucideTriangleAlert></svg>
+      <span>Kho hàng lỗi/hỏng</span>
+    </button>
+    <button
+      type="button"
+      class="inventory-tab-link"
       [class.inventory-tab-link--active]="store.activeTab() === 'logs'"
       (click)="setTab('logs')"
     >
@@ -220,7 +288,7 @@
       </div>
 
       <div class="toolbar-actions">
-        @if (store.activeTab() === 'stock') {
+        @if (store.activeTab() === 'stock' || store.activeTab() === 'faulty') {
           <div class="inventory-view-toggles">
             <button
               type="button"
@@ -246,7 +314,7 @@
           type="button"
           class="btn-action-export btn-action-export--pdf"
           (click)="exportPdf()"
-          [title]="store.activeTab() === 'stock' ? 'In PDF tồn kho' : 'In báo cáo PDF'"
+          [title]="(store.activeTab() === 'stock' || store.activeTab() === 'faulty') ? 'In PDF tồn kho' : 'In báo cáo PDF'"
         >
           <svg lucidePrinter class="action-icon"></svg>
           <span>In PDF</span>
@@ -259,7 +327,7 @@
 
     <!-- Bottom Row: Filter Dropdowns -->
     <div class="toolbar-row toolbar-row--filters">
-      @if (store.activeTab() === 'stock') {
+      @if (store.activeTab() === 'stock' || store.activeTab() === 'faulty') {
         <p-select
           inputId="inventory-status-filter"
           styleClass="inventory-dropdown"
@@ -407,7 +475,7 @@
               <th>Sản phẩm</th>
               <th>Biến thể</th>
               <th>Giá gốc / Giá bán</th>
-              <th class="text-center">Số lượng</th>
+              <th class="text-center">Tồn kho</th>
               <th>Trạng thái</th>
               <th class="text-right">Hành động</th>
             </tr>
@@ -588,6 +656,203 @@
     </article>
   }
 
+  <!-- BẢNG DỮ LIỆU KHO LỖI/HỎNG -->
+  @if (store.activeTab() === 'faulty') {
+    <article class="data-panel">
+      <!-- 1. Table View Mode -->
+      @if (viewMode() === 'table') {
+        <p-table
+          [value]="store.stockItems()"
+          [loading]="store.loadingStock()"
+          styleClass="inventory-p-table inventory-p-table--faulty"
+          responsiveLayout="scroll"
+        >
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Hình ảnh</th>
+              <th>Sản phẩm</th>
+              <th>Biến thể</th>
+              <th>Giá gốc / Giá bán</th>
+              <th class="text-center">Hàng lỗi/hỏng</th>
+              <th>Trạng thái</th>
+              <th class="text-right">Hành động</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr>
+              <td>
+                @if (item.representativeImageUrl) {
+                  <img class="product-image" [src]="item.representativeImageUrl" [alt]="item.productName" loading="lazy" />
+                } @else {
+                  <div class="product-image product-image--placeholder">
+                    {{ item.productName.charAt(0).toUpperCase() }}
+                  </div>
+                }
+              </td>
+              <td>
+                <span class="product-title-text">{{ item.productName }}</span>
+              </td>
+              <td>
+                <span class="variant-badge" [style.border-color]="item.colorCode || '#E5E7EB'">
+                  {{ item.variantName || 'Mặc định' }}
+                </span>
+              </td>
+              <td>
+                <div class="price-group">
+                  @if (item.salePrice) {
+                    <span class="original-price">{{ item.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+                    <strong class="sale-price">{{ item.salePrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                  } @else {
+                    <strong>{{ item.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                  }
+                </div>
+              </td>
+              <td class="text-center font-bold">
+                <span class="text-rose-600">
+                  {{ item.faultyQuantity || 0 }}
+                </span>
+              </td>
+              <td>
+                <p-tag 
+                  [value]="item.faultyQuantity > 0 ? 'Có hàng lỗi' : 'Không có lỗi'" 
+                  [severity]="item.faultyQuantity > 0 ? 'danger' : 'success'" 
+                />
+              </td>
+              <td class="text-right">
+                <div class="flex justify-end w-full">
+                  <button
+                    type="button"
+                    class="btn-action-quick"
+                    (click)="openAdjust(item)"
+                  >
+                    <svg lucidePlus class="action-icon"></svg>
+                    <span>Cập nhật kho</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7">
+                <div class="empty-state">
+                  <svg lucidePackage class="empty-icon"></svg>
+                  <h3>Không tìm thấy sản phẩm</h3>
+                  <p>Thử đổi bộ lọc hoặc xóa từ khóa tìm kiếm.</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+
+      <!-- 2. Grid Card View Mode -->
+      @if (viewMode() === 'card') {
+        @if (store.loadingStock()) {
+          <div class="inventory-card-grid">
+            @for (_ of [1, 2, 3, 4]; track $index) {
+              <div class="card-skeleton">
+                <div class="skeleton-media"></div>
+                <div class="skeleton-line skeleton-line--title"></div>
+                <div class="skeleton-line skeleton-line--badge"></div>
+                <div class="skeleton-line skeleton-line--stock"></div>
+                <div class="skeleton-line skeleton-line--price"></div>
+                <div class="skeleton-btn"></div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="inventory-card-grid">
+            @for (item of store.stockItems(); track item.variantId) {
+              <article class="inventory-product-card" [class.card--out]="!item.faultyQuantity || item.faultyQuantity <= 0">
+                <div class="card-image-wrap">
+                  @if (item.representativeImageUrl) {
+                    <img class="card-img" [src]="item.representativeImageUrl" [alt]="item.productName" loading="lazy" />
+                  } @else {
+                    <div class="card-img-placeholder">
+                      {{ item.productName.charAt(0).toUpperCase() }}
+                    </div>
+                  }
+                  <p-tag 
+                    [value]="item.faultyQuantity > 0 ? 'Có hàng lỗi' : 'Không có lỗi'" 
+                    [severity]="item.faultyQuantity > 0 ? 'danger' : 'success'"
+                    class="card-status-badge"
+                  />
+                </div>
+                
+                <div class="card-body">
+                  <h3 class="card-title" [title]="item.productName">{{ item.productName }}</h3>
+                  
+                  <div class="card-variant-wrap">
+                    <span class="variant-badge" [style.border-color]="item.colorCode || '#E5E7EB'">
+                      {{ item.variantName || 'Mặc định' }}
+                    </span>
+                  </div>
+
+                  <div class="card-stock-info">
+                    <div class="stock-label-group">
+                      <span class="stock-lbl">Kho hàng lỗi</span>
+                      <strong class="text-rose-600 font-bold">
+                        {{ item.faultyQuantity || 0 }} chiếc
+                      </strong>
+                    </div>
+                    <div class="stock-progress-bar">
+                      <div 
+                        class="stock-progress-fill fill--danger" 
+                        [style.width.%]="item.faultyQuantity >= 20 ? 100 : (item.faultyQuantity / 20) * 100"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div class="card-price-group">
+                    @if (item.salePrice) {
+                      <span class="original-price">{{ item.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+                      <strong class="sale-price">{{ item.salePrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                    } @else {
+                      <strong>{{ item.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
+                    }
+                  </div>
+                </div>
+
+                <div class="card-footer">
+                  <button
+                    type="button"
+                    class="btn-action-quick"
+                    (click)="openAdjust(item)"
+                  >
+                    <svg lucidePlus class="action-icon"></svg>
+                    <span>Cập nhật kho</span>
+                  </button>
+                </div>
+              </article>
+            } @empty {
+              <div class="empty-state-card-wrapper">
+                <div class="empty-state">
+                  <svg lucidePackage class="empty-icon"></svg>
+                  <h3>Không tìm thấy sản phẩm</h3>
+                  <p>Thử đổi bộ lọc hoặc xóa từ khóa tìm kiếm.</p>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      <!-- Pagination Stock using PrimeNG Paginator -->
+      @if (store.totalElements() > 0 && !store.loadingStock()) {
+        <p-paginator
+          styleClass="inventory-paginator"
+          [first]="store.stockQuery().page * store.stockQuery().size"
+          [rows]="store.stockQuery().size"
+          [totalRecords]="store.totalElements()"
+          (onPageChange)="handlePageChange($event)"
+          [showCurrentPageReport]="true"
+          currentPageReportTemplate="Hiển thị {first} - {last} trong số {totalRecords} mặt hàng"
+        />
+      }
+    </article>
+  }
+
   <!-- BẢNG NHẬT KÝ NHẬP XUẤT KHO -->
   @if (store.activeTab() === 'logs') {
     <article class="data-panel">
@@ -616,7 +881,14 @@
             <td>
               <div class="log-product-info">
                 <span class="product-title-text">{{ log.productName }}</span>
-                <small class="text-slate-400 font-medium">Biến thể: {{ log.variantName || 'Mặc định' }}</small>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <small class="text-slate-400 font-medium">Biến thể: {{ log.variantName || 'Mặc định' }}</small>
+                  @if (log.targetWarehouse === 'FAULTY') {
+                    <p-tag value="Kho lỗi" severity="danger" />
+                  } @else if (log.targetWarehouse === 'MAIN') {
+                    <p-tag value="Kho chính" severity="info" />
+                  }
+                </div>
               </div>
             </td>
             <td>
@@ -728,6 +1000,7 @@
     [item]="store.selectedItem()"
     [saving]="store.saving()"
     [errorMessage]="store.errorMessage()"
+    [defaultWarehouse]="store.activeTab() === 'faulty' ? 'FAULTY' : 'MAIN'"
     (close)="closeDialog()"
     (submitAdjust)="onAdjustSubmit($event)"
   ></app-inventory-adjust-dialog>
@@ -840,7 +1113,7 @@
     </div>
   }
 
-  @if (store.activeTab() === 'stock') {
+  @if (store.activeTab() === 'stock' || store.activeTab() === 'faulty') {
     <div class="print-report-container">
       <section class="print-cover-band">
         <div class="print-brand-mark">ZT</div>

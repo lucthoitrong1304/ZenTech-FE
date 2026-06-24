@@ -142,7 +142,7 @@ export const DashboardStore = signalStore(
             size: 100,
             sort: 'createdAt,asc',
             keyword: '',
-            status: 'COMPLETED',
+            status: 'all',
             dateFilter: 'all',
             startDate: todayOrderRange.start,
             endDate: todayOrderRange.end,

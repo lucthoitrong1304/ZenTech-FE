@@ -136,6 +136,14 @@
   @apply border-[#E11D48] bg-[#FFF1F2] text-[#E11D48];
 }
 
+.toggle-btn--main.active {
+  @apply border-[#4F46E5] bg-[#EEF2FF] text-[#4F46E5];
+}
+
+.toggle-btn--faulty.active {
+  @apply border-[#E11D48] bg-[#FFF1F2] text-[#E11D48];
+}
+
 .form-input {
   @apply h-10 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3.5 text-sm text-[#111827] transition-all focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5] focus-visible:outline-none;
 }

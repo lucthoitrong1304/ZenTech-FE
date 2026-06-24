@@ -86,6 +86,8 @@ export interface IInventoryStats {
   totalItemsInStock: number;
   lowStockVariations: number;
   deadStockVariations: number;
+  totalFaultyValue: number;
+  totalFaultyItems: number;
   lowStockProducts?: IProductReport[];
 }
 

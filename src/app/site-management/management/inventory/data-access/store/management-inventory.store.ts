@@ -47,7 +47,7 @@ const STOCK_ENTITY_CONFIG = {
 } as const;
 
 interface ManagementInventoryUiState {
-  activeTab: 'stock' | 'logs';
+  activeTab: 'stock' | 'logs' | 'faulty';
   stockQuery: InventoryQuery;
   logsQuery: InventoryQuery;
   totalStockElements: number;
@@ -89,6 +89,9 @@ const INITIAL_STATE: ManagementInventoryUiState = {
     totalItems: 0,
     lowStockCount: 0,
     outOfStockCount: 0,
+    totalFaultyVariants: 0,
+    totalFaultyQuantity: 0,
+    highFaultyAlertCount: 0,
   },
   logsStats: {
     totalImports: 0,
@@ -118,33 +121,33 @@ export const ManagementInventoryStore = signalStore(
     isStockEmpty: computed(() => stockEntities().length === 0),
     
     // Derived values for pagination on active tab
-    currentPage: computed(() => (activeTab() === 'stock' ? stockQuery().page : logsQuery().page)),
-    pageSize: computed(() => (activeTab() === 'stock' ? stockQuery().size : logsQuery().size)),
-    totalElements: computed(() => (activeTab() === 'stock' ? totalStockElements() : totalLogsElements())),
-    totalPages: computed(() => (activeTab() === 'stock' ? totalStockPages() : totalLogsPages())),
+    currentPage: computed(() => (activeTab() === 'logs' ? logsQuery().page : stockQuery().page)),
+    pageSize: computed(() => (activeTab() === 'logs' ? logsQuery().size : stockQuery().size)),
+    totalElements: computed(() => (activeTab() === 'logs' ? totalLogsElements() : totalStockElements())),
+    totalPages: computed(() => (activeTab() === 'logs' ? totalLogsPages() : totalStockPages())),
     
     pageStart: computed(() => {
-      const activeQuery = activeTab() === 'stock' ? stockQuery() : logsQuery();
-      const total = activeTab() === 'stock' ? totalStockElements() : totalLogsElements();
+      const activeQuery = activeTab() === 'logs' ? logsQuery() : stockQuery();
+      const total = activeTab() === 'logs' ? totalLogsElements() : totalStockElements();
       return total === 0 ? 0 : activeQuery.page * activeQuery.size + 1;
     }),
     pageEnd: computed(() => {
-      const activeQuery = activeTab() === 'stock' ? stockQuery() : logsQuery();
-      const total = activeTab() === 'stock' ? totalStockElements() : totalLogsElements();
+      const activeQuery = activeTab() === 'logs' ? logsQuery() : stockQuery();
+      const total = activeTab() === 'logs' ? totalLogsElements() : totalStockElements();
       return Math.min((activeQuery.page + 1) * activeQuery.size, total);
     }),
     canGoPrevious: computed(() => {
-      const activeQuery = activeTab() === 'stock' ? stockQuery() : logsQuery();
+      const activeQuery = activeTab() === 'logs' ? logsQuery() : stockQuery();
       return activeQuery.page > 0;
     }),
     canGoNext: computed(() => {
-      const activeQuery = activeTab() === 'stock' ? stockQuery() : logsQuery();
-      const totalPagesVal = activeTab() === 'stock' ? totalStockPages() : totalLogsPages();
+      const activeQuery = activeTab() === 'logs' ? logsQuery() : stockQuery();
+      const totalPagesVal = activeTab() === 'logs' ? totalLogsPages() : totalStockPages();
       return activeQuery.page + 1 < totalPagesVal;
     }),
     activeFilterCount: computed(() => {
       let count = 0;
-      if (activeTab() === 'stock') {
+      if (activeTab() !== 'logs') {
         if (stockQuery().keyword.trim()) count++;
         if (stockQuery().stockStatus !== StockStatusOption.ALL) count++;
       } else {
@@ -216,7 +219,7 @@ export const ManagementInventoryStore = signalStore(
           break;
 
         case InventoryEventType.SearchKeywordChanged:
-          if (store.activeTab() === 'stock') {
+          if (store.activeTab() !== 'logs') {
             patchState(store, {
               stockQuery: { ...store.stockQuery(), keyword: event.keyword, page: 0 },
             });
@@ -240,7 +243,7 @@ export const ManagementInventoryStore = signalStore(
           break;
 
         case InventoryEventType.SortChanged:
-          if (store.activeTab() === 'stock') {
+          if (store.activeTab() !== 'logs') {
             patchState(store, {
               stockQuery: { ...store.stockQuery(), sort: event.sort, page: 0 },
             });
@@ -252,7 +255,7 @@ export const ManagementInventoryStore = signalStore(
           break;
 
         case InventoryEventType.PageChanged:
-          if (store.activeTab() === 'stock') {
+          if (store.activeTab() !== 'logs') {
             patchState(store, {
               stockQuery: { ...store.stockQuery(), page: Math.max(0, Math.min(event.page, store.totalStockPages() - 1)) },
             });
@@ -428,7 +431,7 @@ export const ManagementInventoryStore = signalStore(
             }),
             switchMap(() => {
               // Reload based on active view
-              if (store.activeTab() === 'stock') {
+              if (store.activeTab() !== 'logs') {
                 return forkJoin({
                   page: inventoryService.getInventorySummary(store.stockQuery()),
                   stats: inventoryService.getInventoryStats(),
@@ -485,7 +488,7 @@ export const ManagementInventoryStore = signalStore(
       loadAiRecommendations,
       setKeyword(keyword: string): void {
         handleEvent({ type: InventoryEventType.SearchKeywordChanged, keyword });
-        if (store.activeTab() === 'stock') {
+        if (store.activeTab() !== 'logs') {
           loadInventory();
         } else {
           loadLogs();
@@ -524,7 +527,7 @@ export const ManagementInventoryStore = signalStore(
       },
       setSort(sort: string): void {
         handleEvent({ type: InventoryEventType.SortChanged, sort });
-        if (store.activeTab() === 'stock') {
+        if (store.activeTab() !== 'logs') {
           loadInventory();
         } else {
           loadLogs();
@@ -532,15 +535,15 @@ export const ManagementInventoryStore = signalStore(
       },
       goToPage(page: number): void {
         handleEvent({ type: InventoryEventType.PageChanged, page });
-        if (store.activeTab() === 'stock') {
+        if (store.activeTab() !== 'logs') {
           loadInventory();
         } else {
           loadLogs();
         }
       },
-      setTab(tab: 'stock' | 'logs'): void {
+      setTab(tab: 'stock' | 'logs' | 'faulty'): void {
         handleEvent({ type: InventoryEventType.TabChanged, tab });
-        if (tab === 'stock') {
+        if (tab === 'stock' || tab === 'faulty') {
           loadInventory();
         } else {
           loadLogs();

@@ -45,7 +45,7 @@ export type InventoryEvent =
   | { type: InventoryEventType.TypeFilterChanged; txType: InventoryQuery['type'] }
   | { type: InventoryEventType.SortChanged; sort: InventoryQuery['sort'] }
   | { type: InventoryEventType.PageChanged; page: number }
-  | { type: InventoryEventType.TabChanged; tab: 'stock' | 'logs' }
+  | { type: InventoryEventType.TabChanged; tab: 'stock' | 'logs' | 'faulty' }
   | { type: InventoryEventType.AdjustClicked; item: InventorySummary }
   | { type: InventoryEventType.DialogClosed }
   | { type: InventoryEventType.SubmitClicked }

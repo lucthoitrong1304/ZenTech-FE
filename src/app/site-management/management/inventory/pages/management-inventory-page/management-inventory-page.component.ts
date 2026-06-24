@@ -121,6 +121,18 @@ export class ManagementInventoryPageComponent {
     return Math.round((this.store.stats().lowStockCount / total) * 100);
   }
 
+  protected getFaultyVariantsPercentage(): number {
+    const total = this.store.stats().totalItems;
+    if (total === 0) return 0;
+    return Math.round((this.store.stats().totalFaultyVariants / total) * 100);
+  }
+
+  protected getHighFaultyAlertPercentage(): number {
+    const total = this.store.stats().totalItems;
+    if (total === 0) return 0;
+    return Math.round((this.store.stats().highFaultyAlertCount / total) * 100);
+  }
+
   protected getImportPercentage(): number {
     const totalImports = this.store.logsStats().totalImports;
     const totalExports = this.store.logsStats().totalExports;
@@ -259,7 +271,7 @@ export class ManagementInventoryPageComponent {
     this.store.setKeyword('');
   }
 
-  protected setTab(tab: 'stock' | 'logs'): void {
+  protected setTab(tab: 'stock' | 'logs' | 'faulty'): void {
     this.clearSearch();
     this.store.setTab(tab);
   }
@@ -332,7 +344,7 @@ export class ManagementInventoryPageComponent {
   }
 
   protected exportExcel(): void {
-    if (this.store.activeTab() === 'stock') {
+    if (this.store.activeTab() === 'stock' || this.store.activeTab() === 'faulty') {
       this.exportStockExcel();
       return;
     }
@@ -480,6 +492,7 @@ export class ManagementInventoryPageComponent {
             <td class="cell-number">${this.formatMoney(item.originalPrice)}</td>
             <td class="cell-number">${item.salePrice ? this.formatMoney(item.salePrice) : '---'}</td>
             <td class="cell-center stock-qty">${item.stockQuantity}</td>
+            <td class="cell-center faulty-qty">${item.faultyQuantity || 0}</td>
             <td class="cell-center ${statusClass}">${this.escapeHtml(statusLabel)}</td>
             <td class="cell-number inventory-value">${this.formatMoney(inventoryValue)}</td>
           </tr>
@@ -506,6 +519,7 @@ export class ManagementInventoryPageComponent {
             .cell-number { text-align: right; }
             .cell-product { font-weight: 700; color: #111827; }
             .stock-qty { font-weight: 800; color: #4F46E5; }
+            .faulty-qty { font-weight: 800; color: #E11D48; }
             .inventory-value { font-weight: 800; color: #111827; }
             .status-in-stock { background: #F0FDF4; color: #16A34A; font-weight: 700; }
             .status-low-stock { background: #FFF7CC; color: #92400E; font-weight: 700; }
@@ -514,9 +528,9 @@ export class ManagementInventoryPageComponent {
         </head>
         <body>
           <table>
-            <tr><td class="report-title" colspan="9">BÁO CÁO TỒN KHO HIỆN TẠI</td></tr>
-            <tr><td class="report-subtitle" colspan="9">ZenTech Gaming Gear · Thời gian xuất: ${this.escapeHtml(printedAt)}</td></tr>
-            <tr><td colspan="9"></td></tr>
+            <tr><td class="report-title" colspan="10">BÁO CÁO TỒN KHO HIỆN TẠI</td></tr>
+            <tr><td class="report-subtitle" colspan="10">ZenTech Gaming Gear · Thời gian xuất: ${this.escapeHtml(printedAt)}</td></tr>
+            <tr><td colspan="10"></td></tr>
           </table>
           <table class="summary-table">
             <tr>
@@ -539,6 +553,7 @@ export class ManagementInventoryPageComponent {
                 <th>Giá gốc</th>
                 <th>Giá bán</th>
                 <th>Tồn kho</th>
+                <th>Hàng lỗi/hỏng</th>
                 <th>Trạng thái</th>
                 <th>Giá trị tồn</th>
               </tr>
@@ -589,7 +604,7 @@ export class ManagementInventoryPageComponent {
   }
 
   protected exportPdf(): void {
-    const isStockTab = this.store.activeTab() === 'stock';
+    const isStockTab = this.store.activeTab() === 'stock' || this.store.activeTab() === 'faulty';
     const stockItems = this.store.stockItems();
     const logs = this.store.logs();
 

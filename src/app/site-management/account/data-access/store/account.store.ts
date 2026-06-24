@@ -507,6 +507,40 @@ export const AccountStore = signalStore(
       )
     );
 
+    const cancelOrder = rxMethod<string>(
+      pipe(
+        tap(() => patchState(store, { loading: true, error: null })),
+        switchMap(orderId =>
+          accountService.cancelOrder(orderId).pipe(
+            tap({
+              next: res => {
+                if (res.success) {
+                  patchState(store, {
+                    loading: false,
+                    actionMessage: 'Đơn hàng đã được hủy thành công!',
+                    selectedOrderDetail: res.data,
+                  });
+                  loadOrders();
+                } else {
+                  patchState(store, {
+                    error: res.message || 'Hủy đơn hàng thất bại',
+                    loading: false,
+                  });
+                }
+              },
+              error: err => {
+                patchState(store, {
+                  error: err.message || 'Đã xảy ra lỗi khi hủy đơn hàng',
+                  loading: false,
+                });
+              },
+            }),
+            catchError(() => EMPTY)
+          )
+        )
+      )
+    );
+
     const loadVouchers = rxMethod<void>(
       pipe(
         tap(() => patchState(store, { loading: true, error: null })),
@@ -578,6 +612,7 @@ export const AccountStore = signalStore(
       deleteAddress,
       loadOrders,
       loadOrderDetail,
+      cancelOrder,
       loadVouchers,
       clearActionMessage(): void {
         patchState(store, { actionMessage: null });
