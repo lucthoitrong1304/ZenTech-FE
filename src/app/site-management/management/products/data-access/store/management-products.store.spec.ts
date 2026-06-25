@@ -6,6 +6,8 @@ import {
   ManagementProduct,
   ManagementProductPage,
   ManagementProductQuery,
+  ProductCreateRequest,
+  ProductManagementDetailResponse,
 } from '../models/management-product.models';
 import { ManagementProductService } from '../services/management-product.service';
 import { ManagementProductsStore } from './management-products.store';
@@ -142,6 +144,56 @@ describe('ManagementProductsStore', () => {
       'Không thể tải danh sách sản phẩm. Vui lòng thử lại.'
     );
   });
+
+  it('preserves markdown rich fields and normalizes empty rich fields on create', () => {
+    const product = createProduct();
+    const detail = createProductDetail();
+    const createProductSpy = vi.fn((request: ProductCreateRequest) => of(detail));
+    const store = configureStore({
+      getProducts: query => of(createPage([product], query)),
+      getProductStats: () =>
+        of({
+          totalProducts: 1,
+          outOfStock: 0,
+          inventoryValue: 2490000,
+          lowStock: 0,
+        }),
+      getCategories: () => of([]),
+      createProduct: createProductSpy,
+    });
+
+    store.openCreateDialog();
+    store.updateFormValue({
+      productName: 'ZenTech Editor Test',
+      categoryIds: ['keyboards'],
+      imageKeys: [],
+      specificationsRaw: '# Specs\n\n**Hall Effect**',
+      compatibilityRaw: '   ',
+      boxContentsRaw: '- Cable\n- Puller',
+      supportInfoRaw: '',
+      variants: [
+        {
+          originalPrice: 2490000,
+          salePrice: null,
+          name: 'US Plug',
+          nameColor: 'GunMetal',
+          colorCode: '#5A5A5A',
+          stockQuantity: 50,
+        },
+      ],
+    });
+
+    store.submitProductForm();
+
+    expect(createProductSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        specifications: '# Specs\n\n**Hall Effect**',
+        compatibility: null,
+        boxContents: '- Cable\n- Puller',
+        supportInfo: null,
+      })
+    );
+  });
 });
 
 function isTestEnvironmentAlreadyInitialized(error: Error): boolean {
@@ -162,6 +214,28 @@ function createProduct(): ManagementProduct {
     stock: 45,
     imageUrl: null,
     status: 'IN_STOCK',
+  };
+}
+
+function createProductDetail(): ProductManagementDetailResponse {
+  return {
+    id: 'product-k1',
+    productName: 'ZenTech Editor Test',
+    specifications: '# Specs\n\n**Hall Effect**',
+    compatibility: null,
+    boxContents: '- Cable\n- Puller',
+    supportInfo: null,
+    representativeImageKey: null,
+    representativeImageUrl: null,
+    imageKeys: [],
+    productImageUrls: [],
+    productGroup: null,
+    categories: [],
+    variants: [],
+    deleted: false,
+    createdAt: '2026-06-25T00:00:00Z',
+    updatedAt: '2026-06-25T00:00:00Z',
+    deletedAt: null,
   };
 }
 

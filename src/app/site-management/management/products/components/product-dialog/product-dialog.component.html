@@ -138,41 +138,41 @@
           </p>
         </div>
 
-        <label class="product-field">
+        <div class="product-field">
           <span>Thông số kỹ thuật (Specifications)</span>
-          <app-product-rich-markdown-editor
+          <app-rich-text-editor
             [value]="formState().specificationsRaw"
             placeholder="Nhập thông số kỹ thuật..."
             (valueChange)="onFieldChange({ specificationsRaw: $event })"
           />
-        </label>
+        </div>
 
-        <label class="product-field">
+        <div class="product-field">
           <span>Khả năng tương thích (Compatibility)</span>
-          <app-product-rich-markdown-editor
+          <app-rich-text-editor
             [value]="formState().compatibilityRaw"
             placeholder="Nhập khả năng tương thích..."
             (valueChange)="onFieldChange({ compatibilityRaw: $event })"
           />
-        </label>
+        </div>
 
-        <label class="product-field">
+        <div class="product-field">
           <span>Trong hộp gồm có (Box Contents)</span>
-          <app-product-rich-markdown-editor
+          <app-rich-text-editor
             [value]="formState().boxContentsRaw"
             placeholder="Nhập các phụ kiện kèm theo trong hộp..."
             (valueChange)="onFieldChange({ boxContentsRaw: $event })"
           />
-        </label>
+        </div>
 
-        <label class="product-field">
+        <div class="product-field">
           <span>Thông tin hỗ trợ (Support Info)</span>
-          <app-product-rich-markdown-editor
+          <app-rich-text-editor
             [value]="formState().supportInfoRaw"
             placeholder="Nhập đường dẫn tài liệu hướng dẫn, driver..."
             (valueChange)="onFieldChange({ supportInfoRaw: $event })"
           />
-        </label>
+        </div>
       </div>
 
       <div [hidden]="activeTab() !== 'variants'" class="product-tab-content">

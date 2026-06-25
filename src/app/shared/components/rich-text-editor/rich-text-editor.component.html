@@ -1,0 +1,66 @@
+<div class="rich-text-editor" [ngStyle]="editorStyle()">
+  <div class="rich-text-editor__toolbar" role="toolbar" aria-label="Rich text editor toolbar">
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isInlineActive('bold')" title="Bold" aria-label="Bold" (click)="toggleInline('bold')">
+      <svg lucideBold [attr.stroke-width]="2.4"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isInlineActive('italic')" title="Italic" aria-label="Italic" (click)="toggleInline('italic')">
+      <svg lucideItalic [attr.stroke-width]="2.4"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isInlineActive('underline')" title="Underline" aria-label="Underline" (click)="toggleInline('underline')">
+      <svg lucideUnderline [attr.stroke-width]="2.4"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isInlineActive('strike')" title="Strikethrough" aria-label="Strikethrough" (click)="toggleInline('strike')">
+      <svg lucideStrikethrough [attr.stroke-width]="2.4"></svg>
+    </button>
+
+    <span class="rich-text-editor__divider" aria-hidden="true"></span>
+
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isBlockActive('paragraph')" title="Paragraph" aria-label="Paragraph" (click)="applyBlock('paragraph')">
+      <svg lucidePilcrow [attr.stroke-width]="2.25"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isBlockActive('header-1')" title="Heading H1" aria-label="Heading H1" (click)="applyBlock('header-1')">
+      <svg lucideHeading1 [attr.stroke-width]="2.25"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isBlockActive('header-2')" title="Heading H2" aria-label="Heading H2" (click)="applyBlock('header-2')">
+      <svg lucideHeading2 [attr.stroke-width]="2.25"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isBlockActive('header-3')" title="Heading H3" aria-label="Heading H3" (click)="applyBlock('header-3')">
+      <svg lucideHeading3 [attr.stroke-width]="2.25"></svg>
+    </button>
+
+    <span class="rich-text-editor__divider" aria-hidden="true"></span>
+
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isBlockActive('bullet')" title="Bullet list" aria-label="Bullet list" (click)="applyBlock('bullet')">
+      <svg lucideList [attr.stroke-width]="2.25"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isBlockActive('ordered')" title="Ordered list" aria-label="Ordered list" (click)="applyBlock('ordered')">
+      <svg lucideListOrdered [attr.stroke-width]="2.25"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isBlockActive('blockquote')" title="Blockquote" aria-label="Blockquote" (click)="applyBlock('blockquote')">
+      <svg lucideQuote [attr.stroke-width]="2.25"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="isBlockActive('code-block')" title="Code block" aria-label="Code block" (click)="applyBlock('code-block')">
+      <svg lucideCode [attr.stroke-width]="2.25"></svg>
+    </button>
+
+    <span class="rich-text-editor__divider" aria-hidden="true"></span>
+
+    <button type="button" class="rich-text-editor__button" [class.rich-text-editor__button--active]="formatState().link" title="Link" aria-label="Link" (click)="toggleLink()">
+      <svg lucideLink [attr.stroke-width]="2.25"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" title="Clear formatting" aria-label="Clear formatting" (click)="clearFormatting()">
+      <svg lucideRemoveFormatting [attr.stroke-width]="2.25"></svg>
+    </button>
+
+    <span class="rich-text-editor__divider" aria-hidden="true"></span>
+
+    <button type="button" class="rich-text-editor__button" title="Undo" aria-label="Undo" (click)="undo()">
+      <svg lucideUndo [attr.stroke-width]="2.25"></svg>
+    </button>
+    <button type="button" class="rich-text-editor__button" title="Redo" aria-label="Redo" (click)="redo()">
+      <svg lucideRedo [attr.stroke-width]="2.25"></svg>
+    </button>
+  </div>
+
+  <div #editor class="rich-text-editor__surface"></div>
+</div>

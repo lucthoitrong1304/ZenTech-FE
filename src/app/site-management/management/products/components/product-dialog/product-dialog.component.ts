@@ -10,6 +10,7 @@ import {
 } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
 import { firstValueFrom } from 'rxjs';
+import { RichTextEditorComponent } from '../../../../../shared/components/rich-text-editor/rich-text-editor.component';
 import {
   ManagementProductCategory,
   ManagementProductGroup,
@@ -18,7 +19,6 @@ import {
   ProductVariantUpsertRequest,
 } from '../../data-access/models/management-product.models';
 import { ManagementProductService } from '../../data-access/services/management-product.service';
-import { ProductRichMarkdownEditorComponent } from '../product-rich-markdown-editor/product-rich-markdown-editor.component';
 
 interface ProductImageItem {
   key: string;
@@ -37,7 +37,7 @@ interface ProductImageItem {
     LucidePlus,
     LucideTrash,
     LucideUpload,
-    ProductRichMarkdownEditorComponent,
+    RichTextEditorComponent,
   ],
   templateUrl: './product-dialog.component.html',
   styleUrl: './product-dialog.component.css',
