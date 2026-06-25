@@ -143,21 +143,6 @@ export interface ProductGroupResponseDto {
   productCount: number;
 }
 
-export interface MarkdownBulletRequest {
-  label: string | null;
-  value: string;
-}
-
-export interface MarkdownSectionRequest {
-  heading: string | null;
-  paragraphs: string[] | null;
-  bullets: MarkdownBulletRequest[] | null;
-}
-
-export interface MarkdownContentRequest {
-  sections: MarkdownSectionRequest[];
-}
-
 export interface ProductVariantUpsertRequest {
   id?: string;
   originalPrice: number;
@@ -176,11 +161,10 @@ export interface ProductCreateRequest {
   categoryIds: string[];
   representativeImageKey?: string | null;
   imageKeys: string[];
-  description?: MarkdownContentRequest | null;
-  specifications?: MarkdownContentRequest | null;
-  compatibility?: MarkdownContentRequest | null;
-  boxContents?: MarkdownContentRequest | null;
-  supportInfo?: MarkdownContentRequest | null;
+  specifications?: string | null;
+  compatibility?: string | null;
+  boxContents?: string | null;
+  supportInfo?: string | null;
   variants: ProductVariantUpsertRequest[];
 }
 
@@ -192,11 +176,10 @@ export interface ProductUpdateRequest {
   representativeImageKey?: string | null;
   clearRepresentativeImage?: boolean;
   imageKeys?: string[];
-  description?: MarkdownContentRequest | null;
-  specifications?: MarkdownContentRequest | null;
-  compatibility?: MarkdownContentRequest | null;
-  boxContents?: MarkdownContentRequest | null;
-  supportInfo?: MarkdownContentRequest | null;
+  specifications?: string | null;
+  compatibility?: string | null;
+  boxContents?: string | null;
+  supportInfo?: string | null;
   variants?: ProductVariantUpsertRequest[];
 }
 
@@ -217,7 +200,6 @@ export interface ProductVariantManagementResponse {
 export interface ProductManagementDetailResponse {
   id: string;
   productName: string;
-  description: string | null;
   specifications: string | null;
   compatibility: string | null;
   boxContents: string | null;
@@ -248,7 +230,7 @@ export interface ProductFormValue {
   categoryIds: string[];
   representativeImageKey: string | null;
   imageKeys: string[];
-  descriptionRaw: string;
+  productImageUrls: string[];
   specificationsRaw: string;
   compatibilityRaw: string;
   boxContentsRaw: string;

@@ -15,10 +15,6 @@ import {
   ProductUpdateRequest,
   ProductManagementDetailResponse,
   ManagementProductFormErrors,
-  ProductVariantUpsertRequest,
-  MarkdownContentRequest,
-  MarkdownSectionRequest,
-  MarkdownBulletRequest,
 } from '../models/management-product.models';
 import { ManagementProductService } from '../services/management-product.service';
 
@@ -86,7 +82,7 @@ export function createEmptyProductFormValue(): ProductFormValue {
     categoryIds: [],
     representativeImageKey: null,
     imageKeys: [],
-    descriptionRaw: '',
+    productImageUrls: [],
     specificationsRaw: '',
     compatibilityRaw: '',
     boxContentsRaw: '',
@@ -102,7 +98,7 @@ export function mapDetailResponseToFormValue(detail: ProductManagementDetailResp
     categoryIds: detail.categories.map(c => c.id),
     representativeImageKey: detail.representativeImageKey,
     imageKeys: detail.imageKeys || [],
-    descriptionRaw: detail.description || '',
+    productImageUrls: detail.productImageUrls || [],
     specificationsRaw: detail.specifications || '',
     compatibilityRaw: detail.compatibility || '',
     boxContentsRaw: detail.boxContents || '',
@@ -120,72 +116,6 @@ export function mapDetailResponseToFormValue(detail: ProductManagementDetailResp
     })),
   };
 }
-
-export function parseMarkdownToRequest(markdown: string): MarkdownContentRequest {
-  if (!markdown || !markdown.trim()) {
-    return { sections: [] };
-  }
-
-  const sections: MarkdownSectionRequest[] = [];
-  const lines = markdown.split(/\r?\n/);
-  let currentSection: MarkdownSectionRequest | null = null;
-  let currentParagraphs: string[] = [];
-  let currentBullets: MarkdownBulletRequest[] = [];
-
-  const flushSection = (): void => {
-    if (currentSection) {
-      currentSection.paragraphs = currentParagraphs.length > 0 ? currentParagraphs : null;
-      currentSection.bullets = currentBullets.length > 0 ? currentBullets : null;
-      sections.push(currentSection);
-    }
-    currentSection = null;
-    currentParagraphs = [];
-    currentBullets = [];
-  };
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      continue;
-    }
-
-    if (trimmed.startsWith('#')) {
-      flushSection();
-      const heading = trimmed.replace(/^#+\s+/, '');
-      currentSection = {
-        heading,
-        paragraphs: null,
-        bullets: null,
-      };
-    } else if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
-      if (!currentSection) {
-        currentSection = { heading: null, paragraphs: null, bullets: null };
-      }
-      const bulletContent = trimmed.replace(/^[-*]\s+/, '');
-      const boldMatch = bulletContent.match(/^\*\*(.*?)\*\*[:\s]*(.*)$/);
-      if (boldMatch) {
-        currentBullets.push({
-          label: boldMatch[1].trim(),
-          value: boldMatch[2].trim(),
-        });
-      } else {
-        currentBullets.push({
-          label: null,
-          value: bulletContent,
-        });
-      }
-    } else {
-      if (!currentSection) {
-        currentSection = { heading: null, paragraphs: null, bullets: null };
-      }
-      currentParagraphs.push(trimmed);
-    }
-  }
-
-  flushSection();
-  return { sections };
-}
-
 
 export const ManagementProductsStore = signalStore(
   withState<ManagementProductsUiState>(INITIAL_STATE),
@@ -510,11 +440,10 @@ export const ManagementProductsStore = signalStore(
             categoryIds: form.categoryIds,
             representativeImageKey: form.representativeImageKey,
             imageKeys: form.imageKeys,
-            description: parseMarkdownToRequest(form.descriptionRaw),
-            specifications: parseMarkdownToRequest(form.specificationsRaw),
-            compatibility: parseMarkdownToRequest(form.compatibilityRaw),
-            boxContents: parseMarkdownToRequest(form.boxContentsRaw),
-            supportInfo: parseMarkdownToRequest(form.supportInfoRaw),
+            specifications: normalizeMarkdown(form.specificationsRaw),
+            compatibility: normalizeMarkdown(form.compatibilityRaw),
+            boxContents: normalizeMarkdown(form.boxContentsRaw),
+            supportInfo: normalizeMarkdown(form.supportInfoRaw),
             variants: form.variants,
           };
 
@@ -616,3 +545,8 @@ export const ManagementProductsStore = signalStore(
     };
   })
 );
+
+function normalizeMarkdown(markdown: string): string | null {
+  const value = markdown.trim();
+  return value ? value : null;
+}

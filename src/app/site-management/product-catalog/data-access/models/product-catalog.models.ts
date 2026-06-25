@@ -87,7 +87,6 @@ export interface ProductReviewPayload {
 export interface ProductDetail extends ProductListItem {
   category?: ProductCategory;
   gallery: string[];
-  description: string;
   highlights: string[];
   specs: ProductSpec[];
   maxQuantity: number;
