@@ -33,8 +33,8 @@ export const CategoryNavigationStore = signalStore(
   withMethods((store, productCatalogService = inject(ProductCatalogService)) => {
     let categoryTreeRequest$: Observable<ProductCategory[]> | null = null;
 
-    const requestCategoryTree = (): Observable<ProductCategory[]> => {
-      if (store.loaded()) {
+    const requestCategoryTree = (force = false): Observable<ProductCategory[]> => {
+      if (store.loaded() && !force) {
         return of(store.categories());
       }
 
@@ -78,6 +78,14 @@ export const CategoryNavigationStore = signalStore(
           )
         )
       ),
+      refreshCategories: rxMethod<void>(
+        pipe(
+          switchMap(() => requestCategoryTree(true).pipe(catchError(() => EMPTY)))
+        )
+      ),
+      invalidateCategories(): void {
+        patchState(store, { loaded: false });
+      },
       findCategoryBySlug(slug: string): ProductCategory | null {
         return findCategoryBySlug(store.categories(), slug);
       },
