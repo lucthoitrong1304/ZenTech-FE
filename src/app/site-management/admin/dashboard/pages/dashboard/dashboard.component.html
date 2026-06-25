@@ -209,7 +209,7 @@
         <div>
           <span class="section-kicker">ĐIỂM NÓNG CẢNH BÁO</span>
           <h2>Dịch vụ có cảnh báo nổi bật</h2>
-          <p>Ưu tiên theo số ERROR và WARN ghi nhận trong kỳ.</p>
+          <p>Ưu tiên dịch vụ có ERROR, sau đó xếp theo số ERROR và WARN ghi nhận trong kỳ.</p>
         </div>
         <svg lucideGauge class="heading-icon" [attr.stroke-width]="2"></svg>
       </div>
@@ -225,7 +225,7 @@
               <div class="service-alert__top">
                 <span class="service-rank">{{ rank + 1 }}</span>
                 <span class="service-copy">
-                  <span class="service-name-row"><strong>{{ service.service }}</strong><em [class.level-error]="service.latestIssueLevel === 'ERROR'">{{ service.latestIssueLevel || 'WARN' }} gần nhất</em></span>
+                  <span class="service-name-row"><strong>{{ service.service }}</strong><em [class.level-error]="service.latestIssueLevel === 'ERROR'">Mới nhất: {{ service.latestIssueLevel || 'Không rõ' }}</em></span>
                   <small [attr.title]="service.latestIssueTitle">{{ service.latestIssueTitle }}</small>
                 </span>
                 <span class="service-total"><b>{{ service.occurrences }}</b><small>tổng</small></span>

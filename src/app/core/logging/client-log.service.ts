@@ -3,11 +3,13 @@ import { Router } from '@angular/router';
 import { AdminLogsService } from '../../site-management/admin/data-access/services/admin-logs.service';
 import { ClientLogContext, ClientLogEventType, ClientLogLevel, ClientLogPayload } from './client-log.model';
 import { sanitizeRecord, sanitizeText, sanitizeUrl } from './client-log-sanitizer';
+import { AuthStorageService } from '../services/auth-storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class ClientLogService {
   private readonly adminLogsService = inject(AdminLogsService);
   private readonly router = inject(Router);
+  private readonly authStorage = inject(AuthStorageService);
   private readonly recentLogKeys = new Map<string, number>();
   private readonly duplicateWindowMs = 3000;
 
@@ -36,6 +38,7 @@ export class ClientLogService {
     }
 
     const traceId = context.traceId ?? this.generateTraceId();
+    const session = this.authStorage.getSession();
     const sanitizedContext = sanitizeRecord({
       eventType,
       routeUrl: sanitizeUrl(routeUrl),
@@ -44,8 +47,9 @@ export class ClientLogService {
       apiPath: context.apiPath ? sanitizeUrl(context.apiPath) : undefined,
       statusCode: context.statusCode,
       durationMs: context.durationMs,
-      userEmail: context.userEmail,
-      userRole: context.userRole,
+      userId: context.userId ?? session?.accountId,
+      userEmail: context.userEmail ?? session?.email,
+      userRole: context.userRole ?? session?.roles?.[0],
       productId: context.productId,
       orderId: context.orderId,
       quantity: context.quantity,

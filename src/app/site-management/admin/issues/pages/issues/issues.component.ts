@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal, computed, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import {
@@ -79,6 +80,7 @@ interface ClientLogStackContext {
 export class IssuesComponent implements OnInit, OnDestroy {
   protected readonly store = inject(AdminStore);
   protected readonly toastService = inject(ToastService);
+  private readonly route = inject(ActivatedRoute);
   protected readonly LogLevel = LogLevel;
   protected readonly LogServiceCategory = LogServiceCategory;
   protected readonly LogTimeRange = LogTimeRange;
@@ -119,6 +121,15 @@ export class IssuesComponent implements OnInit, OnDestroy {
   protected readonly explainingIds = signal<Record<string, boolean>>({});
 
   ngOnInit(): void {
+    const search = this.route.snapshot.queryParamMap.get('search')?.trim() ?? '';
+    const service = this.route.snapshot.queryParamMap.get('service') as LogServiceCategory | null;
+    if (search) {
+      this.searchText.set(search);
+      this.store.setLogSearch(search);
+    }
+    if (service && Object.values(LogServiceCategory).includes(service)) {
+      this.activeService.set(service);
+    }
     this.reloadLogsFromServer();
     this.startRealtimeLogs();
   }

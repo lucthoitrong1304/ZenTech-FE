@@ -31,6 +31,7 @@ export interface ClientLogContext {
   apiPath?: string;
   statusCode?: number;
   durationMs?: number;
+  userId?: string;
   userEmail?: string;
   userRole?: string;
   productId?: string;
