@@ -93,18 +93,6 @@ export class RichTextEditorComponent implements AfterViewInit, OnDestroy {
 
   private quill: Quill | null = null;
   private applyingExternalValue = false;
-  private readonly handleRootKeydown = (event: KeyboardEvent): void => {
-    if (!event.ctrlKey && !event.metaKey) {
-      return;
-    }
-
-    const format = getShortcutFormat(event.key);
-    if (!format) {
-      return;
-    }
-
-    queueMicrotask(() => this.updateFormatState());
-  };
 
   constructor() {
     effect(() => {
@@ -136,20 +124,12 @@ export class RichTextEditorComponent implements AfterViewInit, OnDestroy {
           maxStack: 100,
           userOnly: true,
         },
-        keyboard: {
-          bindings: {
-            bold: { key: 'B', shortKey: true, handler: () => this.toggleInline('bold') },
-            italic: { key: 'I', shortKey: true, handler: () => this.toggleInline('italic') },
-            underline: { key: 'U', shortKey: true, handler: () => this.toggleInline('underline') },
-          },
-        },
       },
       placeholder: this.placeholder(),
       theme: 'snow',
       formats: ['bold', 'italic', 'underline', 'strike', 'header', 'list', 'blockquote', 'code-block', 'link', 'code'],
     });
 
-    this.quill.root.addEventListener('keydown', this.handleRootKeydown);
     this.quill.on('text-change', () => {
       this.updateFormatState();
       if (this.applyingExternalValue || !this.quill) {
@@ -162,6 +142,7 @@ export class RichTextEditorComponent implements AfterViewInit, OnDestroy {
     this.quill.on('selection-change', () => this.updateFormatState());
     this.setEditorMarkdown(this.value());
     this.updateFormatState();
+    this.quill.root.addEventListener('keydown', this.handleRootKeydown);
   }
 
   ngOnDestroy(): void {
@@ -283,6 +264,49 @@ export class RichTextEditorComponent implements AfterViewInit, OnDestroy {
     this.updateFormatState();
   }
 
+  private readonly handleRootKeydown = (event: KeyboardEvent): void => {
+    if (!this.quill) return;
+
+    // 1. Fix UI không sáng khi bấm phím tắt Ctrl + B/I/U
+    if ((event.ctrlKey || event.metaKey) && ['b', 'i', 'u'].includes(event.key.toLowerCase())) {
+      // Đợi Quill set format ảo xong rồi mới lấy data để update UI
+      setTimeout(() => this.updateFormatState(), 10);
+      return;
+    }
+
+    // 2. Fix mất format khi Backspace xóa ký tự
+    if (event.key === 'Backspace') {
+      const range = this.quill.getSelection();
+
+      // Chỉ can thiệp khi đang là con trỏ đơn (length = 0) và không ở đầu document
+      if (range && range.length === 0 && range.index > 0) {
+        const charBeforeDelete = this.quill.getText(range.index - 1, 1);
+
+        // Bỏ qua nếu đang xóa dấu xuống dòng (hành vi merge paragraph mặc định)
+        if (charBeforeDelete === '\n') return;
+
+        // "Cứu" lấy format của ký tự chuẩn bị bị xóa
+        const formatBeforeDelete = this.quill.getFormat(range.index - 1, 1);
+
+        // Đợi hành động xóa chữ của Quill chạy xong
+        setTimeout(() => {
+          if (!this.quill) return;
+          const newRange = this.quill.getSelection();
+
+          if (newRange && newRange.length === 0) {
+            // Trả lại đúng format của ký tự vừa chết cho con trỏ trống hiện tại
+            const inlineFormats = ['bold', 'italic', 'underline', 'strike', 'link', 'code'];
+            inlineFormats.forEach(fmt => {
+              this.quill!.format(fmt, Boolean(formatBeforeDelete[fmt]), 'silent');
+            });
+            // Update UI
+            this.updateFormatState();
+          }
+        }, 10);
+      }
+    }
+  };
+
   private focusedQuill(): Quill | null {
     if (!this.quill) {
       return null;
@@ -340,19 +364,6 @@ export class RichTextEditorComponent implements AfterViewInit, OnDestroy {
 
     const endIndex = Math.max(this.quill.getLength() - 1, 0);
     this.quill.setSelection(new Range(endIndex, 0), 'silent');
-  }
-}
-
-function getShortcutFormat(key: string): InlineFormat | null {
-  switch (key.toLowerCase()) {
-    case 'b':
-      return 'bold';
-    case 'i':
-      return 'italic';
-    case 'u':
-      return 'underline';
-    default:
-      return null;
   }
 }
 
