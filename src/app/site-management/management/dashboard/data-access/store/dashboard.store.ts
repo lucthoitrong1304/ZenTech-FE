@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, catchError, forkJoin, pipe, switchMap, tap } from 'rxjs';
+import { EMPTY, catchError, forkJoin, of, pipe, switchMap, tap } from 'rxjs';
 import {
   IReportsSummary,
   IRevenuePoint,
@@ -162,15 +162,33 @@ export const DashboardStore = signalStore(
           };
 
           return forkJoin({
-            summary: reportsService.getSummary(period, customStart, customEnd),
-            revenueSeries: reportsService.getRevenueSeries(period, customStart, customEnd),
-            products: reportsService.getProductPerformance(period, customStart, customEnd),
-            ordersPage: orderService.getOrders(orderQuery),
-            todayRevenueOrdersPage: orderService.getOrders(todayRevenueOrderQuery),
-            impactStats: impactService.getDashboardStats(effectiveStart, effectiveEnd),
-            incidentsPage: impactService.getIncidents(0, 5, null, effectiveStart, effectiveEnd),
-            activeIncidentsPage: impactService.getIncidents(0, 50, null),
-            ticketsPage: ticketService.getTickets(ticketQuery),
+            summary: reportsService.getSummary(period, customStart, customEnd).pipe(
+              catchError(() => of({ success: false, data: null, message: '' }))
+            ),
+            revenueSeries: reportsService.getRevenueSeries(period, customStart, customEnd).pipe(
+              catchError(() => of({ success: false, data: [], message: '' }))
+            ),
+            products: reportsService.getProductPerformance(period, customStart, customEnd).pipe(
+              catchError(() => of({ success: false, data: [], message: '' }))
+            ),
+            ordersPage: orderService.getOrders(orderQuery).pipe(
+              catchError(() => of({ orders: [], page: 0, size: 5, totalElements: 0, totalPages: 0, last: true }))
+            ),
+            todayRevenueOrdersPage: orderService.getOrders(todayRevenueOrderQuery).pipe(
+              catchError(() => of({ orders: [], page: 0, size: 100, totalElements: 0, totalPages: 0, last: true }))
+            ),
+            impactStats: impactService.getDashboardStats(effectiveStart, effectiveEnd).pipe(
+              catchError(() => of({ success: false, data: null, message: '' }))
+            ),
+            incidentsPage: impactService.getIncidents(0, 5, null, effectiveStart, effectiveEnd).pipe(
+              catchError(() => of({ success: false, data: { content: [] }, message: '' }))
+            ),
+            activeIncidentsPage: impactService.getIncidents(0, 50, null).pipe(
+              catchError(() => of({ success: false, data: { content: [] }, message: '' }))
+            ),
+            ticketsPage: ticketService.getTickets(ticketQuery).pipe(
+              catchError(() => of({ content: [], totalElements: 0, totalPages: 0, size: 15, page: 0, last: true }))
+            ),
           }).pipe(
             tap({
               next: (results) => {
@@ -183,12 +201,12 @@ export const DashboardStore = signalStore(
                 );
 
                 patchState(store, {
-                  summary: results.summary.data,
+                  summary: results.summary.data ?? null,
                   revenueSeries: results.revenueSeries.data,
                   products: (results.products.data || []).slice(0, 5), // Keep top 5 best sellers
                   recentOrders: results.ordersPage.orders,
                   todayRevenueOrders: results.todayRevenueOrdersPage.orders || [],
-                  impactStats: results.impactStats.data,
+                  impactStats: results.impactStats.data ?? null,
                   incidents: results.incidentsPage.data.content || [],
                   activeIncidents,
                   activeTickets: activeTickets.slice(0, 5), // Keep top 5 active tickets

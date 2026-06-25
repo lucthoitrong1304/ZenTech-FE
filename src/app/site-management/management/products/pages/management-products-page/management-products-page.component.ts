@@ -1,3 +1,4 @@
+import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Component, effect, inject, untracked } from '@angular/core';
 import {
@@ -24,6 +25,7 @@ import { ManagementProductsStore } from '../../data-access/store/management-prod
   selector: 'app-management-products-page',
   standalone: true,
   imports: [
+    HasPermissionDirective,
     CommonModule,
     CurrencyPipe,
     LucidePackagePlus,

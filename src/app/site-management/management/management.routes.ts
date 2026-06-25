@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { managementGuard } from '../../core/guards/management.guard';
+import { permissionGuard } from '../../core/guards/permission.guard';
+import { PermissionCode } from '../../core/permissions/permission.models';
 
 export const managementRoutes: Routes = [
   {
@@ -22,7 +24,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'analytics',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.REPORT_VIEW,
           eyebrow: 'Tổng quan hệ thống',
           title: 'Phân tích tác động kinh doanh',
           description: 'Giám sát thiệt hại kinh doanh, số lượng đơn hàng thất thoát và người dùng bị ảnh hưởng do sự cố kỹ thuật.',
@@ -34,7 +38,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'employees',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.EMPLOYEE_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Nhân viên',
           description: 'Quản lý đội ngũ, phân quyền và hiệu suất xử lý đơn hàng.',
@@ -47,7 +53,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'attendance-report',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.SCHEDULE_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Báo cáo chấm công',
           description: 'Theo dõi thống kê và chi tiết lịch sử chấm công.',
@@ -60,7 +68,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'work-schedules',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.SCHEDULE_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Lịch làm việc',
           description: 'Phân ca theo tuần, gán lịch hàng loạt và quản lý giờ ca làm việc.',
@@ -85,7 +95,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'approvals',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.APPROVAL_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Duyệt yêu cầu',
           description: 'Phê duyệt các yêu cầu nghỉ phép, đổi ca, và chỉnh công từ nhân viên.',
@@ -97,7 +109,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'chat',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.CHAT_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Tư vấn khách hàng',
           description: 'Theo dõi tư vấn khách hàng, tiếp nhận từ AI và xử lý trực tiếp.',
@@ -110,7 +124,9 @@ export const managementRoutes: Routes = [
           ),
       },      {
         path: 'tickets',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.CHAT_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Ticket hỗ trợ',
           description: 'Theo dõi trạng thái ticket phát sinh từ sự cố để tư vấn khách hàng chính xác.',
@@ -122,7 +138,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'orders',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.ORDER_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Đơn hàng',
           description: 'Theo dõi vòng đời đơn hàng, thanh toán và trạng thái giao nhận.',
@@ -135,7 +153,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'return-requests',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.RETURN_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Yêu cầu trả hàng',
           description: 'Xét duyệt các yêu cầu trả hàng và hoàn tiền từ khách hàng.',
@@ -147,7 +167,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'products',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.PRODUCT_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Sản phẩm',
           description: 'Quản lý danh mục, biến thể, giá bán và hiển thị sản phẩm.',
@@ -173,7 +195,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'product-groups',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.PRODUCT_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Nhóm sản phẩm',
           description: 'Phân loại và quản lý nhóm sản phẩm đang hiển thị trong cửa hàng.',
@@ -188,7 +212,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'inventory',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.INVENTORY_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Kho hàng',
           description: 'Giám sát tồn kho, cảnh báo thiếu hàng và luồng nhập xuất.',
@@ -201,7 +227,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'customers',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.CUSTOMER_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Khách hàng',
           description: 'Quản lý hồ sơ khách hàng, phân khúc và lịch sử tương tác.',
@@ -214,7 +242,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'marketing',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.MARKETING_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Marketing',
           description: 'Lập chiến dịch, mã ưu đãi và theo dõi hiệu quả chuyển đổi.',
@@ -227,7 +257,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'ai-management',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.AI_VIEW,
           eyebrow: 'Quản trị hệ thống',
           title: 'Quản lý AI',
           description: 'Điều phối gợi ý AI, cảnh báo vận hành và tự động hóa bán hàng.',
@@ -240,7 +272,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'reports',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.REPORT_VIEW,
           eyebrow: 'Quản trị hệ thống',
           title: 'Báo cáo & Thống kê',
           description: 'Xuất báo cáo và kiểm tra chỉ số vận hành theo từng kỳ.',
@@ -253,7 +287,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'pay-periods',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.PAY_PERIOD_VIEW,
           eyebrow: 'Quản trị hệ thống',
           title: 'Quản lý Kỳ công',
           description: 'Quản lý khóa và mở khóa các kỳ tính công hàng tháng.',

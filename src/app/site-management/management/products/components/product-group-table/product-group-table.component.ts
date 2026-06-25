@@ -1,3 +1,4 @@
+import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { DecimalPipe } from '@angular/common';
 import { Component, input, output } from '@angular/core';
 import {
@@ -17,6 +18,7 @@ import { ManagementProductGroup } from '../../data-access/models/management-prod
   selector: 'app-product-group-table',
   standalone: true,
   imports: [
+    HasPermissionDirective,
     DecimalPipe,
     LucideChevronLeft,
     LucideChevronRight,

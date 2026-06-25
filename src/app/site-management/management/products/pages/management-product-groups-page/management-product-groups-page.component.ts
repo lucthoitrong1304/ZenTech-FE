@@ -1,3 +1,4 @@
+import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { CommonModule } from '@angular/common';
 import { Component, effect, inject, untracked } from '@angular/core';
 import { LucidePlus } from '@lucide/angular';
@@ -18,6 +19,7 @@ import { ManagementProductGroupsStore } from '../../data-access/store/management
   selector: 'app-management-product-groups-page',
   standalone: true,
   imports: [
+    HasPermissionDirective,
     CommonModule,
     LucidePlus,
     ProductGroupDialogComponent,

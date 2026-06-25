@@ -25,6 +25,7 @@ import { ReportPeriod } from '../../../reports/data-access/models/reports.model'
 import { ReportsService } from '../../../reports/data-access/services/reports.service';
 import { ManagementBusinessImpactService } from '../../../business-impact/data-access/services/management-business-impact.service';
 import { ManagementOrder } from '../../../orders/data-access/models/management-order.models';
+import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 
 type LiveEventType = 'incident' | 'ticket' | 'resolved' | 'system';
 type LiveChartMarker = 'normal' | 'incident' | 'ticket' | 'resolved';
@@ -74,6 +75,7 @@ const LIVE_RESOLVED_DEDUPE_WINDOW_MS = 5000;
     ChartModule,
     DialogModule,
     DatePicker,
+    HasPermissionDirective,
     LucideCircleAlert,
     LucideEllipsisVertical,
     LucideTrendingUp,

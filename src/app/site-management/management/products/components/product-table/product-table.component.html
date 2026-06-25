@@ -55,6 +55,7 @@
                 <div class="product-actions">
                   <button
                     type="button"
+                    appHasPermission="PRODUCT_UPDATE"
                     class="product-row-action product-row-action--edit"
                     aria-label="Chỉnh sửa sản phẩm"
                     (click)="editProduct.emit(product)"
@@ -63,6 +64,7 @@
                   </button>
                   <button
                     type="button"
+                    appHasPermission="PRODUCT_DELETE"
                     class="product-row-action product-row-action--delete"
                     aria-label="Xóa sản phẩm"
                     (click)="deleteProduct.emit(product)"

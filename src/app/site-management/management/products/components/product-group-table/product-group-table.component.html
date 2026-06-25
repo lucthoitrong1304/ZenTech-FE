@@ -58,6 +58,7 @@
                 <div class="product-group-actions">
                   <button
                     type="button"
+                    appHasPermission="PRODUCT_UPDATE"
                     class="product-group-row-action product-group-row-action--edit"
                     aria-label="Chỉnh sửa nhóm"
                     (click)="editGroup.emit(group)"
@@ -66,6 +67,7 @@
                   </button>
                   <button
                     type="button"
+                    appHasPermission="PRODUCT_DELETE"
                     class="product-group-row-action product-group-row-action--delete"
                     aria-label="Xóa nhóm"
                     (click)="deleteGroup.emit(group)"

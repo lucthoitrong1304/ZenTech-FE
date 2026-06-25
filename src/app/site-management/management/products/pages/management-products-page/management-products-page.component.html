@@ -10,7 +10,7 @@
       <p>Quản lý danh mục, tồn kho, SKU và trạng thái hiển thị sản phẩm.</p>
     </div>
 
-    <button type="button" class="product-primary-action" (click)="addProduct()">
+    <button appHasPermission="PRODUCT_CREATE" type="button" class="product-primary-action" (click)="addProduct()">
       <svg lucidePackagePlus [attr.stroke-width]="2.2"></svg>
       <span>Thêm sản phẩm mới</span>
     </button>

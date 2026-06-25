@@ -19,6 +19,13 @@
 }
 
 @layer utilities {}
+html:has(app-admin-layout),
+body:has(app-admin-layout) {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 
 :root {
   --zt-scrollbar-size: 8px;

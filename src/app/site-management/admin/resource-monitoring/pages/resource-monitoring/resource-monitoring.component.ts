@@ -79,9 +79,13 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
   protected readonly selectedDefinition = computed(() =>
     this.metrics.find((metric) => metric.key === this.selectedMetric()) ?? this.metrics[0]);
 
+  private readonly chronologicalHistory = computed(() =>
+    [...(this.data()?.history ?? [])].sort(
+      (left, right) => new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime()));
+
   protected readonly chartData = computed(() => {
     const metric = this.selectedDefinition();
-    const history = this.data()?.history ?? [];
+    const history = this.chronologicalHistory();
     return {
       labels: history.map((point) => this.formatChartTime(point.timestamp)),
       datasets: [
@@ -112,7 +116,7 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
 
   protected readonly chartOptions = computed(() => {
     const metric = this.selectedDefinition();
-    const values = (this.data()?.history ?? [])
+    const values = this.chronologicalHistory()
       .map((point) => point[metric.key])
       .filter((value): value is number => value != null);
     const maxValue = Math.max(metric.threshold, ...values, metric.unit === '%' ? 100 : 0);
@@ -191,12 +195,12 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
   }
 
   protected average(metric: MetricKey): number | null {
-    const values = (this.data()?.history ?? []).map((point) => point[metric]).filter((v): v is number => v != null);
+    const values = this.chronologicalHistory().map((point) => point[metric]).filter((v): v is number => v != null);
     return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
   }
 
   protected maximum(metric: MetricKey): number | null {
-    const values = (this.data()?.history ?? []).map((point) => point[metric]).filter((v): v is number => v != null);
+    const values = this.chronologicalHistory().map((point) => point[metric]).filter((v): v is number => v != null);
     return values.length ? Math.max(...values) : null;
   }
 
@@ -278,7 +282,7 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
   }
 
   protected historyRangeLabel(): string {
-    const history = this.data()?.history ?? [];
+    const history = this.chronologicalHistory();
     if (!history.length) return 'Chưa có dữ liệu lịch sử';
     return `Dữ liệu thực từ ${new Date(history[0].timestamp).toLocaleString('vi-VN')} đến ${new Date(history.at(-1)!.timestamp).toLocaleString('vi-VN')}`;
   }

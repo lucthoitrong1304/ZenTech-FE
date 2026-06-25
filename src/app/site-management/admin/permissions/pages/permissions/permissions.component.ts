@@ -1,39 +1,47 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { LucideShieldAlert } from '@lucide/angular';
-import { AdminStore } from '../../../data-access/store/admin.store';
-import { AdminAccountRole } from '../../../data-access/models/admin.models';
+import { Component, OnInit, inject } from '@angular/core';
+import {
+  LucideCheck,
+  LucideCrown,
+  LucideRotateCcw,
+  LucideSave,
+  LucideShieldAlert,
+  LucideShieldCheck,
+} from '@lucide/angular';
+import { ConfigurableRole, PermissionCode } from '../../../../../core/permissions/permission.models';
+import { PermissionMatrixStore } from '../../data-access/permission-matrix.store';
 
 @Component({
   selector: 'app-admin-permissions',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    LucideShieldAlert
+    LucideCheck,
+    LucideCrown,
+    LucideRotateCcw,
+    LucideSave,
+    LucideShieldAlert,
+    LucideShieldCheck,
   ],
   templateUrl: './permissions.component.html',
-  styleUrl: './permissions.component.css'
+  styleUrl: './permissions.component.css',
 })
-export class PermissionsComponent {
-  protected readonly store = inject(AdminStore);
-  protected readonly AdminAccountRole = AdminAccountRole;
+export class PermissionsComponent implements OnInit {
+  protected readonly store = inject(PermissionMatrixStore);
 
-  // The list of roles we want to display as columns in the matrix
-  protected readonly roleColumns: AdminAccountRole[] = [
-    AdminAccountRole.ADMIN,
-    AdminAccountRole.OWNER,
-    AdminAccountRole.MANAGER,
-    AdminAccountRole.EMPLOYEE,
-    AdminAccountRole.CUSTOMER
-  ];
+  ngOnInit(): void {
+    this.store.load();
+  }
 
-  protected handleToggle(permissionId: string, role: AdminAccountRole): void {
-    // Prevent toggling ADMIN permissions to avoid system lockout simulation
-    if (role === AdminAccountRole.ADMIN) {
-      return;
-    }
-    this.store.togglePermission(permissionId, role);
+  protected toggle(role: ConfigurableRole, permission: PermissionCode): void {
+    if (this.store.savingRole() === null) this.store.toggle(role, permission);
+  }
+
+  protected save(role: ConfigurableRole): void {
+    this.store.save(role);
+  }
+
+  protected reset(role: ConfigurableRole): void {
+    this.store.reset(role);
   }
 }

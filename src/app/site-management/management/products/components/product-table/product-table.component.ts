@@ -1,3 +1,4 @@
+import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { CurrencyPipe } from '@angular/common';
 import { Component, input, output } from '@angular/core';
 import {
@@ -16,6 +17,7 @@ import {
   selector: 'app-product-table',
   standalone: true,
   imports: [
+    HasPermissionDirective,
     CurrencyPipe,
     LucideChevronLeft,
     LucideChevronRight,

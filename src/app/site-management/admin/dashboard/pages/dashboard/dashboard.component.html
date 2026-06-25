@@ -204,42 +204,46 @@
       </div>
     </article>
 
-    <article class="services-card">
+    <article class="operations-card">
       <div class="section-heading section-heading--compact">
         <div>
-          <span class="section-kicker">ĐIỂM NÓNG CẢNH BÁO</span>
-          <h2>Dịch vụ có cảnh báo nổi bật</h2>
-          <p>Ưu tiên dịch vụ có ERROR, sau đó xếp theo số ERROR và WARN ghi nhận trong kỳ.</p>
+          <span class="section-kicker">NHỊP VẬN HÀNH</span>
+          <h2>Khả năng xử lý</h2>
+          <p>Ảnh chụp nhanh về tốc độ giải quyết và lượng công việc đang chờ.</p>
         </div>
         <svg lucideGauge class="heading-icon" [attr.stroke-width]="2"></svg>
       </div>
 
-      @if (!store.logsAvailable()) {
-        <div class="inline-warning">Loki đang không khả dụng, danh sách này tạm thời chưa có dữ liệu.</div>
-      } @else if (!store.topServices().length) {
-        <div class="empty-state empty-state--small">Không ghi nhận dịch vụ lỗi nổi bật.</div>
-      } @else {
-        <div class="service-list">
-          @for (service of store.topServices(); track service.service; let rank = $index) {
-            <article class="service-alert" [class.service-alert--error]="serviceSeverity(service) === 'error'" [class.service-alert--warning]="serviceSeverity(service) === 'warning'">
-              <div class="service-alert__top">
-                <span class="service-rank">{{ rank + 1 }}</span>
-                <span class="service-copy">
-                  <span class="service-name-row"><strong>{{ service.service }}</strong><em [class.level-error]="service.latestIssueLevel === 'ERROR'">Mới nhất: {{ service.latestIssueLevel || 'Không rõ' }}</em></span>
-                  <small [attr.title]="service.latestIssueTitle">{{ service.latestIssueTitle }}</small>
-                </span>
-                <span class="service-total"><b>{{ service.occurrences }}</b><small>tổng</small></span>
-              </div>
-              <div class="service-breakdown">
-                <span class="service-breakdown__error"><b>{{ service.errorOccurrences }}</b> ERROR</span>
-                <span class="service-breakdown__warning"><b>{{ service.warningOccurrences }}</b> WARN</span>
-                <small>{{ ageLabel(service.lastSeen) }}</small>
-              </div>
-              <div class="service-severity-track" aria-hidden="true"><span [style.width.%]="serviceErrorPercent(service)"></span></div>
-            </article>
-          }
+      <div class="resolution-overview">
+        <div class="resolution-ring" [style.--resolution]="resolutionProgress() + '%'">
+          <div><strong>{{ resolutionProgress() | number:'1.0-0' }}%</strong><span>đã xử lý</span></div>
         </div>
-      }
+        <div class="resolution-copy">
+          <span>Incident trong kỳ</span>
+          <strong>{{ store.metrics()?.incidentsResolvedInPeriod ?? 0 }}/{{ store.metrics()?.incidentsCreatedInPeriod ?? 0 }}</strong>
+          <small>Thời gian xử lý trung bình {{ resolutionTimeLabel() }}</small>
+        </div>
+      </div>
+
+      <div class="operations-metrics">
+        <div>
+          <span class="operation-dot operation-dot--rose"></span>
+          <p><small>Incident đang mở</small><strong>{{ store.metrics()?.openIncidents ?? 0 }}</strong></p>
+        </div>
+        <div>
+          <span class="operation-dot operation-dot--violet"></span>
+          <p><small>Ticket cần xử lý</small><strong>{{ store.metrics()?.actionableTickets ?? 0 }}</strong></p>
+        </div>
+        <div>
+          <span class="operation-dot operation-dot--amber"></span>
+          <p><small>Ticket quá 24 giờ</small><strong>{{ store.metrics()?.staleTickets ?? 0 }}</strong></p>
+        </div>
+      </div>
+
+      <a class="analysis-link" routerLink="/admin/statistics">
+        <span><b>Phân tích lỗi chuyên sâu</b><small>Xem ERROR, WARN, API và user bị ảnh hưởng</small></span>
+        <svg lucideArrowRight [attr.stroke-width]="2"></svg>
+      </a>
     </article>
   </section>
 

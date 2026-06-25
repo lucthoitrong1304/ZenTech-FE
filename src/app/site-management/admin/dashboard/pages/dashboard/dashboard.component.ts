@@ -144,14 +144,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     },
   };
 
-  protected serviceSeverity(service: { errorOccurrences: number; warningOccurrences: number }): 'error' | 'warning' {
-    return service.errorOccurrences > 0 ? 'error' : 'warning';
+  protected resolutionProgress(): number {
+    return Math.min(100, Math.max(0, this.store.metrics()?.incidentResolutionRate ?? 0));
   }
 
-  protected serviceErrorPercent(service: { occurrences: number; errorOccurrences: number }): number {
-    return service.occurrences > 0 ? Math.min(100, service.errorOccurrences * 100 / service.occurrences) : 0;
+  protected resolutionTimeLabel(): string {
+    const minutes = this.store.metrics()?.averageResolutionMinutes ?? 0;
+    if (minutes < 60) return `${minutes} phút`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes ? `${hours} giờ ${remainingMinutes} phút` : `${hours} giờ`;
   }
-
   protected toggleTrendSeries(key: string): void {
     const hidden = new Set(this.hiddenTrendSeries());
     if (hidden.has(key)) hidden.delete(key);

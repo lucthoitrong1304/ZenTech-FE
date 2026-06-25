@@ -121,7 +121,6 @@ export class StatisticsComponent implements OnInit, OnDestroy {
     this.refreshTrigger.pipe(debounceTime(700)).subscribe(() => this.store.refresh(true));
     this.websocket.connect();
     this.subscriptions.push(
-      this.websocket.subscribe('/topic/admin.logs').subscribe(() => this.refreshTrigger.next()),
       this.websocket.subscribe('/topic/admin.incidents').subscribe(() => this.refreshTrigger.next()),
       this.websocket.subscribe('/topic/admin.tickets').subscribe(() => this.refreshTrigger.next()),
     );

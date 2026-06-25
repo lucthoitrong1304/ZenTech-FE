@@ -1,7 +1,14 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
 @import "tailwindcss" reference;
 
 .admin-shell {
-  @apply flex h-screen w-screen overflow-hidden bg-[#F4F5F7] text-[#111827];
+  @apply flex h-full w-full overflow-hidden bg-[#F4F5F7] text-[#111827];
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -45,13 +52,6 @@
   @apply hidden rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#111827] lg:inline-flex;
 }
 
-.admin-command-strip {
-  @apply hidden min-w-0 max-w-xl flex-1 items-center gap-3 rounded-full border border-white/10 bg-white/[0.07] px-4 py-2.5 text-sm text-white/55 xl:flex;
-}
-
-.admin-command-strip svg { @apply h-4 w-4 text-[#FFC700]; }
-.admin-command-strip span { @apply truncate; }
-.admin-command-strip kbd { @apply ml-auto rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold text-white/70; }
 
 .admin-topbar-actions { @apply flex items-center gap-2; }
 .admin-alert-dot { @apply absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#FFC700] ring-2 ring-[#101010]; }
@@ -70,7 +70,7 @@
 .admin-role-label { @apply mt-1 block text-[9px] font-semibold uppercase tracking-[0.18em] text-white/45; }
 .admin-chevron-icon { @apply h-4 w-4 text-white/50; }
 
-.admin-body-container { @apply flex flex-1 overflow-hidden pt-[68px]; }
+.admin-body-container { @apply flex h-full min-h-0 flex-1 overflow-hidden pt-[68px]; }
 
 .admin-sidebar-backdrop {
   @apply fixed inset-0 z-30 bg-[#111827]/45 backdrop-blur-sm lg:hidden;
@@ -116,7 +116,8 @@
 .admin-nav-link-label { @apply truncate pr-4; }
 
 .admin-workspace {
-  @apply flex min-w-0 flex-1 flex-col gap-5 overflow-y-auto bg-[#F4F5F7] p-4;
+  @apply flex h-full min-h-0 min-w-0 flex-1 flex-col gap-5 overflow-y-auto bg-[#F4F5F7] p-4;
+  overscroll-behavior: contain;
 }
 @media (min-width: 768px) { .admin-workspace { @apply p-6; } }
 @media (min-width: 1280px) { .admin-workspace { @apply p-7; } }
