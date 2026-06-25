@@ -312,7 +312,6 @@ function createProductDetail(): ProductDetail {
     originalPrice: 100,
     inStock: true,
     gallery: ['/alpha.webp'],
-    description: '',
     highlights: [],
     specs: [],
     maxQuantity: 4,

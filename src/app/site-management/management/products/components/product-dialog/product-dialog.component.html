@@ -38,7 +38,7 @@
         [class.product-dialog__tab-btn--active]="activeTab() === 'specs'"
         (click)="setTab('specs')"
       >
-        Mô tả & Cấu hình (Markdown)
+        Mô tả & Cấu hình
       </button>
       <button
         type="button"
@@ -51,7 +51,6 @@
     </div>
 
     <div class="product-dialog__body">
-      <!-- TAB 1: BASIC INFO -->
       <div [hidden]="activeTab() !== 'basic'" class="product-tab-content">
         <label class="product-field">
           <span>Tên sản phẩm *</span>
@@ -63,30 +62,18 @@
           />
         </label>
 
-        <div class="product-fields-row">
-          <label class="product-field">
-            <span>Nhóm sản phẩm</span>
-            <select
-              [value]="formState().productGroupId || ''"
-              (change)="onFieldChange({ productGroupId: $any($event.target).value || null })"
-            >
-              <option value="">-- Không chọn nhóm --</option>
-              @for (g of groups(); track g.groupId) {
-                <option [value]="g.groupId">{{ g.name }}</option>
-              }
-            </select>
-          </label>
-
-          <label class="product-field">
-            <span>Key ảnh đại diện (R2 Key)</span>
-            <input
-              type="text"
-              [value]="formState().representativeImageKey || ''"
-              placeholder="Ví dụ: Alpha65/yellow.png..."
-              (input)="onFieldChange({ representativeImageKey: $any($event.target).value || null })"
-            />
-          </label>
-        </div>
+        <label class="product-field">
+          <span>Nhóm sản phẩm</span>
+          <select
+            [value]="formState().productGroupId || ''"
+            (change)="onFieldChange({ productGroupId: $any($event.target).value || null })"
+          >
+            <option value="">-- Không chọn nhóm --</option>
+            @for (g of groups(); track g.groupId) {
+              <option [value]="g.groupId">{{ g.name }}</option>
+            }
+          </select>
+        </label>
 
         <div class="product-picker-container">
           <span class="product-picker-label">Danh mục sản phẩm *</span>
@@ -107,78 +94,87 @@
           </div>
         </div>
 
-        <label class="product-field">
-          <span>Danh sách Key ảnh phụ (Mỗi dòng 1 R2 Key)</span>
-          <textarea
-            rows="4"
-            [value]="imageKeysRaw"
-            placeholder="Nhập các R2 key ảnh phụ, mỗi dòng 1 key..."
-            (input)="onImageKeysChange($any($event.target).value)"
-          ></textarea>
-        </label>
+        <section class="product-image-uploader">
+          <div class="product-image-uploader__header">
+            <span class="product-picker-label">Ảnh sản phẩm</span>
+            <label class="product-image-uploader__button" [class.product-image-uploader__button--disabled]="uploadingImages()">
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                multiple
+                [disabled]="uploadingImages()"
+                (change)="onImageFilesSelected($event)"
+              />
+              <svg lucideUpload [attr.stroke-width]="2.2" class="w-4 h-4"></svg>
+              <span>{{ uploadingImages() ? 'Đang tải...' : 'Tải ảnh' }}</span>
+            </label>
+          </div>
+
+          <div class="product-image-grid">
+            @for (image of imageItems(); track image.key) {
+              <article class="product-image-card" [class.product-image-card--primary]="isRepresentativeImage(image.key)">
+                <img [src]="image.url || '/home/asset-1.webp'" alt="Product image preview" />
+                <div class="product-image-card__actions">
+                  <button type="button" (click)="setRepresentativeImage(image.key)">
+                    {{ isRepresentativeImage(image.key) ? 'Đại diện' : 'Chọn đại diện' }}
+                  </button>
+                  <button type="button" class="product-image-card__remove" (click)="removeImage(image.key)">
+                    <svg lucideTrash [attr.stroke-width]="2" class="w-4 h-4"></svg>
+                  </button>
+                </div>
+              </article>
+            } @empty {
+              <div class="product-image-empty">Chưa có ảnh nào. Tải ảnh để hiển thị trên catalog.</div>
+            }
+          </div>
+        </section>
       </div>
 
-      <!-- TAB 2: MARKDOWN SPECS -->
       <div [hidden]="activeTab() !== 'specs'" class="product-tab-content">
         <div class="product-info-alert">
           <svg lucideInfo [attr.stroke-width]="2" class="w-5 h-5 text-indigo-500"></svg>
           <p>
-            Bạn có thể viết mô tả, cấu hình bằng định dạng Markdown tiêu chuẩn. Hệ thống sẽ tự động chuyển thành cấu trúc tài liệu lưu ở database.
+            Sử dụng Ctrl+B, Ctrl+I hoặc toolbar để định dạng nội dung. Hệ thống sẽ lưu thành Markdown.
           </p>
         </div>
 
         <label class="product-field">
-          <span>Giới thiệu / Mô tả sản phẩm</span>
-          <textarea
-            rows="5"
-            [value]="formState().descriptionRaw"
-            placeholder="Nhập mô tả sản phẩm (Markdown)..."
-            (input)="onFieldChange({ descriptionRaw: $any($event.target).value })"
-          ></textarea>
-        </label>
-
-        <label class="product-field">
           <span>Thông số kỹ thuật (Specifications)</span>
-          <textarea
-            rows="4"
+          <app-product-rich-markdown-editor
             [value]="formState().specificationsRaw"
             placeholder="Nhập thông số kỹ thuật..."
-            (input)="onFieldChange({ specificationsRaw: $any($event.target).value })"
-          ></textarea>
+            (valueChange)="onFieldChange({ specificationsRaw: $event })"
+          />
         </label>
 
         <label class="product-field">
           <span>Khả năng tương thích (Compatibility)</span>
-          <textarea
-            rows="3"
+          <app-product-rich-markdown-editor
             [value]="formState().compatibilityRaw"
             placeholder="Nhập khả năng tương thích..."
-            (input)="onFieldChange({ compatibilityRaw: $any($event.target).value })"
-          ></textarea>
+            (valueChange)="onFieldChange({ compatibilityRaw: $event })"
+          />
         </label>
 
         <label class="product-field">
           <span>Trong hộp gồm có (Box Contents)</span>
-          <textarea
-            rows="3"
+          <app-product-rich-markdown-editor
             [value]="formState().boxContentsRaw"
             placeholder="Nhập các phụ kiện kèm theo trong hộp..."
-            (input)="onFieldChange({ boxContentsRaw: $any($event.target).value })"
-          ></textarea>
+            (valueChange)="onFieldChange({ boxContentsRaw: $event })"
+          />
         </label>
 
         <label class="product-field">
           <span>Thông tin hỗ trợ (Support Info)</span>
-          <textarea
-            rows="3"
+          <app-product-rich-markdown-editor
             [value]="formState().supportInfoRaw"
             placeholder="Nhập đường dẫn tài liệu hướng dẫn, driver..."
-            (input)="onFieldChange({ supportInfoRaw: $any($event.target).value })"
-          ></textarea>
+            (valueChange)="onFieldChange({ supportInfoRaw: $event })"
+          />
         </label>
       </div>
 
-      <!-- TAB 3: VARIANTS -->
       <div [hidden]="activeTab() !== 'variants'" class="product-tab-content">
         <div class="variants-table-container">
           <table class="variants-table">
@@ -248,13 +244,15 @@
             </label>
 
             <label class="product-field">
-              <span>Mã màu Hex</span>
-              <input
-                type="text"
-                [ngModel]="newVariant().colorCode"
-                (ngModelChange)="onNewVariantFieldChange({ colorCode: $event })"
-                placeholder="Ví dụ: #5A5A5A"
-              />
+              <span>Màu biến thể</span>
+              <div class="color-picker-field">
+                <input
+                  type="color"
+                  [ngModel]="newVariant().colorCode || '#5A5A5A'"
+                  (ngModelChange)="onNewVariantFieldChange({ colorCode: $event })"
+                />
+                <code>{{ newVariant().colorCode || '#5A5A5A' }}</code>
+              </div>
             </label>
 
             <label class="product-field">

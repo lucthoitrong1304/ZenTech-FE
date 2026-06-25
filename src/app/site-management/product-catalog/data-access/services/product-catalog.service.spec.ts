@@ -157,7 +157,6 @@ describe('ProductCatalogService', () => {
       id: 'product-1',
       slug: 'product-1',
       name: 'V60 Pro HE Keyboard',
-      description: '## Hall Effect Control\n\nFast magnetic actuation.',
       image: 'https://cdn.example.com/main.webp',
       price: 339.95,
       originalPrice: 384.85,
@@ -297,7 +296,6 @@ function createProductDetailResponse() {
   return {
     id: 'product-1',
     productName: 'V60 Pro HE Keyboard',
-    description: '## Hall Effect Control\n\nFast magnetic actuation.',
     specifications: 'Hall Effect switches',
     compatibility: 'Windows and macOS',
     boxContents: 'Keyboard, cable, keycap puller',

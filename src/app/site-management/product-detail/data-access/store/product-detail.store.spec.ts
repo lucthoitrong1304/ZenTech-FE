@@ -24,7 +24,6 @@ describe('ProductDetailStore', () => {
     reviewCount: 1,
     inStock: true,
     gallery: ['/alpha.webp'],
-    description: 'A test product',
     highlights: ['Fast'],
     specs: [{ label: 'Specifications', value: 'TKL' }],
     maxQuantity: 2,

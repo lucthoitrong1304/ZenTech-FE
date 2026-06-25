@@ -61,20 +61,12 @@ export class ProductDetailPageComponent {
       this.productDetailStore.product()?.image ||
       ''
   );
-  readonly detailContentTitle = computed(() =>
-    this.productDetailStore.product()?.description?.trim() ? 'Description' : 'Spec'
-  );
+  readonly detailContentTitle = computed(() => 'Spec');
   readonly detailMarkdownContent = computed(() => {
     const product = this.productDetailStore.product();
 
     if (!product) {
       return '';
-    }
-
-    const description = product.description.trim();
-
-    if (description) {
-      return description;
     }
 
     return product.specs

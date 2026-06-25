@@ -175,6 +175,112 @@
   gap: 10px;
 }
 
+.product-image-uploader {
+  display: grid;
+  gap: 12px;
+}
+
+.product-image-uploader__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.product-image-uploader__button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  border: 1px solid #4f46e5;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 16px;
+  cursor: pointer;
+}
+
+.product-image-uploader__button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.product-image-uploader__button--disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.product-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+  gap: 12px;
+}
+
+.product-image-card {
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.product-image-card--primary {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.12);
+}
+
+.product-image-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: #f3f4f6;
+}
+
+.product-image-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px;
+}
+
+.product-image-card__actions button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #4f46e5;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+.product-image-card__actions .product-image-card__remove {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  padding: 0;
+  color: #be0037;
+}
+
+.product-image-empty {
+  border: 1px dashed #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 24px;
+  text-align: center;
+}
+
 .category-grid {
   display: flex;
   flex-wrap: wrap;
@@ -307,6 +413,33 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
+}
+
+.color-picker-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  padding: 0 12px;
+}
+
+.color-picker-field input[type='color'] {
+  width: 34px;
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.color-picker-field code {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 @media (max-width: 768px) {
