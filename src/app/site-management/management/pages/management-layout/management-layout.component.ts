@@ -10,6 +10,7 @@ import {
   LucideChartNoAxesCombined,
   LucideChevronDown,
   LucideDownload,
+  LucideFolderTree,
   LucideKey,
   LucideLayoutDashboard,
   LucideLogOut,
@@ -89,6 +90,7 @@ const DEFAULT_HEADER: ManagementHeaderState = {
     LucideChartBar,
     LucideChartNoAxesCombined,
     LucideChevronDown,
+    LucideFolderTree,
     LucideKey,
     LucideLayoutDashboard,
     LucideLogOut,
@@ -208,6 +210,7 @@ export class ManagementLayoutComponent {
           key: 'products',
           children: [
             { label: 'Quản lý sản phẩm', path: '/management/products', icon: 'products' },
+            { label: 'Quản lý danh mục', path: '/management/categories', icon: 'categories' },
             { label: 'Quản lý nhóm', path: '/management/product-groups', icon: 'products' },
           ],
         },
