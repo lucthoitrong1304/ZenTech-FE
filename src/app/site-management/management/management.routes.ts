@@ -181,6 +181,19 @@ export const managementRoutes: Routes = [
           ),
       },
       {
+        path: 'categories',
+        data: {
+          eyebrow: 'Điều hành kinh doanh',
+          title: 'Danh mục sản phẩm',
+          description: 'Quản lý cây danh mục, trạng thái hiển thị và thứ tự xuất hiện trên storefront.',
+          primaryAction: 'Thêm danh mục',
+        },
+        loadComponent: () =>
+          import('./categories/pages/management-categories-page/management-categories-page.component').then(
+            m => m.ManagementCategoriesPageComponent
+          ),
+      },
+      {
         path: 'product-groups',
         canActivate: [permissionGuard],
         data: {

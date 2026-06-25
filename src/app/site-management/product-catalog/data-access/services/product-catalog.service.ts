@@ -159,7 +159,6 @@ interface CategoryProductListItemResponseDto {
 interface ProductDetailResponseDto {
   id: string;
   productName: string;
-  description: string | null;
   specifications: string | null;
   compatibility: string | null;
   boxContents: string | null;
@@ -276,7 +275,6 @@ function toProductDetail(response: ProductDetailResponseDto): ProductDetail {
     reviewCount,
     inStock: (selectedVariant?.stockQuantity ?? 0) > 0,
     gallery,
-    description: response.description?.trim() ?? '',
     highlights: buildHighlights(response, variants),
     specs: toProductSpecs(response),
     maxQuantity: selectedVariant?.stockQuantity ?? 0,

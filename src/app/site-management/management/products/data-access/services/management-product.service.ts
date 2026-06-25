@@ -1,6 +1,8 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpContext, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { ApiService } from '../../../../../core/api/api.service';
+import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../../../../../core/tokens/api-context.token';
 import { environment } from '../../../../../../environments/environment';
 import {
   ApiResponseDto,
@@ -23,6 +25,14 @@ import {
   ProductUpdateRequest,
   ProductManagementDetailResponse,
 } from '../models/management-product.models';
+
+export interface UploadPresignResponseDto {
+  presignedUrl: string;
+  fileKey: string;
+  method: string;
+  expiresInMinutes: number;
+  requiredHeaders: Record<string, string>;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -138,6 +148,22 @@ export class ManagementProductService {
         request
       )
       .pipe(map(unwrapApiResponse));
+  }
+
+  requestProductImageUploadPresign(file: File): Observable<UploadPresignResponseDto> {
+    return this.apiService.post<unknown, UploadPresignResponseDto>(`${this.baseUrl}/uploads/presign`, {
+      originalFilename: file.name,
+      contentType: file.type,
+      fileSize: file.size,
+      purpose: 'PRODUCT_IMAGE',
+    });
+  }
+
+  uploadProductImage(presign: UploadPresignResponseDto, file: File): Observable<string> {
+    return this.apiService.putFile(presign.presignedUrl, file, {
+      headers: new HttpHeaders(presign.requiredHeaders),
+      context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
+    });
   }
 
   getProductGroups(query: ManagementProductGroupQuery): Observable<ManagementProductGroupPage> {

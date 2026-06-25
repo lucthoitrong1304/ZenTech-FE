@@ -1,0 +1,307 @@
+<section class="management-categories-page">
+  <div class="category-command">
+    <div>
+      <span class="category-command__eyebrow">Catalog Control</span>
+      <h1>Quản lý danh mục</h1>
+      <p>Sắp xếp cây danh mục, bật tắt hiển thị và chuẩn hóa tên danh mục cho storefront.</p>
+    </div>
+
+    <div class="category-command__actions">
+      <button type="button" class="category-secondary-action" (click)="store.loadCategories()" [disabled]="store.loading()">
+        <svg lucideRefreshCw [attr.stroke-width]="2.2"></svg>
+        <span>Tải lại</span>
+      </button>
+      <button type="button" class="category-primary-action" (click)="store.openCreateDialog()">
+        <svg lucidePlus [attr.stroke-width]="2.4"></svg>
+        <span>Thêm danh mục</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="category-stats">
+    <article>
+      <span>Tổng danh mục</span>
+      <strong>{{ store.flatCategories().length }}</strong>
+    </article>
+    <article>
+      <span>Đang hiển thị</span>
+      <strong>{{ store.visibleCategoryCount() }}</strong>
+    </article>
+    <article>
+      <span>Đang ẩn</span>
+      <strong>{{ store.hiddenCategoryCount() }}</strong>
+    </article>
+    <article>
+      <span>Danh mục gốc</span>
+      <strong>{{ store.rootCategoryCount() }}</strong>
+    </article>
+  </div>
+
+  <div class="category-toolbar">
+    <label class="category-search">
+      <svg lucideSearch [attr.stroke-width]="2"></svg>
+      <input
+        type="search"
+        [ngModel]="store.query().keyword"
+        (ngModelChange)="setKeyword($event)"
+        placeholder="Tìm theo tên hoặc tên rút gọn"
+      />
+    </label>
+
+    <div class="category-segmented" aria-label="Lọc trạng thái hiển thị">
+      <button
+        type="button"
+        [class.category-segmented__item--active]="store.query().visibility === 'all'"
+        (click)="setVisibilityFilter('all')"
+      >
+        Tất cả
+      </button>
+      <button
+        type="button"
+        [class.category-segmented__item--active]="store.query().visibility === 'visible'"
+        (click)="setVisibilityFilter('visible')"
+      >
+        Hiển thị
+      </button>
+      <button
+        type="button"
+        [class.category-segmented__item--active]="store.query().visibility === 'hidden'"
+        (click)="setVisibilityFilter('hidden')"
+      >
+        Đang ẩn
+      </button>
+    </div>
+
+    @if (store.activeFilterCount() > 0) {
+      <button type="button" class="category-clear-action" (click)="store.resetFilters()">
+        <svg lucideX [attr.stroke-width]="2"></svg>
+        <span>Xóa lọc</span>
+      </button>
+    }
+  </div>
+
+  <section class="category-tree-panel">
+    <div class="category-tree-panel__head">
+      <div>
+        <h2>Cây danh mục</h2>
+        <p>Thứ tự trong cùng một cấp được cập nhật bằng nút lên/xuống.</p>
+      </div>
+      @if (store.reordering()) {
+        <span class="category-sync-state">Đang lưu thứ tự...</span>
+      }
+    </div>
+
+    <div class="category-tree-table" role="table" aria-label="Danh sách danh mục">
+      <div class="category-tree-table__header" role="row">
+        <span role="columnheader">Danh mục</span>
+        <span role="columnheader">Tên rút gọn</span>
+        <span role="columnheader">Trạng thái</span>
+        <span role="columnheader">Thao tác</span>
+      </div>
+
+      @if (store.loading()) {
+        <div class="category-empty-state">
+          <svg lucideRefreshCw [attr.stroke-width]="2"></svg>
+          <strong>Đang tải danh mục</strong>
+        </div>
+      } @else if (store.filteredCategories().length === 0) {
+        <div class="category-empty-state">
+          <svg lucideFolderTree [attr.stroke-width]="2"></svg>
+          <strong>Chưa có danh mục phù hợp</strong>
+          <span>Thử xóa bộ lọc hoặc tạo danh mục mới.</span>
+        </div>
+      } @else {
+        <ng-container
+          *ngTemplateOutlet="categoryRows; context: { $implicit: store.filteredCategories() }"
+        ></ng-container>
+      }
+    </div>
+  </section>
+</section>
+
+<ng-template #categoryRows let-categories>
+  @for (category of categories; track trackCategory($index, category)) {
+    <div class="category-tree-row" role="row" [style.--category-depth]="category.depth">
+      <div class="category-tree-row__name" role="cell">
+        <span class="category-tree-row__indent" aria-hidden="true"></span>
+        <span class="category-tree-row__glyph">
+          <svg lucideFolderTree [attr.stroke-width]="2"></svg>
+        </span>
+        <div>
+          <strong>{{ category.categoryName }}</strong>
+          <small>{{ category.parentId ? 'Danh mục con' : 'Danh mục gốc' }}</small>
+        </div>
+      </div>
+
+      <div class="category-tree-row__short-name" role="cell">
+        {{ category.shortName || 'Chưa đặt' }}
+      </div>
+
+      <div role="cell">
+        <button
+          type="button"
+          class="category-visibility-toggle"
+          [class.category-visibility-toggle--hidden]="!category.visible"
+          [disabled]="store.saving()"
+          (click)="store.toggleVisible(category)"
+        >
+          @if (category.visible) {
+            <svg lucideEye [attr.stroke-width]="2"></svg>
+            <span>Hiển thị</span>
+          } @else {
+            <svg lucideEyeOff [attr.stroke-width]="2"></svg>
+            <span>Đang ẩn</span>
+          }
+        </button>
+      </div>
+
+      <div class="category-row-actions" role="cell">
+        <button
+          type="button"
+          class="category-icon-action"
+          title="Di chuyển lên"
+          aria-label="Di chuyển lên"
+          [disabled]="store.reordering() || !store.canMove(category.id, 'up')"
+          (click)="store.reorderCategory({ categoryId: category.id, direction: 'up' })"
+        >
+          <svg lucideChevronUp [attr.stroke-width]="2"></svg>
+        </button>
+        <button
+          type="button"
+          class="category-icon-action"
+          title="Di chuyển xuống"
+          aria-label="Di chuyển xuống"
+          [disabled]="store.reordering() || !store.canMove(category.id, 'down')"
+          (click)="store.reorderCategory({ categoryId: category.id, direction: 'down' })"
+        >
+          <svg lucideChevronDown [attr.stroke-width]="2"></svg>
+        </button>
+        <button
+          type="button"
+          class="category-icon-action"
+          title="Thêm danh mục con"
+          aria-label="Thêm danh mục con"
+          (click)="store.openCreateDialog(category.id)"
+        >
+          <svg lucidePlus [attr.stroke-width]="2"></svg>
+        </button>
+        <button
+          type="button"
+          class="category-icon-action"
+          title="Chỉnh sửa"
+          aria-label="Chỉnh sửa"
+          (click)="store.openEditDialog(category)"
+        >
+          <svg lucidePencil [attr.stroke-width]="2"></svg>
+        </button>
+        <button
+          type="button"
+          class="category-icon-action category-icon-action--danger"
+          title="Xóa"
+          aria-label="Xóa"
+          [disabled]="category.hasChildren"
+          (click)="confirmDeleteCategory(category)"
+        >
+          <svg lucideTrash2 [attr.stroke-width]="2"></svg>
+        </button>
+      </div>
+    </div>
+
+    @if (category.children.length > 0) {
+      <ng-container
+        *ngTemplateOutlet="categoryRows; context: { $implicit: category.children }"
+      ></ng-container>
+    }
+  }
+</ng-template>
+
+<p-dialog
+  [visible]="store.dialogVisible()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="category-dialog"
+  [style]="{ width: 'min(560px, calc(100vw - 32px))' }"
+  (visibleChange)="handleDialogVisibility($event)"
+>
+  <ng-template pTemplate="header">
+    <div class="category-dialog__header">
+      <span>{{ store.dialogMode() === 'edit' ? 'Chỉnh sửa danh mục' : 'Thêm danh mục' }}</span>
+      <small>{{ store.dialogMode() === 'edit' ? 'Cập nhật thông tin và phân cấp.' : 'Tạo danh mục mới cho storefront.' }}</small>
+    </div>
+  </ng-template>
+
+  @if (store.draft(); as draft) {
+    <form class="category-form" (ngSubmit)="store.saveDraft()">
+      <label>
+        <span>Tên danh mục</span>
+        <input
+          name="categoryName"
+          type="text"
+          maxlength="255"
+          [ngModel]="draft.categoryName"
+          (ngModelChange)="updateDraft({ categoryName: $event })"
+          autocomplete="off"
+        />
+        @if (store.formErrors().categoryName) {
+          <small class="category-form__error">{{ store.formErrors().categoryName }}</small>
+        }
+      </label>
+
+      <label>
+        <span>Tên rút gọn</span>
+        <input
+          name="shortName"
+          type="text"
+          maxlength="255"
+          [ngModel]="draft.shortName"
+          (ngModelChange)="updateDraft({ shortName: $event })"
+          autocomplete="off"
+        />
+        @if (store.formErrors().shortName) {
+          <small class="category-form__error">{{ store.formErrors().shortName }}</small>
+        }
+      </label>
+
+      <label>
+        <span>Danh mục cha</span>
+        <select
+          name="parentId"
+          [ngModel]="draft.parentId ?? 'root'"
+          (ngModelChange)="updateDraft({ parentId: $event === 'root' ? null : $event })"
+        >
+          <option value="root">Root category</option>
+          @for (option of store.parentOptions(); track option.id) {
+            <option [value]="option.id">
+              {{ parentOptionLabel(option) }}
+            </option>
+          }
+        </select>
+        @if (store.formErrors().parentId) {
+          <small class="category-form__error">{{ store.formErrors().parentId }}</small>
+        }
+      </label>
+
+      <label class="category-form__toggle">
+        <input
+          name="visible"
+          type="checkbox"
+          [ngModel]="draft.visible"
+          (ngModelChange)="updateDraft({ visible: $event })"
+        />
+        <span>Hiển thị trên storefront</span>
+      </label>
+
+      @if (store.formErrors().submit) {
+        <p class="category-form__submit-error">{{ store.formErrors().submit }}</p>
+      }
+
+      <div class="category-form__actions">
+        <button type="button" class="category-secondary-action" (click)="store.closeDialog()">Hủy</button>
+        <button type="submit" class="category-primary-action" [disabled]="store.saving()">
+          {{ store.saving() ? 'Đang lưu...' : 'Lưu danh mục' }}
+        </button>
+      </div>
+    </form>
+  }
+</p-dialog>

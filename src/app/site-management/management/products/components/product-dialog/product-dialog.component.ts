@@ -1,13 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
+import { Component, OnDestroy, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   LucideCheck,
   LucideInfo,
   LucidePlus,
   LucideTrash,
+  LucideUpload,
 } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
+import { firstValueFrom } from 'rxjs';
+import { RichTextEditorComponent } from '../../../../../shared/components/rich-text-editor/rich-text-editor.component';
 import {
   ManagementProductCategory,
   ManagementProductGroup,
@@ -17,14 +20,29 @@ import {
 } from '../../data-access/models/management-product.models';
 import { ManagementProductService } from '../../data-access/services/management-product.service';
 
+interface ProductImageItem {
+  key: string;
+  url: string;
+}
+
 @Component({
   selector: 'app-product-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, LucideCheck, LucideInfo, LucidePlus, LucideTrash],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DialogModule,
+    LucideCheck,
+    LucideInfo,
+    LucidePlus,
+    LucideTrash,
+    LucideUpload,
+    RichTextEditorComponent,
+  ],
   templateUrl: './product-dialog.component.html',
   styleUrl: './product-dialog.component.css',
 })
-export class ProductDialogComponent {
+export class ProductDialogComponent implements OnDestroy {
   protected readonly activeTab = signal<'basic' | 'specs' | 'variants'>('basic');
   protected readonly groups = signal<ManagementProductGroup[]>([]);
   protected readonly formState = signal<ProductFormValue>({
@@ -33,7 +51,7 @@ export class ProductDialogComponent {
     categoryIds: [],
     representativeImageKey: null,
     imageKeys: [],
-    descriptionRaw: '',
+    productImageUrls: [],
     specificationsRaw: '',
     compatibilityRaw: '',
     boxContentsRaw: '',
@@ -43,6 +61,7 @@ export class ProductDialogComponent {
 
   // For adding a new variant
   protected readonly newVariant = signal<ProductVariantUpsertRequest>(this.createEmptyVariant());
+  protected readonly uploadingImages = signal(false);
 
   readonly visible = input.required<boolean>();
   readonly mode = input.required<'create' | 'edit'>();
@@ -57,6 +76,16 @@ export class ProductDialogComponent {
   readonly draftChange = output<Partial<ProductFormValue>>();
 
   private readonly productService = inject(ManagementProductService);
+  private readonly localObjectUrls = new Set<string>();
+  private hydratedMode: 'create' | 'edit' | null = null;
+
+  protected readonly imageItems = computed<ProductImageItem[]>(() => {
+    const state = this.formState();
+    return state.imageKeys.map((key, index) => ({
+      key,
+      url: state.productImageUrls[index] || '',
+    }));
+  });
 
   protected readonly title = computed(() =>
     this.mode() === 'edit' ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'
@@ -79,7 +108,15 @@ export class ProductDialogComponent {
     effect(() => {
       const visible = this.visible();
       const currentDraft = this.draft();
-      if (visible && currentDraft) {
+      const mode = this.mode();
+      if (!visible) {
+        untracked(() => {
+          this.hydratedMode = null;
+        });
+        return;
+      }
+
+      if (visible && currentDraft && this.hydratedMode !== mode) {
         untracked(() => {
           this.formState.set({
             productName: currentDraft.productName || '',
@@ -87,7 +124,7 @@ export class ProductDialogComponent {
             categoryIds: currentDraft.categoryIds ? [...currentDraft.categoryIds] : [],
             representativeImageKey: currentDraft.representativeImageKey || null,
             imageKeys: currentDraft.imageKeys ? [...currentDraft.imageKeys] : [],
-            descriptionRaw: currentDraft.descriptionRaw || '',
+            productImageUrls: currentDraft.productImageUrls ? [...currentDraft.productImageUrls] : [],
             specificationsRaw: currentDraft.specificationsRaw || '',
             compatibilityRaw: currentDraft.compatibilityRaw || '',
             boxContentsRaw: currentDraft.boxContentsRaw || '',
@@ -96,6 +133,7 @@ export class ProductDialogComponent {
           });
           this.activeTab.set('basic');
           this.newVariant.set(this.createEmptyVariant());
+          this.hydratedMode = mode;
         });
       }
     });
@@ -123,16 +161,71 @@ export class ProductDialogComponent {
     return this.formState().categoryIds.includes(categoryId);
   }
 
-  protected get imageKeysRaw(): string {
-    return this.formState().imageKeys.join('\n');
+  async onImageFilesSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    input.value = '';
+
+    if (files.length === 0) {
+      return;
+    }
+
+    this.uploadingImages.set(true);
+
+    try {
+      const uploadedItems: ProductImageItem[] = [];
+      for (const file of files) {
+        const presign = await firstValueFrom(this.productService.requestProductImageUploadPresign(file));
+        await firstValueFrom(this.productService.uploadProductImage(presign, file));
+        const previewUrl = URL.createObjectURL(file);
+        this.localObjectUrls.add(previewUrl);
+        uploadedItems.push({
+          key: presign.fileKey,
+          url: previewUrl,
+        });
+      }
+
+      const state = this.formState();
+      const imageKeys = [...state.imageKeys, ...uploadedItems.map(item => item.key)];
+      const productImageUrls = [...state.productImageUrls, ...uploadedItems.map(item => item.url)];
+      this.onFieldChange({
+        imageKeys,
+        productImageUrls,
+        representativeImageKey: state.representativeImageKey || imageKeys[0] || null,
+      });
+    } catch {
+      alert('KhÃ´ng thá»ƒ táº£i áº£nh sáº£n pháº©m lÃªn. Vui lÃ²ng thá»­ láº¡i.');
+    } finally {
+      this.uploadingImages.set(false);
+    }
   }
 
-  protected onImageKeysChange(value: string): void {
-    const keys = value
-      .split(/\r?\n/)
-      .map(k => k.trim())
-      .filter(Boolean);
-    this.onFieldChange({ imageKeys: keys });
+  protected removeImage(key: string): void {
+    const state = this.formState();
+    const index = state.imageKeys.indexOf(key);
+    if (index < 0) {
+      return;
+    }
+
+    const imageKeys = state.imageKeys.filter((_, i) => i !== index);
+    const productImageUrls = state.productImageUrls.filter((_, i) => i !== index);
+    const removedUrl = state.productImageUrls[index];
+    if (removedUrl && this.localObjectUrls.has(removedUrl)) {
+      URL.revokeObjectURL(removedUrl);
+      this.localObjectUrls.delete(removedUrl);
+    }
+    const representativeImageKey =
+      state.representativeImageKey === key ? imageKeys[0] || null : state.representativeImageKey;
+
+    this.onFieldChange({ imageKeys, productImageUrls, representativeImageKey });
+  }
+
+  protected setRepresentativeImage(key: string): void {
+    this.onFieldChange({ representativeImageKey: key });
+  }
+
+  protected isRepresentativeImage(key: string): boolean {
+    return this.formState().representativeImageKey === key;
   }
 
   // --- Variants Management ---
@@ -191,5 +284,10 @@ export class ProductDialogComponent {
     }
 
     this.save.emit(state);
+  }
+
+  ngOnDestroy(): void {
+    this.localObjectUrls.forEach(url => URL.revokeObjectURL(url));
+    this.localObjectUrls.clear();
   }
 }
