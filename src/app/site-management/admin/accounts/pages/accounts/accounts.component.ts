@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -71,6 +72,7 @@ import { AccountStore } from '../../data-access/store/account.store';
 export class AccountsComponent implements OnInit {
   protected readonly store = inject(AccountStore);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly AccountDialogMode = AccountDialogMode;
   protected readonly AdminAccountRole = AdminAccountRole;
@@ -119,6 +121,11 @@ export class AccountsComponent implements OnInit {
   );
 
   ngOnInit(): void {
+    const keyword = this.route.snapshot.queryParamMap.get('keyword')?.trim() ?? '';
+    if (keyword) {
+      this.searchKeyword.set(keyword);
+      this.store.dispatch({ type: AccountEventType.SearchKeywordChanged, keyword });
+    }
     this.store.loadAccounts();
   }
 

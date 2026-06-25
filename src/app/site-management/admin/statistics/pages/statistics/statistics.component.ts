@@ -1,105 +1,216 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ChartModule } from 'primeng/chart';
+import { DatePicker } from 'primeng/datepicker';
 import {
+  LucideActivity,
   LucideAlertCircle,
+  LucideArrowRight,
   LucideCheckCircle,
+  LucideLink,
+  LucideRefreshCw,
+  LucideServer,
   LucideUsers,
-  LucideLink
 } from '@lucide/angular';
-import { AdminStore } from '../../../data-access/store/admin.store';
-
-interface DailyErrorData {
-  date: string;
-  count: number;
-}
-
-interface ApiErrorData {
-  endpoint: string;
-  count: number;
-  status: number;
-}
-
-interface UserErrorData {
-  email: string;
-  role: string;
-  count: number;
-}
+import { Subject, Subscription, debounceTime } from 'rxjs';
+import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { WebsocketService } from '../../../../../core/services/websocket.service';
+import { AdminStatisticsStore } from '../../data-access/statistics.store';
+import { StatisticsPeriod } from '../../data-access/statistics.models';
 
 @Component({
   selector: 'app-admin-statistics',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
+    ChartModule,
+    DatePicker,
+    LucideActivity,
     LucideAlertCircle,
+    LucideArrowRight,
     LucideCheckCircle,
+    LucideLink,
+    LucideRefreshCw,
+    LucideServer,
     LucideUsers,
-    LucideLink
   ],
+  providers: [AdminStatisticsStore],
   templateUrl: './statistics.component.html',
-  styleUrl: './statistics.component.css'
+  styleUrl: './statistics.component.css',
 })
-export class StatisticsComponent {
-  protected readonly store = inject(AdminStore);
+export class StatisticsComponent implements OnInit, OnDestroy {
+  protected readonly store = inject(AdminStatisticsStore);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
+  private readonly websocket = inject(WebsocketService);
 
-  // 1. Biểu đồ lỗi theo ngày (7 ngày gần nhất)
-  protected readonly dailyErrors: DailyErrorData[] = [
-    { date: '30/05', count: 12 },
-    { date: '31/05', count: 8 },
-    { date: '01/06', count: 18 },
-    { date: '02/06', count: 15 },
-    { date: '03/06', count: 9 },
-    { date: '04/06', count: 25 },
-    { date: '05/06', count: 14 }
-  ];
+  protected dateRange: Date[] | null = null;
+  protected readonly maxDate = new Date();
+  private readonly subscriptions: Subscription[] = [];
+  private readonly refreshTrigger = new Subject<void>();
+  private refreshTimer: ReturnType<typeof setInterval> | null = null;
+  protected readonly hiddenChartSeries = signal<Set<'errors' | 'warnings'>>(new Set());
 
-  // 2. API lỗi nhiều nhất
-  protected readonly topApiErrors: ApiErrorData[] = [
-    { endpoint: '/api/management/chat/conversations', count: 15, status: 502 },
-    { endpoint: '/api/customers/payments/momo', count: 9, status: 504 },
-    { endpoint: '/api/management/work-schedules', count: 5, status: 400 },
-    { endpoint: '/api/management/employees/profile', count: 3, status: 403 },
-    { endpoint: '/api/products/search', count: 2, status: 500 }
-  ];
+  protected readonly chartData = computed(() => {
+    const trend = this.store.trend();
+    const hidden = this.hiddenChartSeries();
+    const datasets = [
+      {
+        key: 'errors' as const,
+        label: 'Lỗi',
+        data: trend.map((point) => point.errors),
+        borderColor: '#e11d48',
+        backgroundColor: 'rgba(225, 29, 72, 0.1)',
+        fill: true,
+        tension: 0.35,
+        borderWidth: 3,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+      },
+      {
+        key: 'warnings' as const,
+        label: 'Cảnh báo',
+        data: trend.map((point) => point.warnings),
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245, 158, 11, 0.04)',
+        fill: false,
+        tension: 0.35,
+        borderWidth: 2,
+        pointRadius: 2,
+        pointHoverRadius: 5,
+      },
+    ]
+      .filter((dataset) => !hidden.has(dataset.key))
+      .map(({ key: _key, ...dataset }) => dataset);
 
-  // 3. Top user gặp lỗi
-  protected readonly topUsersWithErrors: UserErrorData[] = [
-    { email: 'khachhang1@gmail.com', role: 'CUSTOMER', count: 16 },
-    { email: 'employee@zentech.local', role: 'EMPLOYEE', count: 6 },
-    { email: 'owner@zentech.local', role: 'OWNER', count: 4 },
-    { email: 'manager@zentech.local', role: 'MANAGER', count: 2 }
-  ];
+    return {
+      labels: trend.map((point) => point.label),
+      datasets,
+    };
+  });
+  protected readonly chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#111827',
+        padding: 12,
+        cornerRadius: 10,
+      },
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: '#64748b', maxRotation: 0, autoSkip: true, maxTicksLimit: 12 },
+      },
+      y: {
+        beginAtZero: true,
+        ticks: { color: '#64748b', precision: 0 },
+        grid: { color: 'rgba(226, 232, 240, 0.75)' },
+      },
+    },
+  };
 
-  // 4. Ticket đã xử lý
-  protected getResolvedTicketsCount(): number {
-    return this.store.tickets().filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED').length;
+  ngOnInit(): void {
+    this.store.load({});
+    this.refreshTrigger.pipe(debounceTime(700)).subscribe(() => this.store.refresh(true));
+    this.websocket.connect();
+    this.subscriptions.push(
+      this.websocket.subscribe('/topic/admin.logs').subscribe(() => this.refreshTrigger.next()),
+      this.websocket.subscribe('/topic/admin.incidents').subscribe(() => this.refreshTrigger.next()),
+      this.websocket.subscribe('/topic/admin.tickets').subscribe(() => this.refreshTrigger.next()),
+    );
+    this.refreshTimer = setInterval(() => this.store.refresh(true), 60_000);
   }
 
-  protected getTotalTicketsCount(): number {
-    return this.store.tickets().length;
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
+    this.refreshTrigger.complete();
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
   }
 
-  protected getTicketSuccessRate(): number {
-    const total = this.getTotalTicketsCount();
-    if (total === 0) return 0;
-    return Math.round((this.getResolvedTicketsCount() / total) * 100);
+  protected toggleChartSeries(series: 'errors' | 'warnings'): void {
+    const hidden = new Set(this.hiddenChartSeries());
+    if (hidden.has(series)) hidden.delete(series);
+    else hidden.add(series);
+    this.hiddenChartSeries.set(hidden);
   }
 
-  // Helper properties to draw SVG Chart
-  protected get chartMaxVal(): number {
-    return Math.max(...this.dailyErrors.map(d => d.count)) + 5;
+  protected isChartSeriesHidden(series: 'errors' | 'warnings'): boolean {
+    return this.hiddenChartSeries().has(series);
+  }
+  protected selectPeriod(period: Exclude<StatisticsPeriod, 'CUSTOM'>): void {
+    this.dateRange = null;
+    this.store.setPeriod(period);
   }
 
-  protected get chartPointsString(): string {
-    const width = 500;
-    const height = 150;
-    const padding = 20;
+  protected onCustomRangeChange(): void {
+    const [start, end] = this.dateRange ?? [];
+    if (!start || !end) return;
+    const from = new Date(start.getFullYear(), start.getMonth(), start.getDate(), 0, 0, 0, 0);
+    const to = new Date(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999);
+    if (to.getTime() - from.getTime() > 90 * 24 * 60 * 60 * 1000) {
+      this.toast.warning('Khoảng thời gian tùy chọn tối đa là 90 ngày.');
+      this.dateRange = null;
+      return;
+    }
+    if (to > this.maxDate) to.setTime(this.maxDate.getTime());
+    this.store.setCustomRange(from.toISOString(), to.toISOString());
+  }
 
-    const points = this.dailyErrors.map((d, index) => {
-      const x = padding + (index * (width - 2 * padding)) / (this.dailyErrors.length - 1);
-      const y = height - padding - (d.count * (height - 2 * padding)) / this.chartMaxVal;
-      return `${x},${y}`;
-    });
+  protected refresh(): void {
+    this.store.refresh();
+    this.toast.success('Đang đồng bộ dữ liệu thống kê mới nhất.');
+  }
 
-    return points.join(' ');
+  protected openApi(method: string, endpoint: string): void {
+    this.router.navigate(['/admin/issues'], { queryParams: { search: `${method} ${endpoint}` } });
+  }
+
+  protected openService(service: string): void {
+    this.router.navigate(['/admin/issues'], { queryParams: { service } });
+  }
+
+  protected openUser(userId: string | null, email: string | null): void {
+    if (!userId && !email) return;
+    this.router.navigate(['/admin/accounts'], { queryParams: { accountId: userId, keyword: email } });
+  }
+
+  protected avatarFailed(event: Event): void {
+    (event.target as HTMLImageElement).style.display = 'none';
+  }
+
+  protected initials(name: string | null | undefined): string {
+    const value = name?.trim() || '?';
+    return value
+      .split(/\s+/)
+      .slice(-2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
+  }
+
+  protected periodLabel(): string {
+    if (this.store.period() === 'TODAY') return 'Hôm nay';
+    if (this.store.period() === '7D') return '7 ngày qua';
+    if (this.store.period() === '30D') return '30 ngày qua';
+    return 'Khoảng tùy chọn';
+  }
+
+  protected totalWarnings(): number {
+    return this.store.trend().reduce((total, point) => total + point.warnings, 0);
+  }
+  protected relativeTime(value: string | null | undefined): string {
+    if (!value) return 'Chưa rõ';
+    const minutes = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60_000));
+    if (minutes < 1) return 'Vừa xong';
+    if (minutes < 60) return `${minutes} phút trước`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} giờ trước`;
+    return `${Math.floor(hours / 24)} ngày trước`;
   }
 }

@@ -113,7 +113,7 @@ export class AdminLayoutComponent {
     {
       title: 'Thống kê',
       items: [
-        { label: 'Thống kê hệ thống', path: '/admin/statistics', icon: 'statistics' }
+        { label: 'Phân tích lỗi', path: '/admin/statistics', icon: 'statistics' }
       ]
     },
     {
