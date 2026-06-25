@@ -65,18 +65,20 @@
                   </div>
                   <div class="perm-role-head__actions">
                     @if (store.isDirty(role)) {
-                      <span class="perm-unsaved-badge">Chưa lưu</span>
+                      <span class="perm-unsaved-badge">Có thay đổi</span>
                       <button type="button" class="perm-icon-button" title="Hoàn tác thay đổi" [disabled]="store.savingRole() !== null" (click)="reset(role)">
                         <svg lucideRotateCcw [attr.stroke-width]="2"></svg>
                       </button>
+                      <button type="button" class="perm-save-button" [disabled]="store.savingRole() !== null" (click)="save(role)">
+                        @if (store.savingRole() === role) {
+                          <span class="perm-button-spinner"></span>Đang lưu
+                        } @else {
+                          <svg lucideSave [attr.stroke-width]="2"></svg>Lưu
+                        }
+                      </button>
+                    } @else {
+                      <span class="perm-synced-state">Đã đồng bộ</span>
                     }
-                    <button type="button" class="perm-save-button" [disabled]="!store.isDirty(role) || store.savingRole() !== null" (click)="save(role)">
-                      @if (store.savingRole() === role) {
-                        <span class="perm-button-spinner"></span>Đang lưu
-                      } @else {
-                        <svg lucideSave [attr.stroke-width]="2"></svg>Lưu
-                      }
-                    </button>
                   </div>
                 </th>
               }
