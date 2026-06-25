@@ -369,6 +369,7 @@
             <div class="action-buttons-wrapper">
               <button
                 type="button"
+                appHasPermission="RETURN_APPROVE"
                 class="btn-reject"
                 (click)="handleReject(req.id)"
               >
@@ -377,6 +378,7 @@
               </button>
               <button
                 type="button"
+                appHasPermission="RETURN_APPROVE"
                 class="btn-approve"
                 (click)="handleApprove(req.id)"
               >

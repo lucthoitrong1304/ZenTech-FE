@@ -66,6 +66,7 @@
                   </button>
                   <button
                     type="button"
+                    appHasPermission="ORDER_UPDATE"
                     class="orders-row-action orders-row-action--edit"
                     aria-label="Chỉnh sửa đơn hàng"
                     (click)="editOrder.emit(order); $event.stopPropagation()"

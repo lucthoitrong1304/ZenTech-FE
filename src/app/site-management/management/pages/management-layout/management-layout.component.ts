@@ -43,6 +43,8 @@ import { CommandPaletteService } from '../../data-access/services/command-palett
 import { NotificationBellComponent } from '../../../../shared/components/notification-bell/notification-bell.component';
 import { AttendanceService } from '../../data-access/services/attendance.service';
 import { ProfileService } from '../../data-access/services/profile.service';
+import { PermissionCode } from '../../../../core/permissions/permission.models';
+import { PermissionService } from '../../../../core/permissions/permission.service';
 
 export enum ProfileMenuOption {
   Profile = 'PROFILE',
@@ -57,6 +59,7 @@ interface ManagementNavItem {
   icon: string;
   key?: string;
   children?: ManagementNavItem[];
+  permission?: PermissionCode;
 }
 
 interface ManagementNavSection {
@@ -120,6 +123,7 @@ export class ManagementLayoutComponent {
   private readonly authStorageService = inject(AuthStorageService);
   private readonly attendanceService = inject(AttendanceService);
   private readonly profileService = inject(ProfileService);
+  private readonly permissionService = inject(PermissionService);
   private readonly toastService = inject(ToastService);
   protected readonly managementShellUi = inject(ManagementShellUiState);
   protected readonly commandPaletteService = inject(CommandPaletteService);
@@ -187,46 +191,64 @@ export class ManagementLayoutComponent {
       title: 'Tổng quan hệ thống',
       items: [
         { label: 'Bảng điều khiển', path: '/management/dashboard', icon: 'dashboard' },
-        { label: 'Phân tích tác động kinh doanh', path: '/management/analytics', icon: 'analytics' },
+        { label: 'Phân tích tác động kinh doanh', path: '/management/analytics', permission: PermissionCode.REPORT_VIEW, icon: 'analytics' },
       ],
     },
     {
       title: 'Điều hành kinh doanh',
       items: [
-        { label: 'Nhân viên', path: '/management/employees', icon: 'employees' },
-        { label: 'Lịch làm việc', path: '/management/work-schedules', icon: 'schedule' },
-        { label: 'Báo cáo chấm công', path: '/management/attendance-report', icon: 'reports' },
+        { label: 'Nhân viên', path: '/management/employees', permission: PermissionCode.EMPLOYEE_VIEW, icon: 'employees' },
+        { label: 'Lịch làm việc', path: '/management/work-schedules', permission: PermissionCode.SCHEDULE_VIEW, icon: 'schedule' },
+        { label: 'Báo cáo chấm công', path: '/management/attendance-report', permission: PermissionCode.SCHEDULE_VIEW, icon: 'reports' },
         { label: 'Yêu cầu & Đề xuất', path: '/management/requests', icon: 'chat' },
-        { label: 'Duyệt yêu cầu', path: '/management/approvals', icon: 'employees' },
-        { label: 'Tư vấn khách hàng', path: '/management/chat', icon: 'chat' },
-        { label: 'Ticket hỗ trợ', path: '/management/tickets', icon: 'ticket' },
-        { label: 'Đơn hàng', path: '/management/orders', icon: 'orders' },
-        { label: 'Yêu cầu trả hàng', path: '/management/return-requests', icon: 'orders' },
+        { label: 'Duyệt yêu cầu', path: '/management/approvals', permission: PermissionCode.APPROVAL_VIEW, icon: 'employees' },
+        { label: 'Tư vấn khách hàng', path: '/management/chat', permission: PermissionCode.CHAT_VIEW, icon: 'chat' },
+        { label: 'Ticket hỗ trợ', path: '/management/tickets', permission: PermissionCode.CHAT_VIEW, icon: 'ticket' },
+        { label: 'Đơn hàng', path: '/management/orders', permission: PermissionCode.ORDER_VIEW, icon: 'orders' },
+        { label: 'Yêu cầu trả hàng', path: '/management/return-requests', permission: PermissionCode.RETURN_VIEW, icon: 'orders' },
         {
           label: 'Sản phẩm',
           icon: 'products',
           key: 'products',
           children: [
-            { label: 'Quản lý sản phẩm', path: '/management/products', icon: 'products' },
-            { label: 'Quản lý nhóm', path: '/management/product-groups', icon: 'products' },
+            { label: 'Quản lý sản phẩm', path: '/management/products', permission: PermissionCode.PRODUCT_VIEW, icon: 'products' },
+            { label: 'Quản lý nhóm', path: '/management/product-groups', permission: PermissionCode.PRODUCT_VIEW, icon: 'products' },
           ],
         },
-        { label: 'Kho hàng', path: '/management/inventory', icon: 'inventory' },
-        { label: 'Khách hàng', path: '/management/customers', icon: 'customers' },
-        { label: 'Marketing', path: '/management/marketing', icon: 'marketing' },
+        { label: 'Kho hàng', path: '/management/inventory', permission: PermissionCode.INVENTORY_VIEW, icon: 'inventory' },
+        { label: 'Khách hàng', path: '/management/customers', permission: PermissionCode.CUSTOMER_VIEW, icon: 'customers' },
+        { label: 'Marketing', path: '/management/marketing', permission: PermissionCode.MARKETING_VIEW, icon: 'marketing' },
       ],
     },
     {
       title: 'Quản trị hệ thống',
       items: [
-        { label: 'Quản lý AI', path: '/management/ai-management', icon: 'ai' },
-        { label: 'Quản lý Kỳ công', path: '/management/pay-periods', icon: 'schedule' },
-        { label: 'Báo cáo & Thống kê', path: '/management/reports', icon: 'reports' },
+        { label: 'Quản lý AI', path: '/management/ai-management', permission: PermissionCode.AI_VIEW, icon: 'ai' },
+        { label: 'Quản lý Kỳ công', path: '/management/pay-periods', permission: PermissionCode.PAY_PERIOD_VIEW, icon: 'schedule' },
+        { label: 'Báo cáo & Thống kê', path: '/management/reports', permission: PermissionCode.REPORT_VIEW, icon: 'reports' },
       ],
     },
   ];
 
+  protected readonly visibleNavSections = computed(() =>
+    this.navSections
+      .map(section => ({
+        ...section,
+        items: section.items
+          .map(item => ({
+            ...item,
+            children: item.children?.filter(child => !child.permission || this.permissionService.has(child.permission)),
+          }))
+          .filter(item => {
+            if (item.children) return item.children.length > 0;
+            return !item.permission || this.permissionService.has(item.permission);
+          }),
+      }))
+      .filter(section => section.items.length > 0)
+  );
+
   constructor() {
+    this.permissionService.ensureLoaded().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
     this.syncHeader();
     this.syncSidebarMode();
 
@@ -239,7 +261,8 @@ export class ManagementLayoutComponent {
       )
       .subscribe(() => {
         this.currentUrl.set(this.router.url);
-        this.syncHeader();
+        this.permissionService.ensureLoaded().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+    this.syncHeader();
         this.syncSidebarMode();
       });
   }

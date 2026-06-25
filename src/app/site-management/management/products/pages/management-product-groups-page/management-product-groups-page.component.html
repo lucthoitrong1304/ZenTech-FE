@@ -5,7 +5,7 @@
       <p>Phân loại và quản lý các nhóm sản phẩm để tối ưu trải nghiệm khách hàng.</p>
     </div>
 
-    <button type="button" class="product-group-primary-action" (click)="store.openCreateDialog()">
+    <button appHasPermission="PRODUCT_CREATE" type="button" class="product-group-primary-action" (click)="store.openCreateDialog()">
       <svg lucidePlus [attr.stroke-width]="2.4"></svg>
       <span>Thêm nhóm mới</span>
     </button>

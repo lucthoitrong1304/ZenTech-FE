@@ -1,3 +1,4 @@
+import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +23,7 @@ import { ToastService } from '../../../../../shared/components/toast/toast.servi
   selector: 'app-return-requests-page',
   standalone: true,
   imports: [
+    HasPermissionDirective,
     CommonModule,
     FormsModule,
     DialogModule,

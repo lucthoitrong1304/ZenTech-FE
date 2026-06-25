@@ -1,56 +1,124 @@
 <div class="perm-container">
-  <!-- Info Warning Card -->
+  <section class="perm-summary">
+    <div class="perm-summary__icon"><svg lucideShieldCheck [attr.stroke-width]="2"></svg></div>
+    <div class="perm-summary__content">
+      <span class="perm-summary__eyebrow">Kiểm soát truy cập</span>
+      <h2>Ma trận quyền theo vai trò</h2>
+      <p>Phân quyền chi tiết theo từng hành động. Mọi kiểm tra được thực thi tại backend và có hiệu lực ngay từ request tiếp theo.</p>
+    </div>
+    <div class="perm-summary__stats">
+      <div><strong>{{ store.modules().length }}</strong><span>Module</span></div>
+      <div><strong>{{ store.totalPermissions() }}</strong><span>Quyền</span></div>
+      <div><strong>{{ store.roles().length }}</strong><span>Vai trò cấu hình</span></div>
+    </div>
+  </section>
+
   <div class="perm-alert-card">
     <svg lucideShieldAlert class="perm-alert-icon" [attr.stroke-width]="2"></svg>
     <div class="perm-alert-text">
-      <strong>Lưu ý về thiết lập quyền hệ thống:</strong>
-      Phân quyền quản trị hệ thống (ADMIN) mặc định được kích hoạt toàn quyền và không thể sửa đổi để tránh lỗi hệ thống (System Lockout).
-      Mọi thay đổi đối với các vai trò khác sẽ được áp dụng ngay lập tức trong bộ nhớ và ghi nhận vào Nhật ký hoạt động.
+      <strong>ADMIN được bảo vệ toàn quyền</strong>
+      <span>Quyền ADMIN không thể chỉnh sửa để tránh khóa hệ thống. Thay đổi của OWNER, MANAGER và EMPLOYEE được ghi vào nhật ký hoạt động.</span>
     </div>
   </div>
 
-  <!-- Permission Matrix Card -->
-  <div class="perm-grid-card">
-    <div class="perm-table-wrapper">
-      <table class="perm-table">
-        <thead>
-          <tr>
-            <th scope="col" class="perm-th perm-th--module">Chức năng hệ thống / Module</th>
-            @for (role of roleColumns; track role) {
-              <th scope="col" class="perm-th text-center">{{ role }}</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (perm of store.permissions(); track perm.id) {
-            <tr class="perm-tr">
-              <!-- Module Description -->
-              <td class="perm-td perm-td--module">
-                <div class="perm-name-block">
-                  <span class="perm-module-name">{{ perm.moduleName }}</span>
-                  <span class="perm-module-desc">{{ perm.description }}</span>
-                </div>
-              </td>
+  @if (store.loading()) {
+    <div class="perm-state">
+      <span class="perm-spinner"></span>
+      <strong>Đang tải ma trận phân quyền</strong>
+      <p>Hệ thống đang đồng bộ cấu hình mới nhất từ backend.</p>
+    </div>
+  } @else {
+    <section class="perm-grid-card">
+      <header class="perm-grid-header">
+        <div>
+          <span class="perm-grid-header__eyebrow">Cấu hình quyền</span>
+          <h3>Quyền truy cập hệ thống</h3>
+          <p>Đánh dấu các hành động mỗi vai trò được phép thực hiện.</p>
+        </div>
+        <div class="perm-legend">
+          <span><i class="perm-legend__dot perm-legend__dot--fixed"></i>Cố định</span>
+          <span><i class="perm-legend__dot perm-legend__dot--editable"></i>Có thể chỉnh sửa</span>
+          <span><i class="perm-legend__dot perm-legend__dot--dirty"></i>Chưa lưu</span>
+        </div>
+      </header>
 
-              <!-- Role Permission Checks -->
-              @for (role of roleColumns; track role) {
-                <td class="perm-td text-center">
-                  <div class="perm-checkbox-wrapper">
-                    <input
-                      type="checkbox"
-                      [checked]="perm.rolesAllowed[role]"
-                      [disabled]="role === AdminAccountRole.ADMIN"
-                      (change)="handleToggle(perm.id, role)"
-                      class="perm-checkbox"
-                      [attr.aria-label]="'Quyền ' + perm.moduleName + ' cho vai trò ' + role"
-                    />
+      <div class="perm-table-wrapper">
+        <table class="perm-table">
+          <thead>
+            <tr>
+              <th class="perm-th perm-th--module">
+                <span>Module / Hành động</span>
+                <small>Mã quyền và mô tả nghiệp vụ</small>
+              </th>
+              <th class="perm-th perm-role-head perm-role-head--admin">
+                <div class="perm-role-head__title">
+                  <span class="perm-role-icon"><svg lucideCrown [attr.stroke-width]="2"></svg></span>
+                  <span>ADMIN<small>Toàn quyền</small></span>
+                </div>
+                <span class="perm-role-count">{{ store.totalPermissions() }}/{{ store.totalPermissions() }}</span>
+              </th>
+              @for (role of store.roles(); track role) {
+                <th class="perm-th perm-role-head" [class.perm-role-head--dirty]="store.isDirty(role)">
+                  <div class="perm-role-head__title">
+                    <span class="perm-role-icon"><svg lucideShieldCheck [attr.stroke-width]="2"></svg></span>
+                    <span>{{ role }}<small>{{ store.permissionCount(role) }} quyền đang bật</small></span>
                   </div>
-                </td>
+                  <div class="perm-role-head__actions">
+                    @if (store.isDirty(role)) {
+                      <span class="perm-unsaved-badge">Chưa lưu</span>
+                      <button type="button" class="perm-icon-button" title="Hoàn tác thay đổi" [disabled]="store.savingRole() !== null" (click)="reset(role)">
+                        <svg lucideRotateCcw [attr.stroke-width]="2"></svg>
+                      </button>
+                    }
+                    <button type="button" class="perm-save-button" [disabled]="!store.isDirty(role) || store.savingRole() !== null" (click)="save(role)">
+                      @if (store.savingRole() === role) {
+                        <span class="perm-button-spinner"></span>Đang lưu
+                      } @else {
+                        <svg lucideSave [attr.stroke-width]="2"></svg>Lưu
+                      }
+                    </button>
+                  </div>
+                </th>
               }
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </div>
+          </thead>
+          <tbody>
+            @for (module of store.modules(); track module.module) {
+              <tr class="perm-module-row">
+                <td [attr.colspan]="store.roles().length + 2">
+                  <span class="perm-module-row__name">{{ module.moduleName }}</span>
+                  <code>{{ module.module }}</code>
+                  <span class="perm-module-row__count">{{ module.permissions.length }} hành động</span>
+                </td>
+              </tr>
+              @for (permission of module.permissions; track permission.code) {
+                <tr class="perm-tr">
+                  <td class="perm-td perm-td--module">
+                    <div class="perm-name-block">
+                      <div class="perm-name-line"><span class="perm-module-name">{{ permission.action }}</span><code>{{ permission.code }}</code></div>
+                      <span class="perm-module-desc">{{ permission.description }}</span>
+                    </div>
+                  </td>
+                  <td class="perm-td text-center perm-cell--admin">
+                    <label class="perm-check perm-check--fixed" title="ADMIN luôn có quyền này">
+                      <input type="checkbox" checked disabled aria-label="ADMIN toàn quyền" />
+                      <span><svg lucideCheck [attr.stroke-width]="3"></svg></span>
+                    </label>
+                  </td>
+                  @for (role of store.roles(); track role) {
+                    <td class="perm-td text-center" [class.perm-cell--dirty]="store.isDirty(role)">
+                      <label class="perm-check">
+                        <input type="checkbox" [checked]="store.has(role, permission.code)" [disabled]="store.savingRole() !== null" (change)="toggle(role, permission.code)" [attr.aria-label]="permission.code + ' cho ' + role" />
+                        <span><svg lucideCheck [attr.stroke-width]="3"></svg></span>
+                      </label>
+                    </td>
+                  }
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
 </div>

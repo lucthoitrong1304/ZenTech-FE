@@ -1,3 +1,4 @@
+import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Component, effect, inject, untracked, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -61,6 +62,7 @@ enum InventoryDateFilterOption {
   selector: 'app-management-inventory-page',
   standalone: true,
   imports: [
+    HasPermissionDirective,
     CommonModule,
     FormsModule,
     CurrencyPipe,
