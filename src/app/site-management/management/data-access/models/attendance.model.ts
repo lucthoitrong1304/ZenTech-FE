@@ -2,6 +2,9 @@ import { ApiResponseDto, EmployeeProfileResponse } from './profile.model';
 
 export interface CheckInRequest {
   faceDescriptor: number[];
+  latitude: number;
+  longitude: number;
+  accuracyMeters: number | null;
 }
 
 export type CheckInResponse = ApiResponseDto<EmployeeProfileResponse>;
