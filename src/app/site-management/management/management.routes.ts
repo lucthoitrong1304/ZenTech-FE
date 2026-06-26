@@ -182,7 +182,9 @@ export const managementRoutes: Routes = [
       },
       {
         path: 'categories',
+        canActivate: [permissionGuard],
         data: {
+          permission: PermissionCode.PRODUCT_VIEW,
           eyebrow: 'Điều hành kinh doanh',
           title: 'Danh mục sản phẩm',
           description: 'Quản lý cây danh mục, trạng thái hiển thị và thứ tự xuất hiện trên storefront.',
