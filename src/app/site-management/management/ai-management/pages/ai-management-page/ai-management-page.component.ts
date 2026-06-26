@@ -1,13 +1,13 @@
-import { CommonModule, DecimalPipe } from '@angular/common';
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
+  LucideArchive,
   LucideBot,
+  LucideCheckCircle2,
   LucideDatabase,
   LucideFileText,
-  LucideFilter,
   LucidePlay,
-  LucidePlus,
   LucideRefreshCw,
   LucideSave,
   LucideSearch,
@@ -18,20 +18,16 @@ import { MarkdownComponent } from 'ngx-markdown';
 import { finalize } from 'rxjs';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import {
-  AI_ROLES,
-  AiAgent,
-  AiAgentPayload,
   AiDataset,
   AiDatasetPayload,
-  AiDocument,
   AiDemoResult,
-  AiRole,
-  createEmptyAgentPayload,
-  toAgentPayload,
+  AiDocument,
+  AiProductVectorFilter,
+  AiProductVectorStatus,
 } from '../../data-access/models/ai-management.models';
 import { AiManagementService } from '../../data-access/services/ai-management.service';
 
-type AgentDetailTab = 'overview' | 'settings' | 'datasets' | 'demo';
+type AiManagementTab = 'datasets' | 'products' | 'demo';
 type DemoMessageRole = 'customer' | 'assistant';
 
 interface DemoMessage {
@@ -47,13 +43,14 @@ interface DemoMessage {
   imports: [
     CommonModule,
     FormsModule,
+    DatePipe,
     DecimalPipe,
+    LucideArchive,
     LucideBot,
+    LucideCheckCircle2,
     LucideDatabase,
     LucideFileText,
-    LucideFilter,
     LucidePlay,
-    LucidePlus,
     LucideRefreshCw,
     LucideSave,
     LucideSearch,
@@ -68,275 +65,159 @@ export class AiManagementPageComponent {
   private readonly aiManagementService = inject(AiManagementService);
   private readonly toastService = inject(ToastService);
 
-  protected readonly roles = AI_ROLES;
-
-  protected readonly agents = signal<AiAgent[]>([]);
-  protected readonly datasets = signal<AiDataset[]>([]);
-  protected readonly detailTab = signal<AgentDetailTab>('overview');
-  protected readonly detailTabs: { id: AgentDetailTab; label: string; icon: string }[] = [
-    { id: 'overview', label: 'Tổng quan', icon: 'bot' },
-    { id: 'settings', label: 'Cấu hình', icon: 'save' },
-    { id: 'datasets', label: 'Dataset', icon: 'database' },
-    { id: 'demo', label: 'Demo', icon: 'play' },
+  protected readonly activeTab = signal<AiManagementTab>('datasets');
+  protected readonly tabs: { id: AiManagementTab; label: string; icon: string }[] = [
+    { id: 'datasets', label: 'Tap du lieu', icon: 'database' },
+    { id: 'products', label: 'San pham tren Qdrant', icon: 'check' },
+    { id: 'demo', label: 'Test demo', icon: 'bot' },
   ];
-  protected readonly selectedAgentId = signal<string | null>(null);
-  protected readonly creatingNewAgent = signal(false);
-  protected readonly agentKeyword = signal('');
-  protected readonly agentStatusFilter = signal<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
-  protected readonly agentRoleFilter = signal<'ALL' | AiRole>('ALL');
-  protected readonly agentDraft = signal<AiAgentPayload>(createEmptyAgentPayload());
-  protected readonly datasetDraft = signal<AiDatasetPayload>({
-    name: '',
-    description: '',
-    status: 'ACTIVE',
-  });
+  protected readonly productFilters: AiProductVectorFilter[] = ['ALL', 'SYNCED', 'NOT_SYNCED', 'FAILED', 'DRIFT'];
+
+  protected readonly datasets = signal<AiDataset[]>([]);
+  protected readonly productStatuses = signal<AiProductVectorStatus[]>([]);
+  protected readonly datasetDraft = signal<AiDatasetPayload>({ name: '', description: '', status: 'ACTIVE' });
+  protected readonly editingDatasetId = signal<string | null>(null);
+  protected readonly datasetKeyword = signal('');
+  protected readonly productKeyword = signal('');
+  protected readonly productFilter = signal<AiProductVectorFilter>('ALL');
   protected readonly demoMessage = signal('');
   protected readonly demoMessages = signal<DemoMessage[]>([]);
   protected readonly demoResult = signal<AiDemoResult | null>(null);
-  protected readonly loading = signal(false);
-  protected readonly savingAgent = signal(false);
+
+  protected readonly loadingDatasets = signal(false);
   protected readonly savingDataset = signal(false);
   protected readonly uploadingDatasetId = signal<string | null>(null);
+  protected readonly loadingProducts = signal(false);
+  protected readonly syncingVariantId = signal<string | null>(null);
+  protected readonly verifyingVariantId = signal<string | null>(null);
+  protected readonly reindexingProducts = signal(false);
+  protected readonly verifyingAllProducts = signal(false);
   protected readonly demoLoading = signal(false);
 
-  protected readonly selectedAgent = computed(() => {
-    const id = this.selectedAgentId();
-    return this.agents().find(agent => agent.id === id) ?? null;
+  protected readonly filteredDatasets = computed(() => {
+    const keyword = this.datasetKeyword().trim().toLowerCase();
+    return this.datasets().filter(dataset =>
+      !keyword ||
+      dataset.name.toLowerCase().includes(keyword) ||
+      (dataset.description ?? '').toLowerCase().includes(keyword)
+    );
   });
-  protected readonly attachedDatasets = computed(() => {
-    const ids = new Set(this.agentDraft().datasetIds);
-    return this.datasets().filter(dataset => ids.has(dataset.id));
-  });
-  protected readonly availableDatasets = computed(() => {
-    const ids = new Set(this.agentDraft().datasetIds);
-    return this.datasets().filter(dataset => !ids.has(dataset.id));
-  });
-  protected readonly filteredAgents = computed(() => {
-    const keyword = this.agentKeyword().trim().toLowerCase();
-    const status = this.agentStatusFilter();
-    const role = this.agentRoleFilter();
 
-    return this.agents().filter(agent => {
-      const matchesKeyword =
-        !keyword ||
-        agent.name.toLowerCase().includes(keyword) ||
-        (agent.description ?? '').toLowerCase().includes(keyword) ||
-        agent.assignedRole.toLowerCase().includes(keyword);
-      const matchesStatus = status === 'ALL' || agent.status === status;
-      const matchesRole = role === 'ALL' || agent.assignedRole === role;
-      return matchesKeyword && matchesStatus && matchesRole;
-    });
+  protected readonly filteredProductStatuses = computed(() => {
+    const keyword = this.productKeyword().trim().toLowerCase();
+    return this.productStatuses().filter(item =>
+      !keyword ||
+      item.productName.toLowerCase().includes(keyword) ||
+      (item.variantName ?? '').toLowerCase().includes(keyword)
+    );
   });
-  protected readonly activeAgentsCount = computed(() => this.agents().filter(agent => agent.status === 'ACTIVE').length);
-  protected readonly readyDocumentsCount = computed(() =>
+
+  protected readonly activeDatasetCount = computed(() => this.datasets().filter(dataset => dataset.status === 'ACTIVE').length);
+  protected readonly readyDocumentCount = computed(() =>
     this.datasets().flatMap(dataset => dataset.documents).filter(document => document.ingestStatus === 'READY').length
+  );
+  protected readonly syncedProductCount = computed(() =>
+    this.productStatuses().filter(item => item.syncStatus === 'SYNCED' && item.qdrantPresent === true).length
+  );
+  protected readonly driftProductCount = computed(() =>
+    this.productStatuses().filter(item => item.syncStatus === 'SYNCED' && item.qdrantPresent === false).length
   );
 
   constructor() {
-    this.loadAll();
-
-    effect(() => {
-      const agents = this.agents();
-      if (!this.creatingNewAgent() && !this.selectedAgentId() && agents.length > 0) {
-        untracked(() => this.selectAgent(agents[0]));
-      }
-    });
+    this.loadDatasets();
+    this.loadProductStatuses();
   }
 
-  protected loadAll(): void {
-    this.loading.set(true);
+  protected setActiveTab(tab: AiManagementTab): void {
+    this.activeTab.set(tab);
+  }
+
+  protected loadDatasets(): void {
+    this.loadingDatasets.set(true);
     this.aiManagementService
-      .getAgents()
-      .pipe(finalize(() => this.loading.set(false)))
+      .getDatasets()
+      .pipe(finalize(() => this.loadingDatasets.set(false)))
       .subscribe({
-        next: agents => this.agents.set(agents),
-        error: () => this.toastService.error('Không thể tải danh sách AI agent.'),
-      });
-
-    this.aiManagementService.getDatasets().subscribe({
-      next: datasets => this.datasets.set(datasets),
-      error: () => this.toastService.error('Không thể tải dataset AI.'),
-    });
-  }
-
-  protected newAgent(): void {
-    this.creatingNewAgent.set(true);
-    this.selectedAgentId.set(null);
-    this.agentDraft.set(createEmptyAgentPayload());
-    this.demoResult.set(null);
-    this.demoMessages.set([]);
-    this.detailTab.set('settings');
-  }
-
-  protected selectAgent(agent: AiAgent): void {
-    this.creatingNewAgent.set(false);
-    this.selectedAgentId.set(agent.id);
-    this.agentDraft.set(toAgentPayload(agent));
-    this.demoMessage.set('');
-    this.demoResult.set(null);
-    this.demoMessages.set([]);
-    this.detailTab.set('overview');
-  }
-
-  protected selectAgentById(agentId: string): void {
-    const agent = this.agents().find(item => item.id === agentId);
-    if (agent) {
-      this.selectAgent(agent);
-    }
-  }
-
-  protected editAgent(agent: AiAgent): void {
-    this.selectAgent(agent);
-    this.detailTab.set('settings');
-  }
-
-  protected setDetailTab(tab: AgentDetailTab): void {
-    this.detailTab.set(tab);
-  }
-
-  protected setAgentStatusFilter(value: string): void {
-    if (value === 'ACTIVE' || value === 'INACTIVE') {
-      this.agentStatusFilter.set(value);
-      return;
-    }
-    this.agentStatusFilter.set('ALL');
-  }
-
-  protected setAgentRoleFilter(value: string): void {
-    if (this.roles.includes(value as AiRole)) {
-      this.agentRoleFilter.set(value as AiRole);
-      return;
-    }
-    this.agentRoleFilter.set('ALL');
-  }
-
-  protected updateAgentDraft(patch: Partial<AiAgentPayload>): void {
-    this.agentDraft.update(current => ({ ...current, ...patch }));
-  }
-
-  protected setAssignedRole(role: AiRole): void {
-    this.updateAgentDraft({ assignedRole: role });
-  }
-
-  protected toggleDataset(datasetId: string, checked: boolean): void {
-    const current = new Set(this.agentDraft().datasetIds);
-    if (checked) {
-      current.add(datasetId);
-    } else {
-      current.delete(datasetId);
-    }
-    this.updateAgentDraft({ datasetIds: Array.from(current) });
-  }
-
-  protected saveAgent(): void {
-    const payload = this.agentDraft();
-    if (!payload.name.trim() || !payload.systemPrompt.trim() || !payload.assignedRole) {
-      this.toastService.error('Vui lòng nhập tên, prompt và chọn một vai trò cho agent.');
-      return;
-    }
-
-    this.savingAgent.set(true);
-    const selectedId = this.selectedAgentId();
-    const request$ = selectedId
-      ? this.aiManagementService.updateAgent(selectedId, payload)
-      : this.aiManagementService.createAgent(payload);
-
-    request$
-      .pipe(finalize(() => this.savingAgent.set(false)))
-      .subscribe({
-        next: agent => {
-          this.upsertAgent(agent);
-          this.creatingNewAgent.set(false);
-          this.selectAgent(agent);
-          this.toastService.success('Đã lưu AI agent.');
-        },
-        error: err => this.toastService.error(readError(err, 'Không thể lưu AI agent.')),
+        next: datasets => this.datasets.set(datasets),
+        error: () => this.toastService.error('Khong the tai danh sach dataset AI.'),
       });
   }
 
-  protected saveAgentDatasets(): void {
-    const selectedId = this.selectedAgentId();
-    if (!selectedId) {
-      return;
-    }
-
-    this.savingAgent.set(true);
+  protected loadProductStatuses(): void {
+    this.loadingProducts.set(true);
     this.aiManagementService
-      .updateAgent(selectedId, this.agentDraft())
-      .pipe(finalize(() => this.savingAgent.set(false)))
+      .getProductVectorStatuses(this.productFilter())
+      .pipe(finalize(() => this.loadingProducts.set(false)))
       .subscribe({
-        next: agent => {
-          this.upsertAgent(agent);
-          this.selectAgent(agent);
-          this.toastService.success('Đã cập nhật dataset cho agent.');
-        },
-        error: err => this.toastService.error(readError(err, 'Không thể cập nhật dataset cho agent.')),
+        next: statuses => this.productStatuses.set(statuses),
+        error: () => this.toastService.error('Khong the tai trang thai san pham tren Qdrant.'),
       });
   }
 
-  protected deleteAgent(agent: AiAgent): void {
-    if (!confirm(`Xóa agent "${agent.name}"?`)) {
-      return;
-    }
+  protected setProductFilter(filter: AiProductVectorFilter): void {
+    this.productFilter.set(filter);
+    this.loadProductStatuses();
+  }
 
-    this.aiManagementService.deleteAgent(agent.id).subscribe({
-      next: () => {
-        this.agents.update(agents => agents.filter(item => item.id !== agent.id));
-        if (this.selectedAgentId() === agent.id) {
-          this.selectedAgentId.set(null);
-          this.agentDraft.set(createEmptyAgentPayload());
-          this.creatingNewAgent.set(false);
-        }
-        this.toastService.success('Đã xóa AI agent.');
-      },
-      error: () => this.toastService.error('Không thể xóa AI agent.'),
-    });
+  protected setDatasetStatus(status: string): void {
+    this.updateDatasetDraft({ status: status === 'ARCHIVED' ? 'ARCHIVED' : 'ACTIVE' });
   }
 
   protected updateDatasetDraft(patch: Partial<AiDatasetPayload>): void {
     this.datasetDraft.update(current => ({ ...current, ...patch }));
   }
 
-  protected createDataset(): void {
+  protected editDataset(dataset: AiDataset): void {
+    this.editingDatasetId.set(dataset.id);
+    this.datasetDraft.set({
+      name: dataset.name,
+      description: dataset.description ?? '',
+      status: dataset.status,
+    });
+  }
+
+  protected cancelEditDataset(): void {
+    this.editingDatasetId.set(null);
+    this.datasetDraft.set({ name: '', description: '', status: 'ACTIVE' });
+  }
+
+  protected saveDataset(): void {
     const payload = this.datasetDraft();
     if (!payload.name.trim()) {
-      this.toastService.error('Vui lòng nhập tên dataset.');
+      this.toastService.error('Vui long nhap ten dataset.');
       return;
     }
 
+    const editingId = this.editingDatasetId();
+    const request$ = editingId
+      ? this.aiManagementService.updateDataset(editingId, payload)
+      : this.aiManagementService.createDataset(payload);
+
     this.savingDataset.set(true);
-    this.aiManagementService
-      .createDataset(payload)
+    request$
       .pipe(finalize(() => this.savingDataset.set(false)))
       .subscribe({
         next: dataset => {
-          this.datasets.update(datasets => [dataset, ...datasets]);
-          if (this.selectedAgentId()) {
-            this.updateAgentDraft({ datasetIds: [...this.agentDraft().datasetIds, dataset.id] });
-            this.saveAgentDatasets();
-          }
-          this.datasetDraft.set({ name: '', description: '', status: 'ACTIVE' });
-          this.toastService.success('Đã tạo dataset.');
+          this.upsertDataset(dataset);
+          this.cancelEditDataset();
+          this.toastService.success(editingId ? 'Da cap nhat dataset.' : 'Da tao dataset.');
         },
-        error: () => this.toastService.error('Không thể tạo dataset.'),
+        error: err => this.toastService.error(readError(err, 'Khong the luu dataset.')),
       });
   }
 
-  protected detachDataset(datasetId: string): void {
-    this.updateAgentDraft({
-      datasetIds: this.agentDraft().datasetIds.filter(id => id !== datasetId),
-    });
-    this.saveAgentDatasets();
-  }
-
-  protected attachDataset(datasetId: string): void {
-    if (!datasetId) {
+  protected archiveDataset(dataset: AiDataset): void {
+    if (!confirm(`Archive dataset "${dataset.name}"?`)) {
       return;
     }
-    const current = new Set(this.agentDraft().datasetIds);
-    current.add(datasetId);
-    this.updateAgentDraft({ datasetIds: Array.from(current) });
-    this.saveAgentDatasets();
+
+    this.aiManagementService.archiveDataset(dataset.id).subscribe({
+      next: updated => {
+        this.upsertDataset(updated);
+        this.toastService.success('Da archive dataset.');
+      },
+      error: () => this.toastService.error('Khong the archive dataset.'),
+    });
   }
 
   protected uploadDocument(datasetId: string, event: Event): void {
@@ -356,9 +237,9 @@ export class AiManagementPageComponent {
       .subscribe({
         next: document => {
           this.upsertDocument(datasetId, document);
-          this.toastService.success('Đã upload và ingest tài liệu.');
+          this.toastService.success('Da upload va ingest tai lieu.');
         },
-        error: err => this.toastService.error(readError(err, 'Không thể upload tài liệu.')),
+        error: err => this.toastService.error(readError(err, 'Khong the upload tai lieu.')),
       });
   }
 
@@ -366,14 +247,14 @@ export class AiManagementPageComponent {
     this.aiManagementService.reingestDocument(document.id).subscribe({
       next: updatedDocument => {
         this.upsertDocument(document.datasetId, updatedDocument);
-        this.toastService.success('Đã reingest tài liệu.');
+        this.toastService.success('Da reingest tai lieu.');
       },
-      error: () => this.toastService.error('Không thể reingest tài liệu.'),
+      error: () => this.toastService.error('Khong the reingest tai lieu.'),
     });
   }
 
   protected deleteDocument(document: AiDocument): void {
-    if (!confirm(`Xóa tài liệu "${document.fileName}"?`)) {
+    if (!confirm(`Xoa tai lieu "${document.fileName}"?`)) {
       return;
     }
 
@@ -390,22 +271,75 @@ export class AiManagementPageComponent {
               : dataset
           )
         );
-        this.toastService.success('Đã xóa tài liệu.');
+        this.toastService.success('Da xoa tai lieu.');
       },
-      error: () => this.toastService.error('Không thể xóa tài liệu.'),
+      error: () => this.toastService.error('Khong the xoa tai lieu.'),
     });
   }
 
+  protected syncVariant(item: AiProductVectorStatus): void {
+    this.syncingVariantId.set(item.variantId);
+    this.aiManagementService
+      .syncProductVariant(item.variantId)
+      .pipe(finalize(() => this.syncingVariantId.set(null)))
+      .subscribe({
+        next: updated => {
+          this.upsertProductStatus(updated);
+          this.toastService.success('Da dong bo san pham qua Qdrant.');
+        },
+        error: err => {
+          this.loadProductStatuses();
+          this.toastService.error(readError(err, 'Dong bo san pham that bai.'));
+        },
+      });
+  }
+
+  protected verifyVariant(item: AiProductVectorStatus): void {
+    this.verifyingVariantId.set(item.variantId);
+    this.aiManagementService
+      .verifyProductVariant(item.variantId)
+      .pipe(finalize(() => this.verifyingVariantId.set(null)))
+      .subscribe({
+        next: updated => this.upsertProductStatus(updated),
+        error: err => this.toastService.error(readError(err, 'Verify Qdrant that bai.')),
+      });
+  }
+
+  protected verifyAllProducts(): void {
+    this.verifyingAllProducts.set(true);
+    this.aiManagementService
+      .verifyAllProducts()
+      .pipe(finalize(() => this.verifyingAllProducts.set(false)))
+      .subscribe({
+        next: statuses => {
+          this.productStatuses.set(statuses);
+          this.toastService.success('Da verify Qdrant cho san pham.');
+        },
+        error: err => this.toastService.error(readError(err, 'Verify tat ca san pham that bai.')),
+      });
+  }
+
+  protected reindexProducts(): void {
+    this.reindexingProducts.set(true);
+    this.aiManagementService
+      .reindexProducts()
+      .pipe(finalize(() => this.reindexingProducts.set(false)))
+      .subscribe({
+        next: () => {
+          this.toastService.success('Da bat dau reindex san pham.');
+          this.loadProductStatuses();
+        },
+        error: err => this.toastService.error(readError(err, 'Reindex san pham that bai.')),
+      });
+  }
+
   protected runDemo(): void {
-    const agentId = this.selectedAgentId();
     const message = this.demoMessage().trim();
-    if (!agentId || !message) {
-      this.toastService.error('Chọn agent và nhập câu hỏi demo.');
+    if (!message) {
+      this.toastService.error('Nhap cau hoi demo truoc khi gui.');
       return;
     }
 
-    this.demoLoading.set(true);
-    this.demoResult.set(null);
     const userMessage: DemoMessage = {
       id: createMessageId(),
       role: 'customer',
@@ -417,8 +351,11 @@ export class AiManagementPageComponent {
     }));
     this.demoMessages.update(messages => [...messages, userMessage]);
     this.demoMessage.set('');
+    this.demoResult.set(null);
+    this.demoLoading.set(true);
+
     this.aiManagementService
-      .demoAgent(agentId, message, history)
+      .runDemo(message, history)
       .pipe(finalize(() => this.demoLoading.set(false)))
       .subscribe({
         next: result => {
@@ -433,10 +370,10 @@ export class AiManagementPageComponent {
             },
           ]);
         },
-        error: () => {
+        error: err => {
           this.demoMessages.update(messages => messages.filter(item => item.id !== userMessage.id));
           this.demoMessage.set(message);
-          this.toastService.error('Không thể demo agent.');
+          this.toastService.error(readError(err, 'Khong the chay demo AI.'));
         },
       });
   }
@@ -447,40 +384,24 @@ export class AiManagementPageComponent {
     this.demoMessage.set('');
   }
 
-  protected datasetAttached(datasetId: string): boolean {
-    return this.agentDraft().datasetIds.includes(datasetId);
-  }
-
-  protected roleAttached(role: AiRole): boolean {
-    return this.agentDraft().assignedRole === role;
-  }
-
-  protected roleLabel(role: AiRole): string {
-    const labels: Record<AiRole, string> = {
-      ADMIN: 'Admin',
-      OWNER: 'Owner',
-      MANAGER: 'Manager',
-      EMPLOYEE: 'Nhân viên',
-      CUSTOMER: 'Khách hàng',
-    };
-    return labels[role];
-  }
-
   protected documentStatusLabel(status: AiDocument['ingestStatus']): string {
     const labels: Record<AiDocument['ingestStatus'], string> = {
-      UPLOADED: 'Đã tải lên',
-      PROCESSING: 'Đang xử lý',
-      READY: 'Sẵn sàng',
-      FAILED: 'Lỗi ingest',
+      UPLOADED: 'Da tai len',
+      PROCESSING: 'Dang xu ly',
+      READY: 'San sang',
+      FAILED: 'Loi ingest',
     };
     return labels[status];
   }
 
-  protected documentStatusTone(status: AiDocument['ingestStatus']): string {
-    if (status === 'READY') return 'ready';
-    if (status === 'FAILED') return 'failed';
-    if (status === 'PROCESSING') return 'processing';
-    return 'uploaded';
+  protected syncStatusLabel(status: AiProductVectorStatus['syncStatus']): string {
+    const labels: Record<AiProductVectorStatus['syncStatus'], string> = {
+      NOT_SYNCED: 'Chua sync',
+      SYNCING: 'Dang sync',
+      SYNCED: 'Da sync',
+      FAILED: 'Loi',
+    };
+    return labels[status];
   }
 
   protected formatFileSize(size: number): string {
@@ -489,23 +410,16 @@ export class AiManagementPageComponent {
     return `${(size / 1024 / 1024).toFixed(1)} MB`;
   }
 
-  protected syncingProducts = signal(false);
-
-  protected syncProducts(): void {
-    this.syncingProducts.set(true);
-    this.aiManagementService
-      .reindexProducts()
-      .pipe(finalize(() => this.syncingProducts.set(false)))
-      .subscribe({
-        next: () => this.toastService.success('Đồng bộ sản phẩm qua AI thành công!'),
-        error: (err) => this.toastService.error(readError(err, 'Đồng bộ sản phẩm qua AI thất bại.')),
-      });
+  protected productQdrantLabel(value: boolean | null | undefined): string {
+    if (value === true) return 'Co tren Qdrant';
+    if (value === false) return 'Lech Qdrant';
+    return 'Chua verify';
   }
 
-  private upsertAgent(agent: AiAgent): void {
-    this.agents.update(agents => {
-      const exists = agents.some(item => item.id === agent.id);
-      return exists ? agents.map(item => (item.id === agent.id ? agent : item)) : [agent, ...agents];
+  private upsertDataset(dataset: AiDataset): void {
+    this.datasets.update(datasets => {
+      const exists = datasets.some(item => item.id === dataset.id);
+      return exists ? datasets.map(item => (item.id === dataset.id ? dataset : item)) : [dataset, ...datasets];
     });
   }
 
@@ -522,6 +436,13 @@ export class AiManagementPageComponent {
         return { ...dataset, documents, documentCount: documents.length };
       })
     );
+  }
+
+  private upsertProductStatus(status: AiProductVectorStatus): void {
+    this.productStatuses.update(statuses => {
+      const exists = statuses.some(item => item.variantId === status.variantId);
+      return exists ? statuses.map(item => (item.variantId === status.variantId ? status : item)) : [status, ...statuses];
+    });
   }
 }
 
