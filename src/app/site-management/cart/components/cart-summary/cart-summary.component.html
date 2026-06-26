@@ -9,14 +9,14 @@
     <div class="flex items-center justify-between gap-4">
       <span class="font-semibold text-[#4f4632]">Tạm tính</span>
       <span class="text-lg font-black tabular-nums">
-        {{ subtotal() | currency: 'VND' : 'symbol' : '1.0-0' }}
+        {{ subtotal() | currency: 'VND' : '' : '1.0-0' }} đ
       </span>
     </div>
     <div class="flex items-center justify-between gap-4">
       <span class="font-semibold text-[#4f4632]">Phí vận chuyển dự kiến</span>
       @if (shippingFee() > 0) {
         <span class="text-lg font-black tabular-nums">
-          {{ shippingFee() | currency: 'VND' : 'symbol' : '1.0-0' }}
+          {{ shippingFee() | currency: 'VND' : '' : '1.0-0' }} đ
         </span>
       } @else {
         <span class="text-lg font-black uppercase text-[#4b41e1]">Miễn phí</span>
@@ -26,7 +26,7 @@
       <div class="flex items-center justify-between gap-4">
         <span class="font-semibold text-[#4f4632]">Giảm giá</span>
         <span class="text-lg font-black tabular-nums text-emerald-700">
-          -{{ discount() | currency: 'VND' : 'symbol' : '1.0-0' }}
+          -{{ discount() | currency: 'VND' : '' : '1.0-0' }} đ
         </span>
       </div>
     }
@@ -36,7 +36,7 @@
         Tổng tiền
       </span>
       <p class="mt-2 text-4xl font-black tracking-tight tabular-nums text-[#101010]">
-        {{ total() | currency: 'VND' : 'symbol' : '1.0-0' }}
+        {{ total() | currency: 'VND' : '' : '1.0-0' }} đ
       </p>
     </div>
 
