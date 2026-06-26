@@ -15,6 +15,8 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
 import { RegisterStore } from '../data-access/store/register.store';
 import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
 
+const PASSWORD_COMPLEXITY_PATTERN = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{6,}$/;
+
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -54,7 +56,14 @@ export class RegisterComponent {
     {
       fullName: [''],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.pattern(PASSWORD_COMPLEXITY_PATTERN),
+        ],
+      ],
       confirmPassword: ['', [Validators.required]],
     },
     {
