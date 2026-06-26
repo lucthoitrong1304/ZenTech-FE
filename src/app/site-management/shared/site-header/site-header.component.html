@@ -261,21 +261,25 @@
         } @else {
           <div class="flex flex-col gap-4">
             @for (item of cartStore.items(); track item.variantId) {
-              <div class="group relative flex gap-4 rounded-lg bg-white/5 p-3 ring-1 ring-white/10 transition hover:bg-white/10">
-                <a (click)="closeAndNavigate(['/products', item.productSlug])" class="block aspect-square w-20 shrink-0 overflow-hidden rounded-md bg-white/5 cursor-pointer">
-                  <img [src]="item.image" [alt]="item.productName" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" />
+              <div
+                class="group relative flex gap-4 rounded-lg bg-white/5 p-3 ring-1 ring-white/10 transition hover:bg-white/10">
+                <a (click)="closeAndNavigate(['/products', item.productSlug])"
+                   class="block aspect-square w-20 shrink-0 overflow-hidden rounded-md bg-white/5 cursor-pointer">
+                  <img [src]="item.image" [alt]="item.productName"
+                       class="h-full w-full object-cover transition duration-300 group-hover:scale-105"/>
                 </a>
-                
+
                 <div class="flex flex-col justify-between flex-1 min-w-0">
                   <div>
-                    <a (click)="closeAndNavigate(['/products', item.productSlug])" class="block truncate text-sm font-black text-white hover:text-[#ffc700] cursor-pointer">
+                    <a (click)="closeAndNavigate(['/products', item.productSlug])"
+                       class="block truncate text-sm font-black text-white hover:text-[#ffc700] cursor-pointer">
                       {{ item.productName }}
                     </a>
                     <p class="mt-0.5 truncate text-[10px] font-bold uppercase tracking-wider text-white/50">
                       {{ item.variantName }}
                     </p>
                   </div>
-                  
+
                   <div class="flex items-center justify-between mt-2">
                     <div class="inline-flex h-8 items-center overflow-hidden rounded-full bg-white/10 text-white">
                       <button
@@ -298,9 +302,9 @@
                         <svg lucidePlus class="h-3 w-3" [attr.stroke-width]="2.5"></svg>
                       </button>
                     </div>
-                    
+
                     <span class="text-sm font-black text-white tabular-nums">
-                      {{ item.unitPrice * item.quantity | currency: 'VND' : 'symbol' : '1.0-0' }}
+                      {{ item.unitPrice * item.quantity | currency: 'VND' : '' : '1.0-0' }} đ
                     </span>
                   </div>
                 </div>
@@ -324,10 +328,10 @@
           <div class="flex items-center justify-between text-sm font-bold text-white">
             <span class="uppercase tracking-wider text-white/60">Tạm tính:</span>
             <span class="text-lg font-black text-[#ffc700] tabular-nums">
-              {{ cartStore.total() | currency: 'VND' : 'symbol' : '1.0-0' }}
+              {{ cartStore.total() | currency: 'VND' : '' : '1.0-0' }} đ
             </span>
           </div>
-          
+
           <div class="grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -399,7 +403,7 @@
               @for (product of instantResults(); track product.id) {
                 <div class="site-search-item" (click)="onInstantResultClick(product.slug)">
                   <div class="site-search-item-image-wrapper">
-                    <img [src]="product.image" [alt]="product.name" class="site-search-item-image" />
+                    <img [src]="product.image" [alt]="product.name" class="site-search-item-image"/>
                   </div>
                   <div class="site-search-item-info">
                     <h4 class="site-search-item-name">{{ product.name }}</h4>
@@ -416,7 +420,7 @@
               }
             </div>
           </div>
-          
+
           <!-- Footer "See all results" -->
           <div class="site-search-footer" (click)="triggerSearch()">
             <span>Xem tất cả kết quả cho "{{ searchQuery() }}"</span>

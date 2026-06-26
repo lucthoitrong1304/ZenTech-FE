@@ -29,11 +29,11 @@
 
       <div class="shrink-0 text-left sm:text-right">
         <p class="text-2xl font-black tabular-nums text-[#101010]">
-          {{ item().unitPrice | currency: 'VND' : 'symbol' : '1.0-0' }}
+          {{ item().unitPrice | currency: 'VND' : '' : '1.0-0' }} đ
         </p>
         @if (item().originalPrice && item().originalPrice !== item().unitPrice) {
           <p class="text-sm font-semibold text-[#81765f] line-through">
-            {{ item().originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}
+            {{ item().originalPrice | currency: 'VND' : '' : '1.0-0' }} đ
           </p>
         }
       </div>
