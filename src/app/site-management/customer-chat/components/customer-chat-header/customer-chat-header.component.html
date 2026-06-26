@@ -56,17 +56,6 @@
   }
 
   <div class="flex shrink-0 items-center gap-2">
-    @if (canCall()) {
-      <button
-        type="button"
-        class="grid h-10 w-10 place-items-center rounded-[8px] text-[#6B7280] transition hover:bg-gray-100 hover:text-[#111827]"
-        (click)="callClicked.emit()"
-        title="Gọi hỗ trợ"
-      >
-        <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
-      </button>
-    }
-
     <button
       type="button"
       class="grid h-10 w-10 place-items-center rounded-[8px] transition"

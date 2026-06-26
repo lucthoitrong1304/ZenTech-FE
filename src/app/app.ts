@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, computed, effect, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -7,15 +7,12 @@ import { ToastComponent } from './shared/components/toast/toast.component';
 import { CustomerChatPopupComponent } from './site-management/customer-chat/components/customer-chat-popup/customer-chat-popup.component';
 import { CategoryNavigationStore } from './site-management/shared/data-access/store/category-navigation.store';
 import { AuthStorageService } from './core/services/auth-storage.service';
-import { CallSignalingService } from './core/services/call-signaling.service';
-import { IncomingCallDialogComponent } from './shared/components/incoming-call-dialog/incoming-call-dialog.component';
-import { InCallDialogComponent } from './shared/components/in-call-dialog/in-call-dialog.component';
 import { RouteClientLogService } from './core/logging/route-client-log.service';
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, ConfirmDialogModule, ToastComponent, CustomerChatPopupComponent, IncomingCallDialogComponent, InCallDialogComponent],
+  imports: [RouterOutlet, ConfirmDialogModule, ToastComponent, CustomerChatPopupComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -51,24 +48,8 @@ export class App {
     );
   });
 
-  private readonly callSignalingService = inject(CallSignalingService);
-
   constructor() {
     this.categoryNavigationStore.loadCategoriesOnce();
     this.routeClientLogService.initialize();
-
-    effect(() => {
-      this.currentUrl();
-      this.initializeCallSignaling();
-    });
-  }
-
-  private initializeCallSignaling(): void {
-    const token = this.authStorageService.getAccessToken();
-    const session = this.authStorageService.getSession();
-
-    if (token && session) {
-      this.callSignalingService.initStompClient(token, session.email);
-    }
   }
 }

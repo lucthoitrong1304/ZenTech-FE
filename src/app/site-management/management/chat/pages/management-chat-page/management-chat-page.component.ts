@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CallSignalingService } from '../../../../../core/services/call-signaling.service';
 import { MediaPreviewDialogComponent } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import { ChatComposerComponent } from '../../components/chat-composer/chat-composer.component';
@@ -45,7 +44,6 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManagementChatPageComponent implements OnInit, OnDestroy {
-  private readonly callSignalingService = inject(CallSignalingService);
   protected readonly store = inject(ManagementChatStore);
   protected readonly managementShellUi = inject(ManagementShellUiState);
   private readonly route = inject(ActivatedRoute);
@@ -82,13 +80,6 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
       this.loadRelatedTickets(email);
     });
 
-    this.callSignalingService.callEnded.subscribe(
-      ({ durationStr, status, isCaller }) => {
-        if (isCaller) {
-          this.store.sendCallMessage({ duration: durationStr, status });
-        }
-      }
-    );
   }
 
 
@@ -173,14 +164,6 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
 
   protected openPreview(item: MediaPreviewItem): void {
     this.previewItem.set(item);
-  }
-
-  protected startCustomerCall(targetEmail: string | null): void {
-    if (!targetEmail) {
-      return;
-    }
-
-    this.callSignalingService.initiateCall(targetEmail);
   }
 
   protected closePreview(): void {

@@ -116,31 +116,6 @@ describe('CustomerChatStore', () => {
     expect(store.messages().length).toBe(3);
   });
 
-  it('allows customer calls when an active handled conversation has a staff email', () => {
-    const { store } = configureStore({
-      conversations: [
-        createConversation('conversation-1', {
-          staffEmail: 'staff@zentech.test',
-        }),
-      ],
-    });
-
-    store.loadSession();
-
-    expect(store.staff()?.email).toBe('staff@zentech.test');
-    expect(store.canCallStaff()).toBe(true);
-  });
-
-  it('keeps customer calls unavailable when active staff email is missing', () => {
-    const { store } = configureStore();
-
-    store.loadSession();
-
-    expect(store.staff()).not.toBeNull();
-    expect(store.staff()?.email).toBeNull();
-    expect(store.canCallStaff()).toBe(false);
-  });
-
   it('maps active staff email from backend participant email fields', () => {
     const session = mapToCustomerChatSession(
       createConversation('conversation-1', {

@@ -76,18 +76,7 @@
               [class.text-[#111827]]="message.sender === 'STAFF'"
               [class.shadow-[0_18px_42px_-34px_rgba(16,16,16,0.7)]]="message.sender !== 'AI'"
             >
-              @if (message.messageType === 'CALL' && message.callData) {
-                <div class="flex items-center gap-3">
-                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#111827] shadow-sm">
-                    <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
-                  </span>
-                  <div class="flex flex-col">
-                    <strong class="text-sm font-semibold">{{ message.callData.status === 'ENDED' ? 'Cuộc gọi kết thúc' : (message.callData.status === 'BUSY' ? 'Máy bận' : 'Cuộc gọi nhỡ') }}</strong>
-                    <span class="text-xs font-medium opacity-80">{{ message.callData.duration }}</span>
-                  </div>
-                </div>
-              } @else {
-                @if (message.sender === 'AI') {
+              @if (message.sender === 'AI') {
                   <markdown class="customer-ai-markdown" [data]="message.body"></markdown>
                 } @else {
                   <p>{{ message.body }}</p>
@@ -143,7 +132,6 @@
                     }
                   </div>
                 }
-              }
             </div>
           </div>
         </article>
