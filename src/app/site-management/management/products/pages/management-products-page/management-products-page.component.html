@@ -1,6 +1,6 @@
 <app-management-page-shell>
   <app-management-page-hero
-    eyebrow="Hệ thống"
+    eyebrow="Trung tâm quản lý sản phẩm"
     title="Quản lý Sản phẩm"
     description="Quản lý danh mục, tồn kho, SKU và trạng thái hiển thị sản phẩm."
   >
@@ -37,7 +37,7 @@
 
     <app-management-stat-card
       label="Giá trị kho"
-      [value]="(store.stats().inventoryValue | currency: 'VND' : 'symbol' : '1.0-0') ?? ''"
+      [value]="formatVnd(store.stats().inventoryValue)"
       hint="Ước tính theo tồn kho"
       tone="accent"
     >
@@ -46,9 +46,9 @@
 
     <app-management-stat-card
       label="AI dự báo xu hướng"
-      value="Nhu cầu Gaming tăng 25%"
-      [hint]="store.stats().lowStock + ' SKU đang sắp hết hàng'"
-      tone="dark"
+      value="Gaming +25%"
+      [hint]="store.stats().lowStock + ' SKU cần theo dõi tồn kho'"
+      tone="warning"
     >
       <svg stat-icon lucideSparkles [attr.stroke-width]="2"></svg>
     </app-management-stat-card>

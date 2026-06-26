@@ -98,11 +98,15 @@ export class ManagementProductsPageComponent {
     this.store.openEditDialog(product.productId);
   }
 
+  protected formatVnd(value: number): string {
+    return `${new Intl.NumberFormat('vi-VN').format(value)} đ`;
+  }
+
   protected confirmDeleteProduct(product: ManagementProduct): void {
     this.confirmService
       .open({
         title: 'Xóa sản phẩm',
-        content: `Bạn có chắc muốn xóa ${product.name} khỏi danh sách mock không?`,
+        content: `Bạn có chắc muốn xóa ${product.name} khỏi danh sách sản phẩm không?`,
       })
       .pipe(
         take(1),
