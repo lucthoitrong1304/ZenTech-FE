@@ -163,13 +163,13 @@ export class CustomerChatPageComponent implements OnInit {
 
   protected getTicketStatusTitle(ticketStatus: CustomerTicketStatus): string {
     return this.isTicketResolved(ticketStatus)
-      ? 'S\u1ef1 c\u1ed1 \u0111\u00e3 \u0111\u01b0\u1ee3c kh\u1eafc ph\u1ee5c'
-      : 'ZenTech \u0111\u00e3 ghi nh\u1eadn s\u1ef1 c\u1ed1';
+      ? 'Sự cố đã được khắc phục'
+      : 'ZenTech đã ghi nhận sự cố';
   }
 
   protected getTicketStatusMessage(ticketStatus: CustomerTicketStatus): string {
     return this.isTicketResolved(ticketStatus)
-      ? 'B\u1ea1n c\u00f3 th\u1ec3 th\u1eed l\u1ea1i thao t\u00e1c v\u1eeba g\u1eb7p l\u1ed7i. N\u1ebfu v\u1eabn ch\u01b0a \u1ed5n, h\u00e3y nh\u1eafn v\u1edbi nh\u00e2n vi\u00ean h\u1ed7 tr\u1ee3.'
-      : 'T\u1ee5i m\u00ecnh \u0111ang ki\u1ec3m tra v\u00e0 s\u1ebd c\u1eadp nh\u1eadt khi c\u00f3 k\u1ebft qu\u1ea3. B\u1ea1n v\u1eabn c\u00f3 th\u1ec3 nh\u1eafn th\u00eam th\u00f4ng tin n\u1ebfu c\u1ea7n.';
+      ? 'Bạn có thể thử lại thao tác vừa gặp lỗi. Nếu vẫn chưa ổn, hãy nhắn với nhân viên hỗ trợ.'
+      : 'Tụi mình đang kiểm tra và sẽ cập nhật khi có kết quả. Bạn vẫn có thể nhắn thêm thông tin nếu cần.';
   }
 }
