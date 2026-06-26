@@ -20,6 +20,7 @@ import { ProductDetailGalleryComponent } from '../../components/product-detail-g
 import { ProductReviewListComponent } from '../../components/product-review-list/product-review-list.component';
 import { ClientLogService } from '../../../../core/logging/client-log.service';
 import { ClientLogEventType } from '../../../../core/logging/client-log.model';
+import { setupLogoutMessageEffects } from '../../../auth/data-access/utils/logout-message-effects.util';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -134,29 +135,7 @@ export class ProductDetailPageComponent {
       }
     });
 
-    effect(() => {
-      const message = this.authSessionStore.logoutSuccessMessage();
-
-      if (message) {
-        untracked(() => {
-        this.toastService.success(message);
-        this.authSessionStore.clearLogoutMessages();
-        this.router.navigate(['/']);
-        });
-      }
-    });
-
-    effect(() => {
-      const message = this.authSessionStore.logoutWarningMessage();
-
-      if (message) {
-        untracked(() => {
-        this.toastService.warning(message);
-        this.authSessionStore.clearLogoutMessages();
-        this.router.navigate(['/']);
-        });
-      }
-    });
+    setupLogoutMessageEffects(this.authSessionStore, this.toastService, this.router);
   }
 
   onImageSelect(image: string): void {
