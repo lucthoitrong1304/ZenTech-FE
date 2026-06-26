@@ -117,7 +117,7 @@ export class ManagementCategoriesPageComponent {
   }
 
   protected parentOptionLabel(category: ManagementCategory): string {
-    return `${'— '.repeat(category.depth)}${this.categoryLabel(category)}`;
+    return `${'- '.repeat(category.depth)}${this.categoryLabel(category)}`;
   }
 
   protected handleDialogVisibility(visible: boolean): void {
