@@ -300,6 +300,20 @@ export const managementRoutes: Routes = [
           ),
       },
       {
+        path: 'leave-settings',
+        canActivate: [permissionGuard],
+        data: {
+          permission: PermissionCode.EMPLOYEE_UPDATE,
+          eyebrow: 'Quản trị hệ thống',
+          title: 'Loại phép & hạn mức',
+          description: 'Cấu hình loại yêu cầu nghỉ phép và hạn mức theo nhân viên.',
+        },
+        loadComponent: () =>
+          import('./pages/leave-settings/leave-settings.component').then(
+            m => m.LeaveSettingsComponent
+          ),
+      },
+      {
         path: 'profile',
         data: {
           eyebrow: 'Tài khoản',

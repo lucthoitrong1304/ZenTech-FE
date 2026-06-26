@@ -324,6 +324,12 @@ export class ManagementLayoutComponent {
           icon: 'schedule',
         },
         {
+          label: 'Loại phép & hạn mức',
+          path: '/management/leave-settings',
+          permission: PermissionCode.EMPLOYEE_UPDATE,
+          icon: 'schedule',
+        },
+        {
           label: 'Báo cáo & Thống kê',
           path: '/management/reports',
           permission: PermissionCode.REPORT_VIEW,
