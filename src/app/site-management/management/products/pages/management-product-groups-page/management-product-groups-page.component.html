@@ -1,17 +1,22 @@
-<section class="management-product-groups-page">
-  <div class="product-group-command">
-    <div>
-      <h1>Quản lý Nhóm sản phẩm</h1>
-      <p>Phân loại và quản lý các nhóm sản phẩm để tối ưu trải nghiệm khách hàng.</p>
-    </div>
-
-    <button appHasPermission="PRODUCT_CREATE" type="button" class="product-group-primary-action" (click)="store.openCreateDialog()">
+<app-management-page-shell>
+  <app-management-page-hero
+    eyebrow="Trung tâm phân loại sản phẩm"
+    title="Quản lý Nhóm sản phẩm"
+    description="Phân loại và quản lý các nhóm sản phẩm để tối ưu trải nghiệm khách hàng."
+  >
+    <button
+      hero-actions
+      appHasPermission="PRODUCT_CREATE"
+      type="button"
+      class="zt-management-primary-action"
+      (click)="store.openCreateDialog()"
+    >
       <svg lucidePlus [attr.stroke-width]="2.4"></svg>
       <span>Thêm nhóm mới</span>
     </button>
-  </div>
+  </app-management-page-hero>
 
-  <div class="product-group-toolbar-shell">
+  <app-management-toolbar-surface>
     <app-product-group-toolbar
       [keyword]="store.query().keyword"
       [activeFilter]="store.query().activeFilter"
@@ -24,7 +29,7 @@
       (applyFilters)="store.applyFilters()"
       (resetFilters)="store.resetFilters()"
     />
-  </div>
+  </app-management-toolbar-surface>
 
   <app-product-group-table
     [groups]="store.groups()"
@@ -53,4 +58,4 @@
     (draftChange)="updateDraft($event)"
     (productToggle)="store.toggleProduct($event)"
   />
-</section>
+</app-management-page-shell>

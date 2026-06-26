@@ -17,6 +17,7 @@ import {
 import { DialogModule } from 'primeng/dialog';
 import { filter, take } from 'rxjs';
 import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
+import { ManagementPageShellComponent } from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import {
   ManagementCategory,
@@ -44,6 +45,7 @@ import { ManagementCategoriesStore } from '../../data-access/store/management-ca
     LucideSearch,
     LucideTrash2,
     LucideX,
+    ManagementPageShellComponent,
   ],
   templateUrl: './management-categories-page.component.html',
   styleUrl: './management-categories-page.component.css',
@@ -115,7 +117,7 @@ export class ManagementCategoriesPageComponent {
   }
 
   protected parentOptionLabel(category: ManagementCategory): string {
-    return `${'— '.repeat(category.depth)}${this.categoryLabel(category)}`;
+    return `${'- '.repeat(category.depth)}${this.categoryLabel(category)}`;
   }
 
   protected handleDialogVisibility(visible: boolean): void {

@@ -1,7 +1,7 @@
-<section class="management-categories-page">
+<app-management-page-shell>
   <div class="category-command">
     <div>
-      <span class="category-command__eyebrow">Catalog Control</span>
+      <span class="category-command__eyebrow">Trung tâm phân loại sản phẩm</span>
       <h1>Quản lý danh mục</h1>
       <p>Sắp xếp cây danh mục, bật tắt hiển thị và chuẩn hóa tên danh mục cho storefront.</p>
     </div>
@@ -22,18 +22,22 @@
     <article>
       <span>Tổng danh mục</span>
       <strong>{{ store.flatCategories().length }}</strong>
+      <small>Tổng số danh mục hiện có</small>
     </article>
     <article>
       <span>Đang hiển thị</span>
       <strong>{{ store.visibleCategoryCount() }}</strong>
+      <small>Danh mục đang mở trên storefront</small>
     </article>
     <article>
       <span>Đang ẩn</span>
       <strong>{{ store.hiddenCategoryCount() }}</strong>
+      <small>Danh mục tạm ngừng hiển thị</small>
     </article>
     <article>
       <span>Danh mục gốc</span>
       <strong>{{ store.rootCategoryCount() }}</strong>
+      <small>Cấp phân loại đầu tiên</small>
     </article>
   </div>
 
@@ -117,7 +121,7 @@
       }
     </div>
   </section>
-</section>
+</app-management-page-shell>
 
 <ng-template #categoryRows let-categories>
   @for (category of categories; track trackCategory($index, category)) {
@@ -270,7 +274,7 @@
           [ngModel]="draft.parentId ?? 'root'"
           (ngModelChange)="updateDraft({ parentId: $event === 'root' ? null : $event })"
         >
-          <option value="root">Root category</option>
+          <option value="root">Danh mục gốc</option>
           @for (option of store.parentOptions(); track option.id) {
             <option [value]="option.id">
               {{ parentOptionLabel(option) }}

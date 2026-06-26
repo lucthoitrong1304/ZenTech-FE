@@ -4,6 +4,11 @@ import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@
 import { LucidePlus } from '@lucide/angular';
 import { filter, take } from 'rxjs';
 import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
+import {
+  ManagementPageHeroComponent,
+  ManagementPageShellComponent,
+  ManagementToolbarSurfaceComponent,
+} from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { ProductGroupDialogComponent } from '../../components/product-group-dialog/product-group-dialog.component';
 import { ProductGroupTableComponent } from '../../components/product-group-table/product-group-table.component';
@@ -23,6 +28,9 @@ import { ManagementProductGroupsStore } from '../../data-access/store/management
     HasPermissionDirective,
     CommonModule,
     LucidePlus,
+    ManagementPageHeroComponent,
+    ManagementPageShellComponent,
+    ManagementToolbarSurfaceComponent,
     ProductGroupDialogComponent,
     ProductGroupTableComponent,
     ProductGroupToolbarComponent,
@@ -79,7 +87,7 @@ export class ManagementProductGroupsPageComponent {
     this.confirmService
       .open({
         title: 'Xóa nhóm sản phẩm',
-        content: `Bạn có chắc muốn xóa nhóm ${group.name} khỏi danh sách mock không?`,
+        content: `Bạn có chắc muốn xóa nhóm ${group.name} khỏi danh sách nhóm sản phẩm không?`,
       })
       .pipe(
         take(1),

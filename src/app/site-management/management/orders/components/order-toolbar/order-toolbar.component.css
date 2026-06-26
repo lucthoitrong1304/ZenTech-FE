@@ -3,10 +3,10 @@
   grid-template-columns: minmax(260px, 1fr) minmax(160px, auto) minmax(170px, auto) minmax(150px, auto) auto auto;
   gap: 12px;
   padding: 14px;
-  border: 1px solid rgba(210, 197, 171, 0.16);
-  border-radius: 10px;
+  border: 0;
+  border-radius: 12px;
   background: #ffffff;
-  box-shadow: 0 16px 42px rgba(28, 27, 27, 0.04);
+  box-shadow: none;
 }
 
 .orders-toolbar__search,
@@ -30,14 +30,14 @@
 .orders-toolbar input,
 .orders-toolbar select {
   width: 100%;
-  min-height: 44px;
-  border: 0;
-  border-radius: 8px;
-  background: #f6f3f2;
-  color: #1c1b1b;
+  min-height: 42px;
+  border: 1px solid #dfe3ea;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #344054;
   font: inherit;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 650;
   outline: 0;
 }
 
@@ -56,7 +56,8 @@
 
 .orders-toolbar input:focus,
 .orders-toolbar select:focus {
-  box-shadow: 0 0 0 2px rgba(251, 188, 4, 0.34);
+  border-color: #fbbc04;
+  box-shadow: 0 0 0 3px rgba(251, 188, 4, 0.14);
 }
 
 .orders-toolbar__filter,
@@ -66,24 +67,26 @@
   justify-content: center;
   gap: 8px;
   min-height: 44px;
-  border: 0;
-  border-radius: 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   padding: 0 15px;
   cursor: pointer;
   font: inherit;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 850;
   text-transform: uppercase;
 }
 
 .orders-toolbar__filter {
   background: #151515;
+  border-color: #151515;
   color: #fcf9f8;
 }
 
 .orders-toolbar__reset {
-  background: #f0edec;
-  color: #4f4632;
+  background: #ffffff;
+  border-color: #dfe3ea;
+  color: #475467;
 }
 
 .orders-toolbar__filter:disabled,

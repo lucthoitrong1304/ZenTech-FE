@@ -1,29 +1,18 @@
 .customer-table-panel {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(79, 70, 229, 0.12);
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at 10% 0%, rgba(255, 199, 0, 0.12), transparent 28%),
-    radial-gradient(circle at 92% 10%, rgba(79, 70, 229, 0.12), transparent 30%),
-    linear-gradient(145deg, #ffffff 0%, #f9fafb 64%, #eef2ff 100%);
-  box-shadow: 0 24px 70px rgba(17, 24, 39, 0.075);
-  padding: 24px;
+  border: 1px solid #e7e9ee;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.045);
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
 .customer-table-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(79, 70, 229, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(79, 70, 229, 0.04) 1px, transparent 1px);
-  background-size: 30px 30px;
-  mask-image: linear-gradient(to bottom, #000, transparent 72%);
-  pointer-events: none;
+  content: none;
 }
 
 .customer-table-panel > * {
@@ -33,36 +22,39 @@
 
 .customer-table-wrap {
   overflow-x: auto;
-  border: 1px solid rgba(229, 231, 235, 0.78);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 16px 38px rgba(17, 24, 39, 0.045);
+  border: 1px solid #edf0f4;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: none;
   width: 100%;
 }
 
 .customer-table {
   width: 100%;
+  min-width: 1120px;
   border-collapse: collapse;
   text-align: left;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .customer-table th {
-  background: rgba(249, 250, 251, 0.9);
-  padding: 14px 16px;
-  font-weight: 700;
-  color: #374151;
-  border-bottom: 1px solid rgba(229, 231, 235, 0.92);
+  background: #f8fafc;
+  padding: 16px 20px;
+  font-weight: 850;
+  color: #475467;
+  border-bottom: 1px solid #edf0f4;
   text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  letter-spacing: 0.03em;
   white-space: nowrap;
 }
 
 .customer-table td {
-  padding: 16px;
-  border-bottom: 1px solid rgba(229, 231, 235, 0.72);
+  padding: 18px 20px;
+  border-bottom: 1px solid #f0f2f5;
   color: #111827;
+  font-weight: 650;
+  line-height: 1.45;
   vertical-align: middle;
 }
 
@@ -71,12 +63,12 @@
 }
 
 .customer-table tbody tr:hover {
-  background: rgba(238, 242, 255, 0.52);
+  background: #fcfcfd;
 }
 
 .customer-index {
   color: #4f46e5;
-  font-weight: 700;
+  font-weight: 850;
 }
 
 .customer-identity {
@@ -118,23 +110,26 @@
 
 .customer-identity strong {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .customer-identity small,
 .customer-muted {
-  color: rgba(79, 70, 50, 0.64);
-  font-size: 11px;
-  font-weight: 700;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .customer-status {
   display: inline-flex;
   align-items: center;
+  min-height: 28px;
+  min-width: 132px;
+  justify-content: center;
   border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 850;
+  padding: 5px 11px;
   text-transform: uppercase;
   background: rgba(22, 163, 74, 0.12);
   color: #15803d;
@@ -153,7 +148,7 @@
   display: inline-block;
   margin-right: 6px;
   box-shadow: 0 0 6px rgba(22, 163, 74, 0.6);
-  animation: status-blink 1.8s infinite ease-in-out;
+  animation: none;
 }
 
 .customer-status--inactive .status-dot {
@@ -174,26 +169,26 @@
 
 .customer-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .customer-row-action {
   display: grid;
   place-items: center;
-  border: 1px solid rgba(229, 231, 235, 0.8);
-  border-radius: 99px;
+  border: 1px solid #dfe3ea;
+  border-radius: 10px;
   background: #ffffff;
   color: #4b5563;
   cursor: pointer;
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   transition: all 0.15s ease;
 }
 
 .customer-row-action:hover {
-  background: #f9fafb;
+  background: #f8fafc;
   color: #111827;
-  border-color: rgba(79, 70, 229, 0.2);
+  border-color: #cfd6e3;
 }
 
 .customer-row-action--muted {
@@ -203,10 +198,10 @@
 }
 
 .customer-row-action--muted:hover {
-  background: #dc2626;
-  color: #ffffff;
-  border-color: #dc2626;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.16);
+  background: #fff1f2;
+  color: #be123c;
+  border-color: #fecdd3;
+  box-shadow: none;
 }
 
 .customer-row-action--success {
@@ -216,10 +211,10 @@
 }
 
 .customer-row-action--success:hover {
-  background: #16a34a;
-  color: #ffffff;
-  border-color: #16a34a;
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.16);
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #bbf7d0;
+  box-shadow: none;
 }
 
 .customer-row-action svg,
@@ -267,50 +262,50 @@
   justify-content: space-between;
   gap: 16px;
   background: transparent;
-  padding: 0;
-  margin-top: 6px;
+  padding: 4px 0 0;
+  margin-top: 0;
 }
 
 .customer-pagination p {
   margin: 0;
-  color: #6b7280;
-  font-size: 12px;
-  font-weight: 700;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 750;
 }
 
 .customer-page-buttons {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .customer-page-button {
   display: grid;
   place-items: center;
-  border: 1px solid rgba(229, 231, 235, 0.8);
-  border-radius: 99px;
+  border: 1px solid #dfe3ea;
+  border-radius: 10px;
   background: #ffffff;
   color: #4b5563;
   cursor: pointer;
-  width: 36px;
-  height: 36px;
-  font-size: 12px;
-  font-weight: 700;
+  width: 40px;
+  height: 40px;
+  font-size: 13px;
+  font-weight: 850;
   transition: all 0.15s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  box-shadow: none;
 }
 
 .customer-page-button:hover:not(:disabled) {
-  background: #f9fafb;
+  background: #f8fafc;
   color: #111827;
-  border-color: rgba(79, 70, 229, 0.2);
+  border-color: #cfd6e3;
 }
 
 .customer-page-button--active {
   background: #fbbc04;
   color: #1c1b1b;
   border-color: #fbbc04;
-  box-shadow: 0 4px 12px rgba(251, 188, 4, 0.24);
+  box-shadow: 0 8px 18px rgba(251, 188, 4, 0.18);
 }
 
 .customer-page-button--active:hover {
