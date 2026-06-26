@@ -602,10 +602,8 @@
 .mb-container {
   min-height: 100%;
   gap: 22px;
-  background:
-    linear-gradient(180deg, #fbfaf8 0%, #ffffff 42%),
-    #ffffff;
-  padding: 24px;
+  background: transparent;
+  padding: 0;
   color: #111827;
 }
 
@@ -1058,7 +1056,7 @@
 
 @media (max-width: 760px) {
   .mb-container {
-    padding: 16px;
+    padding: 0;
   }
 
   .mb-header {

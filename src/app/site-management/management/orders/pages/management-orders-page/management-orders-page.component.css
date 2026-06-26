@@ -164,3 +164,99 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Scoped refresh for the shared management hero on the orders page. */
+:host ::ng-deep .zt-management-hero {
+  min-height: 128px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(251, 250, 248, 0.94)) !important;
+  box-shadow: 0 10px 30px rgba(28, 27, 27, 0.035) !important;
+  padding: 24px 30px !important;
+}
+
+:host ::ng-deep .zt-management-hero__eyebrow {
+  color: rgba(79, 70, 50, 0.68) !important;
+  font-size: 12px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.06em !important;
+}
+
+:host ::ng-deep .zt-management-hero h1 {
+  margin: 8px 0 7px !important;
+  color: #111827 !important;
+  font-size: clamp(30px, 2.8vw, 40px) !important;
+  font-weight: 820 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.02 !important;
+}
+
+:host ::ng-deep .zt-management-hero p {
+  max-width: 760px !important;
+  color: rgba(79, 70, 50, 0.76) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+}
+
+:host ::ng-deep .zt-management-hero .zt-management-primary-action {
+  min-height: 44px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+  padding: 0 20px !important;
+  box-shadow: none !important;
+}
+
+:host ::ng-deep .zt-management-hero .zt-management-primary-action:hover {
+  background: #ffd633;
+}
+
+:host ::ng-deep .zt-management-stat {
+  min-height: 108px;
+  border-color: #e7e9ee;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fdfdfb 100%);
+  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.045);
+}
+
+:host ::ng-deep .zt-management-stat::before {
+  content: none;
+}
+
+:host ::ng-deep .zt-management-stat__copy > span {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+:host ::ng-deep .zt-management-stat strong {
+  color: #111827;
+  font-size: 28px;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+:host ::ng-deep .zt-management-stat small {
+  color: #667085;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+:host ::ng-deep .zt-management-toolbar {
+  border-color: #e7e9ee;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(28, 27, 27, 0.035);
+}
+
+@media (max-width: 760px) {
+  :host ::ng-deep .zt-management-hero {
+    padding: 18px;
+  }
+
+  :host ::ng-deep .zt-management-hero h1 {
+    font-size: 30px !important;
+  }
+}
