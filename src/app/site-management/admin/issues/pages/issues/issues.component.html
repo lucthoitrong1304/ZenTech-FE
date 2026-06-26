@@ -97,6 +97,32 @@
           ERROR
         </button>
       </div>
+      <div class="logs-filter-group logs-filter-group--status">
+        <button
+          type="button"
+          (click)="handleIssueStatusChange(IssueStatusFilter.ALL)"
+          class="logs-filter-btn"
+          [class.logs-filter-btn--active]="activeIssueStatus() === IssueStatusFilter.ALL"
+        >
+          Tất cả
+        </button>
+        <button
+          type="button"
+          (click)="handleIssueStatusChange(IssueStatusFilter.WATCHING)"
+          class="logs-filter-btn logs-filter-btn--watching"
+          [class.logs-filter-btn--active]="activeIssueStatus() === IssueStatusFilter.WATCHING"
+        >
+          Đang theo dõi
+        </button>
+        <button
+          type="button"
+          (click)="handleIssueStatusChange(IssueStatusFilter.LINKED)"
+          class="logs-filter-btn logs-filter-btn--linked"
+          [class.logs-filter-btn--active]="activeIssueStatus() === IssueStatusFilter.LINKED"
+        >
+          Đã có Incident
+        </button>
+      </div>
 
       <div class="logs-time-range-group" aria-label="Khoảng thời gian logs">
         <span class="logs-time-range-label">Logs phát sinh trong vòng:</span>
@@ -145,6 +171,10 @@
               <div class="logs-issue-main">
                 <span class="logs-level-badge" [class]="'level-' + issue.level.toLowerCase()">{{ issue.level }}</span>
                 <span class="service-source-tag" [class]="'source-' + issue.category.toLowerCase()">{{ issue.category }}</span>
+                <span class="logs-issue-status-badge" [class]="getIssueBadgeClass(issue)">{{ getIssueBadgeLabel(issue) }}</span>
+                @if (getIssueLink(issue); as link) {
+                  <span class="logs-linked-incident-pill" role="button" tabindex="0" (click)="openLinkedIncident(link, $event)">Incident {{ link.incidentCode }}</span>
+                }
                 <h3>{{ issue.title }}</h3>
                 <p>{{ issue.signature }}</p>
               </div>
@@ -184,6 +214,17 @@
         <span class="service-source-tag" [class]="'source-' + issue.category.toLowerCase()">{{ issue.category }}</span>
         <span class="logs-modal-time">{{ issue.occurrences }} occurrences</span>
         <span class="logs-modal-time">Last seen {{ issue.lastSeen | date:'HH:mm:ss dd/MM/yyyy' }}</span>
+        <span class="logs-issue-status-badge" [class]="getIssueBadgeClass(issue)">{{ getIssueBadgeLabel(issue) }}</span>
+        @if (getIssueLink(issue); as link) {
+          <button type="button" class="logs-linked-incident-pill" (click)="openLinkedIncident(link, $event)">Incident {{ link.incidentCode }}</button>
+        }
+      </div>
+
+      <div class="logs-issue-action-row">
+        <button type="button" class="logs-create-incident-btn" (click)="openCreateIncidentDialog(issue)" [disabled]="!!getIssueLink(issue)">Tạo Incident</button>
+        @if (getIssueLink(issue); as link) {
+          <button type="button" class="logs-linked-incident-btn" (click)="openLinkedIncident(link, $event)">Xem Incident liên kết</button>
+        }
       </div>
 
       <div class="logs-issue-summary-grid">
@@ -199,6 +240,22 @@
           <span>Trace IDs</span>
           <strong>{{ issue.traceIds.length || 0 }}</strong>
         </div>
+        <div class="logs-issue-summary-card">
+          <span>API</span>
+          <strong>{{ issue.httpMethod || 'HTTP' }} {{ issue.apiPath || 'N/A' }}</strong>
+        </div>
+        <div class="logs-issue-summary-card">
+          <span>HTTP status</span>
+          <strong>{{ issue.statusCode || 'N/A' }}</strong>
+        </div>
+        <div class="logs-issue-summary-card">
+          <span>User</span>
+          <strong>{{ issue.userEmail || 'N/A' }}</strong>
+        </div>
+        <div class="logs-issue-summary-card">
+          <span>Role</span>
+          <strong>{{ issue.userRole || 'N/A' }}</strong>
+        </div>
       </div>
 
       <div class="logs-inspector-section">
@@ -213,9 +270,10 @@
         <button type="button" class="logs-inspector-section-title">
           <span>⌄</span>
           <span>Related log instances</span>
+          <span class="logs-related-count">{{ getRelatedLogs(issue).length }} / {{ issue.logs.length }}</span>
         </button>
         <div class="logs-related-list">
-          @for (relatedLog of issue.logs; track relatedLog.id) {
+          @for (relatedLog of getRelatedLogs(issue); track relatedLog.id) {
             <button type="button" class="logs-related-item" (click)="openRelatedLogDetails(issue, relatedLog)">
               <span class="logs-level-badge" [class]="'level-' + relatedLog.level.toLowerCase()">{{ relatedLog.level }}</span>
               <span class="logs-related-message">{{ relatedLog.message }}</span>
@@ -223,11 +281,73 @@
             </button>
           }
         </div>
+        @if (shouldShowRelatedLogsToggle(issue)) {
+          <div class="logs-related-footer">
+            <button type="button" class="logs-related-toggle-btn" (click)="toggleRelatedLogs(issue, $event)">
+              {{ isRelatedLogsExpanded(issue) ? 'Collapse to latest 5' : 'Show all ' + issue.logs.length + ' occurrences' }}
+            </button>
+          </div>
+        }
       </div>
     </section>
   </div>
 }
 
+
+@if (showCreateIncidentDialog() && selectedIssue(); as issue) {
+  <div class="logs-modal-backdrop" (click)="closeCreateIncidentDialog()">
+    <section class="logs-modal-panel logs-create-incident-modal" role="dialog" aria-modal="true" aria-labelledby="create-incident-title" (click)="$event.stopPropagation()">
+      <div class="logs-modal-header">
+        <div>
+          <p class="logs-modal-kicker">Manual escalation</p>
+          <h3 id="create-incident-title" class="logs-modal-title">Tạo Incident từ Issue</h3>
+        </div>
+        <button type="button" class="logs-modal-close-btn" (click)="closeCreateIncidentDialog()" aria-label="Đóng tạo incident">×</button>
+      </div>
+
+      <div class="logs-create-incident-preview">
+        <div>
+          <span>Tiêu đề</span>
+          <strong>{{ issue.title }}</strong>
+        </div>
+        <div>
+          <span>Service</span>
+          <strong>{{ normalizeServiceCategory(issue.category) }}</strong>
+        </div>
+        <div>
+          <span>API</span>
+          <strong>{{ issue.httpMethod || 'HTTP' }} {{ issue.apiPath || 'N/A' }}</strong>
+        </div>
+        <div>
+          <span>Status</span>
+          <strong>{{ issue.statusCode || 'N/A' }}</strong>
+        </div>
+        <div>
+          <span>Trace ID</span>
+          <strong>{{ issue.traceIds[0] || 'N/A' }}</strong>
+        </div>
+        <div>
+          <span>Error</span>
+          <strong>{{ issue.errorMessage || issue.title }}</strong>
+        </div>
+      </div>
+
+      <div class="logs-severity-picker" aria-label="Chọn mức độ nghiêm trọng">
+        <button type="button" [class.logs-severity-option--active]="incidentSeverity() === IncidentSeverity.LOW" (click)="setIncidentSeverity(IncidentSeverity.LOW)">LOW</button>
+        <button type="button" [class.logs-severity-option--active]="incidentSeverity() === IncidentSeverity.MEDIUM" (click)="setIncidentSeverity(IncidentSeverity.MEDIUM)">MEDIUM</button>
+        <button type="button" [class.logs-severity-option--active]="incidentSeverity() === IncidentSeverity.HIGH" (click)="setIncidentSeverity(IncidentSeverity.HIGH)">HIGH</button>
+        <button type="button" [class.logs-severity-option--active]="incidentSeverity() === IncidentSeverity.CRITICAL" (click)="setIncidentSeverity(IncidentSeverity.CRITICAL)">CRITICAL</button>
+      </div>
+
+      <div class="logs-create-incident-footer">
+        <button type="button" class="logs-secondary-btn" (click)="closeCreateIncidentDialog()" [disabled]="isCreatingIncident()">Hủy</button>
+        <button type="button" class="logs-create-incident-btn" (click)="createIncidentFromSelectedIssue()" [disabled]="isCreatingIncident() || !!getIssueLink(issue)">
+          {{ isCreatingIncident() ? 'Đang tạo...' : 'Tạo Incident' }}
+        </button>
+      </div>
+    </section>
+  </div>
+}
 <!-- Modal xem chi tiết Log liên quan (với AI Explain) -->
 @if (selectedLog(); as log) {
   <div class="logs-modal-backdrop" (click)="closeLogDetails()">

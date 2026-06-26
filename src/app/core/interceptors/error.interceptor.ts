@@ -10,7 +10,7 @@ import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from
 import { ErrorStateService } from '../errors/error-state.service';
 import { AuthRefreshService } from '../services/auth-refresh.service';
 import { AuthStorageService } from '../services/auth-storage.service';
-import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../tokens/api-context.token';
+import { SKIP_AUTH_TOKEN, SKIP_CLIENT_LOG, SKIP_GLOBAL_ERROR } from '../tokens/api-context.token';
 import { AuthSessionStore } from '../../site-management/auth/data-access/store/auth-session.store';
 import { ClientLogEventType } from '../logging/client-log.model';
 import { ClientLogService } from '../logging/client-log.service';
@@ -95,7 +95,7 @@ function logHttpFailure(
   req: HttpRequest<unknown>,
   error: HttpErrorResponse,
 ): void {
-  if (req.url.includes('/logs/client')) {
+  if (req.context.get(SKIP_CLIENT_LOG) || req.url.includes('/logs/client')) {
     return;
   }
 

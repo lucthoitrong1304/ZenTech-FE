@@ -9,7 +9,10 @@ const LOGGED_SUCCESS_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 const EXCLUDED_SUCCESS_URLS = [
   '/api/notifications',
   '/api/notifications/unread-count',
-  '/api/logs/client'
+  '/api/logs/client',
+  '/api/admin/logs',
+  '/api/admin/activity-logs',
+  '/api/admin/incidents/issue-links'
 ];
 
 export const httpClientLogInterceptor: HttpInterceptorFn = (req, next) => {

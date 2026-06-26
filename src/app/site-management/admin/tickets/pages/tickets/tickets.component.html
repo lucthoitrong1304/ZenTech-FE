@@ -164,7 +164,7 @@
             <tr>
               <th scope="col" class="tck-th">Mã Ticket</th>
               <th scope="col" class="tck-th">Tiêu đề</th>
-              <th scope="col" class="tck-th">Khách hàng</th>
+              <th scope="col" class="tck-th">Người liên quan</th>
               <th scope="col" class="tck-th">Độ ưu tiên</th>
               <th scope="col" class="tck-th">Trạng thái</th>
               <th scope="col" class="tck-th">Ngày báo cáo</th>
@@ -393,7 +393,7 @@
           <!-- Customer Profile — Ranked Impact View -->
           <div class="tck-modal-row">
             <div class="tck-affected-header">
-              <span class="tck-modal-label">Khách hàng bị ảnh hưởng</span>
+              <span class="tck-modal-label">{{ activeTck.affectedUserEmails && activeTck.affectedUserEmails.length > 0 ? 'Khách hàng bị ảnh hưởng' : 'Người tạo ticket' }}</span>
               @if (activeTck.affectedUserEmails && activeTck.affectedUserEmails.length > 0) {
                 <span class="tck-affected-count-chip">{{ activeTck.affectedUserEmails.length }} người</span>
               }

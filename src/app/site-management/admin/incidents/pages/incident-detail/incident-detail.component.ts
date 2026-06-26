@@ -215,6 +215,59 @@ export class IncidentDetailComponent implements OnInit {
     this.loadIncidentDetails();
     this.loadStaffAccounts();
   }
+  protected displayHttpMethod(inc: SystemIncident): string {
+    return inc.httpMethod?.trim() || 'HTTP';
+  }
+
+  protected displayApiPath(inc: SystemIncident): string {
+    const apiPath = inc.apiPath?.trim();
+    if (apiPath) {
+      return this.normalizeApiPath(apiPath);
+    }
+    return inc.issueSignature ? 'Issue-generated incident' : 'Chưa có API path';
+  }
+
+  protected displayStatusCode(inc: SystemIncident): number | null {
+    return typeof inc.statusCode === 'number' && Number.isFinite(inc.statusCode) ? inc.statusCode : null;
+  }
+
+  protected hasLinkedIssue(inc: SystemIncident): boolean {
+    return !!inc.issueSignature?.trim();
+  }
+
+  protected navigateToLinkedIssue(inc: SystemIncident): void {
+    const issueSignature = inc.issueSignature?.trim();
+    if (!issueSignature) {
+      return;
+    }
+
+    const issueTime = this.getIncidentIssueTime(inc);
+    const queryParams: Record<string, string | number> = {
+      issueSignature,
+      issueStatus: 'LINKED'
+    };
+
+    if (issueTime) {
+      const sixHours = 6 * 60 * 60 * 1000;
+      queryParams['range'] = 'CUSTOM';
+      queryParams['startTime'] = Math.max(0, issueTime.getTime() - sixHours);
+      queryParams['endTime'] = Math.min(Date.now(), issueTime.getTime() + sixHours);
+    } else {
+      queryParams['range'] = 'HOURS_24';
+    }
+
+    this.router.navigate(['/admin/issues'], { queryParams });
+  }
+
+  private getIncidentIssueTime(inc: SystemIncident): Date | null {
+    const rawDate = inc.occurredAt || inc.firstOccurredAt || inc.createdAt;
+    if (!rawDate) {
+      return null;
+    }
+
+    const date = rawDate instanceof Date ? rawDate : new Date(rawDate);
+    return Number.isFinite(date.getTime()) ? date : null;
+  }
 
   private loadIncidentDetails(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -639,7 +692,8 @@ export class IncidentDetailComponent implements OnInit {
     if (!inc) return;
 
     this.ticketTitle = `Sửa lỗi sự cố ${inc.code}: ${inc.errorMessage || 'Lỗi hệ thống'}`;
-    this.ticketDesc = `Sự cố phát sinh tại API: ${inc.httpMethod} ${inc.apiPath}\nTrạng thái lỗi: ${inc.statusCode}\nThông điệp: ${inc.errorMessage}\n\nVui lòng kiểm tra nguyên nhân gốc và khắc phục.`;
+    const statusText = this.displayStatusCode(inc) ? `HTTP ${this.displayStatusCode(inc)}` : 'Không xác định';
+    this.ticketDesc = `Sự cố phát sinh tại API: ${this.displayHttpMethod(inc)} ${this.displayApiPath(inc)}\nTrạng thái lỗi: ${statusText}\nThông điệp: ${inc.errorMessage}\n\nVui lòng kiểm tra nguyên nhân gốc và khắc phục.`;
     this.ticketAssigneeEmail.set('UNASSIGNED');
     this.uploadedImages.set([]);
     this.showTicketForm.set(!this.showTicketForm());

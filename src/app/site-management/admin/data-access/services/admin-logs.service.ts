@@ -12,7 +12,7 @@ import {
   ApiResponse
 } from '../models/admin.models';
 import { HttpContext } from '@angular/common/http';
-import { SKIP_AUTH_TOKEN, SKIP_CLIENT_LOG } from '../../../../core/tokens/api-context.token';
+import { SKIP_AUTH_TOKEN, SKIP_CLIENT_LOG, SKIP_GLOBAL_ERROR } from '../../../../core/tokens/api-context.token';
 
 @Injectable({ providedIn: 'root' })
 export class AdminLogsService {
@@ -31,7 +31,8 @@ export class AdminLogsService {
     traceId: string = '',
     limit: number = 500,
     startTime?: number,
-    endTime?: number
+    endTime?: number,
+    skipGlobalError: boolean = false
   ): Observable<SystemLog[]> {
     let url = `${this.adminLogsUrl}?level=${level}&search=${encodeURIComponent(search)}&traceId=${traceId}&limit=${limit}`;
     if (startTime !== undefined) {
@@ -40,7 +41,9 @@ export class AdminLogsService {
     if (endTime !== undefined) {
       url += `&endTime=${endTime}`;
     }
-    return this.apiService.get<SystemLog[]>(url);
+    const context = new HttpContext().set(SKIP_CLIENT_LOG, true);
+    const options = { context: skipGlobalError ? context.set(SKIP_GLOBAL_ERROR, true) : context };
+    return this.apiService.get<SystemLog[]>(url, options);
   }
 
   /**
@@ -64,7 +67,9 @@ export class AdminLogsService {
     if (action && action !== 'ALL') url += `&action=${action}`;
     if (from) url += `&from=${encodeURIComponent(from)}`;
     if (to) url += `&to=${encodeURIComponent(to)}`;
-    return this.apiService.get<ApiResponse<PaginatedResult<ActivityLog>>>(url);
+    return this.apiService.get<ApiResponse<PaginatedResult<ActivityLog>>>(url, {
+      context: new HttpContext().set(SKIP_CLIENT_LOG, true)
+    });
   }
 
   getActivityTimeline(params: {
@@ -86,15 +91,21 @@ export class AdminLogsService {
     if (params.severity && params.severity !== 'ALL') url += `&severity=${params.severity}`;
     if (params.module && params.module !== 'ALL') url += `&module=${encodeURIComponent(params.module)}`;
     if (params.action && params.action !== 'ALL') url += `&action=${params.action}`;
-    return this.apiService.get<ApiResponse<PaginatedResult<ActivityLog>>>(url);
+    return this.apiService.get<ApiResponse<PaginatedResult<ActivityLog>>>(url, {
+      context: new HttpContext().set(SKIP_CLIENT_LOG, true)
+    });
   }
 
   getActivityLogModules(): Observable<ApiResponse<string[]>> {
-    return this.apiService.get<ApiResponse<string[]>>(`${this.activityLogsUrl}/modules`);
+    return this.apiService.get<ApiResponse<string[]>>(`${this.activityLogsUrl}/modules`, {
+      context: new HttpContext().set(SKIP_CLIENT_LOG, true)
+    });
   }
 
   getActivityLogActions(): Observable<ApiResponse<string[]>> {
-    return this.apiService.get<ApiResponse<string[]>>(`${this.activityLogsUrl}/actions`);
+    return this.apiService.get<ApiResponse<string[]>>(`${this.activityLogsUrl}/actions`, {
+      context: new HttpContext().set(SKIP_CLIENT_LOG, true)
+    });
   }
 
   summarizeActivityTimeline(
@@ -102,14 +113,16 @@ export class AdminLogsService {
   ): Observable<ApiResponse<ActivityTimelineSummaryResponse>> {
     return this.apiService.post<ActivityTimelineSummaryRequest, ApiResponse<ActivityTimelineSummaryResponse>>(
       `${this.activityLogsUrl}/timeline/summary`,
-      payload
+      payload,
+      { context: new HttpContext().set(SKIP_CLIENT_LOG, true) }
     );
   }
 
   recordActivityLog(payload: ActivityLogRecordPayload): Observable<ApiResponse<void>> {
     return this.apiService.post<ActivityLogRecordPayload, ApiResponse<void>>(
       `${this.activityLogsUrl}/record`,
-      payload
+      payload,
+      { context: new HttpContext().set(SKIP_CLIENT_LOG, true) }
     );
   }
 
@@ -124,7 +137,8 @@ export class AdminLogsService {
     const payload = { logMessage, logDetails, service };
     return this.apiService.post<typeof payload, { explanation: string }>(
       this.explainLogUrl,
-      payload
+      payload,
+      { context: new HttpContext().set(SKIP_CLIENT_LOG, true) }
     );
   }
 
