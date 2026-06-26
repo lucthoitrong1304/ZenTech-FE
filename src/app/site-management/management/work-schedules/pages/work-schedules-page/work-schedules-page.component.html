@@ -11,7 +11,11 @@
         <svg lucideCopy [attr.stroke-width]="2"></svg>
         <span>Sao chép tuần</span>
       </button>
-      <button type="button" class="work-schedules-secondary-action" (click)="store.openSettingsModal()">
+      <button
+        type="button"
+        class="work-schedules-secondary-action"
+        (click)="store.openSettingsModal()"
+      >
         <svg lucideSettings [attr.stroke-width]="2"></svg>
         <span>Cấu hình ca</span>
       </button>
@@ -24,17 +28,32 @@
 
   <div class="work-schedules-toolbar">
     <div class="work-schedules-week">
-      <button type="button" class="work-schedules-icon-action" aria-label="Tuần trước" (click)="store.goToWeek(-1)">
+      <button
+        type="button"
+        class="work-schedules-icon-action"
+        aria-label="Tuần trước"
+        (click)="store.goToWeek(-1)"
+      >
         <svg lucideChevronLeft [attr.stroke-width]="2"></svg>
       </button>
       <div class="work-schedules-week__range">
         <svg lucideCalendarDays [attr.stroke-width]="2"></svg>
-        <span>{{ store.query().weekStartDate | date: 'dd/MM/yyyy' }} - {{ store.query().weekEndDate | date: 'dd/MM/yyyy' }}</span>
+        <span
+          >{{ store.query().weekStartDate | date: 'dd/MM/yyyy' }} -
+          {{ store.query().weekEndDate | date: 'dd/MM/yyyy' }}</span
+        >
       </div>
-      <button type="button" class="work-schedules-icon-action" aria-label="Tuần sau" (click)="store.goToWeek(1)">
+      <button
+        type="button"
+        class="work-schedules-icon-action"
+        aria-label="Tuần sau"
+        (click)="store.goToWeek(1)"
+      >
         <svg lucideChevronRight [attr.stroke-width]="2"></svg>
       </button>
-      <button type="button" class="work-schedules-filter-action" (click)="store.goToCurrentWeek()">Tuần hiện tại</button>
+      <button type="button" class="work-schedules-filter-action" (click)="store.goToCurrentWeek()">
+        Tuần hiện tại
+      </button>
     </div>
 
     <label class="work-schedules-search">
@@ -48,8 +67,15 @@
       />
     </label>
 
-    <button type="button" class="work-schedules-filter-action" (click)="store.applyFilters()">Lọc</button>
-    <button type="button" class="work-schedules-icon-action" aria-label="Làm mới" (click)="store.refresh()">
+    <button type="button" class="work-schedules-filter-action" (click)="store.applyFilters()">
+      Lọc
+    </button>
+    <button
+      type="button"
+      class="work-schedules-icon-action"
+      aria-label="Làm mới"
+      (click)="store.refresh()"
+    >
       <svg lucideRefreshCw [attr.stroke-width]="2"></svg>
     </button>
   </div>
@@ -57,7 +83,10 @@
   <div class="work-schedules-legend">
     @for (shift of store.shifts(); track shift.id) {
       <article class="work-schedules-shift-card">
-        <span class="work-schedules-shift-card__swatch" [style.background]="shift.colorCode || '#4f46e5'"></span>
+        <span
+          class="work-schedules-shift-card__swatch"
+          [style.background]="shift.colorCode || '#4f46e5'"
+        ></span>
         <div>
           <strong>{{ shift.name }}</strong>
           <small>{{ getShiftTimeRange(shift) }} · {{ getShiftTypeLabel(shift.type) }}</small>
@@ -136,7 +165,7 @@
                     class="work-schedules-cell"
                     [class.work-schedules-cell--empty]="!shift"
                     [style.border-left-color]="shift?.colorCode || null"
-                    [style.background-color]="shift ? (shift.colorCode + '13') : null"
+                    [style.background-color]="shift ? shift.colorCode + '13' : null"
                     (click)="store.openAssignModal(employee, date, shift)"
                   >
                     @if (shift) {
@@ -144,7 +173,14 @@
                       <small>{{ getShiftTimeRange(shift) }}</small>
                     } @else {
                       <strong>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
                           <line x1="12" y1="5" x2="12" y2="19"></line>
                           <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
@@ -172,7 +208,10 @@
     </div>
 
     <footer class="work-schedules-pagination">
-      <p>Hiển thị {{ store.pageStart() }}-{{ store.pageEnd() }} trên {{ store.totalElements() }} nhân viên</p>
+      <p>
+        Hiển thị {{ store.pageStart() }}-{{ store.pageEnd() }} trên {{ store.totalElements() }} nhân
+        viên
+      </p>
 
       <div class="work-schedules-page-buttons">
         <button
@@ -223,7 +262,12 @@
             <p>Assign Shift</p>
             <h2>{{ cell.employeeName }}</h2>
           </div>
-          <button type="button" class="work-schedules-modal__close" aria-label="Đóng" (click)="store.closeAssignModal()">
+          <button
+            type="button"
+            class="work-schedules-modal__close"
+            aria-label="Đóng"
+            (click)="store.closeAssignModal()"
+          >
             <svg lucideX [attr.stroke-width]="2"></svg>
           </button>
         </header>
@@ -244,20 +288,37 @@
             <span>Chọn ca</span>
             <select [value]="store.assignShiftId()" (change)="onAssignShiftChange($event)">
               @for (shift of store.shifts(); track shift.id) {
-                <option [value]="shift.id">{{ shift.name }} · {{ getShiftTimeRange(shift) }}</option>
+                <option [value]="shift.id">
+                  {{ shift.name }} · {{ getShiftTimeRange(shift) }}
+                </option>
               }
             </select>
           </label>
 
           <label class="work-schedules-field">
             <span>Lý do điều chỉnh (Bắt buộc nếu sửa ngày hôm nay/quá khứ)</span>
-            <input type="text" placeholder="Nhập lý do..." [value]="store.reason()" (input)="onReasonInput($event)" />
+            <input
+              type="text"
+              placeholder="Nhập lý do..."
+              [value]="store.reason()"
+              (input)="onReasonInput($event)"
+            />
           </label>
         </div>
 
         <footer class="work-schedules-modal__footer">
-          <button type="button" class="work-schedules-secondary-action" (click)="store.closeAssignModal()">Hủy</button>
-          <button type="submit" class="work-schedules-primary-action" [disabled]="!store.canSubmitAssign()">
+          <button
+            type="button"
+            class="work-schedules-secondary-action"
+            (click)="store.closeAssignModal()"
+          >
+            Hủy
+          </button>
+          <button
+            type="submit"
+            class="work-schedules-primary-action"
+            [disabled]="!store.canSubmitAssign()"
+          >
             @if (store.saving()) {
               <svg lucideLoader2 class="work-schedules-spin" [attr.stroke-width]="2"></svg>
             } @else {
@@ -279,19 +340,30 @@
           <p>Bulk Assign</p>
           <h2>Gán ca hàng loạt</h2>
         </div>
-        <button type="button" class="work-schedules-modal__close" aria-label="Đóng" (click)="store.closeBulkModal()">
+        <button
+          type="button"
+          class="work-schedules-modal__close"
+          aria-label="Đóng"
+          (click)="store.closeBulkModal()"
+        >
           <svg lucideX [attr.stroke-width]="2"></svg>
         </button>
       </header>
 
       <div class="work-schedules-modal__body">
         <label class="work-schedules-check">
-          <input type="checkbox" [checked]="store.bulkDraft().selectAll" (change)="onBulkSelectAllChange($event)" />
+          <input
+            type="checkbox"
+            [checked]="store.bulkDraft().selectAll"
+            (change)="onBulkSelectAllChange($event)"
+          />
           <span>Áp dụng cho tất cả nhân viên theo bộ lọc hiện tại</span>
         </label>
 
         @if (!store.bulkDraft().selectAll) {
-          <p class="work-schedules-helper">Đang chọn {{ store.selectedCount() }} nhân viên trên bảng.</p>
+          <p class="work-schedules-helper">
+            Đang chọn {{ store.selectedCount() }} nhân viên trên bảng.
+          </p>
         }
 
         <label class="work-schedules-field">
@@ -306,23 +378,46 @@
         <div class="work-schedules-field-grid">
           <label class="work-schedules-field">
             <span>Từ ngày</span>
-            <input type="date" [value]="store.bulkDraft().startDate" (input)="onBulkDateInput('startDate', $event)" />
+            <input
+              type="date"
+              [value]="store.bulkDraft().startDate"
+              (input)="onBulkDateInput('startDate', $event)"
+            />
           </label>
           <label class="work-schedules-field">
             <span>Đến ngày</span>
-            <input type="date" [value]="store.bulkDraft().endDate" (input)="onBulkDateInput('endDate', $event)" />
+            <input
+              type="date"
+              [value]="store.bulkDraft().endDate"
+              (input)="onBulkDateInput('endDate', $event)"
+            />
           </label>
         </div>
 
         <label class="work-schedules-field">
           <span>Lý do điều chỉnh (Bắt buộc nếu sửa ngày hôm nay/quá khứ)</span>
-          <input type="text" placeholder="Nhập lý do..." [value]="store.reason()" (input)="onReasonInput($event)" />
+          <input
+            type="text"
+            placeholder="Nhập lý do..."
+            [value]="store.reason()"
+            (input)="onReasonInput($event)"
+          />
         </label>
       </div>
 
       <footer class="work-schedules-modal__footer">
-        <button type="button" class="work-schedules-secondary-action" (click)="store.closeBulkModal()">Hủy</button>
-        <button type="submit" class="work-schedules-primary-action" [disabled]="!store.canSubmitBulk()">
+        <button
+          type="button"
+          class="work-schedules-secondary-action"
+          (click)="store.closeBulkModal()"
+        >
+          Hủy
+        </button>
+        <button
+          type="submit"
+          class="work-schedules-primary-action"
+          [disabled]="!store.canSubmitBulk()"
+        >
           @if (store.saving()) {
             <svg lucideLoader2 class="work-schedules-spin" [attr.stroke-width]="2"></svg>
           } @else {
@@ -343,7 +438,12 @@
           <p>Copy Week</p>
           <h2>Sao chép lịch tuần</h2>
         </div>
-        <button type="button" class="work-schedules-modal__close" aria-label="Đóng" (click)="store.closeCopyModal()">
+        <button
+          type="button"
+          class="work-schedules-modal__close"
+          aria-label="Đóng"
+          (click)="store.closeCopyModal()"
+        >
           <svg lucideX [attr.stroke-width]="2"></svg>
         </button>
       </header>
@@ -352,7 +452,11 @@
         <div class="work-schedules-field-grid">
           <label class="work-schedules-field">
             <span>Tuần nguồn</span>
-            <input type="date" [value]="store.copyDraft().fromWeekStartDate" (input)="onCopyWeekStartInput('fromWeekStartDate', $event)" />
+            <input
+              type="date"
+              [value]="store.copyDraft().fromWeekStartDate"
+              (input)="onCopyWeekStartInput('fromWeekStartDate', $event)"
+            />
           </label>
           <label class="work-schedules-field">
             <span>Đến ngày</span>
@@ -363,7 +467,11 @@
         <div class="work-schedules-field-grid">
           <label class="work-schedules-field">
             <span>Tuần đích</span>
-            <input type="date" [value]="store.copyDraft().toWeekStartDate" (input)="onCopyWeekStartInput('toWeekStartDate', $event)" />
+            <input
+              type="date"
+              [value]="store.copyDraft().toWeekStartDate"
+              (input)="onCopyWeekStartInput('toWeekStartDate', $event)"
+            />
           </label>
           <label class="work-schedules-field">
             <span>Đến ngày</span>
@@ -373,12 +481,23 @@
 
         <label class="work-schedules-field">
           <span>Lý do điều chỉnh (Bắt buộc nếu sửa ngày hôm nay/quá khứ)</span>
-          <input type="text" placeholder="Nhập lý do..." [value]="store.reason()" (input)="onReasonInput($event)" />
+          <input
+            type="text"
+            placeholder="Nhập lý do..."
+            [value]="store.reason()"
+            (input)="onReasonInput($event)"
+          />
         </label>
       </div>
 
       <footer class="work-schedules-modal__footer">
-        <button type="button" class="work-schedules-secondary-action" (click)="store.closeCopyModal()">Hủy</button>
+        <button
+          type="button"
+          class="work-schedules-secondary-action"
+          (click)="store.closeCopyModal()"
+        >
+          Hủy
+        </button>
         <button type="submit" class="work-schedules-primary-action" [disabled]="store.saving()">
           @if (store.saving()) {
             <svg lucideLoader2 class="work-schedules-spin" [attr.stroke-width]="2"></svg>
@@ -394,88 +513,295 @@
 
 @if (store.settingsModalOpen()) {
   <div class="work-schedules-modal-backdrop" role="presentation">
-    <form class="work-schedules-modal work-schedules-modal--wide" (submit)="$event.preventDefault(); store.saveShiftSettings()">
+    <form
+      class="work-schedules-modal work-schedules-modal--wide"
+      (submit)="
+        $event.preventDefault();
+        store.settingsTab() === 'location' ? store.saveLocationPolicy() : store.saveShiftSettings()
+      "
+    >
       <header class="work-schedules-modal__header">
         <div>
           <p>Shift Settings</p>
-          <h2>Cấu hình giờ ca</h2>
+          <h2>Cấu hình ca & check-in</h2>
         </div>
-        <button type="button" class="work-schedules-modal__close" aria-label="Đóng" (click)="store.closeSettingsModal()">
+        <button
+          type="button"
+          class="work-schedules-modal__close"
+          aria-label="Đóng"
+          (click)="closeSettingsModal()"
+        >
           <svg lucideX [attr.stroke-width]="2"></svg>
         </button>
       </header>
 
       <div class="work-schedules-modal__body">
-        <div class="work-schedules-settings-list">
-          @for (shift of store.settingsDraft().shifts; track shift.id) {
-            <article class="work-schedules-settings-row">
-              <span class="work-schedules-shift-card__swatch" [style.background]="shift.colorCode || '#4f46e5'"></span>
-              <div class="work-schedules-settings-row__name">
-                <strong>{{ shift.name }}</strong>
-                <small>{{ getShiftTypeLabel(shift.type) }}</small>
-              </div>
-              <label>
-                <span>Bắt đầu</span>
-                <input type="time" [value]="shift.startTime?.slice(0, 5) || ''" (input)="onShiftTimeInput(shift.id, 'startTime', $event)" />
-              </label>
-              <label>
-                <span>Kết thúc</span>
-                <input type="time" [value]="shift.endTime?.slice(0, 5) || ''" (input)="onShiftTimeInput(shift.id, 'endTime', $event)" />
-              </label>
-            </article>
-          }
+        <div class="work-schedules-settings-tabs" role="tablist">
+          <button
+            type="button"
+            [class.work-schedules-settings-tab--active]="store.settingsTab() === 'shifts'"
+            (click)="onSettingsTabClick('shifts')"
+          >
+            <svg lucideClock3 [attr.stroke-width]="2"></svg>
+            <span>Giờ ca</span>
+          </button>
+          <button
+            type="button"
+            [class.work-schedules-settings-tab--active]="store.settingsTab() === 'location'"
+            (click)="onSettingsTabClick('location')"
+          >
+            <svg lucideMapPin [attr.stroke-width]="2"></svg>
+            <span>Phạm vi check-in</span>
+          </button>
+        </div>
 
-          @if (store.settingsDraft().newShift; as newShift) {
-            <article class="work-schedules-settings-row work-schedules-settings-row--new">
-              <div class="work-schedules-settings-row__color">
-                <input type="color" [value]="newShift.colorCode" (input)="onNewShiftInput('colorCode', $event)" />
-              </div>
-              <label>
-                <span>Tên ca</span>
-                <input type="text" placeholder="Tên ca mới..." [value]="newShift.name" (input)="onNewShiftInput('name', $event)" required />
-              </label>
-              <label>
-                <span>Phân loại</span>
-                <select [value]="newShift.type" (change)="onNewShiftInput('type', $event)">
-                  <option value="NORMAL">Làm việc</option>
-                  <option value="OFF">Nghỉ</option>
+        @if (store.settingsTab() === 'shifts') {
+          <div class="work-schedules-settings-list">
+            @for (shift of store.settingsDraft().shifts; track shift.id) {
+              <article class="work-schedules-settings-row">
+                <span
+                  class="work-schedules-shift-card__swatch"
+                  [style.background]="shift.colorCode || '#4f46e5'"
+                ></span>
+                <div class="work-schedules-settings-row__name">
+                  <strong>{{ shift.name }}</strong>
+                  <small>{{ getShiftTypeLabel(shift.type) }}</small>
+                </div>
+                <label>
+                  <span>Bắt đầu</span>
+                  <input
+                    type="time"
+                    [value]="shift.startTime?.slice(0, 5) || ''"
+                    (input)="onShiftTimeInput(shift.id, 'startTime', $event)"
+                  />
+                </label>
+                <label>
+                  <span>Kết thúc</span>
+                  <input
+                    type="time"
+                    [value]="shift.endTime?.slice(0, 5) || ''"
+                    (input)="onShiftTimeInput(shift.id, 'endTime', $event)"
+                  />
+                </label>
+              </article>
+            }
+
+            @if (store.settingsDraft().newShift; as newShift) {
+              <article class="work-schedules-settings-row work-schedules-settings-row--new">
+                <div class="work-schedules-settings-row__color">
+                  <input
+                    type="color"
+                    [value]="newShift.colorCode"
+                    (input)="onNewShiftInput('colorCode', $event)"
+                  />
+                </div>
+                <label>
+                  <span>Tên ca</span>
+                  <input
+                    type="text"
+                    placeholder="Tên ca mới..."
+                    [value]="newShift.name"
+                    (input)="onNewShiftInput('name', $event)"
+                    required
+                  />
+                </label>
+                <label>
+                  <span>Phân loại</span>
+                  <select [value]="newShift.type" (change)="onNewShiftInput('type', $event)">
+                    <option value="NORMAL">Làm việc</option>
+                    <option value="OFF">Nghỉ</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Bắt đầu</span>
+                  <input
+                    type="time"
+                    [value]="newShift.startTime?.slice(0, 5) || ''"
+                    (input)="onNewShiftTimeInput('startTime', $event)"
+                  />
+                </label>
+                <label>
+                  <span>Kết thúc</span>
+                  <input
+                    type="time"
+                    [value]="newShift.endTime?.slice(0, 5) || ''"
+                    (input)="onNewShiftTimeInput('endTime', $event)"
+                  />
+                </label>
+                <div class="work-schedules-settings-row__actions">
+                  <button
+                    type="button"
+                    class="work-schedules-icon-action"
+                    aria-label="Hủy tạo"
+                    (click)="store.removeNewShiftDraft()"
+                  >
+                    <svg lucideX [attr.stroke-width]="2"></svg>
+                  </button>
+                  <button
+                    type="button"
+                    class="work-schedules-primary-action work-schedules-primary-action--sm"
+                    [disabled]="!newShift.name || store.saving()"
+                    (click)="store.createShift()"
+                  >
+                    <svg lucideCheck [attr.stroke-width]="2"></svg>
+                    Tạo
+                  </button>
+                </div>
+              </article>
+            } @else {
+              <button
+                type="button"
+                class="work-schedules-add-shift-btn"
+                (click)="store.addNewShiftDraft()"
+              >
+                + Thêm ca mới
+              </button>
+            }
+          </div>
+        } @else {
+          <div class="work-schedules-location-settings">
+            <label class="work-schedules-check">
+              <input
+                type="checkbox"
+                [checked]="store.locationPolicyDraft().enabled"
+                (change)="onPolicyEnabledChange($event)"
+              />
+              <span>Bật kiểm tra phạm vi check-in/checkout</span>
+            </label>
+
+            <div class="work-schedules-field-grid">
+              <label class="work-schedules-field">
+                <span>Kiểu vùng</span>
+                <select
+                  [value]="store.locationPolicyDraft().shapeType"
+                  (change)="onShapeTypeChange($event)"
+                >
+                  <option value="CIRCLE">Tâm + bán kính</option>
+                  <option value="POLYGON">Polygon vẽ tay</option>
                 </select>
               </label>
-              <label>
-                <span>Bắt đầu</span>
-                <input type="time" [value]="newShift.startTime?.slice(0, 5) || ''" (input)="onNewShiftTimeInput('startTime', $event)" />
-              </label>
-              <label>
-                <span>Kết thúc</span>
-                <input type="time" [value]="newShift.endTime?.slice(0, 5) || ''" (input)="onNewShiftTimeInput('endTime', $event)" />
-              </label>
-              <div class="work-schedules-settings-row__actions">
-                <button type="button" class="work-schedules-icon-action" aria-label="Hủy tạo" (click)="store.removeNewShiftDraft()">
-                  <svg lucideX [attr.stroke-width]="2"></svg>
-                </button>
-                <button type="button" class="work-schedules-primary-action work-schedules-primary-action--sm" [disabled]="!newShift.name || store.saving()" (click)="store.createShift()">
-                  <svg lucideCheck [attr.stroke-width]="2"></svg>
-                  Tạo
-                </button>
+
+              @if (store.locationPolicyDraft().shapeType === 'CIRCLE') {
+                <label class="work-schedules-field">
+                  <span>Bán kính (m)</span>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    [value]="store.locationPolicyDraft().radiusMeters || 100"
+                    (input)="onCircleRadiusInput($event)"
+                  />
+                </label>
+              } @else {
+                <div class="work-schedules-location-actions">
+                  <button
+                    type="button"
+                    class="work-schedules-secondary-action"
+                    [disabled]="store.locationPolicyDraft().polygonPoints.length === 0"
+                    (click)="undoPolygonPoint()"
+                  >
+                    <svg lucideUndo2 [attr.stroke-width]="2"></svg>
+                    <span>Hoàn tác</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="work-schedules-secondary-action"
+                    [disabled]="store.locationPolicyDraft().polygonPoints.length === 0"
+                    (click)="clearPolygonPoints()"
+                  >
+                    <svg lucideTrash2 [attr.stroke-width]="2"></svg>
+                    <span>Xóa vùng</span>
+                  </button>
+                </div>
+              }
+            </div>
+
+            @if (store.locationPolicyDraft().shapeType === 'CIRCLE') {
+              <div class="work-schedules-field-grid">
+                <label class="work-schedules-field">
+                  <span>Lat</span>
+                  <input
+                    type="number"
+                    min="-90"
+                    max="90"
+                    step="0.000001"
+                    [value]="store.locationPolicyDraft().centerLatitude ?? ''"
+                    (input)="onCircleCoordinateInput('centerLatitude', $event)"
+                  />
+                </label>
+                <label class="work-schedules-field">
+                  <span>Lon</span>
+                  <input
+                    type="number"
+                    min="-180"
+                    max="180"
+                    step="0.000001"
+                    [value]="store.locationPolicyDraft().centerLongitude ?? ''"
+                    (input)="onCircleCoordinateInput('centerLongitude', $event)"
+                  />
+                </label>
               </div>
-            </article>
-          } @else {
-            <button type="button" class="work-schedules-add-shift-btn" (click)="store.addNewShiftDraft()">
-              + Thêm ca mới
-            </button>
-          }
-        </div>
+            }
+
+            @if (!hasMapTilerApiKey) {
+              <div class="work-schedules-map-empty">
+                <strong>Chưa cấu hình MapTiler API key</strong>
+                <span>Thêm key vào environment.mapTilerApiKey để hiển thị bản đồ 2D.</span>
+              </div>
+            } @else {
+              <div class="work-schedules-map-shell">
+                <div
+                  #locationMap
+                  class="work-schedules-leaflet-map"
+                  aria-label="MapTiler check-in boundary map"
+                ></div>
+
+                @if (locatingCurrentPosition()) {
+                  <div class="work-schedules-map-loading" role="status" aria-live="polite">
+                    <svg lucideLoader2 class="work-schedules-spin" [attr.stroke-width]="2"></svg>
+                    <span>Đang lấy tọa độ GPS hiện tại...</span>
+                  </div>
+                }
+              </div>
+            }
+
+            <div class="work-schedules-location-summary">
+              @if (store.locationPolicyDraft().shapeType === 'CIRCLE') {
+                <span
+                  >Tâm: {{ store.locationPolicyDraft().centerLatitude || '--' }},
+                  {{ store.locationPolicyDraft().centerLongitude || '--' }}</span
+                >
+              } @else {
+                <span>Polygon: {{ store.locationPolicyDraft().polygonPoints.length }} điểm</span>
+              }
+            </div>
+          </div>
+        }
       </div>
 
       <footer class="work-schedules-modal__footer">
-        <button type="button" class="work-schedules-secondary-action" (click)="store.closeSettingsModal()">Hủy</button>
-        <button type="submit" class="work-schedules-primary-action" [disabled]="store.saving()">
+        <button
+          type="button"
+          class="work-schedules-secondary-action"
+          (click)="closeSettingsModal()"
+        >
+          Hủy
+        </button>
+        <button
+          type="submit"
+          class="work-schedules-primary-action"
+          [disabled]="
+            store.settingsTab() === 'location' ? !store.canSaveLocationPolicy() : store.saving()
+          "
+        >
           @if (store.saving()) {
             <svg lucideLoader2 class="work-schedules-spin" [attr.stroke-width]="2"></svg>
+          } @else if (store.settingsTab() === 'location') {
+            <svg lucideMapPin [attr.stroke-width]="2"></svg>
           } @else {
             <svg lucideClock3 [attr.stroke-width]="2"></svg>
           }
-          <span>Lưu cấu hình</span>
+          <span>{{ store.settingsTab() === 'location' ? 'Lưu phạm vi' : 'Lưu cấu hình' }}</span>
         </button>
       </footer>
     </form>

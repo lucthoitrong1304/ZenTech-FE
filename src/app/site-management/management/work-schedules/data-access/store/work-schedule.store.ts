@@ -3,6 +3,9 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, forkJoin, pipe, switchMap, tap } from 'rxjs';
 import {
+  AttendanceGeoPoint,
+  AttendanceLocationPolicy,
+  AttendanceLocationShapeType,
   BulkAssignDraft,
   CopyWeekDraft,
   CreateShiftRequest,
@@ -14,7 +17,14 @@ import {
   WorkScheduleQuery,
 } from '../models/work-schedule.models';
 import { WorkScheduleService } from '../services/work-schedule.service';
-import { addWeeks, formatDate, getWeekDates, getWeekEndDate, getWeekStart, parseDate } from './work-schedule-date.utils';
+import {
+  addWeeks,
+  formatDate,
+  getWeekDates,
+  getWeekEndDate,
+  getWeekStart,
+  parseDate,
+} from './work-schedule-date.utils';
 
 const today = new Date();
 const currentWeekStart = formatDate(getWeekStart(today));
@@ -41,6 +51,16 @@ const EMPTY_COPY_DRAFT: CopyWeekDraft = {
   toWeekEndDate: DEFAULT_QUERY.weekEndDate,
 };
 
+const DEFAULT_LOCATION_POLICY: AttendanceLocationPolicy = {
+  id: null,
+  enabled: false,
+  shapeType: 'CIRCLE',
+  centerLatitude: 10.762622,
+  centerLongitude: 106.660172,
+  radiusMeters: 100,
+  polygonPoints: [],
+};
+
 interface WorkScheduleState {
   query: WorkScheduleQuery;
   employees: EmployeeWeeklySchedule[];
@@ -59,7 +79,10 @@ interface WorkScheduleState {
   copyModalOpen: boolean;
   copyDraft: CopyWeekDraft;
   settingsModalOpen: boolean;
+  settingsTab: 'shifts' | 'location';
   settingsDraft: ShiftSettingsDraft;
+  locationPolicy: AttendanceLocationPolicy;
+  locationPolicyDraft: AttendanceLocationPolicy;
   reason: string;
   errorMessage: string | null;
   successMessage: string | null;
@@ -83,7 +106,10 @@ const INITIAL_STATE: WorkScheduleState = {
   copyModalOpen: false,
   copyDraft: EMPTY_COPY_DRAFT,
   settingsModalOpen: false,
+  settingsTab: 'shifts',
   settingsDraft: { shifts: [], newShift: null },
+  locationPolicy: DEFAULT_LOCATION_POLICY,
+  locationPolicyDraft: DEFAULT_LOCATION_POLICY,
   reason: '',
   errorMessage: null,
   successMessage: null,
@@ -91,27 +117,63 @@ const INITIAL_STATE: WorkScheduleState = {
 
 export const WorkScheduleStore = signalStore(
   withState<WorkScheduleState>(INITIAL_STATE),
-  withComputed(({ query, employees, shifts, totalElements, totalPages, selectedEmployeeIds, saving, selectedCell, assignShiftId, bulkDraft }) => ({
-    weekDates: computed(() => getWeekDates(query().weekStartDate)),
-    pageStart: computed(() => (totalElements() === 0 ? 0 : query().page * query().size + 1)),
-    pageEnd: computed(() => Math.min((query().page + 1) * query().size, totalElements())),
-    canGoPrevious: computed(() => query().page > 0),
-    canGoNext: computed(() => query().page + 1 < totalPages()),
-    hasEmployees: computed(() => employees().length > 0),
-    hasShifts: computed(() => shifts().length > 0),
-    allVisibleSelected: computed(() => {
-      const ids = employees().map(employee => employee.employeeId);
+  withComputed(
+    ({
+      query,
+      employees,
+      shifts,
+      totalElements,
+      totalPages,
+      selectedEmployeeIds,
+      saving,
+      selectedCell,
+      assignShiftId,
+      bulkDraft,
+      locationPolicyDraft,
+    }) => ({
+      weekDates: computed(() => getWeekDates(query().weekStartDate)),
+      pageStart: computed(() => (totalElements() === 0 ? 0 : query().page * query().size + 1)),
+      pageEnd: computed(() => Math.min((query().page + 1) * query().size, totalElements())),
+      canGoPrevious: computed(() => query().page > 0),
+      canGoNext: computed(() => query().page + 1 < totalPages()),
+      hasEmployees: computed(() => employees().length > 0),
+      hasShifts: computed(() => shifts().length > 0),
+      allVisibleSelected: computed(() => {
+        const ids = employees().map((employee) => employee.employeeId);
 
-      return ids.length > 0 && ids.every(id => selectedEmployeeIds().includes(id));
-    }),
-    selectedCount: computed(() => selectedEmployeeIds().length),
-    canSubmitAssign: computed(() => !!selectedCell() && !!assignShiftId() && !saving()),
-    canSubmitBulk: computed(() => {
-      const draft = bulkDraft();
+        return ids.length > 0 && ids.every((id) => selectedEmployeeIds().includes(id));
+      }),
+      selectedCount: computed(() => selectedEmployeeIds().length),
+      canSubmitAssign: computed(() => !!selectedCell() && !!assignShiftId() && !saving()),
+      canSubmitBulk: computed(() => {
+        const draft = bulkDraft();
 
-      return !!draft.shiftId && !!draft.startDate && !!draft.endDate && (draft.selectAll || selectedEmployeeIds().length > 0) && !saving();
+        return (
+          !!draft.shiftId &&
+          !!draft.startDate &&
+          !!draft.endDate &&
+          (draft.selectAll || selectedEmployeeIds().length > 0) &&
+          !saving()
+        );
+      }),
+      canSaveLocationPolicy: computed(() => {
+        const policy = locationPolicyDraft();
+        if (!policy.enabled) {
+          return !saving();
+        }
+        if (policy.shapeType === 'CIRCLE') {
+          return (
+            isValidLatitude(policy.centerLatitude) &&
+            isValidLongitude(policy.centerLongitude) &&
+            !!policy.radiusMeters &&
+            policy.radiusMeters > 0 &&
+            !saving()
+          );
+        }
+        return policy.polygonPoints.length >= 3 && !saving();
+      }),
     }),
-  })),
+  ),
   withMethods((store, workScheduleService = inject(WorkScheduleService)) => {
     const applyPage = (page: {
       employees: EmployeeWeeklySchedule[];
@@ -142,12 +204,17 @@ export const WorkScheduleStore = signalStore(
         switchMap(() =>
           forkJoin({
             shifts: workScheduleService.getShifts(),
+            locationPolicy: workScheduleService.getLocationPolicy(),
             page: workScheduleService.getWeeklySchedules(store.query()),
           }).pipe(
             tap({
-              next: result => {
+              next: (result) => {
                 applyPage(result.page);
-                patchState(store, { shifts: result.shifts });
+                patchState(store, {
+                  shifts: result.shifts,
+                  locationPolicy: result.locationPolicy,
+                  locationPolicyDraft: cloneLocationPolicy(result.locationPolicy),
+                });
               },
               error: () =>
                 patchState(store, {
@@ -160,10 +227,10 @@ export const WorkScheduleStore = signalStore(
                   errorMessage: 'Khong the tai lich lam viec.',
                 }),
             }),
-            catchError(() => EMPTY)
-          )
-        )
-      )
+            catchError(() => EMPTY),
+          ),
+        ),
+      ),
     );
 
     const reloadSchedules = (): void => {
@@ -172,14 +239,14 @@ export const WorkScheduleStore = signalStore(
         .getWeeklySchedules(store.query())
         .pipe(
           tap({
-            next: page => applyPage(page),
+            next: (page) => applyPage(page),
             error: () =>
               patchState(store, {
                 loading: false,
                 errorMessage: 'Khong the tai lai lich lam viec.',
               }),
           }),
-          catchError(() => EMPTY)
+          catchError(() => EMPTY),
         )
         .subscribe();
     };
@@ -222,10 +289,10 @@ export const WorkScheduleStore = signalStore(
                     errorMessage: 'Khong the cap nhat ca lam viec.',
                   }),
               }),
-              catchError(() => EMPTY)
+              catchError(() => EMPTY),
             );
-        })
-      )
+        }),
+      ),
     );
 
     const bulkAssign = rxMethod<void>(
@@ -234,7 +301,12 @@ export const WorkScheduleStore = signalStore(
           const draft = store.bulkDraft();
           const employeeIds = draft.selectAll ? [] : store.selectedEmployeeIds();
 
-          if (!draft.shiftId || !draft.startDate || !draft.endDate || (!draft.selectAll && employeeIds.length === 0)) {
+          if (
+            !draft.shiftId ||
+            !draft.startDate ||
+            !draft.endDate ||
+            (!draft.selectAll && employeeIds.length === 0)
+          ) {
             patchState(store, { errorMessage: 'Vui long chon nhan vien, ca va khoang ngay.' });
             return EMPTY;
           }
@@ -256,7 +328,11 @@ export const WorkScheduleStore = signalStore(
                   patchState(store, {
                     saving: false,
                     bulkModalOpen: false,
-                    bulkDraft: { ...EMPTY_BULK_DRAFT, startDate: store.query().weekStartDate, endDate: store.query().weekEndDate },
+                    bulkDraft: {
+                      ...EMPTY_BULK_DRAFT,
+                      startDate: store.query().weekStartDate,
+                      endDate: store.query().weekEndDate,
+                    },
                     selectedEmployeeIds: draft.selectAll ? [] : store.selectedEmployeeIds(),
                     successMessage: 'Da gan ca hang loat.',
                   });
@@ -268,10 +344,10 @@ export const WorkScheduleStore = signalStore(
                     errorMessage: 'Khong the gan ca hang loat.',
                   }),
               }),
-              catchError(() => EMPTY)
+              catchError(() => EMPTY),
             );
-        })
-      )
+        }),
+      ),
     );
 
     const copyWeek = rxMethod<void>(
@@ -279,36 +355,43 @@ export const WorkScheduleStore = signalStore(
         switchMap(() => {
           const draft = store.copyDraft();
 
-          if (!draft.fromWeekStartDate || !draft.fromWeekEndDate || !draft.toWeekStartDate || !draft.toWeekEndDate) {
+          if (
+            !draft.fromWeekStartDate ||
+            !draft.fromWeekEndDate ||
+            !draft.toWeekStartDate ||
+            !draft.toWeekEndDate
+          ) {
             patchState(store, { errorMessage: 'Vui long chon tuan nguon va tuan dich.' });
             return EMPTY;
           }
 
           patchState(store, { saving: true, errorMessage: null, successMessage: null });
 
-          return workScheduleService.copyWeek({
-            ...draft,
-            reason: store.reason(),
-          }).pipe(
-            tap({
-              next: () => {
-                patchState(store, {
-                  saving: false,
-                  copyModalOpen: false,
-                  successMessage: 'Da sao chep lich tuan.',
-                });
-                reloadSchedules();
-              },
-              error: () =>
-                patchState(store, {
-                  saving: false,
-                  errorMessage: 'Khong the sao chep lich tuan.',
-                }),
-            }),
-            catchError(() => EMPTY)
-          );
-        })
-      )
+          return workScheduleService
+            .copyWeek({
+              ...draft,
+              reason: store.reason(),
+            })
+            .pipe(
+              tap({
+                next: () => {
+                  patchState(store, {
+                    saving: false,
+                    copyModalOpen: false,
+                    successMessage: 'Da sao chep lich tuan.',
+                  });
+                  reloadSchedules();
+                },
+                error: () =>
+                  patchState(store, {
+                    saving: false,
+                    errorMessage: 'Khong the sao chep lich tuan.',
+                  }),
+              }),
+              catchError(() => EMPTY),
+            );
+        }),
+      ),
     );
 
     const saveShiftSettings = rxMethod<void>(
@@ -320,7 +403,7 @@ export const WorkScheduleStore = signalStore(
 
           return workScheduleService.updateShifts(shifts).pipe(
             tap({
-              next: updatedShifts => {
+              next: (updatedShifts) => {
                 patchState(store, {
                   shifts: updatedShifts,
                   saving: false,
@@ -336,10 +419,39 @@ export const WorkScheduleStore = signalStore(
                   errorMessage: 'Khong the cap nhat cau hinh ca.',
                 }),
             }),
-            catchError(() => EMPTY)
+            catchError(() => EMPTY),
           );
-        })
-      )
+        }),
+      ),
+    );
+
+    const saveLocationPolicy = rxMethod<void>(
+      pipe(
+        switchMap(() => {
+          const policy = normalizeLocationPolicyDraft(store.locationPolicyDraft());
+
+          patchState(store, { saving: true, errorMessage: null, successMessage: null });
+
+          return workScheduleService.updateLocationPolicy(policy).pipe(
+            tap({
+              next: (updatedPolicy) => {
+                patchState(store, {
+                  locationPolicy: updatedPolicy,
+                  locationPolicyDraft: cloneLocationPolicy(updatedPolicy),
+                  saving: false,
+                  successMessage: 'Da cap nhat pham vi check-in.',
+                });
+              },
+              error: () =>
+                patchState(store, {
+                  saving: false,
+                  errorMessage: 'Khong the cap nhat pham vi check-in.',
+                }),
+            }),
+            catchError(() => EMPTY),
+          );
+        }),
+      ),
     );
 
     const createShift = rxMethod<void>(
@@ -357,10 +469,10 @@ export const WorkScheduleStore = signalStore(
                 patchState(store, {
                   shifts: [...currentShifts, createdShift],
                   saving: false,
-                  settingsDraft: { 
-                    ...store.settingsDraft(), 
+                  settingsDraft: {
+                    ...store.settingsDraft(),
                     shifts: [...store.settingsDraft().shifts, createdShift],
-                    newShift: null 
+                    newShift: null,
                   },
                   successMessage: 'Đã tạo ca làm việc mới.',
                 });
@@ -372,10 +484,10 @@ export const WorkScheduleStore = signalStore(
                   errorMessage: 'Không thể tạo ca làm việc.',
                 }),
             }),
-            catchError(() => EMPTY)
+            catchError(() => EMPTY),
           );
-        })
-      )
+        }),
+      ),
     );
 
     return {
@@ -384,6 +496,7 @@ export const WorkScheduleStore = signalStore(
       bulkAssign,
       copyWeek,
       saveShiftSettings,
+      saveLocationPolicy,
       createShift,
       setKeyword(keyword: string): void {
         patchState(store, {
@@ -456,11 +569,11 @@ export const WorkScheduleStore = signalStore(
         patchState(store, { selectedEmployeeIds: Array.from(selected) });
       },
       toggleAllVisible(): void {
-        const visibleIds = store.employees().map(employee => employee.employeeId);
+        const visibleIds = store.employees().map((employee) => employee.employeeId);
         const selected = new Set(store.selectedEmployeeIds());
-        const allSelected = visibleIds.length > 0 && visibleIds.every(id => selected.has(id));
+        const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
 
-        visibleIds.forEach(id => {
+        visibleIds.forEach((id) => {
           if (allSelected) {
             selected.delete(id);
           } else {
@@ -470,7 +583,11 @@ export const WorkScheduleStore = signalStore(
 
         patchState(store, { selectedEmployeeIds: Array.from(selected) });
       },
-      openAssignModal(employee: EmployeeWeeklySchedule, workDate: string, shift: DailyShift | null): void {
+      openAssignModal(
+        employee: EmployeeWeeklySchedule,
+        workDate: string,
+        shift: DailyShift | null,
+      ): void {
         patchState(store, {
           selectedCell: {
             employeeId: employee.employeeId,
@@ -478,7 +595,11 @@ export const WorkScheduleStore = signalStore(
             workDate,
             shift,
           },
-          assignShiftId: shift?.shiftId ?? store.shifts().find(item => item.isDefault)?.id ?? store.shifts()[0]?.id ?? '',
+          assignShiftId:
+            shift?.shiftId ??
+            store.shifts().find((item) => item.isDefault)?.id ??
+            store.shifts()[0]?.id ??
+            '',
           assignModalOpen: true,
         });
       },
@@ -507,7 +628,8 @@ export const WorkScheduleStore = signalStore(
             ...EMPTY_BULK_DRAFT,
             startDate: store.query().weekStartDate,
             endDate: store.query().weekEndDate,
-            shiftId: store.shifts().find(item => item.isDefault)?.id ?? store.shifts()[0]?.id ?? '',
+            shiftId:
+              store.shifts().find((item) => item.isDefault)?.id ?? store.shifts()[0]?.id ?? '',
           },
         });
       },
@@ -568,10 +690,12 @@ export const WorkScheduleStore = signalStore(
       openSettingsModal(): void {
         patchState(store, {
           settingsModalOpen: true,
+          settingsTab: 'shifts',
           settingsDraft: {
-            shifts: store.shifts().map(shift => ({ ...shift })),
+            shifts: store.shifts().map((shift) => ({ ...shift })),
             newShift: null,
           },
+          locationPolicyDraft: cloneLocationPolicy(store.locationPolicy()),
         });
       },
       closeSettingsModal(): void {
@@ -581,20 +705,28 @@ export const WorkScheduleStore = signalStore(
 
         patchState(store, {
           settingsModalOpen: false,
+          settingsTab: 'shifts',
           settingsDraft: { shifts: [], newShift: null },
+          locationPolicyDraft: cloneLocationPolicy(store.locationPolicy()),
         });
       },
-      updateShiftDraft(shiftId: string, patch: Partial<Pick<Shift, 'startTime' | 'endTime'>>): void {
+      setSettingsTab(tab: 'shifts' | 'location'): void {
+        patchState(store, { settingsTab: tab });
+      },
+      updateShiftDraft(
+        shiftId: string,
+        patch: Partial<Pick<Shift, 'startTime' | 'endTime'>>,
+      ): void {
         patchState(store, {
           settingsDraft: {
             ...store.settingsDraft(),
-            shifts: store.settingsDraft().shifts.map(shift =>
+            shifts: store.settingsDraft().shifts.map((shift) =>
               shift.id === shiftId
                 ? {
                     ...shift,
                     ...patch,
                   }
-                : shift
+                : shift,
             ),
           },
         });
@@ -636,9 +768,104 @@ export const WorkScheduleStore = signalStore(
           });
         }
       },
+      updateLocationPolicyDraft(patch: Partial<AttendanceLocationPolicy>): void {
+        patchState(store, {
+          locationPolicyDraft: {
+            ...store.locationPolicyDraft(),
+            ...patch,
+          },
+        });
+      },
+      setLocationShapeType(shapeType: AttendanceLocationShapeType): void {
+        const current = store.locationPolicyDraft();
+        patchState(store, {
+          locationPolicyDraft: {
+            ...current,
+            shapeType,
+          },
+        });
+      },
+      setCircleCenter(point: AttendanceGeoPoint): void {
+        patchState(store, {
+          locationPolicyDraft: {
+            ...store.locationPolicyDraft(),
+            centerLatitude: point.lat,
+            centerLongitude: point.lng,
+          },
+        });
+      },
+      setCircleCoordinate(field: 'centerLatitude' | 'centerLongitude', value: number | null): void {
+        patchState(store, {
+          locationPolicyDraft: {
+            ...store.locationPolicyDraft(),
+            [field]: value,
+          },
+        });
+      },
+      setCircleRadius(radiusMeters: number): void {
+        patchState(store, {
+          locationPolicyDraft: {
+            ...store.locationPolicyDraft(),
+            radiusMeters: Math.max(1, radiusMeters),
+          },
+        });
+      },
+      addPolygonPoint(point: AttendanceGeoPoint): void {
+        patchState(store, {
+          locationPolicyDraft: {
+            ...store.locationPolicyDraft(),
+            polygonPoints: [...store.locationPolicyDraft().polygonPoints, point],
+          },
+        });
+      },
+      undoPolygonPoint(): void {
+        patchState(store, {
+          locationPolicyDraft: {
+            ...store.locationPolicyDraft(),
+            polygonPoints: store.locationPolicyDraft().polygonPoints.slice(0, -1),
+          },
+        });
+      },
+      clearPolygonPoints(): void {
+        patchState(store, {
+          locationPolicyDraft: {
+            ...store.locationPolicyDraft(),
+            polygonPoints: [],
+          },
+        });
+      },
       clearMessages(): void {
         patchState(store, { errorMessage: null, successMessage: null });
       },
     };
-  })
+  }),
 );
+
+function cloneLocationPolicy(policy: AttendanceLocationPolicy): AttendanceLocationPolicy {
+  return {
+    ...policy,
+    polygonPoints: policy.polygonPoints.map((point) => ({ ...point })),
+  };
+}
+
+function normalizeLocationPolicyDraft(policy: AttendanceLocationPolicy): AttendanceLocationPolicy {
+  const normalized = cloneLocationPolicy(policy);
+  normalized.radiusMeters = normalized.radiusMeters ?? 100;
+  normalized.polygonPoints = normalized.polygonPoints.filter(
+    (point) => Number.isFinite(point.lat) && Number.isFinite(point.lng),
+  );
+
+  if (normalized.shapeType === 'CIRCLE') {
+    normalized.polygonPoints = [];
+  }
+
+  return normalized;
+}
+
+function isValidLatitude(value: number | null): value is number {
+  return value !== null && Number.isFinite(value) && value >= -90 && value <= 90;
+}
+
+function isValidLongitude(value: number | null): value is number {
+  return value !== null && Number.isFinite(value) && value >= -180 && value <= 180;
+}

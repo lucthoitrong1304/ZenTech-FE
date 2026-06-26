@@ -352,7 +352,7 @@ export class ManagementLayoutComponent {
     this.checkinDialogVisible.set(false);
   }
 
-  protected handleCheckinSuccess(data: FaceCheckinData): void {
+  protected async handleCheckinSuccess(data: FaceCheckinData): Promise<void> {
     if (this.checkinSubmitting()) {
       return;
     }
@@ -360,8 +360,22 @@ export class ManagementLayoutComponent {
     this.checkinDialogVisible.set(false);
     this.checkinSubmitting.set(true);
 
+    let position: GeolocationPosition;
+    try {
+      position = await readCurrentPosition();
+    } catch {
+      this.checkinSubmitting.set(false);
+      this.toastService.error('Không thể lấy vị trí hiện tại. Vui lòng cấp quyền định vị để check-in.');
+      return;
+    }
+
     this.attendanceService
-      .checkIn({ faceDescriptor: Array.from(data.descriptor) })
+      .checkIn({
+        faceDescriptor: Array.from(data.descriptor),
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracyMeters: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
+      })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.checkinSubmitting.set(false))
@@ -462,6 +476,20 @@ function readCheckinError(error: unknown): string {
   }
 
   return 'Check-in thất bại. Vui lòng thử lại.';
+}
+
+function readCurrentPosition(): Promise<GeolocationPosition> {
+  if (!navigator.geolocation) {
+    return Promise.reject(new Error('Geolocation is not supported.'));
+  }
+
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      maximumAge: 30_000,
+      timeout: 15_000,
+    });
+  });
 }
 
 function hasApiMessage(value: unknown): value is { message: string } {

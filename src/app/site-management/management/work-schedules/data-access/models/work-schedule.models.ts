@@ -121,3 +121,22 @@ export interface CreateShiftRequest {
   isDefault: boolean;
   type: ShiftType;
 }
+
+export type AttendanceLocationShapeType = 'CIRCLE' | 'POLYGON';
+
+export interface AttendanceGeoPoint {
+  lat: number;
+  lng: number;
+}
+
+export interface AttendanceLocationPolicy {
+  id: string | null;
+  enabled: boolean;
+  shapeType: AttendanceLocationShapeType;
+  centerLatitude: number | null;
+  centerLongitude: number | null;
+  radiusMeters: number | null;
+  polygonPoints: AttendanceGeoPoint[];
+  updatedAt?: string | null;
+  updatedBy?: string | null;
+}

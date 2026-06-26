@@ -4,6 +4,7 @@ import { ApiService } from '../../../../../core/api/api.service';
 import { environment } from '../../../../../../environments/environment';
 import {
   ApiResponseDto,
+  AttendanceLocationPolicy,
   AssignShiftRequest,
   BulkShiftUpdateRequest,
   CopyWeekRequest,
@@ -20,6 +21,7 @@ import {
 export class WorkScheduleService {
   private readonly apiService = inject(ApiService);
   private readonly shiftsBaseUrl = `${environment.apiBaseUrl}/shifts`;
+  private readonly locationPolicyUrl = `${environment.apiBaseUrl}/attendance/location-policy`;
 
   getShifts(): Observable<Shift[]> {
     return this.apiService
@@ -37,6 +39,21 @@ export class WorkScheduleService {
     return this.apiService
       .put<Shift[], ApiResponseDto<Shift[]>>(this.shiftsBaseUrl, shifts)
       .pipe(map(response => unwrapApiResponse(response)));
+  }
+
+  getLocationPolicy(): Observable<AttendanceLocationPolicy> {
+    return this.apiService
+      .get<ApiResponseDto<AttendanceLocationPolicy>>(this.locationPolicyUrl)
+      .pipe(map(response => normalizeLocationPolicy(unwrapApiResponse(response))));
+  }
+
+  updateLocationPolicy(payload: AttendanceLocationPolicy): Observable<AttendanceLocationPolicy> {
+    return this.apiService
+      .put<AttendanceLocationPolicy, ApiResponseDto<AttendanceLocationPolicy>>(
+        this.locationPolicyUrl,
+        payload
+      )
+      .pipe(map(response => normalizeLocationPolicy(unwrapApiResponse(response))));
   }
 
   getWeeklySchedules(query: WorkScheduleQuery): Observable<WorkSchedulePage> {
@@ -101,5 +118,19 @@ function toWorkSchedulePage(response: WeeklyScheduleResponse): WorkSchedulePage 
     totalElements: employeesPage.totalElements,
     totalPages: employeesPage.totalPages,
     last: employeesPage.last,
+  };
+}
+
+function normalizeLocationPolicy(policy: AttendanceLocationPolicy): AttendanceLocationPolicy {
+  return {
+    id: policy.id ?? null,
+    enabled: !!policy.enabled,
+    shapeType: policy.shapeType ?? 'CIRCLE',
+    centerLatitude: policy.centerLatitude ?? null,
+    centerLongitude: policy.centerLongitude ?? null,
+    radiusMeters: policy.radiusMeters ?? 100,
+    polygonPoints: policy.polygonPoints ?? [],
+    updatedAt: policy.updatedAt ?? null,
+    updatedBy: policy.updatedBy ?? null,
   };
 }
