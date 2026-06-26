@@ -35,6 +35,11 @@ export enum IncidentSeverity {
   CRITICAL = 'CRITICAL',
 }
 
+export enum IncidentCreationSource {
+  AUTO = 'AUTO',
+  MANUAL = 'MANUAL',
+}
+
 export interface SystemIncident {
   id: string;
   code: string;
@@ -68,6 +73,8 @@ export interface SystemIncident {
     userEmail: string | null;
   }[];
   images?: string;
+  issueSignature?: string;
+  creationSource?: IncidentCreationSource;
 }
 
 export enum TicketPriority {
@@ -224,6 +231,13 @@ export interface PaginatedResult<T> {
   size: number;
   page: number;
   last: boolean;
+}
+
+export interface IssueIncidentLink {
+  incidentId: string;
+  incidentCode: string;
+  creationSource: IncidentCreationSource;
+  status: IncidentStatus;
 }
 
 export interface ApiResponse<T> {

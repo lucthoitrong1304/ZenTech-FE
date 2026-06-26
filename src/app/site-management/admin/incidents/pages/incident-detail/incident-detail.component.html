@@ -21,11 +21,13 @@
           <span class="detail-badge-id">{{ inc.code }}</span>
           <h2 class="detail-title">{{ inc.errorMessage || 'Lỗi hệ thống không xác định' }}</h2>
           <div class="detail-route-info">
-            <span class="http-method-badge">{{ inc.httpMethod }}</span>
-            <code class="api-path-text">{{ inc.apiPath }}</code>
-            <span class="status-code-badge" [class.status-code-error]="inc.statusCode >= 500">
-              HTTP {{ inc.statusCode }}
-            </span>
+            <span class="http-method-badge">{{ displayHttpMethod(inc) }}</span>
+            <code class="api-path-text">{{ displayApiPath(inc) }}</code>
+            @if (displayStatusCode(inc); as statusCode) {
+              <span class="status-code-badge" [class.status-code-error]="statusCode >= 500">
+                HTTP {{ statusCode }}
+              </span>
+            }
           </div>
 
           <!-- Affected User Profiles — Ranked Impact View -->
@@ -126,9 +128,18 @@
         </div>
 
         <div class="detail-header-actions">
+          @if (hasLinkedIssue(inc)) {
+            <div class="linked-issue-badge">
+              <span class="linked-entity-label">ISSUE LIÊN KẾT</span>
+              <button type="button" (click)="navigateToLinkedIssue(inc)" class="linked-issue-code">
+                <svg lucideEye [attr.stroke-width]="2"></svg>
+                <span>Xem Issue</span>
+              </button>
+            </div>
+          }
           @if (inc.ticketCode) {
             <div class="linked-ticket-badge">
-              <span class="linked-tck-label">TICKET LIÊN KẾT</span>
+              <span class="linked-entity-label">TICKET LIÊN KẾT</span>
               <a routerLink="/admin/tickets" class="linked-tck-code">{{ inc.ticketCode }}</a>
             </div>
           } @else {

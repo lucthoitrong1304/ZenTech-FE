@@ -1,17 +1,38 @@
+import { HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../../../core/api/api.service';
+import { SKIP_CLIENT_LOG, SKIP_GLOBAL_ERROR } from '../../../../../core/tokens/api-context.token';
 import { environment } from '../../../../../../environments/environment';
-import { SystemIncident, IncidentStatus, IncidentSeverity, PaginatedResult, ApiResponse, AiAnalysis } from '../../../data-access/models/admin.models';
+import {
+  SystemIncident,
+  IncidentStatus,
+  IncidentSeverity,
+  PaginatedResult,
+  ApiResponse,
+  AiAnalysis,
+  IssueIncidentLink
+} from '../../../data-access/models/admin.models';
+
+export interface IncidentFromIssuePayload {
+  issueSignature: string;
+  title: string;
+  serviceName?: string;
+  apiPath?: string;
+  httpMethod?: string;
+  statusCode?: number;
+  errorMessage?: string;
+  traceId?: string;
+  stackTrace?: string;
+  occurredAt?: string;
+  severity: IncidentSeverity;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AdminIncidentsService {
   private readonly apiService = inject(ApiService);
   private readonly baseUrl = `${environment.apiBaseUrl}/admin/incidents`;
 
-  /**
-   * Lấy danh sách sự cố từ MySQL có phân trang và bộ lọc
-   */
   getIncidents(params: {
     page: number;
     size: number;
@@ -23,7 +44,7 @@ export class AdminIncidentsService {
     search?: string;
   }): Observable<ApiResponse<PaginatedResult<SystemIncident>>> {
     let url = `${this.baseUrl}?page=${params.page}&size=${params.size}`;
-    
+
     if (params.status && params.status !== 'ALL' as any) {
       url += `&status=${params.status}`;
     }
@@ -46,27 +67,30 @@ export class AdminIncidentsService {
     if (params.search && params.search.trim()) {
       url += `&search=${encodeURIComponent(params.search.trim())}`;
     }
-    
+
     return this.apiService.get<ApiResponse<PaginatedResult<SystemIncident>>>(url);
   }
 
-  /**
-   * Xem chi tiết sự cố theo ID
-   */
   getIncidentById(id: string): Observable<ApiResponse<SystemIncident>> {
     return this.apiService.get<ApiResponse<SystemIncident>>(`${this.baseUrl}/${id}`);
   }
 
-  /**
-   * Tạo thủ công sự cố
-   */
   createIncident(payload: Partial<SystemIncident>): Observable<ApiResponse<SystemIncident>> {
     return this.apiService.post<Partial<SystemIncident>, ApiResponse<SystemIncident>>(this.baseUrl, payload);
   }
 
-  /**
-   * Cập nhật trạng thái/mức độ/người phụ trách sự cố
-   */
+  createIncidentFromIssue(payload: IncidentFromIssuePayload): Observable<ApiResponse<SystemIncident>> {
+    return this.apiService.post<IncidentFromIssuePayload, ApiResponse<SystemIncident>>(`${this.baseUrl}/from-issue`, payload);
+  }
+
+  getIssueLinks(signatures: string[]): Observable<ApiResponse<Record<string, IssueIncidentLink>>> {
+    return this.apiService.post<{ signatures: string[] }, ApiResponse<Record<string, IssueIncidentLink>>>(
+      `${this.baseUrl}/issue-links`,
+      { signatures },
+      { context: new HttpContext().set(SKIP_GLOBAL_ERROR, true).set(SKIP_CLIENT_LOG, true) }
+    );
+  }
+
   updateIncidentStatus(
     id: string,
     payload: { status?: IncidentStatus; severity?: IncidentSeverity; assignee?: string }
@@ -77,9 +101,6 @@ export class AdminIncidentsService {
     );
   }
 
-  /**
-   * Gọi AI phân tích sự cố
-   */
   analyzeIncident(id: string): Observable<ApiResponse<AiAnalysis>> {
     return this.apiService.post<any, ApiResponse<AiAnalysis>>(`${this.baseUrl}/${id}/analyze`, {});
   }

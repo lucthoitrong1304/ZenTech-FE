@@ -548,7 +548,9 @@ export const AdminStore = signalStore(
                   errorMessage: inc.errorMessage,
                   stackTrace: inc.stackTrace,
                   aiAnalysis: inc.aiAnalysis,
-                  ticketCode: inc.ticketCode
+                  ticketCode: inc.ticketCode,
+                  issueSignature: inc.issueSignature,
+                  creationSource: inc.creationSource
                 }));
                 patchState(store, {
                   incidents: mappedIncidents,
@@ -689,11 +691,11 @@ export const AdminStore = signalStore(
         )
       ),
 
-      loadLogs: rxMethod<{ level: string; search: string; traceId: string; startTime?: number; endTime?: number }>(
+      loadLogs: rxMethod<{ level: string; search: string; traceId: string; startTime?: number; endTime?: number; skipGlobalError?: boolean }>(
         pipe(
           tap(() => patchState(store, { isLoadingLogs: true })),
-          switchMap(({ level, search, traceId, startTime, endTime }) =>
-            adminLogsService.getLogs(level, search, traceId, 500, startTime, endTime).pipe(
+          switchMap(({ level, search, traceId, startTime, endTime, skipGlobalError }) =>
+            adminLogsService.getLogs(level, search, traceId, 500, startTime, endTime, !!skipGlobalError).pipe(
               tap((logs) => {
                 patchState(store, { logs, isLoadingLogs: false });
               }),
@@ -708,12 +710,12 @@ export const AdminStore = signalStore(
         )
       ),
 
-      loadIssueLogs: rxMethod<{ search: string; traceId: string; startTime?: number; endTime?: number }>(
+      loadIssueLogs: rxMethod<{ search: string; traceId: string; startTime?: number; endTime?: number; skipGlobalError?: boolean }>(
         pipe(
-          switchMap(({ search, traceId, startTime, endTime }) =>
+          switchMap(({ search, traceId, startTime, endTime, skipGlobalError }) =>
             forkJoin([
-              adminLogsService.getLogs(LogLevel.WARN, search, traceId, 500, startTime, endTime),
-              adminLogsService.getLogs(LogLevel.ERROR, search, traceId, 500, startTime, endTime),
+              adminLogsService.getLogs(LogLevel.WARN, search, traceId, 500, startTime, endTime, !!skipGlobalError),
+              adminLogsService.getLogs(LogLevel.ERROR, search, traceId, 500, startTime, endTime, !!skipGlobalError),
             ]).pipe(
               tap(([warnLogs, errorLogs]) => {
                 patchState(store, { issueLogs: [...warnLogs, ...errorLogs] });
