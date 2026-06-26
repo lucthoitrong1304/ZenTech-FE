@@ -1,4 +1,9 @@
-import { HttpErrorResponse, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpHandlerFn,
+  HttpInterceptorFn,
+  HttpRequest,
+} from '@angular/common/http';
 import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
@@ -56,26 +61,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           },
         );
 
-        return handle401Error(req, next, authRefreshService, authStorageService, router);
+        return handle401Error(req, next, authRefreshService, authStorageService, router, injector);
       }
-
-      // Xử lý riêng cho 403 Forbidden (Không có quyền)
-      if (error.status === 403) {
-        const currentUrl = router.url;
-        if (currentUrl.startsWith('/management') || currentUrl.startsWith('/admin')) {
-          // Cập nhật lại role của user thành CUSTOMER vì đã bị chặn truy cập quản trị
-          try {
-            const authSessionStore = injector.get(AuthSessionStore);
-            authSessionStore.updateUserRoles(['ROLE_CUSTOMER']);
-          } catch (e) {
-            console.error('Không thể cập nhật vai trò người dùng trong interceptor:', e);
-          }
-          // Chuyển hướng người dùng về trang chủ
-          router.navigate(['/']);
-        }
-      }
-
-      // Xử lý các lỗi hệ thống/mạng khác
       let shouldRedirect = false;
       let title = 'Lỗi máy chủ';
       let message = 'Máy chủ đang gặp sự cố. Vui lòng thử lại sau.';
@@ -87,7 +74,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         message = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại đường truyền mạng của bạn.';
       } else if ([500, 502, 503, 504].includes(error.status)) {
         shouldRedirect = true;
-        message = 'Hệ thống đang gặp gián đoạn (Server Error). Kỹ thuật viên đang xử lý, vui lòng quay lại sau.';
+        message =
+          'Hệ thống đang gặp gián đoạn (Server Error). Kỹ thuật viên đang xử lý, vui lòng quay lại sau.';
       }
 
       if (shouldRedirect) {
@@ -98,14 +86,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       return throwError(() => error);
-    })
+    }),
   );
 };
 
 function logHttpFailure(
   clientLogService: ClientLogService,
   req: HttpRequest<unknown>,
-  error: HttpErrorResponse
+  error: HttpErrorResponse,
 ): void {
   if (req.url.includes('/logs/client')) {
     return;
@@ -180,7 +168,8 @@ function handle401Error(
   next: HttpHandlerFn,
   authRefreshService: AuthRefreshService,
   authStorageService: AuthStorageService,
-  router: Router
+  router: Router,
+  injector: Injector,
 ) {
   if (!isRefreshing) {
     isRefreshing = true;
@@ -190,49 +179,63 @@ function handle401Error(
 
     if (refreshToken) {
       return authRefreshService.refresh(refreshToken).pipe(
-        switchMap(response => {
+        switchMap((response) => {
           isRefreshing = false;
           authStorageService.setSession(response);
           refreshTokenSubject.next({ status: 'success', accessToken: response.accessToken });
 
           return next(addAuthorizationHeader(req, response.accessToken));
         }),
-        catchError(error => {
+        catchError((error) => {
           isRefreshing = false;
-          authStorageService.clear();
+          expireSession(injector, authStorageService);
           refreshTokenSubject.next({ status: 'failure', error });
-          router.navigate(['/auth/login']);
+          navigateToLogin(router);
           return throwError(() => error);
-        })
+        }),
       );
     } else {
       // Không có refresh token -> Bắt đăng nhập lại
       isRefreshing = false;
       const error = new Error('Vui lòng đăng nhập lại');
-      authStorageService.clear();
+      expireSession(injector, authStorageService);
       refreshTokenSubject.next({ status: 'failure', error });
-      router.navigate(['/auth/login']);
+      navigateToLogin(router);
       return throwError(() => error);
     }
   } else {
     // Nếu ĐANG trong quá trình refresh token, các request khác sẽ rơi vào trạng thái chờ (queue)
     return refreshTokenSubject.pipe(
-      filter(state => state.status === 'success' || state.status === 'failure'),
+      filter((state) => state.status === 'success' || state.status === 'failure'),
       take(1),
-      switchMap(state => {
+      switchMap((state) => {
         if (state.status === 'failure') {
           return throwError(() => state.error);
         }
 
         return next(addAuthorizationHeader(req, state.accessToken));
-      })
+      }),
     );
+  }
+}
+
+function expireSession(injector: Injector, authStorageService: AuthStorageService): void {
+  try {
+    injector.get(AuthSessionStore).expireSession();
+  } catch {
+    authStorageService.clear();
+  }
+}
+
+function navigateToLogin(router: Router): void {
+  if (!router.url.startsWith('/auth/login')) {
+    router.navigate(['/auth/login'], { replaceUrl: true });
   }
 }
 
 function addAuthorizationHeader(
   req: HttpRequest<unknown>,
-  accessToken: string
+  accessToken: string,
 ): HttpRequest<unknown> {
   return req.clone({
     setHeaders: {

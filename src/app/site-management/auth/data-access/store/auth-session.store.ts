@@ -66,11 +66,11 @@ export const AuthSessionStore = signalStore(
       accountService = inject(AccountService),
       profileService = inject(ProfileService),
       authRefreshService = inject(AuthRefreshService),
-      router = inject(Router)
+      router = inject(Router),
     ) => {
       const completeLogout = (
         successMessage: string | null,
-        warningMessage: string | null = null
+        warningMessage: string | null = null,
       ): void => {
         authStorageService.clear();
         patchState(store, {
@@ -85,7 +85,7 @@ export const AuthSessionStore = signalStore(
         pipe(
           switchMap(() => {
             const roles = authStorageService.getCurrentUser()?.roles || [];
-            
+
             const handleResponse = tap((res: ProfileResponse) => {
               if (res.success && res.data) {
                 const fullName = res.data.fullName || '';
@@ -95,7 +95,9 @@ export const AuthSessionStore = signalStore(
                 }
 
                 const newRole = res.data.role;
-                const updatedRoles = newRole ? [newRole.startsWith('ROLE_') ? newRole : `ROLE_${newRole}`] : ['ROLE_CUSTOMER'];
+                const updatedRoles = newRole
+                  ? [newRole.startsWith('ROLE_') ? newRole : `ROLE_${newRole}`]
+                  : ['ROLE_CUSTOMER'];
                 if (typeof authStorageService.updateRoles === 'function') {
                   authStorageService.updateRoles(updatedRoles);
                 }
@@ -116,9 +118,10 @@ export const AuthSessionStore = signalStore(
                 // Check if they need to be kicked out of management/admin
                 const currentUrl = router.url;
                 if (currentUrl.startsWith('/management')) {
-                  const isManagement = hasRole(updatedRoles, Role.OWNER) || 
-                                     hasRole(updatedRoles, Role.MANAGER) || 
-                                     hasRole(updatedRoles, Role.EMPLOYEE);
+                  const isManagement =
+                    hasRole(updatedRoles, Role.OWNER) ||
+                    hasRole(updatedRoles, Role.MANAGER) ||
+                    hasRole(updatedRoles, Role.EMPLOYEE);
                   if (!isManagement) {
                     router.navigate(['/']);
                   }
@@ -132,12 +135,18 @@ export const AuthSessionStore = signalStore(
             });
 
             if (hasRole(roles, Role.CUSTOMER)) {
-              return accountService.getProfile().pipe(handleResponse, catchError(() => EMPTY));
+              return accountService.getProfile().pipe(
+                handleResponse,
+                catchError(() => EMPTY),
+              );
             } else {
-              return profileService.getMyProfile().pipe(handleResponse, catchError(() => EMPTY));
+              return profileService.getMyProfile().pipe(
+                handleResponse,
+                catchError(() => EMPTY),
+              );
             }
-          })
-        )
+          }),
+        ),
       );
 
       const startTokenRefreshTimer = rxMethod<string>(
@@ -159,8 +168,9 @@ export const AuthSessionStore = signalStore(
                   tap((res) => _setSession(res)),
                   catchError(() => {
                     completeLogout(null, LOGOUT_WARNING_MESSAGE);
+                    router.navigate(['/auth/login'], { replaceUrl: true });
                     return EMPTY;
-                  })
+                  }),
                 );
               }
               return EMPTY;
@@ -174,15 +184,16 @@ export const AuthSessionStore = signalStore(
                     tap((res) => _setSession(res)),
                     catchError(() => {
                       completeLogout(null, LOGOUT_WARNING_MESSAGE);
+                      router.navigate(['/auth/login'], { replaceUrl: true });
                       return EMPTY;
-                    })
+                    }),
                   );
                 }
                 return EMPTY;
-              })
+              }),
             );
-          })
-        )
+          }),
+        ),
       );
 
       const _setSession = (response: AuthSessionSource): void => {
@@ -199,6 +210,9 @@ export const AuthSessionStore = signalStore(
       return {
         loadProfile,
         startTokenRefreshTimer,
+        expireSession(): void {
+          completeLogout(null, LOGOUT_WARNING_MESSAGE);
+        },
         updateCurrentUserProfile(fullName: string, avatarUrl: string | null): void {
           if (typeof authStorageService.updateProfileInfo === 'function') {
             authStorageService.updateProfileInfo(fullName, avatarUrl);
@@ -232,11 +246,11 @@ export const AuthSessionStore = signalStore(
           const currentUser = store.currentUser();
           if (currentUser) {
             const updatedUser = { ...currentUser, hasRegisteredFace };
-            
+
             patchState(store, {
               currentUser: updatedUser,
             });
-            
+
             const session = authStorageService.getSession();
             if (session) {
               session.hasRegisteredFace = hasRegisteredFace;
@@ -271,7 +285,7 @@ export const AuthSessionStore = signalStore(
               patchState(store, {
                 logoutSuccessMessage: null,
                 logoutWarningMessage: null,
-              })
+              }),
             ),
             switchMap(() => {
               const refreshToken = authStorageService.getRefreshToken();
@@ -282,24 +296,27 @@ export const AuthSessionStore = signalStore(
               }
 
               return authService.logout(refreshToken).pipe(
-                tap(message => completeLogout(message || LOGOUT_SUCCESS_MESSAGE)),
+                tap((message) => completeLogout(message || LOGOUT_SUCCESS_MESSAGE)),
                 catchError(() => {
                   completeLogout(null, LOGOUT_WARNING_MESSAGE);
                   return EMPTY;
-                })
+                }),
               );
-            })
-          )
+            }),
+          ),
         ),
       };
-    }
+    },
   ),
   withHooks({
     onInit(store) {
       const authStorageService = inject(AuthStorageService);
 
       patchState(store, { currentUser: authStorageService.getCurrentUser() });
-      if (typeof authStorageService.isAuthenticated === 'function' && authStorageService.isAuthenticated()) {
+      if (
+        typeof authStorageService.isAuthenticated === 'function' &&
+        authStorageService.isAuthenticated()
+      ) {
         store.loadProfile();
 
         const token = authStorageService.getAccessToken();
@@ -308,5 +325,5 @@ export const AuthSessionStore = signalStore(
         }
       }
     },
-  })
+  }),
 );
