@@ -17,6 +17,7 @@ import {
 } from '@lucide/angular';
 import { ReturnRequestStore } from '../../data-access/store/return-request.store';
 import { ReturnRequest, ReturnRequestStatus } from '../../data-access/models/return-request.model';
+import { ManagementPageShellComponent } from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 
 @Component({
@@ -37,7 +38,8 @@ import { ToastService } from '../../../../../shared/components/toast/toast.servi
     LucideSlidersHorizontal,
     LucideSearch,
     LucideCalendar,
-    LucideFileDown
+    LucideFileDown,
+    ManagementPageShellComponent
   ],
   templateUrl: './return-requests-page.component.html',
   styleUrl: './return-requests-page.component.css',

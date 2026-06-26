@@ -1,45 +1,49 @@
-<section class="customer-page">
-  <div class="customer-command">
-    <div class="customer-command__copy">
-      <span class="customer-kicker">Customer Registry Matrix</span>
-      <h2>Quản lý khách hàng</h2>
-      <p>Quản lý hồ sơ khách hàng, kiểm soát quyền truy cập và phân tích lịch sử giao dịch.</p>
-    </div>
-  </div>
-
-  <app-customer-toolbar
-    [keyword]="store.query().keyword"
-    [activeFilter]="store.query().activeFilter"
-    [sort]="store.query().sort"
-    [loading]="store.loading()"
-    [countLabel]="store.customerCountLabel()"
-    (keywordChange)="setKeyword($event)"
-    (activeFilterChange)="setActiveFilter($event)"
-    (sortChange)="setSort($event)"
-    (refresh)="store.refresh()"
+<app-management-page-shell>
+  <app-management-page-hero
+    eyebrow="Customer Registry Matrix"
+    title="Quản lý khách hàng"
+    description="Quản lý hồ sơ khách hàng, kiểm soát quyền truy cập và phân tích lịch sử giao dịch."
   />
 
-  <div class="customer-page__stats">
-    <article>
-      <span>Tổng số khách hàng</span>
-      <strong>{{ store.totalElements() }}</strong>
-    </article>
-    <article>
-      <span>Trạng thái lọc</span>
-      <strong>{{ activeFilterLabel() }}</strong>
-    </article>
-    <article>
-      <span>Tiêu chí sắp xếp</span>
-      <strong>{{ sortLabel() }}</strong>
-    </article>
+  <app-management-toolbar-surface>
+    <app-customer-toolbar
+      [keyword]="store.query().keyword"
+      [activeFilter]="store.query().activeFilter"
+      [sort]="store.query().sort"
+      [loading]="store.loading()"
+      [countLabel]="store.customerCountLabel()"
+      (keywordChange)="setKeyword($event)"
+      (activeFilterChange)="setActiveFilter($event)"
+      (sortChange)="setSort($event)"
+      (refresh)="store.refresh()"
+    />
+  </app-management-toolbar-surface>
+
+  <div class="zt-management-stats-grid zt-management-stats-grid--3">
+    <app-management-stat-card
+      label="Tổng số khách hàng"
+      [value]="store.totalElements()"
+      hint="Tài khoản trong hệ thống"
+      [hasIcon]="false"
+    />
+    <app-management-stat-card
+      label="Trạng thái lọc"
+      [value]="activeFilterLabel()"
+      hint="Bộ lọc đang áp dụng"
+      [hasIcon]="false"
+    />
+    <app-management-stat-card
+      label="Tiêu chí sắp xếp"
+      [value]="sortLabel()"
+      hint="Thứ tự hiển thị"
+      [hasIcon]="false"
+    />
   </div>
 
   @if (store.error()) {
-    <div class="customer-page__error">
-      <strong>Không thể tải dữ liệu</strong>
-      <span>{{ store.error() }}</span>
+    <app-management-error-state title="Không thể tải dữ liệu" [message]="store.error() ?? ''">
       <button type="button" (click)="store.loadCustomers()">Thử lại</button>
-    </div>
+    </app-management-error-state>
   } @else {
     <app-customer-table
       [customers]="store.customers()"
@@ -70,4 +74,4 @@
     (ordersPageChange)="store.setOrdersPage($event.page, $event.size)"
     (statusChange)="confirmStatusChange($event)"
   />
-</section>
+</app-management-page-shell>

@@ -82,7 +82,7 @@
 
 .management-breadcrumb__trigger {
   font-family: var(--zt-font-sans);
-  line-height: 1.4;
+  line-height: 1.6;
   border-style: solid;
   cursor: pointer;
   transition:
@@ -95,6 +95,7 @@
 .management-breadcrumb__trigger span {
   min-width: 0;
   overflow: hidden;
+  padding-block: 1px;
   text-overflow: ellipsis;
 }
 
@@ -120,11 +121,11 @@
   background: #fff8df;
   color: #9a6b00;
 
-  font-size: 11px;
-  font-weight: 700;
-  padding: 7px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 9px 12px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
 }
 
 .management-breadcrumb__section:hover,
@@ -138,10 +139,10 @@
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   background: #ffffff;
-  padding: 9px 13px;
+  padding: 10px 14px;
 
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: #4b5563;
   box-shadow: none;
   text-transform: uppercase;
@@ -623,11 +624,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: inherit;
-  font-size: 11px;
-  font-weight: 720;
-  letter-spacing: 0.02em;
-  line-height: 1.35;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.65;
+  text-transform: none;
   white-space: nowrap;
 }
 
@@ -636,11 +637,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: #8b867c;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.25;
-  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-transform: none;
   white-space: nowrap;
 }
 

@@ -1,4 +1,4 @@
-<section class="management-categories-page">
+<app-management-page-shell>
   <div class="category-command">
     <div>
       <span class="category-command__eyebrow">Catalog Control</span>
@@ -117,7 +117,7 @@
       }
     </div>
   </section>
-</section>
+</app-management-page-shell>
 
 <ng-template #categoryRows let-categories>
   @for (category of categories; track trackCategory($index, category)) {

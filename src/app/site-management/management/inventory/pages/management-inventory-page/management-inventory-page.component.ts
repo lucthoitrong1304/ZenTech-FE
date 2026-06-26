@@ -29,6 +29,7 @@ import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { DatePicker } from 'primeng/datepicker';
 import { PopoverModule } from 'primeng/popover';
+import { ManagementPageShellComponent } from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { ManagementInventoryStore } from '../../data-access/store/management-inventory.store';
 import { InventoryAdjustDialogComponent } from '../../components/inventory-adjust-dialog/inventory-adjust-dialog.component';
@@ -94,6 +95,7 @@ enum InventoryDateFilterOption {
     DatePicker,
     PopoverModule,
     LucideCopy,
+    ManagementPageShellComponent,
   ],
   templateUrl: './management-inventory-page.component.html',
   styleUrl: './management-inventory-page.component.css',

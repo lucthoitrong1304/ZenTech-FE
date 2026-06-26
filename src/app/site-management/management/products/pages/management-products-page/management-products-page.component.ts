@@ -5,12 +5,17 @@ import {
   LucidePackagePlus,
   LucideSparkles,
   LucideTriangleAlert,
-  LucideTrendingUp,
   LucideWallet,
   LucideWarehouse,
 } from '@lucide/angular';
 import { filter, take } from 'rxjs';
 import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
+import {
+  ManagementPageHeroComponent,
+  ManagementPageShellComponent,
+  ManagementStatCardComponent,
+  ManagementToolbarSurfaceComponent,
+} from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { ProductTableComponent } from '../../components/product-table/product-table.component';
 import { ProductToolbarComponent } from '../../components/product-toolbar/product-toolbar.component';
@@ -32,9 +37,12 @@ import { ManagementProductsStore } from '../../data-access/store/management-prod
     LucidePackagePlus,
     LucideSparkles,
     LucideTriangleAlert,
-    LucideTrendingUp,
     LucideWallet,
     LucideWarehouse,
+    ManagementPageHeroComponent,
+    ManagementPageShellComponent,
+    ManagementStatCardComponent,
+    ManagementToolbarSurfaceComponent,
     ProductTableComponent,
     ProductToolbarComponent,
     ProductDialogComponent,

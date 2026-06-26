@@ -2,6 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, computed, effect, inject, untracked } from '@angular/core';
 import { filter, take } from 'rxjs';
 import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
+import {
+  ManagementErrorStateComponent,
+  ManagementPageHeroComponent,
+  ManagementPageShellComponent,
+  ManagementStatCardComponent,
+  ManagementToolbarSurfaceComponent,
+} from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { CustomerDetailDialogComponent } from '../../components/customer-detail-dialog/customer-detail-dialog.component';
 import { CustomerTableComponent } from '../../components/customer-table/customer-table.component';
@@ -18,6 +25,11 @@ import { CustomerStore } from '../../data-access/store/customer.store';
     CustomerDetailDialogComponent,
     CustomerTableComponent,
     CustomerToolbarComponent,
+    ManagementErrorStateComponent,
+    ManagementPageHeroComponent,
+    ManagementPageShellComponent,
+    ManagementStatCardComponent,
+    ManagementToolbarSurfaceComponent,
   ],
   templateUrl: './customer-list.component.html',
   styleUrl: './customer-list.component.css',
