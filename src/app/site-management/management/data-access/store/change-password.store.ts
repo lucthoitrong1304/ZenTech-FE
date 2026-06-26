@@ -9,11 +9,12 @@ import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.s
 
 interface ChangePasswordState {
   isSaving: boolean;
+  lastSuccessAt: number | null;
 }
 
 export const ChangePasswordStore = signalStore(
   { providedIn: 'root' },
-  withState<ChangePasswordState>({ isSaving: false }),
+  withState<ChangePasswordState>({ isSaving: false, lastSuccessAt: null }),
   withMethods(
     (
       store,
@@ -27,7 +28,7 @@ export const ChangePasswordStore = signalStore(
           switchMap(request =>
             authService.changePassword(request).pipe(
               tap(response => {
-                patchState(store, { isSaving: false });
+                patchState(store, { isSaving: false, lastSuccessAt: Date.now() });
                 toastService.success(response || 'Cập nhật mật khẩu thành công');
                 authSessionStore.updatePasswordStatus(true);
               }),
