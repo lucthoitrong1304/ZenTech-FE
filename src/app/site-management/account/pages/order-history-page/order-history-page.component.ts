@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { LucideSearch, LucidePackage, LucideMapPin, LucideCreditCard, LucideTrash2, LucideUploadCloud, LucideAlertCircle } from '@lucide/angular';
@@ -11,6 +11,7 @@ import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-order-history-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

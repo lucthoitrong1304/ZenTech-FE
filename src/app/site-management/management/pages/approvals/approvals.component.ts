@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../../core/api/api.service';
 import { environment } from '../../../../../environments/environment';
@@ -34,6 +34,7 @@ interface LeaveRequest {
 
 @Component({
   selector: 'app-approvals',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, LucideRefreshCw, LucideCheck, LucideX],
   templateUrl: './approvals.component.html',

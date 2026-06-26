@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceReportStore } from '../../../data-access/store/attendance-report.store';
@@ -8,6 +8,7 @@ import { LucideAlertCircle } from '@lucide/angular';
 
 @Component({
   selector: 'app-attendance-report',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, AttendanceStatisticsCardsComponent, AttendanceTableComponent, LucideAlertCircle],
   templateUrl: './attendance-report-page.component.html',

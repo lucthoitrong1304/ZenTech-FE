@@ -1,6 +1,6 @@
 import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import {
   LucidePackagePlus,
   LucideSparkles,
@@ -23,6 +23,7 @@ import { ManagementProductsStore } from '../../data-access/store/management-prod
 
 @Component({
   selector: 'app-management-products-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     HasPermissionDirective,

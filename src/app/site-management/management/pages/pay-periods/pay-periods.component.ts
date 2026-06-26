@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/api/api.service';
@@ -18,6 +18,7 @@ interface PayPeriod {
 
 @Component({
   selector: 'app-pay-periods',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, LucideLock, LucideUnlock, LucidePlus, LucideLoader2],
   templateUrl: './pay-periods.component.html',

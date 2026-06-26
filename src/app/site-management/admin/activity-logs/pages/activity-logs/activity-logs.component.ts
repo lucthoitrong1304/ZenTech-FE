@@ -1,4 +1,4 @@
-import { Component, NgZone, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, NgZone, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideChevronLeft, LucideChevronRight, LucidePointer, LucideSearch, LucideX } from '@lucide/angular';
@@ -50,6 +50,7 @@ interface BrowserInfo {
 
 @Component({
   selector: 'app-admin-activity-logs',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

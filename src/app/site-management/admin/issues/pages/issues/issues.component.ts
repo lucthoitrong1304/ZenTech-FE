@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject, signal, computed, effect, NgZone } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnDestroy, OnInit, inject, signal, computed, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -76,6 +76,7 @@ interface ClientLogStackContext {
 
 @Component({
   selector: 'app-admin-issues',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

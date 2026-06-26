@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import {
   LucideRefreshCcw,
   LucideSearch,
@@ -12,6 +12,7 @@ import {
 
 @Component({
   selector: 'app-customer-toolbar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

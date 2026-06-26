@@ -1,6 +1,6 @@
 import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import {
   LucideChevronLeft,
   LucideChevronRight,
@@ -16,6 +16,7 @@ import {
 
 @Component({
   selector: 'app-order-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     HasPermissionDirective,

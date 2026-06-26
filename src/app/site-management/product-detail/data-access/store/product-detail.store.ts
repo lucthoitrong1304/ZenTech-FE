@@ -6,7 +6,6 @@ import {
   removeEntity,
   setAllEntities,
   updateEntities,
-  updateEntity,
   withEntities,
 } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
@@ -16,7 +15,6 @@ import {
   ProductCatalogService,
 } from '../../../product-catalog/data-access/services/product-catalog.service';
 import {
-  ProductDetail,
   ProductReview,
 } from '../../../product-catalog/data-access/models/product-catalog.models';
 import {
@@ -50,6 +48,7 @@ const REVIEW_IMAGE_ENTITY_CONFIG = {
   selectId: (image: ReviewImageUploadItem) => image.id,
 } as const;
 
+// State riêng của trang chi tiết sản phẩm, tách ảnh review sang entity collection.
 type ProductDetailState = Omit<ProductDetailViewModel, 'reviewImages'> & {
   reviewVideo: ReviewVideoUploadItem | null;
 };
@@ -77,8 +76,11 @@ export const ProductDetailStore = signalStore(
     collection: 'reviewImage',
   }),
   withComputed(({ product, quantity, selectedVariantId, reviewImageEntities, reviewVideo }) => ({
+    // Danh sách ảnh review đang được chọn trong modal.
     reviewImages: computed(() => reviewImageEntities()),
+    // Cho biết video review hiện có đang trong trạng thái upload hay không.
     reviewVideoUploading: computed(() => reviewVideo()?.status === 'uploading'),
+    // Lấy biến thể đang chọn; nếu chưa chọn thì fallback về biến thể đầu tiên.
     selectedVariant: computed(() => {
       const currentProduct = product();
       const currentVariantId = selectedVariantId();
@@ -92,8 +94,11 @@ export const ProductDetailStore = signalStore(
         currentProduct.variants[0]
       );
     }),
+    // Bộ ảnh hiển thị ở gallery sản phẩm.
     gallery: computed(() => product()?.gallery ?? []),
+    // Các sản phẩm cùng nhóm với sản phẩm hiện tại.
     groupProducts: computed(() => product()?.groupProducts ?? []),
+    // Giá bán thực tế của biến thể đang chọn.
     selectedPrice: computed(() => {
       const currentProduct = product();
       const variant =
@@ -102,6 +107,7 @@ export const ProductDetailStore = signalStore(
 
       return variant?.salePrice ?? variant?.originalPrice ?? currentProduct?.price ?? 0;
     }),
+    // Giá gốc chỉ hiển thị khi biến thể đang có giá khuyến mãi.
     selectedOriginalPrice: computed(() => {
       const currentProduct = product();
       const variant =
@@ -114,6 +120,7 @@ export const ProductDetailStore = signalStore(
 
       return currentProduct?.originalPrice;
     }),
+    // Số lượng tồn kho của biến thể đang chọn.
     selectedStockQuantity: computed(() => {
       const currentProduct = product();
       const variant =
@@ -122,6 +129,7 @@ export const ProductDetailStore = signalStore(
 
       return variant?.stockQuantity ?? currentProduct?.maxQuantity ?? 0;
     }),
+    // Kiểm tra biến thể đang chọn còn hàng hay không.
     selectedInStock: computed(() => {
       const currentProduct = product();
       const variant =
@@ -130,21 +138,27 @@ export const ProductDetailStore = signalStore(
 
       return (variant?.stockQuantity ?? currentProduct?.maxQuantity ?? 0) > 0;
     }),
+    // Cho phép tăng số lượng khi chưa vượt quá tồn kho.
     canIncrement: computed(() => {
       const variant = product()?.variants.find(item => item.id === selectedVariantId());
       const stockQuantity = variant?.stockQuantity ?? product()?.maxQuantity ?? 0;
 
       return stockQuantity > 0 && quantity() < stockQuantity;
     }),
+    // Cho phép giảm số lượng khi số lượng hiện tại lớn hơn 1.
     canDecrement: computed(() => {
       const variant = product()?.variants.find(item => item.id === selectedVariantId());
       return (variant?.stockQuantity ?? product()?.maxQuantity ?? 0) > 0 && quantity() > 1;
     }),
+    // Tổng số review đang hiển thị theo dữ liệu product hiện tại.
     reviewCount: computed(() => product()?.reviewCount ?? 0),
+    // Điểm rating trung bình của sản phẩm.
     rating: computed(() => product()?.rating ?? 0),
+    // Kiểm tra có ảnh nào đang upload hay không để khóa submit/modal.
     reviewImageUploading: computed(() =>
       reviewImageEntities().some(image => image.status === 'uploading')
     ),
+    // Kiểm tra có ảnh upload lỗi để hiển thị trạng thái retry/error.
     reviewImageFailed: computed(() =>
       reviewImageEntities().some(image => image.status === 'failed')
     ),
@@ -155,30 +169,37 @@ export const ProductDetailStore = signalStore(
       productCatalogService = inject(ProductCatalogService),
       reviewMediaUploadService = inject(ReviewMediaUploadService)
     ) => {
+      // Đọc ảnh review ngoài tracking để tránh effect/rxMethod phụ thuộc signal không cần thiết.
       const readReviewImages = (): ReviewImageUploadItem[] =>
         untracked(() => store.reviewImages());
 
+      // Đọc video review ngoài tracking để dùng trong các thao tác submit/reset.
       const readReviewVideo = (): ReviewVideoUploadItem | null =>
         untracked(() => store.reviewVideo());
 
+      // Thu hồi object URL của ảnh preview để tránh rò rỉ bộ nhớ trên trình duyệt.
       const clearPreviewUrls = (images: ReviewImageUploadItem[]): void => {
         images.forEach(image => URL.revokeObjectURL(image.previewUrl));
       };
 
+      // Thu hồi object URL của video preview khi đóng modal hoặc đổi sản phẩm.
       const clearVideoPreviewUrl = (video: ReviewVideoUploadItem | null): void => {
         if (video?.previewUrl) {
           URL.revokeObjectURL(video.previewUrl);
         }
       };
 
+      // Lấy danh sách fileKey của các ảnh đã upload thành công.
       const getUploadedImageKeys = (images = readReviewImages()): string[] =>
         images
           .filter(image => image.status === 'uploaded' && !!image.fileKey)
           .map(image => image.fileKey as string);
 
+      // Lấy fileKey của video đã upload, nếu video đã sẵn sàng.
       const getUploadedVideoKey = (video = readReviewVideo()): string | undefined =>
         video?.status === 'uploaded' ? video.videoKey : undefined;
 
+      // Đồng bộ fileKey media vào draft để payload review luôn phản ánh media hiện tại.
       const syncDraftMediaKeys = (
         images = readReviewImages(),
         video = readReviewVideo()
@@ -192,14 +213,7 @@ export const ProductDetailStore = signalStore(
         });
       };
 
-      const updateReviewImage = (id: string, patch: Partial<ReviewImageUploadItem>): void => {
-        patchState(
-          store,
-          updateEntity({ id, changes: patch }, REVIEW_IMAGE_ENTITY_CONFIG)
-        );
-        syncDraftMediaKeys();
-      };
-
+      // Áp kết quả upload cho nhiều ảnh review và trả về danh sách ảnh mới nhất.
       const updateReviewImages = (
         patches: ReviewImageUploadResult[]
       ): ReviewImageUploadItem[] => {
@@ -213,6 +227,7 @@ export const ProductDetailStore = signalStore(
         return reviewImages;
       };
 
+      // Đánh dấu các ảnh đang chờ thành trạng thái uploading trước khi gọi API upload.
       const markReviewImagesUploading = (images: ReviewImageUploadItem[]): void => {
         patchState(
           store,
@@ -226,6 +241,7 @@ export const ProductDetailStore = signalStore(
         );
       };
 
+      // Reset riêng trạng thái modal review và dọn các preview URL đang giữ trong bộ nhớ.
       const resetReviewState = (): void => {
         clearPreviewUrls(readReviewImages());
         clearVideoPreviewUrl(readReviewVideo());
@@ -242,6 +258,7 @@ export const ProductDetailStore = signalStore(
         );
       };
 
+      // Reset toàn bộ dữ liệu trang trước khi load sản phẩm mới.
       const resetForLoad = (): void => {
         clearPreviewUrls(readReviewImages());
         clearVideoPreviewUrl(readReviewVideo());
@@ -266,6 +283,7 @@ export const ProductDetailStore = signalStore(
         );
       };
 
+      // Thêm review mới vào đầu danh sách và tính lại rating cục bộ sau khi submit thành công.
       const addReview = (review: ProductReview): void => {
         const product = store.product();
 
@@ -298,6 +316,7 @@ export const ProductDetailStore = signalStore(
         );
       };
 
+      // Gửi review lên backend sau khi đã có sẵn imageKeys/videoKey.
       const submitReviewWithMediaKeys = (
         productId: string,
         draft: ProductReviewDraft,
@@ -323,6 +342,7 @@ export const ProductDetailStore = signalStore(
           );
 
       return {
+        // Load chi tiết sản phẩm cùng danh sách review ban đầu.
         loadProduct: rxMethod<string>(
           pipe(
             tap(() => resetForLoad()),
@@ -371,6 +391,7 @@ export const ProductDetailStore = signalStore(
             )
           )
         ),
+        // Validate form, upload media nếu cần, rồi submit review.
         submitReview: rxMethod<void>(
           pipe(
             switchMap(() => {
@@ -392,7 +413,7 @@ export const ProductDetailStore = signalStore(
 
               patchState(store, { reviewSubmitting: true, reviewFormError: null });
 
-              // Collect pending images & pending video
+              // Gom các media chưa upload để xử lý trước khi tạo review.
               const pendingImages = readReviewImages().filter(
                 image => image.status !== 'uploaded' && !!image.file
               );
@@ -400,7 +421,7 @@ export const ProductDetailStore = signalStore(
               const hasPendingVideo =
                 pendingVideo !== null && pendingVideo.status !== 'uploaded';
 
-              // No uploads needed — submit directly
+              // Nếu không còn media chờ upload thì gửi review ngay.
               if (pendingImages.length === 0 && !hasPendingVideo) {
                 return submitReviewWithMediaKeys(
                   product.id,
@@ -410,7 +431,7 @@ export const ProductDetailStore = signalStore(
                 );
               }
 
-              // Mark uploading
+              // Chuyển trạng thái UI sang uploading trước khi gọi upload thật.
               if (pendingImages.length > 0) {
                 markReviewImagesUploading(pendingImages);
               }
@@ -420,7 +441,7 @@ export const ProductDetailStore = signalStore(
                 });
               }
 
-              // Upload images
+              // Upload từng ảnh và giữ lại kết quả theo id để cập nhật đúng item preview.
               const imageUploads$ = pendingImages.map(image =>
                 reviewMediaUploadService.uploadReviewImage(image.file).pipe(
                   map(
@@ -441,7 +462,7 @@ export const ProductDetailStore = signalStore(
                 )
               );
 
-              // Upload video
+              // Upload video nếu user có chọn video chưa upload.
               const videoUpload$ =
                 hasPendingVideo && pendingVideo
                   ? reviewMediaUploadService.uploadReviewVideo(pendingVideo.file).pipe(
@@ -460,12 +481,12 @@ export const ProductDetailStore = signalStore(
                 videoResult: videoUpload$,
               }).pipe(
                 switchMap(({ imageResults, videoResult }) => {
-                  // Process image results
+                  // Cập nhật trạng thái ảnh sau khi upload xong.
                   const updatedImages =
                     imageResults.length > 0 ? updateReviewImages(imageResults) : readReviewImages();
                   const imageUploadFailed = imageResults.some(r => r.status === 'failed');
 
-                  // Process video result
+                  // Cập nhật trạng thái video và lấy videoKey cuối cùng.
                   let finalVideoKey: string | undefined;
                   if (videoResult !== null) {
                     if (videoResult.status === 'failed') {
@@ -517,6 +538,7 @@ export const ProductDetailStore = signalStore(
             })
           )
         ),
+        // Mở modal viết review và tạo draft sạch.
         openReviewModal(): void {
           clearPreviewUrls(readReviewImages());
           clearVideoPreviewUrl(readReviewVideo());
@@ -532,9 +554,11 @@ export const ProductDetailStore = signalStore(
             }
           );
         },
+        // Đóng modal review và reset toàn bộ dữ liệu nhập tạm.
         closeReviewModal(): void {
           resetReviewState();
         },
+        // Cập nhật nội dung draft từ modal, đồng thời giữ media keys đã upload.
         updateReviewDraft(draft: ProductReviewDraft): void {
           patchState(store, {
             reviewDraft: {
@@ -545,6 +569,7 @@ export const ProductDetailStore = signalStore(
             reviewFormError: null,
           });
         },
+        // Nhận danh sách ảnh user chọn, validate loại file/kích thước/số lượng rồi tạo preview.
         selectReviewImages(files: File[]): void {
           if (store.reviewSubmitting()) {
             return;
@@ -612,6 +637,7 @@ export const ProductDetailStore = signalStore(
             { reviewFormError: null }
           );
         },
+        // Xóa một ảnh khỏi draft và thu hồi URL preview của ảnh đó.
         removeReviewImage(imageId: string): void {
           const image = store.reviewImages().find(item => item.id === imageId);
 
@@ -626,6 +652,7 @@ export const ProductDetailStore = signalStore(
           );
           syncDraftMediaKeys();
         },
+        // Nhận video user chọn, validate loại file/kích thước rồi tạo preview.
         selectReviewVideo(file: File): void {
           if (store.reviewSubmitting()) {
             return;
@@ -662,11 +689,13 @@ export const ProductDetailStore = signalStore(
 
           patchState(store, { reviewVideo: videoItem, reviewFormError: null });
         },
+        // Xóa video khỏi draft và thu hồi URL preview.
         removeReviewVideo(): void {
           clearVideoPreviewUrl(readReviewVideo());
           patchState(store, { reviewVideo: null, reviewFormError: null });
           syncDraftMediaKeys();
         },
+        // Chọn biến thể sản phẩm và reset số lượng theo tồn kho của biến thể.
         selectVariant(variantId: string): void {
           const product = store.product();
           const variant = product?.variants.find(item => item.id === variantId);
@@ -680,9 +709,11 @@ export const ProductDetailStore = signalStore(
             quantity: variant.stockQuantity > 0 ? 1 : 0,
           });
         },
+        // Xóa thông báo review thành công sau khi toast đã hiển thị.
         clearReviewSuccessMessage(): void {
           patchState(store, { reviewSuccessMessage: null });
         },
+        // Tăng số lượng mua nhưng không vượt quá tồn kho.
         incrementQuantity(): void {
           const product = store.product();
           const variant = product?.variants.find(
@@ -698,6 +729,7 @@ export const ProductDetailStore = signalStore(
             quantity: Math.min(store.quantity() + 1, maxQuantity),
           });
         },
+        // Giảm số lượng mua nhưng không thấp hơn 1.
         decrementQuantity(): void {
           const product = store.product();
           const variant = product?.variants.find(
@@ -715,14 +747,17 @@ export const ProductDetailStore = signalStore(
   )
 );
 
+// Tạo id tạm cho ảnh review để quản lý trong entity collection phía FE.
 function createReviewImageId(): string {
   return `review-image-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+// Tạo id tạm cho media review không phải ảnh, hiện dùng cho video.
 function createReviewMediaId(): string {
   return `review-media-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
+// Kiểm tra dữ liệu tối thiểu trước khi cho phép gửi review.
 function validateReviewDraft(draft: ProductReviewDraft): ProductReviewFormError | null {
   const error: ProductReviewFormError = {};
 

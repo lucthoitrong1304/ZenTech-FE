@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import {
   LucidePrinter,
   LucideX,
@@ -17,6 +17,7 @@ import {
 
 @Component({
   selector: 'app-order-detail-drawer',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CurrencyPipe,

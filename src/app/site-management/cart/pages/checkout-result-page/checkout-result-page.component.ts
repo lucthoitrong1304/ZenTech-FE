@@ -1,5 +1,5 @@
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CustomerOrderDetailResponse } from '../../../account/data-access/models/account.models';
 import { AccountService } from '../../../account/data-access/services/account.service';
@@ -10,6 +10,7 @@ import { CartStore } from '../../data-access/store/cart.store';
 
 @Component({
   selector: 'app-checkout-result-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, RouterLink, CurrencyPipe, DatePipe, SiteHeaderComponent],
   templateUrl: './checkout-result-page.component.html',

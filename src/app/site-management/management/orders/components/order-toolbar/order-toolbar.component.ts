@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { LucideCalendar, LucideFilter, LucideSearch, LucideX } from '@lucide/angular';
 import {
   ManagementOrderDateFilter,
@@ -8,6 +8,7 @@ import {
 
 @Component({
   selector: 'app-order-toolbar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [LucideCalendar, LucideFilter, LucideSearch, LucideX],
   templateUrl: './order-toolbar.component.html',

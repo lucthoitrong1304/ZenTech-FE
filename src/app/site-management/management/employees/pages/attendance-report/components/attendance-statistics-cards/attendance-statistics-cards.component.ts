@@ -1,10 +1,11 @@
-import { Component, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AttendanceStatisticsResponse } from '../../../../../data-access/models/attendance.model';
 import { LucideUsers, LucideClock, LucideAlertCircle, LucideCheckCircle2, LucideCalendarDays, LucideHeartHandshake } from '@lucide/angular';
 
 @Component({
   selector: 'app-attendance-statistics-cards',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, LucideUsers, LucideClock, LucideAlertCircle, LucideCheckCircle2, LucideCalendarDays, LucideHeartHandshake],
   templateUrl: './attendance-statistics-cards.component.html',

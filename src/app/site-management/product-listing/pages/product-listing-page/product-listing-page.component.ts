@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked, HostListener } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked, HostListener } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { distinctUntilChanged, map } from 'rxjs';
@@ -18,9 +18,11 @@ import { ProductEmptyStateComponent } from '../../components/product-empty-state
 import { ProductGridComponent } from '../../components/product-grid/product-grid.component';
 import { ProductListingHeroComponent } from '../../components/product-listing-hero/product-listing-hero.component';
 import { ProductListingToolbarComponent } from '../../components/product-listing-toolbar/product-listing-toolbar.component';
+import { setupLogoutMessageEffects } from '../../../auth/data-access/utils/logout-message-effects.util';
 
 @Component({
   selector: 'app-product-listing-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -84,29 +86,7 @@ export class ProductListingPageComponent {
       });
     });
 
-    effect(() => {
-      const message = this.authSessionStore.logoutSuccessMessage();
-
-      if (message) {
-        untracked(() => {
-        this.toastService.success(message);
-        this.authSessionStore.clearLogoutMessages();
-        this.router.navigate(['/']);
-        });
-      }
-    });
-
-    effect(() => {
-      const message = this.authSessionStore.logoutWarningMessage();
-
-      if (message) {
-        untracked(() => {
-        this.toastService.warning(message);
-        this.authSessionStore.clearLogoutMessages();
-        this.router.navigate(['/']);
-        });
-      }
-    });
+    setupLogoutMessageEffects(this.authSessionStore, this.toastService, this.router);
 
     effect(() => {
       const message = this.productListingStore.cartSuccessMessage();

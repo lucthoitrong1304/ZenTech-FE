@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, effect, inject, input, output, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, OnDestroy, OnInit, ViewChild, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FaceRecognitionService, FaceValidationStatus } from '../../../core/services/face-recognition.service';
 import { DialogModule } from 'primeng/dialog';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,7 @@ export interface FaceRegistrationData {
 
 @Component({
   selector: 'app-face-registration-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [DialogModule, CommonModule, ButtonModule],
   templateUrl: './face-registration-dialog.component.html',

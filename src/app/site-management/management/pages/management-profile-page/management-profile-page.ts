@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, computed, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProfileStore } from '../../data-access/store/profile.store';
@@ -14,6 +14,7 @@ import { FaceRegisterDialogComponent, FaceRegisterData } from '../../../../share
 
 @Component({
   selector: 'app-management-profile-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, LucideUser, LucideMail, LucideShield, LucidePhone, LucideMapPin, LucideCalendar, LucideCamera, LucideLoader2, LucideScanFace, FaceRegisterDialogComponent],
   templateUrl: './management-profile-page.html',

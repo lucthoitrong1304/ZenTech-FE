@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { 
   LucideBell, 
@@ -22,6 +22,7 @@ import { AuthStorageService } from '../../../core/services/auth-storage.service'
 
 @Component({
   selector: 'app-notification-bell',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule, 

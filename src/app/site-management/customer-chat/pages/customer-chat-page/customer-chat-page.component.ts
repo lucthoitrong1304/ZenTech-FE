@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, effect, inject, signal, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, effect, inject, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   LucideExternalLink,
@@ -33,6 +33,7 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
 
 @Component({
   selector: 'app-customer-chat-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

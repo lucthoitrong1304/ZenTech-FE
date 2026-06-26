@@ -76,6 +76,12 @@
             </div>
             @if (hasControlError('password', 'required')) {
               <p class="auth-field-error">Mật khẩu không được để trống.</p>
+            } @else if (hasControlError('password', 'minlength')) {
+              <p class="auth-field-error">Mật khẩu phải có ít nhất 6 ký tự.</p>
+            } @else if (hasControlError('password', 'pattern')) {
+              <p class="auth-field-error">
+                Mật khẩu phải có ít nhất 1 chữ viết hoa và 1 ký tự đặc biệt.
+              </p>
             }
           </div>
 

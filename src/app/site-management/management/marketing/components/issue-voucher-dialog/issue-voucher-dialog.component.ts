@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output, signal, effect, HostListener, ElementRef, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal, effect, HostListener, ElementRef, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideX, LucideTriangleAlert, LucideSparkles, LucideSearch, LucideCheck } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
@@ -7,6 +7,7 @@ import { CustomerSummary, ManagementCoupon } from '../../data-access/models/mark
 
 @Component({
   selector: 'app-issue-voucher-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, DialogModule, LucideX, LucideTriangleAlert, LucideSparkles, LucideSearch, LucideCheck],
   templateUrl: './issue-voucher-dialog.component.html',

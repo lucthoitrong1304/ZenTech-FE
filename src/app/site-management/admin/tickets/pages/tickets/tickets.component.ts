@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, effect, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject, signal, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -28,6 +28,7 @@ export enum TicketDateFilterOption {
 
 @Component({
   selector: 'app-admin-tickets',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
