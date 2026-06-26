@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
@@ -42,6 +42,7 @@ interface MetricDefinition {
 
 @Component({
   selector: 'app-resource-monitoring',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, ChartModule, DatePicker, LucideActivity, LucideAlertTriangle,
     LucideCalendarDays, LucideCheckCircle2, LucideCircleHelp, LucideClock3, LucideCpu, LucideDatabase, LucideGauge,

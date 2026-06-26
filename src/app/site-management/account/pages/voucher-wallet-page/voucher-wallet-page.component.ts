@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { LucideCopy, LucideShare2, LucideTicket } from '@lucide/angular';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { VoucherStatus } from '../../data-access/models/account.models';
@@ -7,6 +7,7 @@ import { AccountStore } from '../../data-access/store/account.store';
 
 @Component({
   selector: 'app-voucher-wallet-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, LucideTicket, LucideCopy, LucideShare2],
   templateUrl: './voucher-wallet-page.component.html',

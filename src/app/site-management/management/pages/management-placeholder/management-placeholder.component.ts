@@ -1,9 +1,10 @@
-﻿import { Component, inject } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LucideChevronRight, LucideSparkles } from '@lucide/angular';
 
 @Component({
   selector: 'app-management-placeholder',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [LucideChevronRight, LucideSparkles],
   templateUrl: './management-placeholder.component.html',

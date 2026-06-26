@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   Component,
+  ChangeDetectionStrategy,
   ElementRef,
   OnDestroy,
   ViewChild,
@@ -57,6 +58,7 @@ const EMPTY_FORMAT_STATE: EditorFormatState = {
 
 @Component({
   selector: 'app-rich-text-editor',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

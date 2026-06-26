@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   LucideChevronDown,
@@ -27,6 +27,7 @@ import { ManagementCategoriesStore } from '../../data-access/store/management-ca
 
 @Component({
   selector: 'app-management-categories-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked, HostListener } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked, HostListener } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { distinctUntilChanged, map } from 'rxjs';
@@ -21,6 +21,7 @@ import { ProductListingToolbarComponent } from '../../components/product-listing
 
 @Component({
   selector: 'app-product-listing-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

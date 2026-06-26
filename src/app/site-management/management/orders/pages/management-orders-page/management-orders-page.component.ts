@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import { LucideFileDown } from '@lucide/angular';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { OrderDetailDrawerComponent } from '../../components/order-detail-drawer/order-detail-drawer.component';
@@ -16,6 +16,7 @@ import { ManagementOrdersStore } from '../../data-access/store/management-orders
 
 @Component({
   selector: 'app-management-orders-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

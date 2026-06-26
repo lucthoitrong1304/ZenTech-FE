@@ -1,4 +1,4 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, input, output, signal } from '@angular/core';
 import {
   LucideCheck,
   LucidePackage,
@@ -17,6 +17,7 @@ import type {
 
 @Component({
   selector: 'app-product-group-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [DialogModule, LucideCheck, LucidePackage, LucideSearch, LucideX],
   templateUrl: './product-group-dialog.component.html',

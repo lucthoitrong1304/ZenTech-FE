@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideX, LucideSearch, LucideLoader2, LucideSearchX, LucideMessageSquare } from '@lucide/angular';
@@ -6,6 +6,7 @@ import { ChatMessageResponse } from '../../data-access/models/customer-chat.mode
 
 @Component({
   selector: 'app-customer-chat-search-sidebar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, LucideX, LucideSearch, LucideLoader2, LucideSearchX, LucideMessageSquare],
   templateUrl: './customer-chat-search-sidebar.component.html',

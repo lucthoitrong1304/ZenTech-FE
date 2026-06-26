@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LucideArrowLeft, LucideEye, LucideEyeOff, LucideKeyRound, LucideLoader2, LucideShieldAlert, LucideShieldCheck } from '@lucide/angular';
@@ -15,6 +15,7 @@ enum AdminPasswordField {
 
 @Component({
   selector: 'app-admin-change-password',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterLink, LucideArrowLeft, LucideEye, LucideEyeOff, LucideKeyRound, LucideLoader2, LucideShieldAlert, LucideShieldCheck],
   templateUrl: './admin-change-password.component.html',

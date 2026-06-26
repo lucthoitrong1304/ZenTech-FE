@@ -1,6 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   Component,
+  ChangeDetectionStrategy,
   ElementRef,
   OnDestroy,
   ViewChild,
@@ -41,6 +42,7 @@ import { WorkScheduleStore } from '../../data-access/store/work-schedule.store';
 
 @Component({
   selector: 'app-work-schedules-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
