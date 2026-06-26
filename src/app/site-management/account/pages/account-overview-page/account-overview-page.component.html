@@ -43,13 +43,22 @@
               <h2 class="mt-1 text-2xl font-bold tracking-tight">Thông tin cá nhân</h2>
             </div>
           </div>
-          <button
-            type="button"
-            class="inline-flex h-10 items-center rounded-full bg-[#ffc700] px-5 text-sm font-bold text-[#251a00] transition hover:bg-[#f5bf00]"
-            (click)="openEditProfile()"
-          >
-            Chỉnh sửa
-          </button>
+          <div class="flex items-center gap-3">
+            <button
+              type="button"
+              class="inline-flex h-10 items-center rounded-full border-2 border-[#f6f3f2] bg-white px-5 text-sm font-bold text-[#4f4632] transition hover:border-[#d2c5ab] hover:bg-[#fcf9f8]"
+              (click)="openChangePasswordDialog()"
+            >
+              {{ isPasswordSet() ? 'Đổi mật khẩu' : 'Thiết lập mật khẩu' }}
+            </button>
+            <button
+              type="button"
+              class="inline-flex h-10 items-center rounded-full bg-[#ffc700] px-5 text-sm font-bold text-[#251a00] transition hover:bg-[#f5bf00]"
+              (click)="openEditProfile()"
+            >
+              Chỉnh sửa
+            </button>
+          </div>
         </div>
 
         <div class="grid gap-6 md:grid-cols-2">
@@ -176,6 +185,89 @@
       </section>
     </div>
   </section>
+
+  <!-- Change Password Dialog -->
+  <p-dialog
+    [header]="isPasswordSet() ? 'Đổi mật khẩu' : 'Thiết lập mật khẩu'"
+    [(visible)]="isChangePasswordOpen"
+    [modal]="true"
+    [style]="{ width: '400px' }"
+    (onHide)="passwordForm.reset()"
+  >
+    <form class="space-y-4 py-4" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+      @if (isPasswordSet()) {
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-[0.16em] text-[#81765f] mb-2">Mật khẩu hiện tại</label>
+          <input
+            type="password"
+            formControlName="currentPassword"
+            autocomplete="current-password"
+            class="h-11 w-full rounded-full border border-[#d2c5ab] px-4 text-sm font-medium outline-none focus:border-[#ffc700] focus:ring-1 focus:ring-[#ffc700]"
+          />
+          @if (hasPasswordControlError('currentPassword', 'required')) {
+            <p class="mt-1 text-xs font-semibold text-[#93000a]">Vui lòng nhập mật khẩu hiện tại.</p>
+          }
+        </div>
+      }
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-[0.16em] text-[#81765f] mb-2">Mật khẩu mới</label>
+        <input
+          type="password"
+          formControlName="newPassword"
+          autocomplete="new-password"
+          class="h-11 w-full rounded-full border border-[#d2c5ab] px-4 text-sm font-medium outline-none focus:border-[#ffc700] focus:ring-1 focus:ring-[#ffc700]"
+        />
+        @if (hasPasswordControlError('newPassword', 'required')) {
+          <p class="mt-1 text-xs font-semibold text-[#93000a]">Mật khẩu mới không được để trống.</p>
+        } @else if (hasPasswordControlError('newPassword', 'minlength')) {
+          <p class="mt-1 text-xs font-semibold text-[#93000a]">Mật khẩu phải dài ít nhất 6 ký tự.</p>
+        } @else if (hasPasswordControlError('newPassword', 'uppercase')) {
+          <p class="mt-1 text-xs font-semibold text-[#93000a]">Mật khẩu phải có ít nhất 1 ký tự viết hoa.</p>
+        } @else if (hasPasswordControlError('newPassword', 'specialCharacter')) {
+          <p class="mt-1 text-xs font-semibold text-[#93000a]">Mật khẩu phải có ít nhất 1 ký tự đặc biệt.</p>
+        }
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold uppercase tracking-[0.16em] text-[#81765f] mb-2">Xác nhận mật khẩu mới</label>
+        <input
+          type="password"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+          class="h-11 w-full rounded-full border border-[#d2c5ab] px-4 text-sm font-medium outline-none focus:border-[#ffc700] focus:ring-1 focus:ring-[#ffc700]"
+        />
+        @if (hasPasswordControlError('confirmPassword', 'required')) {
+          <p class="mt-1 text-xs font-semibold text-[#93000a]">Vui lòng xác nhận mật khẩu mới.</p>
+        } @else if (hasPasswordMismatchError()) {
+          <p class="mt-1 text-xs font-semibold text-[#93000a]">Mật khẩu xác nhận không khớp.</p>
+        }
+      </div>
+
+      <div class="flex justify-end gap-2 pt-4">
+        <button
+          type="button"
+          class="h-10 rounded-full border border-gray-300 px-5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+          (click)="closeChangePasswordDialog()"
+        >
+          Hủy
+        </button>
+        <button
+          type="submit"
+          class="h-10 rounded-full bg-[#1c1b1b] px-6 text-sm font-bold text-white hover:bg-black transition disabled:cursor-not-allowed disabled:opacity-50"
+          [disabled]="isChangePasswordSubmitDisabled()"
+        >
+          {{
+            changePasswordStore.isSaving()
+              ? 'Đang cập nhật...'
+              : isPasswordSet()
+                ? 'Cập nhật'
+                : 'Thiết lập'
+          }}
+        </button>
+      </div>
+    </form>
+  </p-dialog>
 
   <!-- Edit Profile Dialog -->
   <p-dialog

@@ -29,6 +29,7 @@ export interface AuthResponse {
   fullName: string;
   roles: string[];
   expiresIn?: number;
+  isPasswordSet?: boolean;
 }
 
 // Dữ liệu phiên đăng nhập FE lưu để duy trì trạng thái người dùng.
