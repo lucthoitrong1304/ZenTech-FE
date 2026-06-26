@@ -195,7 +195,7 @@ export class ProductDialogComponent implements OnDestroy {
         representativeImageKey: state.representativeImageKey || imageKeys[0] || null,
       });
     } catch {
-      alert('KhÃ´ng thá»ƒ táº£i áº£nh sáº£n pháº©m lÃªn. Vui lÃ²ng thá»­ láº¡i.');
+      alert('Không thể tải ảnh sản phẩm lên. Vui lòng thử lại.');
     } finally {
       this.uploadingImages.set(false);
     }

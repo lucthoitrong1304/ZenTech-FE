@@ -252,7 +252,7 @@ export function formatTime(dateStr: string): string {
     const mins = String(d.getMinutes()).padStart(2, '0');
     return `${hrs}:${mins}`;
   } catch {
-    return 'Vá»«a xong';
+    return 'Vừa xong';
   }
 }
 

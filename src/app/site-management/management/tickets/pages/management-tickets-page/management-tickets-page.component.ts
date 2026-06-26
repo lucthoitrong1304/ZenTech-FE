@@ -78,11 +78,11 @@ export class ManagementTicketsPageComponent implements OnInit, OnDestroy {
   private readonly loadingProfileEmails = new Set<string>();
 
   protected readonly datePresetOptions = [
-    { label: 'T\u1ea5t c\u1ea3 th\u1eddi gian', value: TicketDateFilterOption.ALL },
-    { label: 'H\u00f4m nay', value: TicketDateFilterOption.TODAY },
-    { label: '7 ng\u00e0y qua', value: TicketDateFilterOption.LAST_7_DAYS },
-    { label: '30 ng\u00e0y qua', value: TicketDateFilterOption.LAST_30_DAYS },
-    { label: 'T\u00f9y ch\u1ecdn...', value: TicketDateFilterOption.CUSTOM },
+    { label: 'Tất cả thời gian', value: TicketDateFilterOption.ALL },
+    { label: 'Hôm nay', value: TicketDateFilterOption.TODAY },
+    { label: '7 ngày qua', value: TicketDateFilterOption.LAST_7_DAYS },
+    { label: '30 ngày qua', value: TicketDateFilterOption.LAST_30_DAYS },
+    { label: 'Tùy chọn...', value: TicketDateFilterOption.CUSTOM },
   ];
 
   protected readonly assigneeFilterOptions = computed(() => {
@@ -102,8 +102,8 @@ export class ManagementTicketsPageComponent implements OnInit, OnDestroy {
 
     const assignees = Array.from(options.values()).sort((a, b) => a.displayName.localeCompare(b.displayName));
     return [
-      { value: 'ALL', label: 'T\u1ea5t c\u1ea3 ng\u01b0\u1eddi ph\u1ee5 tr\u00e1ch', email: '', displayName: 'T\u1ea5t c\u1ea3 ng\u01b0\u1eddi ph\u1ee5 tr\u00e1ch', imageUrl: null },
-      { value: 'UNASSIGNED', label: 'Ch\u01b0a ph\u00e2n c\u00f4ng', email: '', displayName: 'Ch\u01b0a ph\u00e2n c\u00f4ng', imageUrl: null },
+      { value: 'ALL', label: 'Tất cả người phụ trách', email: '', displayName: 'Tất cả người phụ trách', imageUrl: null },
+      { value: 'UNASSIGNED', label: 'Chưa phân công', email: '', displayName: 'Chưa phân công', imageUrl: null },
       ...assignees.map(item => ({ value: item.email, label: item.displayName, ...item })),
     ];
   });
@@ -283,10 +283,10 @@ export class ManagementTicketsPageComponent implements OnInit, OnDestroy {
 
   protected statusLabel(status: TicketStatus): string {
     switch (status) {
-      case TicketStatus.OPEN: return '\u0110ang m\u1edf';
-      case TicketStatus.IN_PROGRESS: return '\u0110ang x\u1eed l\u00fd';
-      case TicketStatus.RESOLVED: return '\u0110\u00e3 x\u1eed l\u00fd';
-      case TicketStatus.CLOSED: return '\u0110\u00e3 \u0111\u00f3ng';
+      case TicketStatus.OPEN: return 'Đang mở';
+      case TicketStatus.IN_PROGRESS: return 'Đang xử lý';
+      case TicketStatus.RESOLVED: return 'Đã xử lý';
+      case TicketStatus.CLOSED: return 'Đã đóng';
       default: return status;
     }
   }
@@ -302,12 +302,12 @@ export class ManagementTicketsPageComponent implements OnInit, OnDestroy {
     if (profile?.displayName) return profile.displayName;
     if (!email && ticket.createdByName) return ticket.createdByName;
 
-    return source ? source.split('@')[0] : 'Kh\u00e1ch h\u00e0ng';
+    return source ? source.split('@')[0] : 'Khách hàng';
   }
 
   protected getAssigneeName(ticket: ManagementTicket): string {
     const profile = this.profileFor(ticket.assigneeEmail);
-    return ticket.assigneeName || profile?.displayName || ticket.assigneeEmail?.split('@')[0] || 'Ch\u01b0a ph\u00e2n c\u00f4ng';
+    return ticket.assigneeName || profile?.displayName || ticket.assigneeEmail?.split('@')[0] || 'Chưa phân công';
   }
 
   protected profileFor(email?: string | null): TicketProfile | null {

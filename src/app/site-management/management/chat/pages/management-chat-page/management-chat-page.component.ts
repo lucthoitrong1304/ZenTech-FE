@@ -140,10 +140,10 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
   }
 
   protected ticketStatusLabel(ticket: ManagementTicket): string {
-    if (ticket.status === 'OPEN') return '\u0110ang m\u1edf';
-    if (ticket.status === 'IN_PROGRESS') return '\u0110ang x\u1eed l\u00fd';
-    if (ticket.status === 'RESOLVED') return '\u0110\u00e3 x\u1eed l\u00fd';
-    return '\u0110\u00e3 \u0111\u00f3ng';
+    if (ticket.status === 'OPEN') return 'Đang mở';
+    if (ticket.status === 'IN_PROGRESS') return 'Đang xử lý';
+    if (ticket.status === 'RESOLVED') return 'Đã xử lý';
+    return 'Đã đóng';
   }
 
   private loadRelatedTickets(email: string): void {
