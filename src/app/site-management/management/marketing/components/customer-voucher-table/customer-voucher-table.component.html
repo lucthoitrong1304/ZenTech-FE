@@ -8,7 +8,7 @@
     <div class="table-empty">
       <svg lucideUserCheck class="empty-icon"></svg>
       <h3>Chưa có voucher nào được phát hành</h3>
-      <p>Bạn có thể phát hành voucher mới bằng cách nhấp vào nút "Phát hành voucher".</p>
+      <p>Bạn có thể phát hành voucher mới bằng nút phát hành voucher.</p>
     </div>
   } @else {
     <div class="table-responsive">
@@ -48,7 +48,7 @@
                     <span class="type-badge fixed-badge">Tiền cố định</span>
                   }
                   @case (CouponType.FREE_SHIPPING) {
-                    <span class="type-badge shipping-badge">Free Ship</span>
+                    <span class="type-badge shipping-badge">Free ship</span>
                   }
                 }
               </td>
@@ -106,7 +106,6 @@
       </table>
     </div>
 
-    <!-- Phân trang -->
     <div class="table-pagination">
       <span class="pagination-info">
         Hiển thị <strong>{{ pageStart() }}</strong> - <strong>{{ pageEnd() }}</strong> trong tổng số <strong>{{ totalElements() }}</strong> kết quả

@@ -56,7 +56,7 @@ export class MarketingPageComponent {
   private readonly toastService = inject(ToastService);
   protected readonly voucherStatusOptions = [
     { label: 'Tất cả trạng thái', value: 'all' },
-    { label: 'Sẵn có (Chưa sử dụng)', value: CustomerVoucherStatus.AVAILABLE },
+    { label: 'Sẵn có (chưa sử dụng)', value: CustomerVoucherStatus.AVAILABLE },
     { label: 'Đã sử dụng', value: CustomerVoucherStatus.USED },
     { label: 'Đã hết hạn', value: CustomerVoucherStatus.EXPIRED },
   ];
