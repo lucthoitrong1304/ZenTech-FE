@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnDestroy, OnInit, inject, signal, computed, NgZone } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnDestroy, OnInit, inject, signal, computed, effect, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -823,7 +823,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
           apiPath: context?.apiPath ? this.normalizeApiPath(context.apiPath) : textMetadata.apiPath,
           httpMethod: context?.method || textMetadata.httpMethod,
           statusCode: context?.statusCode ?? textMetadata.statusCode,
-          errorMessage: context?.reason || log.message.split('|')[0]?.trim() || log.message,
+          errorMessage: context?.reason ? this.sanitizeVisibleLogText(context.reason) : this.sanitizeVisibleLogText(log.message.split('|')[0]?.trim() || log.message),
           userEmail: context?.userEmail ?? null,
           userRole: context?.userRole ?? null,
           latestContext: context,
@@ -880,9 +880,33 @@ export class IssuesComponent implements OnInit, OnDestroy {
       return `${this.toFriendlyJourneyTitle(context.eventType, log.message)} · ${context.method || 'HTTP'} ${this.normalizeApiPath(context.apiPath)}`;
     }
 
-    return log.message.split('|')[0]?.trim() || log.message;
+    return this.sanitizeVisibleLogText(log.message.split('|')[0]?.trim() || log.message);
   }
 
+  protected getIssueDisplaySignature(issue: LogIssue): string {
+    return this.sanitizeVisibleLogText(issue.signature);
+  }
+
+  protected getLogDisplayMessage(log: SystemLog): string {
+    return this.sanitizeVisibleLogText(log.message);
+  }
+
+  private sanitizeVisibleLogText(value: string | null | undefined): string {
+    if (!value) {
+      return 'N/A';
+    }
+
+    const cleaned = value
+      .replace(/'[^']*\\x[0-9A-Fa-f]{2}[^']*'/g, "'[encoded value]'")
+      .replace(/\\x[0-9A-Fa-f]{2}/g, ' ')
+      .replace(/\\u[0-9A-Fa-f]{4}/g, ' ')
+      .replace(/\\[rntbf]/g, ' ')
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return cleaned || 'N/A';
+  }
   private getIssueSignature(log: SystemLog): string {
     const context = this.parseClientLogStack(log.details);
     const baseMessage = this.normalizeIssueMessage(log.message);
@@ -946,7 +970,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
       case 'RouteGuardDenied':
         return 'Bị chặn truy cập';
       default:
-        return eventType || fallbackMessage.split('|')[0]?.trim() || fallbackMessage;
+        return eventType || this.sanitizeVisibleLogText(fallbackMessage.split('|')[0]?.trim() || fallbackMessage);
     }
   }
 

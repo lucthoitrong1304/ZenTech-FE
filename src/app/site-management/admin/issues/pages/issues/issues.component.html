@@ -176,7 +176,7 @@
                   <span class="logs-linked-incident-pill" role="button" tabindex="0" (click)="openLinkedIncident(link, $event)">Incident {{ link.incidentCode }}</span>
                 }
                 <h3>{{ issue.title }}</h3>
-                <p>{{ issue.signature }}</p>
+                <p>{{ getIssueDisplaySignature(issue) }}</p>
               </div>
               <div class="logs-issue-stats">
                 <strong>{{ issue.occurrences }}</strong>
@@ -276,7 +276,7 @@
           @for (relatedLog of getRelatedLogs(issue); track relatedLog.id) {
             <button type="button" class="logs-related-item" (click)="openRelatedLogDetails(issue, relatedLog)">
               <span class="logs-level-badge" [class]="'level-' + relatedLog.level.toLowerCase()">{{ relatedLog.level }}</span>
-              <span class="logs-related-message">{{ relatedLog.message }}</span>
+              <span class="logs-related-message">{{ getLogDisplayMessage(relatedLog) }}</span>
               <span class="logs-related-time">{{ relatedLog.timestamp | date:'HH:mm:ss' }}</span>
             </button>
           }
