@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   LucideLock,
@@ -39,6 +39,7 @@ import { AccountStore } from '../../data-access/store/account.store';
 
 @Component({
   selector: 'app-admin-accounts',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

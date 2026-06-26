@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input, output, signal, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, input, output, signal, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideX, LucideTriangleAlert, LucideSparkles } from '@lucide/angular';
 import { DatePicker } from 'primeng/datepicker';
@@ -8,6 +8,7 @@ import { CouponFormValue, CouponType } from '../../data-access/models/marketing.
 
 @Component({
   selector: 'app-coupon-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, DialogModule, DatePicker, LucideX, LucideTriangleAlert, LucideSparkles],
   templateUrl: './coupon-dialog.component.html',

@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, ViewChild, computed, effect, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, HostListener, ViewChild, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,6 +18,7 @@ import { CommandPaletteService, CommandPaletteItem } from '../../data-access/ser
 
 @Component({
   selector: 'app-command-palette',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule, 

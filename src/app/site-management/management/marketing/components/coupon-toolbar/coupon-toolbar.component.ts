@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideSearch, LucideX } from '@lucide/angular';
 import { Select } from 'primeng/select';
@@ -7,6 +7,7 @@ import { CouponType, ManagementCouponQuery } from '../../data-access/models/mark
 
 @Component({
   selector: 'app-coupon-toolbar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, Select, LucideSearch, LucideX],
   templateUrl: './coupon-toolbar.component.html',

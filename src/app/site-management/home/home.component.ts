@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal, untracked, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, signal, untracked, OnInit, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '../../shared/components/toast/toast.service';
@@ -69,6 +69,7 @@ interface CommunityMember {
 
 @Component({
   selector: 'app-home',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, RouterLink, SiteHeaderComponent],
   templateUrl: './home.component.html',

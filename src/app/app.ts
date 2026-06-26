@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -14,6 +14,7 @@ import { RouteClientLogService } from './core/logging/route-client-log.service';
 
 @Component({
   selector: 'app-root',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, ConfirmDialogModule, ToastComponent, CustomerChatPopupComponent, IncomingCallDialogComponent, InCallDialogComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'

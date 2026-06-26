@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { LucideFilter, LucideSearch, LucideX } from '@lucide/angular';
 import {
   ManagementProductGroupQuery,
@@ -6,6 +6,7 @@ import {
 
 @Component({
   selector: 'app-product-group-toolbar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [LucideFilter, LucideSearch, LucideX],
   templateUrl: './product-group-toolbar.component.html',

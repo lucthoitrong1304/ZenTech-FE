@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import {
   LucideChevronLeft,
   LucideChevronRight,
@@ -28,6 +28,7 @@ type RoleFilterValue = 'all' | ManagementEmployeeRole;
 
 @Component({
   selector: 'app-management-employees-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

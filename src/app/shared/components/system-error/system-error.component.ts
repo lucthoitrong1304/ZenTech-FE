@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { LucideTriangleAlert } from '@lucide/angular';
 import { ButtonModule } from 'primeng/button';
@@ -10,6 +10,7 @@ import { hasRole } from '../../../site-management/auth/data-access/utils/auth-ro
 
 @Component({
   selector: 'app-system-error',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, ButtonModule, LucideTriangleAlert],
   templateUrl: './system-error.component.html',

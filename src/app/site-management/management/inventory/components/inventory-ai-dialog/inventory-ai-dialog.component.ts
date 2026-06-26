@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { DialogModule } from 'primeng/dialog';
 import { MarkdownComponent } from 'ngx-markdown';
 import {
@@ -10,6 +10,7 @@ import {
 
 @Component({
   selector: 'app-inventory-ai-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

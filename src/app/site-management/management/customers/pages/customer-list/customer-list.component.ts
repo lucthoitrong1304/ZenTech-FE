@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, effect, inject, untracked } from '@angular/core';
 import { filter, take } from 'rxjs';
 import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
@@ -11,6 +11,7 @@ import { CustomerStore } from '../../data-access/store/customer.store';
 
 @Component({
   selector: 'app-customer-list',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

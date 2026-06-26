@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, computed, effect, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, ViewChild, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -8,6 +8,7 @@ import { LucidePhoneOff, LucideMic, LucideMicOff, LucideVideo, LucideVideoOff, L
 
 @Component({
   selector: 'app-in-call-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, ButtonModule, DialogModule, LucidePhoneOff, LucideMic, LucideMicOff, LucideVideo, LucideVideoOff, LucideMonitorUp, LucideMonitorOff],
   template: `

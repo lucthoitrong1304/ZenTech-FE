@@ -1,5 +1,5 @@
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   LucideUserCheck,
@@ -25,6 +25,7 @@ import { MarketingStore } from '../../data-access/store/marketing.store';
 
 @Component({
   selector: 'app-marketing-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

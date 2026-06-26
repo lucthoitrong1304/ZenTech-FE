@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
@@ -21,6 +21,7 @@ import { LucideArrowLeft, LucideCreditCard } from '@lucide/angular';
 
 @Component({
   selector: 'app-checkout-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, SiteHeaderComponent, CartSummaryComponent, LucideArrowLeft, LucideCreditCard],
   templateUrl: './checkout-page.component.html',

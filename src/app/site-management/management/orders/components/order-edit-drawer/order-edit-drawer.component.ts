@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { LucideX } from '@lucide/angular';
 import {
   ManagementOrder,
@@ -10,6 +10,7 @@ import {
 
 @Component({
   selector: 'app-order-edit-drawer',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CurrencyPipe, DatePipe, LucideX],
   templateUrl: './order-edit-drawer.component.html',

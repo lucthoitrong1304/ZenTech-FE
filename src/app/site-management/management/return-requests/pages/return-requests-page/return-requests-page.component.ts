@@ -1,6 +1,6 @@
 import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { PaginatorModule } from 'primeng/paginator';
@@ -21,6 +21,7 @@ import { ToastService } from '../../../../../shared/components/toast/toast.servi
 
 @Component({
   selector: 'app-return-requests-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     HasPermissionDirective,
