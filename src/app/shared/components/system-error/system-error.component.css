@@ -2,7 +2,7 @@
 
 .error-container {
   @apply min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center p-4;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--zt-font-sans);
 }
 
 .error-card {

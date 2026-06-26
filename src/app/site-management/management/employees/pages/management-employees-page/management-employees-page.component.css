@@ -34,7 +34,7 @@
 .employees-modal__header p {
   color: rgba(79, 70, 50, 0.6);
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 900;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -42,7 +42,7 @@
 .employees-command h2 {
   margin: 8px 0;
   font-size: 30px;
-  font-weight: 950;
+  font-weight: 900;
   line-height: 1;
 }
 
@@ -136,7 +136,7 @@
   border-radius: 8px;
   padding: 0 16px;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 900;
   text-transform: uppercase;
 }
 
@@ -210,7 +210,7 @@
 .employees-modal__header h2 {
   margin: 5px 0 0;
   font-size: 22px;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .employees-loading {
@@ -248,7 +248,7 @@
   background: #f6f3f2;
   color: rgba(79, 70, 50, 0.62);
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 900;
   text-transform: uppercase;
 }
 
@@ -288,7 +288,7 @@
   background: #151515;
   color: #fbbc04;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .employees-identity span:last-child {
@@ -307,7 +307,7 @@
   display: inline-flex;
   border-radius: 999px;
   font-size: 10px;
-  font-weight: 950;
+  font-weight: 900;
   padding: 6px 10px;
   text-transform: uppercase;
 }
@@ -359,7 +359,7 @@
 .employees-empty h3 {
   margin: 0;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .employees-pagination {
@@ -386,7 +386,7 @@
   height: 34px;
   background: #ffffff;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .employees-page-button--active {
@@ -440,7 +440,7 @@
 .employees-field > span {
   color: #4f4632;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 900;
   text-transform: uppercase;
 }
 
@@ -449,7 +449,7 @@
   margin: 0;
   color: #dc2626;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .employees-modal__footer {
@@ -480,7 +480,7 @@
 .employees-detail h3 {
   margin: 4px 0 0;
   font-size: 22px;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .employees-detail dl {
@@ -503,7 +503,7 @@
 .employees-detail dt {
   color: rgba(79, 70, 50, 0.65);
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 900;
   text-transform: uppercase;
 }
 

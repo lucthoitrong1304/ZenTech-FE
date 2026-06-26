@@ -147,7 +147,7 @@ button:disabled {
 .category-stats strong {
   color: #111827;
   font-size: 28px;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .category-toolbar {
@@ -448,7 +448,7 @@ button:disabled {
 .category-form__submit-error {
   color: #be123c;
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 700;
   text-transform: none;
 }
 

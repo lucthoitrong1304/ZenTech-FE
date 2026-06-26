@@ -140,15 +140,15 @@
   grid-column: 2;
   justify-self: center;
   align-items: center;
-  gap: 0.7rem;
-  min-width: 0;
+  gap: 0.85rem;
+  min-width: max-content;
   text-decoration: none;
 }
 
 .site-header__brand-mark {
   display: inline-flex;
   height: 2.35rem;
-  width: 2.6rem;
+  width: 2.5rem;
   flex: 0 0 auto;
   transform: skewX(-15deg);
   border-radius: 0.35rem;
@@ -164,6 +164,7 @@
   justify-content: center;
   border-radius: 0.28rem;
   background: #0a0a0a;
+  overflow: visible;
 }
 
 .site-header__brand-mark-text {
@@ -171,7 +172,9 @@
   font-size: 0.84rem;
   font-weight: 900;
   font-style: italic;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
+  line-height: 1;
+  padding-inline: 0.08rem;
   background: linear-gradient(135deg, #ffc700, #ff8a00);
   -webkit-background-clip: text;
   background-clip: text;
@@ -182,6 +185,8 @@
   display: inline-flex;
   align-items: baseline;
   gap: 0.06em;
+  line-height: 1;
+  padding-inline: 0.08em;
   white-space: nowrap;
 }
 
@@ -378,7 +383,7 @@
 
   .site-header__brand-mark {
     height: 2.15rem;
-    width: 2.35rem;
+    width: 2.5rem;
   }
 
   .site-header__search-trigger {

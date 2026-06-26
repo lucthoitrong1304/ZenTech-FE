@@ -105,7 +105,7 @@
   color: #344054;
   font: inherit;
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 600;
   outline: none;
   transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
@@ -474,7 +474,7 @@
 .tck-muted-text {
   color: #98a2b3;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .tck-linked-incident-link {
@@ -1341,7 +1341,7 @@
 
 .tck-profile-name {
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 700;
   line-height: 1.25;
 }
 
@@ -1567,7 +1567,7 @@
   overflow: hidden;
   color: #111827;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1627,12 +1627,12 @@
 }
 
 .tck-td--subject {
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .tck-operator-name,
 .tck-profile-name {
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .tck-operator-email,

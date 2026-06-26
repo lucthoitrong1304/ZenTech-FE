@@ -517,7 +517,7 @@ th.work-schedules-grid__employee {
 .work-schedules-empty h3 {
   margin: 0;
   font-size: 18px;
-  font-weight: 950;
+  font-weight: 900;
 }
 
 .work-schedules-pagination {
@@ -626,7 +626,7 @@ th.work-schedules-grid__employee {
 .work-schedules-settings-row label span {
   color: #4f4632;
   font-size: 12px;
-  font-weight: 950;
+  font-weight: 900;
   text-transform: uppercase;
 }
 
@@ -657,7 +657,7 @@ th.work-schedules-grid__employee {
 .work-schedules-summary-line span {
   color: rgba(79, 70, 50, 0.65);
   font-size: 11px;
-  font-weight: 950;
+  font-weight: 900;
   text-transform: uppercase;
 }
 

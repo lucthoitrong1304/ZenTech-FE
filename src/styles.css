@@ -28,12 +28,75 @@ body:has(app-admin-layout) {
 
 
 :root {
+  --zt-font-sans: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --zt-font-display: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --zt-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --zt-text-xs: 11px;
+  --zt-text-sm: 13px;
+  --zt-text-base: 15px;
+  --zt-text-lg: 18px;
+  --zt-text-xl: 22px;
+  --zt-text-2xl: 28px;
+  --zt-text-3xl: 36px;
+  --zt-text-4xl: 48px;
+  --zt-weight-body: 500;
+  --zt-weight-label: 700;
+  --zt-weight-heading: 800;
+  --zt-weight-display: 900;
   --zt-scrollbar-size: 8px;
   --zt-scrollbar-button-size: 12px;
   --zt-scrollbar-thumb: rgba(174, 169, 160, 0.78);
   --zt-scrollbar-thumb-hover: rgba(136, 130, 120, 0.86);
   --zt-scrollbar-arrow: rgba(174, 169, 160, 0.78);
   --zt-scrollbar-track: transparent;
+}
+
+html,
+body {
+  font-family: var(--zt-font-sans);
+  font-size: var(--zt-text-base);
+  font-weight: var(--zt-weight-body);
+  letter-spacing: 0;
+  text-rendering: geometricPrecision;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+textarea,
+select,
+.p-component,
+.p-inputtext,
+.p-button,
+.p-dialog,
+.p-drawer,
+.p-popover,
+.p-tooltip,
+.p-select,
+.p-datepicker,
+.p-menu,
+.p-confirm-dialog {
+  font-family: var(--zt-font-sans) !important;
+  letter-spacing: 0;
+}
+
+.zt-font-display,
+.font-scifi,
+.site-header__wordmark {
+  font-family: var(--zt-font-display);
+}
+
+.zt-font-mono,
+.font-mono,
+.text-mono,
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--zt-font-mono);
 }
 
 :where(
@@ -285,7 +348,7 @@ app-site-header {
    GLOBAL PRIMENG CONFIRM DIALOG CUSTOM CUSTOMIZATION
    ========================================================================== */
 .zt-confirm-dialog {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  font-family: var(--zt-font-sans) !important;
 }
 
 .zt-confirm-dialog.p-dialog {

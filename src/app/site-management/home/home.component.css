@@ -8,11 +8,11 @@
 }
 
 .home-page {
-  font-family: Rajdhani, Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--zt-font-sans);
 }
 
 .font-scifi {
-  font-family: Orbitron, Inter, "Segoe UI", sans-serif;
+  font-family: var(--zt-font-display);
 }
 
 .home-page a,
