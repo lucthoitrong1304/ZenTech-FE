@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LucideArrowRight, LucideLoader2, LucideMail } from '@lucide/angular';
@@ -26,6 +26,7 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.css'],
   providers: [PasswordRecoveryStore],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ForgotPasswordComponent {
   private readonly formBuilder = inject(FormBuilder);

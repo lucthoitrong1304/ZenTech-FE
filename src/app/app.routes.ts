@@ -3,8 +3,9 @@ import { Routes } from '@angular/router';
 import { homeRedirectGuard } from './core/guards/home-redirect.guard';
 
 export const routes: Routes = [
+  // Dùng để điều hướng đúng UI dựa trên role sau khi đã login mà truy cập vô lại
   {
-    path: '', // Home route pattern
+    path: '',
     canActivate: [homeRedirectGuard],
     loadComponent: () => import('./site-management/home/home.component').then(m => m.HomeComponent)
   },
@@ -65,6 +66,7 @@ export const routes: Routes = [
     path: 'account',
     loadChildren: () => import('./site-management/account/account.routes').then(m => m.accountRoutes)
   },
+  // Xác thực tài khoản
   {
     path: 'auth',
     children: [
