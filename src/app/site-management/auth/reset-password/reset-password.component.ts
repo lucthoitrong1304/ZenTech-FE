@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal, untracked } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -32,6 +32,7 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css'],
   providers: [PasswordRecoveryStore],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResetPasswordComponent {
   private readonly formBuilder = inject(FormBuilder);

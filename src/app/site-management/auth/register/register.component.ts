@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal, untracked } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -34,6 +34,7 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
   providers: [RegisterStore],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterComponent {
   private readonly formBuilder = inject(FormBuilder);
