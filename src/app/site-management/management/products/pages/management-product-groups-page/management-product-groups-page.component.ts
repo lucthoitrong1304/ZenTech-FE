@@ -87,7 +87,7 @@ export class ManagementProductGroupsPageComponent {
     this.confirmService
       .open({
         title: 'Xóa nhóm sản phẩm',
-        content: `Bạn có chắc muốn xóa nhóm ${group.name} khỏi danh sách mock không?`,
+        content: `Bạn có chắc muốn xóa nhóm ${group.name} khỏi danh sách nhóm sản phẩm không?`,
       })
       .pipe(
         take(1),
