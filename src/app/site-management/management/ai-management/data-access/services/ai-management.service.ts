@@ -3,12 +3,12 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../../../../environments/environment';
 import { ApiService } from '../../../../../core/api/api.service';
 import {
-  AiAgent,
-  AiAgentPayload,
   AiDataset,
   AiDatasetPayload,
   AiDemoResult,
   AiDocument,
+  AiProductVectorFilter,
+  AiProductVectorStatus,
   ApiResponseDto,
 } from '../models/ai-management.models';
 
@@ -18,43 +18,6 @@ import {
 export class AiManagementService {
   private readonly apiService = inject(ApiService);
   private readonly baseUrl = `${environment.apiBaseUrl}/management/ai`;
-
-  getAgents(): Observable<AiAgent[]> {
-    return this.apiService
-      .get<ApiResponseDto<AiAgent[]>>(`${this.baseUrl}/agents`)
-      .pipe(map(unwrapApiResponse));
-  }
-
-  createAgent(payload: AiAgentPayload): Observable<AiAgent> {
-    return this.apiService
-      .post<AiAgentPayload, ApiResponseDto<AiAgent>>(`${this.baseUrl}/agents`, normalizeAgentPayload(payload))
-      .pipe(map(unwrapApiResponse));
-  }
-
-  updateAgent(agentId: string, payload: AiAgentPayload): Observable<AiAgent> {
-    return this.apiService
-      .patch<AiAgentPayload, ApiResponseDto<AiAgent>>(`${this.baseUrl}/agents/${agentId}`, normalizeAgentPayload(payload))
-      .pipe(map(unwrapApiResponse));
-  }
-
-  deleteAgent(agentId: string): Observable<AiAgent> {
-    return this.apiService
-      .delete<ApiResponseDto<AiAgent>>(`${this.baseUrl}/agents/${agentId}`)
-      .pipe(map(unwrapApiResponse));
-  }
-
-  demoAgent(
-    agentId: string,
-    message: string,
-    history: { role: 'customer' | 'assistant' | 'staff' | 'system'; content: string }[] = []
-  ): Observable<AiDemoResult> {
-    return this.apiService
-      .post<{ message: string; history: { role: 'customer' | 'assistant' | 'staff' | 'system'; content: string }[] }, ApiResponseDto<AiDemoResult>>(
-        `${this.baseUrl}/agents/${agentId}/demo`,
-        { message, history }
-      )
-      .pipe(map(unwrapApiResponse));
-  }
 
   getDatasets(): Observable<AiDataset[]> {
     return this.apiService
@@ -74,7 +37,7 @@ export class AiManagementService {
       .pipe(map(unwrapApiResponse));
   }
 
-  deleteDataset(datasetId: string): Observable<AiDataset> {
+  archiveDataset(datasetId: string): Observable<AiDataset> {
     return this.apiService
       .delete<ApiResponseDto<AiDataset>>(`${this.baseUrl}/datasets/${datasetId}`)
       .pipe(map(unwrapApiResponse));
@@ -99,9 +62,46 @@ export class AiManagementService {
       .post<Record<string, never>, ApiResponseDto<AiDocument>>(`${this.baseUrl}/documents/${documentId}/reingest`, {})
       .pipe(map(unwrapApiResponse));
   }
+
+  getProductVectorStatuses(filter: AiProductVectorFilter = 'ALL'): Observable<AiProductVectorStatus[]> {
+    return this.apiService
+      .get<ApiResponseDto<AiProductVectorStatus[]>>(`${this.baseUrl}/products/vector-status?filter=${filter}`)
+      .pipe(map(unwrapApiResponse));
+  }
+
+  syncProductVariant(variantId: string): Observable<AiProductVectorStatus> {
+    return this.apiService
+      .post<Record<string, never>, ApiResponseDto<AiProductVectorStatus>>(`${this.baseUrl}/products/variants/${variantId}/sync`, {})
+      .pipe(map(unwrapApiResponse));
+  }
+
+  verifyProductVariant(variantId: string): Observable<AiProductVectorStatus> {
+    return this.apiService
+      .post<Record<string, never>, ApiResponseDto<AiProductVectorStatus>>(`${this.baseUrl}/products/variants/${variantId}/verify`, {})
+      .pipe(map(unwrapApiResponse));
+  }
+
+  verifyAllProducts(): Observable<AiProductVectorStatus[]> {
+    return this.apiService
+      .post<Record<string, never>, ApiResponseDto<AiProductVectorStatus[]>>(`${this.baseUrl}/products/verify`, {})
+      .pipe(map(unwrapApiResponse));
+  }
+
   reindexProducts(): Observable<string> {
     return this.apiService
       .post<Record<string, never>, ApiResponseDto<string>>(`${this.baseUrl}/products/reindex`, {})
+      .pipe(map(unwrapApiResponse));
+  }
+
+  runDemo(
+    message: string,
+    history: { role: 'customer' | 'assistant' | 'staff' | 'system'; content: string }[] = []
+  ): Observable<AiDemoResult> {
+    return this.apiService
+      .post<{ message: string; history: { role: 'customer' | 'assistant' | 'staff' | 'system'; content: string }[] }, ApiResponseDto<AiDemoResult>>(
+        `${this.baseUrl}/demo`,
+        { message, history }
+      )
       .pipe(map(unwrapApiResponse));
   }
 }
@@ -111,15 +111,6 @@ function unwrapApiResponse<T>(response: ApiResponseDto<T>): T {
     throw new Error(response.message || 'Khong the xu ly yeu cau AI.');
   }
   return response.data;
-}
-
-function normalizeAgentPayload(payload: AiAgentPayload): AiAgentPayload {
-  return {
-    ...payload,
-    description: normalizeText(payload.description),
-    guardrails: normalizeText(payload.guardrails),
-    fallbackMessage: normalizeText(payload.fallbackMessage),
-  };
 }
 
 function normalizeDatasetPayload(payload: AiDatasetPayload): AiDatasetPayload {
