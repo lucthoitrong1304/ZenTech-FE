@@ -286,6 +286,12 @@ export class ManagementLayoutComponent {
               permission: PermissionCode.PRODUCT_VIEW,
               icon: 'products',
             },
+            {
+              label: 'Quản lý danh mục',
+              path: '/management/categories',
+              permission: PermissionCode.PRODUCT_VIEW,
+              icon: 'categories',
+            },
           ],
         },
         {
