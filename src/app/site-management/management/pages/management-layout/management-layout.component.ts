@@ -205,6 +205,7 @@ export class ManagementLayoutComponent {
     return this.authStorageService.getSession()?.email || '';
   });
 
+  // Định nghĩa layout
   protected readonly navSections: ManagementNavSection[] = [
     {
       title: 'Tổng quan hệ thống',
@@ -219,32 +220,25 @@ export class ManagementLayoutComponent {
       ],
     },
     {
-      title: 'Điều hành kinh doanh',
+      title: 'Kinh doanh & CSKH',
       items: [
         {
-          label: 'Nhân viên',
-          path: '/management/employees',
-          permission: PermissionCode.EMPLOYEE_VIEW,
-          icon: 'employees',
+          label: 'Đơn hàng',
+          path: '/management/orders',
+          permission: PermissionCode.ORDER_VIEW,
+          icon: 'orders',
         },
         {
-          label: 'Lịch làm việc',
-          path: '/management/work-schedules',
-          permission: PermissionCode.SCHEDULE_VIEW,
-          icon: 'schedule',
+          label: 'Yêu cầu trả hàng',
+          path: '/management/return-requests',
+          permission: PermissionCode.RETURN_VIEW,
+          icon: 'orders',
         },
         {
-          label: 'Báo cáo chấm công',
-          path: '/management/attendance-report',
-          permission: PermissionCode.SCHEDULE_VIEW,
-          icon: 'reports',
-        },
-        { label: 'Yêu cầu & Đề xuất', path: '/management/requests', icon: 'chat' },
-        {
-          label: 'Duyệt yêu cầu',
-          path: '/management/approvals',
-          permission: PermissionCode.APPROVAL_VIEW,
-          icon: 'employees',
+          label: 'Khách hàng',
+          path: '/management/customers',
+          permission: PermissionCode.CUSTOMER_VIEW,
+          icon: 'customers',
         },
         {
           label: 'Tư vấn khách hàng',
@@ -259,17 +253,16 @@ export class ManagementLayoutComponent {
           icon: 'ticket',
         },
         {
-          label: 'Đơn hàng',
-          path: '/management/orders',
-          permission: PermissionCode.ORDER_VIEW,
-          icon: 'orders',
+          label: 'Marketing',
+          path: '/management/marketing',
+          permission: PermissionCode.MARKETING_VIEW,
+          icon: 'marketing',
         },
-        {
-          label: 'Yêu cầu trả hàng',
-          path: '/management/return-requests',
-          permission: PermissionCode.RETURN_VIEW,
-          icon: 'orders',
-        },
+      ],
+    },
+    {
+      title: 'Sản phẩm & Kho hàng',
+      items: [
         {
           label: 'Sản phẩm',
           icon: 'products',
@@ -301,17 +294,39 @@ export class ManagementLayoutComponent {
           permission: PermissionCode.INVENTORY_VIEW,
           icon: 'inventory',
         },
+      ],
+    },
+    {
+      title: 'Quản trị nhân sự',
+      items: [
         {
-          label: 'Khách hàng',
-          path: '/management/customers',
-          permission: PermissionCode.CUSTOMER_VIEW,
-          icon: 'customers',
+          label: 'Nhân viên',
+          path: '/management/employees',
+          permission: PermissionCode.EMPLOYEE_VIEW,
+          icon: 'employees',
         },
         {
-          label: 'Marketing',
-          path: '/management/marketing',
-          permission: PermissionCode.MARKETING_VIEW,
-          icon: 'marketing',
+          label: 'Lịch làm việc',
+          path: '/management/work-schedules',
+          permission: PermissionCode.SCHEDULE_VIEW,
+          icon: 'schedule',
+        },
+        {
+          label: 'Báo cáo chấm công',
+          path: '/management/attendance-report',
+          permission: PermissionCode.SCHEDULE_VIEW,
+          icon: 'reports',
+        },
+        {
+          label: 'Yêu cầu & Đề xuất',
+          path: '/management/requests',
+          icon: 'chat',
+        },
+        {
+          label: 'Duyệt yêu cầu',
+          path: '/management/approvals',
+          permission: PermissionCode.APPROVAL_VIEW,
+          icon: 'employees',
         },
       ],
     },
@@ -374,6 +389,7 @@ export class ManagementLayoutComponent {
       activeSection ?? sections.find((section) => section.title === this.header().eyebrow) ?? null
     );
   });
+
   protected readonly currentBreadcrumbPages = computed(() => {
     const section = this.currentBreadcrumbSection();
 
