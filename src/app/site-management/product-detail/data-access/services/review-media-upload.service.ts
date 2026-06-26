@@ -27,18 +27,21 @@ export class ReviewMediaUploadService {
   private readonly apiService = inject(ApiService);
   private readonly uploadsBaseUrl = `${environment.apiBaseUrl}/uploads`;
 
+  // Upload ảnh đánh giá lên R2 và trả về fileKey để lưu cùng review.
   uploadReviewImage(file: File): Observable<string> {
     return this.requestPresignedUrl(file, 'PRODUCT_REVIEW').pipe(
       switchMap(presign => this.uploadToR2(file, presign).pipe(map(() => presign.fileKey)))
     );
   }
 
+  // Upload video đánh giá lên R2 và trả về fileKey để backend gắn vào review.
   uploadReviewVideo(file: File): Observable<string> {
     return this.requestPresignedUrl(file, 'PRODUCT_REVIEW_VIDEO').pipe(
       switchMap(presign => this.uploadToR2(file, presign).pipe(map(() => presign.fileKey)))
     );
   }
 
+  // Gọi backend để tạo presigned URL theo đúng loại media cần upload.
   private requestPresignedUrl(
     file: File,
     purpose: 'PRODUCT_REVIEW' | 'PRODUCT_REVIEW_VIDEO'
@@ -54,6 +57,7 @@ export class ReviewMediaUploadService {
     );
   }
 
+  // Đẩy file trực tiếp lên R2 bằng URL tạm thời, không gửi kèm JWT của hệ thống.
   uploadToR2(file: File, presign: UploadPresignResponseDto): Observable<string> {
     return this.apiService.putFile(presign.presignedUrl, file, {
       headers: new HttpHeaders(presign.requiredHeaders),
