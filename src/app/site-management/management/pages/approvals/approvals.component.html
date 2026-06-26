@@ -1,191 +1,54 @@
 <div class="approvals-page">
   <div class="approvals-command">
     <div class="approvals-command__copy">
-      <span class="approvals-kicker">Điều hành kinh doanh</span>
+      <span class="approvals-kicker">Điều hành nhân sự</span>
       <h1>Duyệt yêu cầu</h1>
-      <p>Phê duyệt các đề xuất nghỉ phép, đổi ca và điều chỉnh công của nhân viên.</p>
+      <p>Phê duyệt các yêu cầu Nghỉ, WFH, AFK và loại phép do owner cấu hình.</p>
     </div>
-    <button (click)="loadAllPending()" class="approvals-refresh-btn" title="Tải lại dữ liệu">
+    <button (click)="loadPendingLeaves()" class="approvals-refresh-btn" title="Tải lại dữ liệu">
       <svg lucideRefreshCw class="w-4 h-4"></svg>
     </button>
   </div>
 
-  <!-- Tab Buttons -->
-  <div class="approvals-tabs-bar">
-    <button (click)="activeTab.set('leave')" 
-            [class.approvals-tab-btn--active]="activeTab() === 'leave'"
-            class="approvals-tab-btn">
-      Nghỉ phép ({{ leaves().length }})
-    </button>
-    <button (click)="activeTab.set('swap')" 
-            [class.approvals-tab-btn--active]="activeTab() === 'swap'"
-            class="approvals-tab-btn">
-      Đổi ca / Làm thay ({{ swaps().length }})
-    </button>
-    <button (click)="activeTab.set('adjust')" 
-            [class.approvals-tab-btn--active]="activeTab() === 'adjust'"
-            class="approvals-tab-btn">
-      Chỉnh sửa công ({{ adjustments().length }})
-    </button>
-  </div>
-
-  <!-- Content Tables -->
   <div class="approvals-table-panel">
     <div class="approvals-table-wrap">
-      <!-- Leave Table -->
-      @if (activeTab() === 'leave') {
-        <table class="approvals-table">
-          <thead>
+      <table class="approvals-table">
+        <thead>
+          <tr>
+            <th scope="col">Nhân viên</th>
+            <th scope="col">Thời gian</th>
+            <th scope="col">Loại phép</th>
+            <th scope="col">Lý do</th>
+            <th scope="col" class="text-right">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (req of leaves(); track req.id) {
             <tr>
-              <th scope="col">Nhân viên</th>
-              <th scope="col">Thời gian nghỉ</th>
-              <th scope="col">Loại phép</th>
-              <th scope="col">Lý do</th>
-              <th scope="col" class="text-right">Thao tác</th>
+              <td><strong>{{ req.employee.fullName }}</strong></td>
+              <td>{{ requestTimeLabel(req) }}</td>
+              <td>
+                <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-md">
+                  {{ req.leaveType?.name || 'Yêu cầu' }}
+                </span>
+              </td>
+              <td>{{ req.reason }}</td>
+              <td>
+                <div class="flex justify-end gap-2">
+                  <button (click)="approveLeave(req.id, 'APPROVED')" class="approvals-action-btn approvals-action-btn--approve" title="Phê duyệt">
+                    <svg lucideCheck class="w-4 h-4"></svg>
+                  </button>
+                  <button (click)="approveLeave(req.id, 'REJECTED')" class="approvals-action-btn approvals-action-btn--reject" title="Từ chối">
+                    <svg lucideX class="w-4 h-4"></svg>
+                  </button>
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            @for (req of leaves(); track req.id) {
-              <tr>
-                <td><strong>{{ req.employee.fullName }}</strong></td>
-                <td>{{ req.startDate }} -> {{ req.endDate }}</td>
-                <td>
-                  <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-md">
-                    {{ req.leaveType }}
-                  </span>
-                </td>
-                <td>{{ req.reason }}</td>
-                <td>
-                  <div class="flex justify-end gap-2">
-                    <button (click)="approveLeave(req.id, 'APPROVED')" class="approvals-action-btn approvals-action-btn--approve" title="Phê duyệt">
-                      <svg lucideCheck class="w-4 h-4"></svg>
-                    </button>
-                    <button (click)="approveLeave(req.id, 'REJECTED')" class="approvals-action-btn approvals-action-btn--reject" title="Từ chối">
-                      <svg lucideX class="w-4 h-4"></svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr><td colspan="5" class="text-center py-8 text-gray-500">Không có yêu cầu nghỉ phép nào cần duyệt.</td></tr>
-            }
-          </tbody>
-        </table>
-      }
-
-      <!-- Swap Table -->
-      @if (activeTab() === 'swap') {
-        <table class="approvals-table">
-          <thead>
-            <tr>
-              <th scope="col">Người yêu cầu</th>
-              <th scope="col">Loại hình</th>
-              <th scope="col">Ca cần đổi / thay</th>
-              <th scope="col">Người làm thay / đổi</th>
-              <th scope="col">Ca nhận lại (nếu swap)</th>
-              <th scope="col">Lý do</th>
-              <th scope="col" class="text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (req of swaps(); track req.id) {
-              <tr>
-                <td><strong>{{ req.requester.fullName }}</strong></td>
-                <td>{{ req.type }}</td>
-                <td>
-                  {{ req.workDate }} · {{ req.shift.name }} ({{ req.shift.startTime.slice(0,5) }}-{{ req.shift.endTime.slice(0,5) }})
-                </td>
-                <td><strong>{{ req.targetEmployee.fullName }}</strong></td>
-                <td>
-                  @if (req.type === 'SWAP' && req.targetWorkDate) {
-                    <span>{{ req.targetWorkDate }} · {{ req.targetShift?.name }}</span>
-                  } @else {
-                    <span>--</span>
-                  }
-                </td>
-                <td>{{ req.reason }}</td>
-                <td>
-                  <div class="flex justify-end gap-2">
-                    <button (click)="approveSwap(req.id, 'APPROVED')" class="approvals-action-btn approvals-action-btn--approve" title="Phê duyệt">
-                      <svg lucideCheck class="w-4 h-4"></svg>
-                    </button>
-                    <button (click)="approveSwap(req.id, 'REJECTED')" class="approvals-action-btn approvals-action-btn--reject" title="Từ chối">
-                      <svg lucideX class="w-4 h-4"></svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr><td colspan="7" class="text-center py-8 text-gray-500">Không có yêu cầu đổi ca nào cần duyệt.</td></tr>
-            }
-          </tbody>
-        </table>
-      }
-
-      <!-- Adjust Table -->
-      @if (activeTab() === 'adjust') {
-        <table class="approvals-table">
-          <thead>
-            <tr>
-              <th scope="col">Nhân viên</th>
-              <th scope="col">Ngày cần sửa</th>
-              <th scope="col">Loại điều chỉnh</th>
-              <th scope="col">Giờ đề xuất</th>
-              <th scope="col">Lý do giải trình</th>
-              <th scope="col" class="text-right">Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (req of adjustments(); track req.id) {
-              <tr>
-                <td><strong>{{ req.employee.fullName }}</strong></td>
-                <td>{{ req.workDate }}</td>
-                <td>
-                  <span class="px-2 py-0.5 bg-amber-50 text-amber-700 text-xs font-semibold rounded-md">
-                    {{ req.type }}
-                  </span>
-                </td>
-                <td><strong>{{ req.proposedTime.slice(0,5) }}</strong></td>
-                <td>{{ req.reason }}</td>
-                <td>
-                  <div class="flex justify-end gap-2">
-                    <button (click)="approveAdjust(req.id, 'APPROVED')" class="approvals-action-btn approvals-action-btn--approve" title="Phê duyệt">
-                      <svg lucideCheck class="w-4 h-4"></svg>
-                    </button>
-                    <button (click)="openRejectDialog(req.id)" class="approvals-action-btn approvals-action-btn--reject" title="Từ chối">
-                      <svg lucideX class="w-4 h-4"></svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            } @empty {
-              <tr><td colspan="6" class="text-center py-8 text-gray-500">Không có yêu cầu chỉnh công nào cần duyệt.</td></tr>
-            }
-          </tbody>
-        </table>
-      }
+          } @empty {
+            <tr><td colspan="5" class="text-center py-8 text-gray-500">Không có yêu cầu nào cần duyệt.</td></tr>
+          }
+        </tbody>
+      </table>
     </div>
   </div>
-
-  <!-- Reject Dialog (for adjustments) -->
-  @if (rejectModalOpen()) {
-    <div class="approvals-modal-backdrop" (click)="closeRejectDialog()">
-      <div class="approvals-modal-dialog" (click)="$event.stopPropagation()">
-        <header class="approvals-modal-header">
-          <h2>Từ chối điều chỉnh công</h2>
-          <button (click)="closeRejectDialog()" class="approvals-modal-close-btn">✕</button>
-        </header>
-        <div class="approvals-modal-body">
-          <label class="approvals-form-group">
-            <span class="approvals-form-label">Lý do từ chối</span>
-            <textarea [(ngModel)]="rejectionReason" rows="3" placeholder="Nhập lý do từ chối..." class="approvals-form-textarea"></textarea>
-          </label>
-        </div>
-        <footer class="approvals-modal-footer">
-          <button (click)="closeRejectDialog()" class="approvals-modal-btn approvals-modal-btn--secondary">Hủy</button>
-          <button (click)="rejectAdjust()" class="approvals-modal-btn approvals-modal-btn--primary">Từ chối</button>
-        </footer>
-      </div>
-    </div>
-  }
 </div>

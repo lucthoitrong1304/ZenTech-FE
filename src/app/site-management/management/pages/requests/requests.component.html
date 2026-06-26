@@ -1,189 +1,87 @@
 <div class="requests-page">
-
-  <!-- Header -->
   <div class="requests-command">
     <div class="requests-command__copy">
-      <span class="requests-kicker">Điều hành kinh doanh</span>
-      <h1>Yêu cầu &amp; Đề xuất</h1>
-      <p>Gửi đề xuất nghỉ phép, đổi ca làm việc hoặc bổ sung giờ công thiếu.</p>
+      <span class="requests-kicker">Điều hành nhân sự</span>
+      <h1>Yêu cầu nghỉ phép</h1>
+      <p>Gửi yêu cầu Nghỉ, WFH, AFK hoặc các loại phép do owner cấu hình.</p>
     </div>
   </div>
 
-  <!-- Tab Buttons -->
-  <div class="requests-tabs-bar">
-    <button (click)="activeTab.set('leave')"
-            [class.requests-tab-btn--active]="activeTab() === 'leave'"
-            class="requests-tab-btn">
-      <svg lucideFileText class="w-4 h-4"></svg>
-      Đăng ký nghỉ phép
-    </button>
-    <button (click)="activeTab.set('swap')"
-            [class.requests-tab-btn--active]="activeTab() === 'swap'"
-            class="requests-tab-btn">
-      <svg lucideCalendarClock class="w-4 h-4"></svg>
-      Đổi ca / Làm thay
-    </button>
-    <button (click)="activeTab.set('adjust')"
-            [class.requests-tab-btn--active]="activeTab() === 'adjust'"
-            class="requests-tab-btn">
-      <svg lucideFileEdit class="w-4 h-4"></svg>
-      Chỉnh sửa giờ công
-    </button>
-  </div>
-
-  <!-- Main Layout: Form + History -->
   <div class="requests-layout">
-
-    <!-- Left: Form Panel -->
     <div class="requests-form-panel">
+      <div class="requests-form animate-fade-in">
+        <h2 class="requests-form-title">Đăng ký yêu cầu</h2>
 
-      <!-- Leave Form -->
-      @if (activeTab() === 'leave') {
-        <div class="requests-form animate-fade-in">
-          <h2 class="requests-form-title">Đăng ký nghỉ phép</h2>
-          <div class="requests-form-grid">
-            <div class="requests-form-group">
-              <label class="requests-form-label">Từ ngày</label>
-              <input type="date" [(ngModel)]="leaveData.startDate" class="requests-form-input" />
-            </div>
-            <div class="requests-form-group">
-              <label class="requests-form-label">Đến ngày</label>
-              <input type="date" [(ngModel)]="leaveData.endDate" class="requests-form-input" />
-            </div>
-          </div>
-          <div class="requests-form-group">
-            <label class="requests-form-label">Loại phép</label>
-            <select [(ngModel)]="leaveData.leaveType" class="requests-form-select">
-              <option value="PAID">Nghỉ phép năm (Có lương)</option>
-              <option value="UNPAID">Nghỉ không lương</option>
-              <option value="SICK">Nghỉ ốm (BHXH)</option>
-            </select>
-          </div>
-          <div class="requests-form-group">
-            <label class="requests-form-label">Lý do xin nghỉ</label>
-            <textarea [(ngModel)]="leaveData.reason" rows="3"
-                      placeholder="Nhập lý do chi tiết..."
-                      class="requests-form-textarea"></textarea>
-          </div>
-          <button (click)="submitLeave()" [disabled]="submitting()" class="requests-submit-btn">
-            @if (submitting()) {
-              <svg lucideLoader2 class="w-4 h-4 animate-spin"></svg>
+        <div class="requests-form-group">
+          <label class="requests-form-label">Loại phép</label>
+          <select [(ngModel)]="leaveData.leaveTypeId" class="requests-form-select">
+            @for (type of leaveTypes(); track type.id) {
+              <option [value]="type.id">{{ type.name }} ({{ unitLabel(type.unit) }})</option>
             }
-            Gửi yêu cầu nghỉ phép
-          </button>
+          </select>
         </div>
-      }
 
-      <!-- Swap Form -->
-      @if (activeTab() === 'swap') {
-        <div class="requests-form animate-fade-in">
-          <h2 class="requests-form-title">Yêu cầu Đổi ca / Làm thay</h2>
-          <div class="requests-form-grid">
-            <div class="requests-form-group">
-              <label class="requests-form-label">Hình thức</label>
-              <select [(ngModel)]="swapData.type" class="requests-form-select">
-                <option value="COVER">Nhờ làm thay ca (Cover)</option>
-                <option value="SWAP">Đổi ca chéo (Swap)</option>
-              </select>
+        @if (selectedQuota(); as quota) {
+          <div class="requests-quota-summary">
+            <div>
+              <span>Hạn mức</span>
+              <strong>{{ quota.entitlement }} {{ unitLabel(quota.leaveType.unit) }}</strong>
             </div>
-            <div class="requests-form-group">
-              <label class="requests-form-label">Ngày cần đổi/làm thay</label>
-              <input type="date" [(ngModel)]="swapData.workDate" class="requests-form-input" />
+            <div>
+              <span>Đã duyệt</span>
+              <strong>{{ quota.approvedUsed }} {{ unitLabel(quota.leaveType.unit) }}</strong>
+            </div>
+            <div>
+              <span>Đang chờ</span>
+              <strong>{{ quota.pendingUsed }} {{ unitLabel(quota.leaveType.unit) }}</strong>
+            </div>
+            <div>
+              <span>Còn lại</span>
+              <strong>{{ quota.remaining }} {{ unitLabel(quota.leaveType.unit) }}</strong>
             </div>
           </div>
+        }
+
+        <div class="requests-form-grid">
+          <div class="requests-form-group">
+            <label class="requests-form-label">Từ ngày</label>
+            <input type="date" [(ngModel)]="leaveData.startDate" class="requests-form-input" />
+          </div>
+          <div class="requests-form-group">
+            <label class="requests-form-label">Đến ngày</label>
+            <input type="date" [(ngModel)]="leaveData.endDate" class="requests-form-input" />
+          </div>
+        </div>
+
+        @if (isHourType()) {
           <div class="requests-form-grid">
             <div class="requests-form-group">
-              <label class="requests-form-label">Ca của bạn</label>
-              <select [(ngModel)]="swapData.shiftId" class="requests-form-select">
-                @for (sh of shifts(); track sh.id) {
-                  <option [value]="sh.id">{{ sh.name }} ({{ sh.startTime.slice(0,5) }} - {{ sh.endTime.slice(0,5) }})</option>
-                }
-              </select>
+              <label class="requests-form-label">Giờ bắt đầu</label>
+              <input type="time" [(ngModel)]="leaveData.startTime" class="requests-form-input" />
             </div>
             <div class="requests-form-group">
-              <label class="requests-form-label">Nhân viên đổi/làm thay</label>
-              <select [(ngModel)]="swapData.targetEmployeeId" class="requests-form-select">
-                @for (emp of employees(); track emp.id) {
-                  <option [value]="emp.id">{{ emp.fullName }}</option>
-                }
-              </select>
+              <label class="requests-form-label">Giờ kết thúc</label>
+              <input type="time" [(ngModel)]="leaveData.endTime" class="requests-form-input" />
             </div>
           </div>
+        }
 
-          @if (swapData.type === 'SWAP') {
-            <div class="requests-swap-extra-panel">
-              <div class="requests-form-grid">
-                <div class="requests-form-group">
-                  <label class="requests-form-label">Ngày nhận lại ca</label>
-                  <input type="date" [(ngModel)]="swapData.targetWorkDate" class="requests-form-input" />
-                </div>
-                <div class="requests-form-group">
-                  <label class="requests-form-label">Ca nhận lại</label>
-                  <select [(ngModel)]="swapData.targetShiftId" class="requests-form-select">
-                    @for (sh of shifts(); track sh.id) {
-                      <option [value]="sh.id">{{ sh.name }} ({{ sh.startTime.slice(0,5) }} - {{ sh.endTime.slice(0,5) }})</option>
-                    }
-                  </select>
-                </div>
-              </div>
-            </div>
+        <div class="requests-form-group">
+          <label class="requests-form-label">Lý do</label>
+          <textarea [(ngModel)]="leaveData.reason" rows="3"
+                    placeholder="Nhập lý do chi tiết..."
+                    class="requests-form-textarea"></textarea>
+        </div>
+
+        <button (click)="submitLeave()" [disabled]="submitting() || leaveTypes().length === 0" class="requests-submit-btn">
+          @if (submitting()) {
+            <svg lucideLoader2 class="w-4 h-4 animate-spin"></svg>
           }
-
-          <div class="requests-form-group">
-            <label class="requests-form-label">Lý do đổi/làm thay</label>
-            <textarea [(ngModel)]="swapData.reason" rows="3"
-                      placeholder="Nhập lý do đổi ca..."
-                      class="requests-form-textarea"></textarea>
-          </div>
-          <button (click)="submitSwap()" [disabled]="submitting()" class="requests-submit-btn">
-            @if (submitting()) {
-              <svg lucideLoader2 class="w-4 h-4 animate-spin"></svg>
-            }
-            Gửi yêu cầu đổi ca
-          </button>
-        </div>
-      }
-
-      <!-- Adjustment Form -->
-      @if (activeTab() === 'adjust') {
-        <div class="requests-form animate-fade-in">
-          <h2 class="requests-form-title">Đề xuất Chỉnh sửa giờ công</h2>
-          <div class="requests-form-grid">
-            <div class="requests-form-group">
-              <label class="requests-form-label">Ngày chỉnh công</label>
-              <input type="date" [(ngModel)]="adjustData.workDate" class="requests-form-input" />
-            </div>
-            <div class="requests-form-group">
-              <label class="requests-form-label">Loại lỗi công</label>
-              <select [(ngModel)]="adjustData.type" class="requests-form-select">
-                <option value="FORGOT_CHECK_IN">Quên check-in</option>
-                <option value="FORGOT_CHECK_OUT">Quên check-out</option>
-                <option value="DEVICE_ERROR">Camera/Lỗi hệ thống</option>
-                <option value="EDIT_TIME">Sửa giờ vào/ra</option>
-              </select>
-            </div>
-          </div>
-          <div class="requests-form-group">
-            <label class="requests-form-label">Giờ đề xuất bổ sung</label>
-            <input type="time" [(ngModel)]="adjustData.proposedTime" class="requests-form-input" />
-          </div>
-          <div class="requests-form-group">
-            <label class="requests-form-label">Lý do giải trình</label>
-            <textarea [(ngModel)]="adjustData.reason" rows="3"
-                      placeholder="Ví dụ: camera lỗi không scan được mặt, quên quẹt thẻ lúc về..."
-                      class="requests-form-textarea"></textarea>
-          </div>
-          <button (click)="submitAdjust()" [disabled]="submitting()" class="requests-submit-btn">
-            @if (submitting()) {
-              <svg lucideLoader2 class="w-4 h-4 animate-spin"></svg>
-            }
-            Gửi yêu cầu chỉnh công
-          </button>
-        </div>
-      }
+          Gửi yêu cầu
+        </button>
+      </div>
     </div>
 
-    <!-- Right: History Panel -->
     <div class="requests-history-panel">
       <div class="requests-history-header">
         <svg class="requests-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -210,18 +108,6 @@
             </div>
 
             <p class="requests-history-reason">"{{ req.reason }}"</p>
-
-            @if (req.status === 'REJECTED' && req.rejectionReason) {
-              <div class="requests-history-rejection">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <line x1="12" y1="8" x2="12" y2="12"></line>
-                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <div><span class="font-semibold">Lý do từ chối:</span> {{ req.rejectionReason }}</div>
-              </div>
-            }
-
             <span class="requests-history-timestamp">
               Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
             </span>
@@ -234,11 +120,10 @@
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span>Chưa có yêu cầu nào trong tab này.</span>
+            <span>Chưa có yêu cầu nào.</span>
           </div>
         }
       </div>
     </div>
-
   </div>
 </div>

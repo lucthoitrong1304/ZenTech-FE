@@ -1,0 +1,206 @@
+<section class="leave-settings-page">
+  <header class="leave-settings-hero">
+    <div>
+      <span class="leave-settings-kicker">Cấu hình nhân sự</span>
+      <h1>Loại phép & hạn mức</h1>
+      <p>Quản lý danh sách Nghỉ, WFH, AFK và thiết lập hạn mức theo từng nhân viên trong năm.</p>
+    </div>
+    <div class="leave-settings-summary">
+      <div>
+        <span>Loại đang bật</span>
+        <strong>{{ activeTypeCount() }}</strong>
+      </div>
+      <div>
+        <span>Nhân viên</span>
+        <strong>{{ employees().length }}</strong>
+      </div>
+      <div>
+        <span>Năm</span>
+        <strong>{{ selectedYear }}</strong>
+      </div>
+    </div>
+  </header>
+
+  <div class="leave-settings-grid">
+    <section class="leave-settings-panel leave-settings-panel--types">
+      <header class="leave-settings-panel__header">
+        <div>
+          <span>Request types</span>
+          <h2>Loại phép</h2>
+        </div>
+        <button type="button" class="leave-settings-secondary-btn" (click)="openCreateTypeDialog()">
+          <svg lucidePlus></svg>
+          Thêm loại
+        </button>
+      </header>
+
+      <div class="leave-type-list">
+        @for (type of leaveTypes(); track type.id) {
+          <button
+            type="button"
+            class="leave-type-card"
+            [ngClass]="typeTone(type)"
+            [class.leave-type-card--active]="editingTypeId === type.id"
+            (click)="editType(type)"
+          >
+            <span class="leave-type-card__mark"></span>
+            <span class="leave-type-card__body">
+              <strong>{{ type.name }}</strong>
+              <small>{{ type.code }} · {{ unitLabel(type.unit) }}</small>
+            </span>
+            <span class="leave-type-card__status" [class.leave-type-card__status--off]="!type.active">
+              {{ type.active ? 'Bật' : 'Tắt' }}
+            </span>
+          </button>
+        } @empty {
+          <p class="leave-settings-empty">Chưa có loại phép nào.</p>
+        }
+      </div>
+    </section>
+
+  </div>
+
+  <section class="leave-settings-panel leave-settings-panel--quota">
+    <header class="leave-settings-panel__header leave-settings-panel__header--quota">
+      <div>
+        <span>Allowance</span>
+        <h2>Hạn mức nhân viên</h2>
+        @if (selectedEmployee(); as employee) {
+          <p>{{ employee.fullName }} · {{ employee.email }}</p>
+        }
+      </div>
+      <button type="button" class="leave-settings-primary-btn" [disabled]="savingQuotas() || !selectedEmployeeId || quotas().length === 0" (click)="saveQuotas()">
+        @if (savingQuotas()) {
+          <svg lucideLoader2 class="spin"></svg>
+        } @else {
+          <svg lucideSave></svg>
+        }
+        Lưu hạn mức
+      </button>
+    </header>
+
+    <div class="leave-quota-toolbar">
+      <label>
+        <span>Nhân viên</span>
+        <select [(ngModel)]="selectedEmployeeId" name="selectedEmployeeId" (ngModelChange)="loadQuotas()">
+          @for (employee of employees(); track employee.employeeId) {
+            <option [value]="employee.employeeId">{{ employee.fullName }} · {{ employee.email }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>Năm</span>
+        <input [(ngModel)]="selectedYear" name="selectedYear" type="number" (change)="loadQuotas()" />
+      </label>
+      <div class="leave-quota-total">
+        <span>Tổng hạn mức</span>
+        <strong>{{ quotaTotal() }}</strong>
+      </div>
+      <div class="leave-quota-total">
+        <span>Đã duyệt</span>
+        <strong>{{ quotaApproved() }}</strong>
+      </div>
+    </div>
+
+    <div class="leave-quota-list">
+      @for (quota of quotas(); track quota.leaveTypeId) {
+        <article class="leave-quota-card">
+          <div class="leave-quota-card__title">
+            <div>
+              <strong>{{ quota.leaveType.name }}</strong>
+              <span>{{ quota.leaveType.code }} · {{ unitLabel(quota.leaveType.unit) }}</span>
+            </div>
+            <label>
+              <span>Hạn mức</span>
+              <input [(ngModel)]="quota.entitlement" [name]="'quota-' + quota.leaveTypeId" type="number" min="0" step="0.25" />
+            </label>
+          </div>
+
+          <div class="leave-quota-card__metrics">
+            <span>Đã duyệt <strong>{{ quota.approvedUsed }}</strong></span>
+            <span>Đang chờ <strong>{{ quota.pendingUsed }}</strong></span>
+            <span>Còn lại <strong>{{ quota.remaining }}</strong></span>
+          </div>
+
+          <div class="leave-quota-progress" aria-hidden="true">
+            <span [style.width.%]="quotaUsagePercent(quota)"></span>
+          </div>
+        </article>
+      } @empty {
+        <div class="leave-settings-empty-state">
+          <strong>Chưa có dữ liệu hạn mức</strong>
+          <span>Chọn một nhân viên đang hoạt động để hệ thống tạo và hiển thị hạn mức theo từng loại phép.</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (typeModalOpen()) {
+    <div class="leave-settings-modal-backdrop" (click)="closeTypeDialog()">
+      <section
+        class="leave-settings-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="leave-type-dialog-title"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="leave-settings-modal__header">
+          <div>
+            <span>{{ editingTypeId ? 'Editing' : 'New type' }}</span>
+            <h2 id="leave-type-dialog-title">{{ editingTypeId ? 'Chỉnh loại phép' : 'Tạo loại phép' }}</h2>
+          </div>
+          <button type="button" class="leave-settings-modal__close" aria-label="Đóng" (click)="closeTypeDialog()">×</button>
+        </header>
+
+        <form class="leave-settings-form" (ngSubmit)="saveType()">
+          <div class="leave-settings-form__split leave-settings-form__split--wide">
+            <label>
+              <span>Tên loại phép</span>
+              <input name="typeName" [(ngModel)]="typeDraft.name" type="text" placeholder="Ví dụ: Công tác ngoài văn phòng" />
+            </label>
+            <label>
+              <span>Mã</span>
+              <input name="typeCode" [(ngModel)]="typeDraft.code" type="text" placeholder="AUTO nếu bỏ trống" [disabled]="!!editingTypeId" />
+            </label>
+          </div>
+
+          <label>
+            <span>Mô tả</span>
+            <textarea name="typeDescription" [(ngModel)]="typeDraft.description" rows="3" placeholder="Ghi chú ngắn để nhân viên hiểu loại yêu cầu này dùng khi nào."></textarea>
+          </label>
+
+          <div class="leave-settings-form__split">
+            <label>
+              <span>Đơn vị tính</span>
+              <select name="typeUnit" [(ngModel)]="typeDraft.unit">
+                <option value="DAY">Ngày</option>
+                <option value="HOUR">Giờ</option>
+              </select>
+            </label>
+            <label>
+              <span>Thứ tự</span>
+              <input name="sortOrder" [(ngModel)]="typeDraft.sortOrder" type="number" />
+            </label>
+          </div>
+
+          <label class="leave-settings-check">
+            <input name="typeActive" [(ngModel)]="typeDraft.active" type="checkbox" />
+            <span>Cho nhân viên sử dụng loại phép này</span>
+          </label>
+
+          <div class="leave-settings-actions leave-settings-actions--modal">
+            <button type="button" class="leave-settings-ghost-btn" (click)="closeTypeDialog()">Hủy</button>
+            <button type="submit" class="leave-settings-primary-btn" [disabled]="savingType()">
+              @if (savingType()) {
+                <svg lucideLoader2 class="spin"></svg>
+              } @else {
+                <svg lucideSave></svg>
+              }
+              Lưu loại phép
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  }
+</section>
