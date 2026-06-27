@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideImages, LucideMaximize2, LucideMinus, LucidePhone } from '@lucide/angular';
+import { LucideImages, LucideMaximize2, LucideMinus } from '@lucide/angular';
 import {
   CustomerChatParticipant,
   CustomerChatProductContext,
@@ -10,7 +10,7 @@ import {
 @Component({
   selector: 'app-customer-chat-header',
   standalone: true,
-  imports: [CommonModule, RouterLink, LucideImages, LucideMaximize2, LucideMinus, LucidePhone],
+  imports: [CommonModule, RouterLink, LucideImages, LucideMaximize2, LucideMinus],
   templateUrl: './customer-chat-header.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -20,8 +20,6 @@ export class CustomerChatHeaderComponent {
   readonly status = input<string | null>(null);
   readonly compact = input(false);
   readonly sharedSidebarOpen = input(false);
-  readonly canCall = input(false);
   readonly closeClicked = output<void>();
   readonly sharedClicked = output<void>();
-  readonly callClicked = output<void>();
 }

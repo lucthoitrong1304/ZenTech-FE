@@ -8,7 +8,6 @@ import {
   LucideLink,
   LucideMessageCircle,
   LucideMoreVertical,
-  LucidePhone,
   LucidePlus,
   LucideSearch,
   LucideVideo,
@@ -16,7 +15,6 @@ import {
 import { MediaPreviewDialogComponent } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { CallSignalingService } from '../../../../core/services/call-signaling.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { CartStore } from '../../../cart/data-access/store/cart.store';
 import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
@@ -50,7 +48,6 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
     LucideImage,
     LucideLink,
     LucideMessageCircle,
-    LucidePhone,
     LucidePlus,
     LucideSearch,
     LucideVideo,
@@ -61,7 +58,6 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
 export class CustomerChatPageComponent implements OnInit {
   private readonly authSessionStore = inject(AuthSessionStore);
   private readonly categoryNavigationStore = inject(CategoryNavigationStore);
-  private readonly callSignalingService = inject(CallSignalingService);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   protected readonly cartStore = inject(CartStore);
@@ -104,13 +100,6 @@ export class CustomerChatPageComponent implements OnInit {
       this.store.loadSession();
     }
 
-    this.callSignalingService.callEnded.subscribe(
-      ({ durationStr, status, isCaller }) => {
-        if (isCaller) {
-          this.store.sendCallMessage({ duration: durationStr, status });
-        }
-      }
-    );
   }
 
   protected openSearch(): void {
@@ -119,26 +108,6 @@ export class CustomerChatPageComponent implements OnInit {
 
   protected onLogout(): void {
     this.authSessionStore.logout();
-  }
-
-  protected startStaffCall(): void {
-    const staffEmail = this.store.staff()?.email?.trim();
-    const sessionStatus = this.store.session()?.status;
-
-    if (sessionStatus !== 'AGENT_HANDLING') {
-      console.warn(
-        '[WebRTC] Cannot call staff because the active conversation is not handled by staff.',
-        sessionStatus
-      );
-      return;
-    }
-
-    if (!staffEmail) {
-      console.warn('[WebRTC] Cannot call staff because the active staff email is missing.');
-      return;
-    }
-
-    this.callSignalingService.initiateCall(staffEmail);
   }
 
   protected openPreview(item: MediaPreviewItem | CustomerChatSharedItem): void {

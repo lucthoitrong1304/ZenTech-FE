@@ -41,6 +41,20 @@
   background: #fcf9f8;
 }
 
+.management-chat-loading-bar {
+  animation: management-chat-loading 1s ease-in-out infinite;
+}
+
+@keyframes management-chat-loading {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(300%);
+  }
+}
+
 @media (max-width: 1220px) {
   .management-chat-shell {
     height: calc(100vh - 144px);
