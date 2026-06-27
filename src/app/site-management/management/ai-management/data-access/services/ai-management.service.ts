@@ -108,7 +108,7 @@ export class AiManagementService {
 
 function unwrapApiResponse<T>(response: ApiResponseDto<T>): T {
   if (!response.success) {
-    throw new Error(response.message || 'Khong the xu ly yeu cau AI.');
+    throw new Error(response.message || 'Không thể xử lý yêu cầu AI.');
   }
   return response.data;
 }

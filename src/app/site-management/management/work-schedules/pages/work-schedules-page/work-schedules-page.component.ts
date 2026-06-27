@@ -399,7 +399,7 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     if (!('geolocation' in navigator)) {
       this.locatingCurrentPosition.set(false);
       this.toastService.warning(
-        'Trinh duyet chua ho tro lay vi tri. Vui long nhap toa do thu cong.',
+        'Trình duyệt chưa hỗ trợ lấy vị trí. Vui lòng nhập tọa độ thủ công.',
       );
       return;
     }
@@ -418,7 +418,7 @@ export class WorkSchedulesPageComponent implements OnDestroy {
       },
       () => {
         this.locatingCurrentPosition.set(false);
-        this.toastService.warning('Vui long mo quyen vi tri de lay toa do GPS hien tai.');
+        this.toastService.warning('Vui lòng mở quyền vị trí để lấy tọa độ GPS hiện tại.');
       },
       {
         enableHighAccuracy: true,

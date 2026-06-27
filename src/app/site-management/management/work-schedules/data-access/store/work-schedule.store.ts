@@ -224,7 +224,7 @@ export const WorkScheduleStore = signalStore(
                   totalPages: 0,
                   last: true,
                   loading: false,
-                  errorMessage: 'Khong the tai lich lam viec.',
+                  errorMessage: 'Không thể tải lịch làm việc.',
                 }),
             }),
             catchError(() => EMPTY),
@@ -243,7 +243,7 @@ export const WorkScheduleStore = signalStore(
             error: () =>
               patchState(store, {
                 loading: false,
-                errorMessage: 'Khong the tai lai lich lam viec.',
+                errorMessage: 'Không thể tải lại lịch làm việc.',
               }),
           }),
           catchError(() => EMPTY),
@@ -258,7 +258,7 @@ export const WorkScheduleStore = signalStore(
           const shiftId = store.assignShiftId();
 
           if (!cell || !shiftId) {
-            patchState(store, { errorMessage: 'Vui long chon ca lam viec.' });
+            patchState(store, { errorMessage: 'Vui lòng chọn ca làm việc.' });
             return EMPTY;
           }
 
@@ -279,14 +279,14 @@ export const WorkScheduleStore = signalStore(
                     assignModalOpen: false,
                     selectedCell: null,
                     assignShiftId: '',
-                    successMessage: 'Da cap nhat ca lam viec.',
+                    successMessage: 'Đã cập nhật ca làm việc.',
                   });
                   reloadSchedules();
                 },
                 error: () =>
                   patchState(store, {
                     saving: false,
-                    errorMessage: 'Khong the cap nhat ca lam viec.',
+                    errorMessage: 'Không thể cập nhật ca làm việc.',
                   }),
               }),
               catchError(() => EMPTY),
@@ -307,7 +307,7 @@ export const WorkScheduleStore = signalStore(
             !draft.endDate ||
             (!draft.selectAll && employeeIds.length === 0)
           ) {
-            patchState(store, { errorMessage: 'Vui long chon nhan vien, ca va khoang ngay.' });
+            patchState(store, { errorMessage: 'Vui lòng chọn nhân viên, ca và khoảng ngày.' });
             return EMPTY;
           }
 
@@ -334,14 +334,14 @@ export const WorkScheduleStore = signalStore(
                       endDate: store.query().weekEndDate,
                     },
                     selectedEmployeeIds: draft.selectAll ? [] : store.selectedEmployeeIds(),
-                    successMessage: 'Da gan ca hang loat.',
+                    successMessage: 'Đã gán ca hàng loạt.',
                   });
                   reloadSchedules();
                 },
                 error: () =>
                   patchState(store, {
                     saving: false,
-                    errorMessage: 'Khong the gan ca hang loat.',
+                    errorMessage: 'Không thể gán ca hàng loạt.',
                   }),
               }),
               catchError(() => EMPTY),
@@ -361,7 +361,7 @@ export const WorkScheduleStore = signalStore(
             !draft.toWeekStartDate ||
             !draft.toWeekEndDate
           ) {
-            patchState(store, { errorMessage: 'Vui long chon tuan nguon va tuan dich.' });
+            patchState(store, { errorMessage: 'Vui lòng chọn tuần nguồn và tuần đích.' });
             return EMPTY;
           }
 
@@ -378,14 +378,14 @@ export const WorkScheduleStore = signalStore(
                   patchState(store, {
                     saving: false,
                     copyModalOpen: false,
-                    successMessage: 'Da sao chep lich tuan.',
+                    successMessage: 'Đã sao chép lịch tuần.',
                   });
                   reloadSchedules();
                 },
                 error: () =>
                   patchState(store, {
                     saving: false,
-                    errorMessage: 'Khong the sao chep lich tuan.',
+                    errorMessage: 'Không thể sao chép lịch tuần.',
                   }),
               }),
               catchError(() => EMPTY),
@@ -409,14 +409,14 @@ export const WorkScheduleStore = signalStore(
                   saving: false,
                   settingsModalOpen: false,
                   settingsDraft: { shifts: [], newShift: null },
-                  successMessage: 'Da cap nhat gio ca lam viec.',
+                  successMessage: 'Đã cập nhật giờ ca làm việc.',
                 });
                 reloadSchedules();
               },
               error: () =>
                 patchState(store, {
                   saving: false,
-                  errorMessage: 'Khong the cap nhat cau hinh ca.',
+                  errorMessage: 'Không thể cập nhật cấu hình ca.',
                 }),
             }),
             catchError(() => EMPTY),
@@ -439,13 +439,13 @@ export const WorkScheduleStore = signalStore(
                   locationPolicy: updatedPolicy,
                   locationPolicyDraft: cloneLocationPolicy(updatedPolicy),
                   saving: false,
-                  successMessage: 'Da cap nhat pham vi check-in.',
+                  successMessage: 'Đã cập nhật phạm vi check-in.',
                 });
               },
               error: () =>
                 patchState(store, {
                   saving: false,
-                  errorMessage: 'Khong the cap nhat pham vi check-in.',
+                  errorMessage: 'Không thể cập nhật phạm vi check-in.',
                 }),
             }),
             catchError(() => EMPTY),

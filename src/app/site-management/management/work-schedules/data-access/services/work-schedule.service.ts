@@ -103,7 +103,7 @@ export class WorkScheduleService {
 
 function unwrapApiResponse<T>(response: ApiResponseDto<T>): T {
   if (!response.success) {
-    throw new Error(response.message ?? 'Khong the xu ly yeu cau.');
+    throw new Error(response.message ?? 'Không thể xử lý yêu cầu.');
   }
 
   return response.data;
