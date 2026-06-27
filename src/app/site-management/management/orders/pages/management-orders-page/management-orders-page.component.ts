@@ -1,6 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import { LucideFileDown } from '@lucide/angular';
+import {
+  ManagementPageHeroComponent,
+  ManagementPageShellComponent,
+  ManagementStatCardComponent,
+  ManagementToolbarSurfaceComponent,
+} from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { OrderDetailDrawerComponent } from '../../components/order-detail-drawer/order-detail-drawer.component';
 import { OrderEditDrawerComponent } from '../../components/order-edit-drawer/order-edit-drawer.component';
@@ -21,6 +27,10 @@ import { ManagementOrdersStore } from '../../data-access/store/management-orders
   imports: [
     CommonModule,
     LucideFileDown,
+    ManagementPageHeroComponent,
+    ManagementPageShellComponent,
+    ManagementStatCardComponent,
+    ManagementToolbarSurfaceComponent,
     OrderDetailDrawerComponent,
     OrderEditDrawerComponent,
     OrderTableComponent,

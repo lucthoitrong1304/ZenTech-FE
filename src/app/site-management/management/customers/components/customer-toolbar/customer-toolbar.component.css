@@ -1,13 +1,13 @@
 .customer-toolbar {
   display: grid;
-  grid-template-columns: auto minmax(220px, 1fr) auto;
+  grid-template-columns: minmax(220px, 1fr) auto;
   align-items: center;
   gap: 14px;
-  border: 1px solid rgba(210, 197, 171, 0.16);
-  border-radius: 8px;
+  border: 0;
+  border-radius: 12px;
   background: #ffffff;
   padding: 14px;
-  box-shadow: 0 16px 42px rgba(28, 27, 27, 0.045);
+  box-shadow: none;
 }
 
 .customer-toolbar__summary {
@@ -17,16 +17,17 @@
 }
 
 .customer-toolbar__summary span {
-  color: rgba(79, 70, 50, 0.6);
-  font-size: 10px;
-  font-weight: 700;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .customer-toolbar__summary strong {
+  color: #111827;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 850;
 }
 
 .customer-toolbar__search,
@@ -40,9 +41,10 @@
 .customer-toolbar__search,
 .customer-toolbar__filters label {
   min-height: 42px;
-  border-radius: 8px;
-  background: #f6f3f2;
-  color: rgba(79, 70, 50, 0.72);
+  border: 1px solid #dfe3ea;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #475467;
 }
 
 .customer-toolbar__search {
@@ -67,7 +69,7 @@
   color: #1c1b1b;
   font: inherit;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 650;
 }
 
 .customer-toolbar__filters select {
@@ -76,7 +78,8 @@
 
 .customer-toolbar__search:focus-within,
 .customer-toolbar__filters label:focus-within {
-  box-shadow: 0 0 0 2px rgba(251, 188, 4, 0.34);
+  border-color: #fbbc04;
+  box-shadow: 0 0 0 3px rgba(251, 188, 4, 0.14);
 }
 
 .customer-toolbar__filters {
@@ -98,15 +101,18 @@
   width: 42px;
   height: 42px;
   border: 0;
-  border-radius: 8px;
-  background: #f6f3f2;
-  color: #4f4632;
+  border: 1px solid #dfe3ea;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #475467;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .customer-toolbar__icon-button:hover {
-  background: #edeae8;
+  border-color: #fbbc04;
+  background: #fff9df;
+  color: #111827;
 }
 
 .customer-toolbar__icon-button svg {
