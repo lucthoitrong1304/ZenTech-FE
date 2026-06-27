@@ -53,7 +53,7 @@
   gap: 0.06em;
   color: #111827;
   font-size: 20px;
-  font-weight: 950;
+  font-weight: 900;
   font-style: italic;
   line-height: 1;
   letter-spacing: 0;
@@ -81,7 +81,7 @@
 }
 
 .management-breadcrumb__trigger {
-  font-family: 'Inter', 'Be Vietnam Pro', system-ui, sans-serif;
+  font-family: var(--zt-font-sans);
   line-height: 1.4;
   border-style: solid;
   cursor: pointer;
@@ -637,7 +637,7 @@
   text-overflow: ellipsis;
   color: #8b867c;
   font-size: 9px;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: 0.02em;
   line-height: 1.25;
   text-transform: uppercase;

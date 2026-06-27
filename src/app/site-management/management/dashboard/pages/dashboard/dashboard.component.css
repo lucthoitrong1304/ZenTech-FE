@@ -294,7 +294,7 @@ td {
   color: #111827 !important;
   font-size: 13px !important;
   padding: 0 16px 0 38px !important;
-  font-family: 'Inter', sans-serif !important;
+  font-family: var(--zt-font-sans) !important;
   box-shadow: none !important;
   transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
@@ -310,7 +310,7 @@ td {
   border-radius: 12px !important;
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16) !important;
   overflow: hidden !important;
-  font-family: 'Inter', sans-serif !important;
+  font-family: var(--zt-font-sans) !important;
 }
 
 ::ng-deep .dashboard-date-range-panel .p-datepicker-header {
@@ -390,7 +390,7 @@ td {
 
 ::ng-deep .ai-dialog .p-dialog-content {
   padding: 20px;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--zt-font-sans);
 }
 
 ::ng-deep .ai-dialog .p-dialog-footer {
@@ -1029,7 +1029,7 @@ td {
   margin: 0;
   color: #111827;
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1045,14 +1045,14 @@ td {
 .live-milestones-item__meta,
 .live-ops-chip__meta {
   color: #8a97aa;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: 0;
 }
 
 .live-milestones-item__meta span,
 .live-ops-chip__meta span {
   color: #64748b;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .live-ops-customer__avatar {

@@ -6,8 +6,7 @@
 }
 
 .product-detail-page {
-  font-family:
-    Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--zt-font-sans);
   overflow-x: clip;
 }
 
