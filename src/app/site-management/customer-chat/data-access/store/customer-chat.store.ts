@@ -13,6 +13,8 @@ import {
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, Subscription, catchError, filter, forkJoin, map, of, pipe, switchMap, tap } from 'rxjs';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
+import { Role } from '../../../auth/data-access/models/auth.enums';
+import { hasRole } from '../../../auth/data-access/utils/auth-role.utils';
 import { CustomerChatEvent, CustomerChatEventType } from '../models/customer-chat.event';
 import {
   ChatAttachmentType,
@@ -151,11 +153,6 @@ export const CustomerChatStore = signalStore(
           session()?.status === ('AGENT_HANDLING' as unknown as CustomerChatSessionStatus) &&
           session()?.staff !== null
       ),
-      canCallStaff: computed(
-        () =>
-          session()?.status === ('AGENT_HANDLING' as unknown as CustomerChatSessionStatus) &&
-          !!session()?.staff?.email?.trim()
-      ),
       selectedSharedItems: computed(() =>
         sharedItemEntities().filter((item) => {
           switch (activeSharedTab()) {
@@ -197,15 +194,16 @@ export const CustomerChatStore = signalStore(
     ) => {
       let messageSub: Subscription | null = null;
       let conversationSub: Subscription | null = null;
-    let ticketStatusSub: Subscription | null = null;
+      let ticketStatusSub: Subscription | null = null;
 
       const isStaffSession = (): boolean => {
-        const session = authStorageService.getSession();
+        const roles = authStorageService.getSession()?.roles ?? [];
 
         return (
-          session?.roles.some((role) =>
-            ['OWNER', 'MANAGER', 'EMPLOYEE', 'ADMIN'].includes(role)
-          ) ?? false
+          hasRole(roles, Role.OWNER) ||
+          hasRole(roles, Role.MANAGER) ||
+          hasRole(roles, Role.EMPLOYEE) ||
+          hasRole(roles, Role.ADMIN)
         );
       };
 
@@ -538,16 +536,6 @@ export const CustomerChatStore = signalStore(
                             senderName,
                             messageType: msg.messageType as unknown as ChatMessageType,
                             body: msg.content || '',
-                            callData:
-                              msg.messageType === ChatMessageType.CALL && msg.content
-                                  ? (() => {
-                                      try {
-                                        return JSON.parse(msg.content);
-                                      } catch {
-                                        return undefined;
-                                      }
-                                    })()
-                                  : undefined,
                             sentAtLabel: formatTime(msg.createdAt),
                             attachments: (msg.attachments || []).map((att) => ({
                               id: att.id,
@@ -816,23 +804,6 @@ export const CustomerChatStore = signalStore(
         )
       );
 
-      const sendCallMessage = rxMethod<{ duration: string; status: 'ENDED' | 'MISSED' | 'BUSY' }>(
-        pipe(
-          tap(({ duration, status }) => {
-            const conversationId = store.activeConversationId();
-            if (!conversationId) return;
-
-            const messageRequest = {
-              messageType: ChatMessageType.CALL,
-              content: JSON.stringify({ duration, status }),
-              attachments: [],
-            };
-
-            websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
-          })
-        )
-      );
-
       const selectFiles = rxMethod<File[]>(
         pipe(
           filter((files) => files.length > 0),
@@ -1036,7 +1007,6 @@ export const CustomerChatStore = signalStore(
         switchConversation,
         createNewConversation,
         sendMessage,
-        sendCallMessage,
         selectFiles,
         requestAgent,
         closeConversation,

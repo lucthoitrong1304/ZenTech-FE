@@ -3,7 +3,7 @@
     <svg lucideSearch class="search-icon" [attr.stroke-width]="2"></svg>
     <input
       type="text"
-      placeholder="Tìm kiếm mã ưu đãi (Ví dụ: SUMMER2026)..."
+      placeholder="Tìm kiếm mã ưu đãi (ví dụ: SUMMER2026)..."
       [ngModel]="keyword()"
       (input)="onKeywordInput($event)"
       (keyup.enter)="applyFilters.emit()"

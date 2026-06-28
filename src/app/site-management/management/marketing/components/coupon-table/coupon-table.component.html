@@ -8,7 +8,7 @@
     <div class="table-empty">
       <svg lucideTicket class="empty-icon" [attr.stroke-width]="1.5"></svg>
       <h3>Chưa có mã giảm giá nào</h3>
-      <p>Nhấp vào nút "Thêm mới" để tạo mã giảm giá đầu tiên của bạn.</p>
+      <p>Nhấn vào nút tạo mã giảm giá để bắt đầu chiến dịch ưu đãi đầu tiên.</p>
     </div>
   } @else {
     <div class="table-responsive">
@@ -42,7 +42,7 @@
                     <span class="type-badge fixed-badge">Tiền cố định</span>
                   }
                   @case (CouponType.FREE_SHIPPING) {
-                    <span class="type-badge shipping-badge">Free Ship</span>
+                    <span class="type-badge shipping-badge">Free ship</span>
                   }
                 }
               </td>
@@ -83,7 +83,7 @@
                   } @else {
                     <span>Vô hạn</span>
                   }
-                  <span class="separator">→</span>
+                  <span class="separator">đến</span>
                   @if (c.endAt) {
                     <span>{{ c.endAt | date: 'dd/MM/yyyy HH:mm' }}</span>
                   } @else {
@@ -104,16 +104,19 @@
               </td>
               <td>
                 <div class="actions-group">
+                  @if (canUpdate()) {
                   <button
                     type="button"
                     class="action-btn toggle-active-btn"
                     [class.active-toggle]="c.active"
                     (click)="toggleActive.emit(c)"
-                    title="Bật / Tắt hoạt động"
+                    title="Bật / tắt hoạt động"
                   >
                     <span class="toggle-switch"></span>
                   </button>
+                  }
 
+                  @if (canIssue()) {
                   <button
                     type="button"
                     class="action-btn btn-issue"
@@ -123,7 +126,9 @@
                   >
                     <svg lucidePlus class="action-icon" [attr.stroke-width]="2.5"></svg>
                   </button>
+                  }
 
+                  @if (canUpdate()) {
                   <button
                     type="button"
                     class="action-btn btn-edit"
@@ -132,7 +137,9 @@
                   >
                     <svg lucideEdit class="action-icon" [attr.stroke-width]="2"></svg>
                   </button>
+                  }
 
+                  @if (canDelete()) {
                   <button
                     type="button"
                     class="action-btn btn-delete"
@@ -141,6 +148,7 @@
                   >
                     <svg lucideTrash2 class="action-icon" [attr.stroke-width]="2"></svg>
                   </button>
+                  }
                 </div>
               </td>
             </tr>
@@ -149,7 +157,6 @@
       </table>
     </div>
 
-    <!-- Phân trang -->
     <div class="table-pagination">
       <span class="pagination-info">
         Hiển thị <strong>{{ pageStart() }}</strong> - <strong>{{ pageEnd() }}</strong> trong tổng số <strong>{{ totalElements() }}</strong> kết quả

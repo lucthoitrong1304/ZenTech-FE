@@ -1,30 +1,32 @@
 <section class="marketing-page">
-  <!-- Page Header -->
   <div class="marketing-header">
     <div>
       <nav class="marketing-eyebrow" aria-label="Marketing breadcrumb">
         <span>Điều hành kinh doanh</span>
         <span>/</span>
-        <strong>Marketing</strong>
+        <strong>Ưu đãi</strong>
       </nav>
       <h1>Marketing & Ưu đãi</h1>
       <p>Lập chiến dịch, phát hành mã ưu đãi và theo dõi hiệu suất chuyển đổi của toàn bộ cửa hàng.</p>
     </div>
 
     <div class="header-actions">
-      <button type="button" class="btn-issue-header" (click)="store.openIssueDialog()">
-        <svg lucideUserCheck [size]="16"></svg>
-        <span>Phát hành Voucher</span>
-      </button>
+      @if (canIssueVoucher()) {
+        <button type="button" class="btn-issue-header" (click)="store.openIssueDialog()">
+          <svg lucideUserCheck [size]="16"></svg>
+          <span>Phát hành voucher</span>
+        </button>
+      }
 
-      <button type="button" class="btn-create-header" (click)="onCreateCoupon()">
-        <svg lucidePlus [size]="16"></svg>
-        <span>Tạo mã giảm giá</span>
-      </button>
+      @if (canCreateMarketing()) {
+        <button type="button" class="btn-create-header" (click)="onCreateCoupon()">
+          <svg lucidePlus [size]="16"></svg>
+          <span>Tạo mã giảm giá</span>
+        </button>
+      }
     </div>
   </div>
 
-  <!-- KPIs Grid -->
   <div class="kpi-grid">
     <article class="kpi-card">
       <span class="kpi-icon kpi-icon--indigo">
@@ -33,7 +35,7 @@
       <div>
         <p>Tổng số mã ưu đãi</p>
         <strong>{{ store.stats().totalCoupons }}</strong>
-        <small>Tất cả các chiến dịch đã tạo</small>
+        <small>Tất cả chiến dịch đã tạo</small>
       </div>
     </article>
 
@@ -64,14 +66,13 @@
         <svg lucideTrendingUp></svg>
       </span>
       <div>
-        <p>Tỷ lệ sử dụng (Redemption)</p>
+        <p>Tỷ lệ sử dụng</p>
         <strong>{{ store.stats().redemptionRate | number: '1.0-2' }}%</strong>
         <small>Hiệu quả quy đổi voucher</small>
       </div>
     </article>
   </div>
 
-  <!-- Custom Navigation Tabs -->
   <div class="tabs-container">
     <button
       type="button"
@@ -80,7 +81,7 @@
       (click)="store.setTab(0)"
     >
       <svg lucideTicket [size]="16" class="tab-icon"></svg>
-      <span>Danh sách mã giảm giá (Coupons)</span>
+      <span>Danh sách mã giảm giá</span>
     </button>
     <button
       type="button"
@@ -89,11 +90,10 @@
       (click)="store.setTab(1)"
     >
       <svg lucideUserCheck [size]="16" class="tab-icon"></svg>
-      <span>Lịch sử phát hành (Customer Vouchers)</span>
+      <span>Lịch sử phát hành voucher</span>
     </button>
   </div>
 
-  <!-- Tab 1: Coupons -->
   @if (store.activeTab() === 0) {
     <div class="tab-content animate-fade-in">
       <app-coupon-toolbar
@@ -119,6 +119,9 @@
         [pageEnd]="store.pageCouponsEnd()"
         [canGoPrevious]="store.canCouponsPrevious()"
         [canGoNext]="store.canCouponsNext()"
+        [canUpdate]="canUpdateMarketing()"
+        [canDelete]="canDeleteMarketing()"
+        [canIssue]="canIssueVoucher()"
         (editCoupon)="onEditCoupon($event)"
         (deleteCoupon)="onDeleteCoupon($event)"
         (toggleActive)="onToggleActive($event)"
@@ -128,16 +131,14 @@
     </div>
   }
 
-  <!-- Tab 2: Customer Vouchers Distribution -->
   @if (store.activeTab() === 1) {
     <div class="tab-content animate-fade-in">
-      <!-- Search toolbar specifically for Vouchers distribution history -->
       <div class="voucher-search-bar">
         <div class="v-search-box">
           <svg lucideSearch class="v-search-icon"></svg>
           <input
             type="text"
-            placeholder="Tìm kiếm khách hàng (Tên hoặc Email)..."
+            placeholder="Tìm kiếm khách hàng (tên hoặc email)..."
             [ngModel]="store.vouchersQuery().keyword"
             (ngModelChange)="store.setVoucherKeyword($event)"
             (keyup.enter)="store.applyVoucherFilters()"
@@ -194,13 +195,13 @@
         [pageEnd]="store.pageVouchersEnd()"
         [canGoPrevious]="store.canVouchersPrevious()"
         [canGoNext]="store.canVouchersNext()"
+        [canRevoke]="canDeleteMarketing()"
         (pageChange)="store.goToVoucherPage($event)"
         (revoke)="onRevokeVoucher($event)"
       ></app-customer-voucher-table>
     </div>
   }
 
-  <!-- Stepper Dialog to Create/Edit Coupon -->
   <app-coupon-dialog
     [visible]="store.dialogVisible()"
     [mode]="store.dialogMode()"
@@ -213,7 +214,6 @@
     (draftChange)="store.updateFormValue($event)"
   ></app-coupon-dialog>
 
-  <!-- Dialog to Issue Voucher to Customers -->
   <app-issue-voucher-dialog
     [visible]="store.issueDialogVisible()"
     [coupons]="store.coupons()"

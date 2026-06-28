@@ -53,6 +53,7 @@ describe('CustomerChatStore', () => {
       getMyConversations: vi.fn(() => of(createPage(conversations))),
       getMessages: vi.fn(() => of(createPage(messages))),
       createOrGetConversation: vi.fn(() => of(conversation)),
+      getTicketStatus: vi.fn(() => of(null)),
       createNewConversation: vi.fn(() => of(createConversation('conversation-2'))),
       uploadFile: vi.fn(() =>
         options.uploadFails
@@ -114,31 +115,6 @@ describe('CustomerChatStore', () => {
     expect(store.session()?.id).toBe('conversation-1');
     expect(store.staffJoined()).toBe(true);
     expect(store.messages().length).toBe(3);
-  });
-
-  it('allows customer calls when an active handled conversation has a staff email', () => {
-    const { store } = configureStore({
-      conversations: [
-        createConversation('conversation-1', {
-          staffEmail: 'staff@zentech.test',
-        }),
-      ],
-    });
-
-    store.loadSession();
-
-    expect(store.staff()?.email).toBe('staff@zentech.test');
-    expect(store.canCallStaff()).toBe(true);
-  });
-
-  it('keeps customer calls unavailable when active staff email is missing', () => {
-    const { store } = configureStore();
-
-    store.loadSession();
-
-    expect(store.staff()).not.toBeNull();
-    expect(store.staff()?.email).toBeNull();
-    expect(store.canCallStaff()).toBe(false);
   });
 
   it('maps active staff email from backend participant email fields', () => {
@@ -207,7 +183,7 @@ describe('CustomerChatStore', () => {
 
   it('skips customer chat loading for staff sessions', () => {
     const { store, chatService, websocketService } = configureStore({
-      session: { accountId: 'staff-1', roles: ['EMPLOYEE'] },
+      session: { accountId: 'staff-1', roles: ['ROLE_ADMIN'] },
     });
 
     store.loadSession();

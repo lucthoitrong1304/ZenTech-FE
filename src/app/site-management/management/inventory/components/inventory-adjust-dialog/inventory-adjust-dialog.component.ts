@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output, signal, effect } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output, signal, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import {
@@ -18,6 +18,7 @@ import {
 
 @Component({
   selector: 'app-inventory-adjust-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

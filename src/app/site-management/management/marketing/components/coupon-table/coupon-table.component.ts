@@ -1,5 +1,5 @@
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import {
   LucideTicket,
   LucidePlus,
@@ -10,6 +10,7 @@ import { CouponType, ManagementCoupon } from '../../data-access/models/marketing
 
 @Component({
   selector: 'app-coupon-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -33,6 +34,9 @@ export class CouponTableComponent {
   pageEnd = input<number>(0);
   canGoPrevious = input<boolean>(false);
   canGoNext = input<boolean>(false);
+  canUpdate = input<boolean>(false);
+  canDelete = input<boolean>(false);
+  canIssue = input<boolean>(false);
 
   editCoupon = output<ManagementCoupon>();
   deleteCoupon = output<ManagementCoupon>();

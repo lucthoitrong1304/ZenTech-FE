@@ -1,5 +1,5 @@
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CustomerOrderDetailResponse } from '../../../account/data-access/models/account.models';
 import { AccountService } from '../../../account/data-access/services/account.service';
@@ -10,11 +10,15 @@ import { CartStore } from '../../data-access/store/cart.store';
 
 @Component({
   selector: 'app-checkout-result-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, RouterLink, CurrencyPipe, DatePipe, SiteHeaderComponent],
   templateUrl: './checkout-result-page.component.html',
 })
 export class CheckoutResultPageComponent {
+  private static readonly PAYMENT_CONFIRMATION_RETRY_LIMIT = 3;
+  private static readonly PAYMENT_CONFIRMATION_RETRY_DELAY_MS = 1500;
+
   private readonly route = inject(ActivatedRoute);
   private readonly accountService = inject(AccountService);
   private readonly authSessionStore = inject(AuthSessionStore);
@@ -37,9 +41,25 @@ export class CheckoutResultPageComponent {
       return;
     }
 
+    this.loadOrderDetail(orderId);
+  }
+
+  private loadOrderDetail(orderId: string, attempt = 0): void {
+    this.loading.set(true);
     this.accountService.getOrderDetail(orderId).subscribe({
       next: response => {
-        this.order.set(response.data);
+        const order = response.data;
+        this.order.set(order);
+        if (
+          this.returnStatus === 'success'
+          && order?.paymentStatus !== 'SUCCESS'
+          && attempt < CheckoutResultPageComponent.PAYMENT_CONFIRMATION_RETRY_LIMIT
+        ) {
+          window.setTimeout(
+            () => this.loadOrderDetail(orderId, attempt + 1),
+            CheckoutResultPageComponent.PAYMENT_CONFIRMATION_RETRY_DELAY_MS
+          );
+        }
       },
       error: () => {
         this.error.set('Không thể tải thông tin đơn hàng. Vui lòng kiểm tra lịch sử đơn hàng.');

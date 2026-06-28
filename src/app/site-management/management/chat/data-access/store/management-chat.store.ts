@@ -11,7 +11,7 @@ import {
   withEntities,
 } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { EMPTY, Subscription, catchError, forkJoin, of, pipe, switchMap, tap, map } from 'rxjs';
+import { EMPTY, Subscription, catchError, filter, forkJoin, of, pipe, switchMap, tap, map } from 'rxjs';
 import { ManagementChatEvent, ManagementChatEventType } from '../models/management-chat.event';
 import {
   ManagementChatConversation,
@@ -50,6 +50,7 @@ interface ManagementChatUiState {
   activeMediaTab: ManagementChatMediaTab;
   mediaDrawerOpen: boolean;
   loading: boolean;
+  messagesLoading: boolean;
   errorMessage: string | null;
   activeStaffList: ChatStaffResponse[];
   searchSidebarOpen: boolean;
@@ -86,6 +87,7 @@ const INITIAL_STATE: ManagementChatUiState = {
   activeMediaTab: 'ALL',
   mediaDrawerOpen: false,
   loading: false,
+  messagesLoading: false,
   errorMessage: null,
   searchSidebarOpen: false,
   isSearching: false,
@@ -132,7 +134,6 @@ function mapToManagementChatMessage(
     senderName,
     messageType: m.messageType,
     body: m.content || '',
-    callData: m.messageType === ChatMessageType.CALL && m.content ? (() => { try { return JSON.parse(m.content); } catch { return undefined; } })() : undefined,
     sentAtLabel: formatTime(m.createdAt),
     attachments: (m.attachments || []).map((attachment) => ({
       id: attachment.id,
@@ -349,6 +350,7 @@ export const ManagementChatStore = signalStore(
             {
               selectedConversationId: event.conversationId,
               mediaDrawerOpen: false,
+              messagesLoading: true,
             }
           );
           break;
@@ -358,6 +360,7 @@ export const ManagementChatStore = signalStore(
             selectedConversationId: null,
             mediaDrawerOpen: false,
             activeMediaTab: 'ALL',
+            messagesLoading: false,
           });
           break;
 
@@ -467,13 +470,26 @@ export const ManagementChatStore = signalStore(
           const mediaItems = (pageRes.content || []).flatMap((m) =>
             mapToManagementChatMediaItems(m)
           );
+          const existingMessageIds = store.messages()
+            .filter((message) => message.conversationId === conversationId)
+            .map((message) => message.id);
+          const existingMediaIds = store.mediaItems()
+            .filter((mediaItem) => mediaItem.conversationId === conversationId)
+            .map((mediaItem) => mediaItem.id);
+
           patchState(
             store,
-            setAllEntities(mappedMessages, MESSAGE_ENTITY_CONFIG),
-            setAllEntities(mediaItems, MEDIA_ENTITY_CONFIG)
+            removeEntities(existingMessageIds, MESSAGE_ENTITY_CONFIG),
+            addEntities(mappedMessages, MESSAGE_ENTITY_CONFIG),
+            removeEntities(existingMediaIds, MEDIA_ENTITY_CONFIG),
+            addEntities(mediaItems, MEDIA_ENTITY_CONFIG),
+            { messagesLoading: false }
           );
         }),
-        catchError(() => EMPTY)
+        catchError(() => {
+          patchState(store, { messagesLoading: false });
+          return EMPTY;
+        })
       );
     };
 
@@ -523,6 +539,7 @@ export const ManagementChatStore = signalStore(
 
     const selectConversation = rxMethod<string>(
       pipe(
+        filter((id) => id !== store.selectedConversationId()),
         tap((id) => {
           handleEvent({ type: ManagementChatEventType.ConversationSelected, conversationId: id });
 
@@ -715,23 +732,6 @@ export const ManagementChatStore = signalStore(
               return EMPTY;
             })
           );
-        })
-      )
-    );
-
-    const sendCallMessage = rxMethod<{ duration: string; status: 'ENDED' | 'MISSED' | 'BUSY' }>(
-      pipe(
-        tap(({ duration, status }) => {
-          const conversationId = store.selectedConversationId();
-          if (!conversationId) return;
-
-          const messageRequest = {
-            messageType: ChatMessageType.CALL,
-            content: JSON.stringify({ duration, status }),
-            attachments: [],
-          };
-
-          websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
         })
       )
     );
@@ -990,7 +990,6 @@ export const ManagementChatStore = signalStore(
       loadActiveStaffList,
       transferConversation,
       sendStaffMessage,
-      sendCallMessage,
       selectStaffFiles,
       searchMessages,
       jumpToMessage,

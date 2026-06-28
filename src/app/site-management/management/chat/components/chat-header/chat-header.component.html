@@ -40,17 +40,6 @@
   </div>
 
   <div class="chat-header-actions flex shrink-0 items-center justify-end gap-3">
-    @if (canCall()) {
-      <button
-        type="button"
-        class="grid h-10 w-10 place-items-center rounded-[8px] text-[#4f4632] transition hover:bg-[#f6f3f2]"
-        (click)="callClicked.emit()"
-        title="Gọi khách hàng"
-      >
-        <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
-      </button>
-    }
-
     <button
       type="button"
       class="grid h-10 w-10 place-items-center rounded-[8px] text-[#4f4632] transition hover:bg-[#f6f3f2]"
@@ -72,7 +61,7 @@
       <span class="chat-header-action__label">Media</span>
     </button>
 
-    @if (conversation().status !== 'CLOSED') {
+    @if (canUpdate() && conversation().status !== 'CLOSED') {
       <button
         type="button"
         class="chat-header-action chat-header-action--transfer min-h-10 rounded-[8px] border border-[#645efb] px-4 text-sm font-bold text-[#3323cc] transition hover:bg-[#645efb]/5"
@@ -110,7 +99,7 @@
 
     <span class="h-6 w-px bg-[#d2c5ab]/40" aria-hidden="true"></span>
 
-    @if (conversation().status !== 'CLOSED') {
+    @if (canUpdate() && conversation().status !== 'CLOSED') {
       <button
         type="button"
         class="grid h-10 w-10 place-items-center rounded-[8px] text-[#4f4632] transition hover:bg-[#f6f3f2]"

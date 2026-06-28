@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   LucideArchive,
@@ -26,6 +26,8 @@ import {
   AiProductVectorStatus,
 } from '../../data-access/models/ai-management.models';
 import { AiManagementService } from '../../data-access/services/ai-management.service';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 type AiManagementTab = 'datasets' | 'products' | 'demo';
 type DemoMessageRole = 'customer' | 'assistant';
@@ -39,6 +41,7 @@ interface DemoMessage {
 
 @Component({
   selector: 'app-ai-management-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -64,11 +67,15 @@ interface DemoMessage {
 export class AiManagementPageComponent {
   private readonly aiManagementService = inject(AiManagementService);
   private readonly toastService = inject(ToastService);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canCreateAi = computed(() => this.permissionService.has(PermissionCode.AI_CREATE));
+  protected readonly canUpdateAi = computed(() => this.permissionService.has(PermissionCode.AI_UPDATE));
+  protected readonly canDeleteAi = computed(() => this.permissionService.has(PermissionCode.AI_DELETE));
 
   protected readonly activeTab = signal<AiManagementTab>('datasets');
   protected readonly tabs: { id: AiManagementTab; label: string; icon: string }[] = [
-    { id: 'datasets', label: 'Tap du lieu', icon: 'database' },
-    { id: 'products', label: 'San pham tren Qdrant', icon: 'check' },
+    { id: 'datasets', label: 'Tập dữ liệu', icon: 'database' },
+    { id: 'products', label: 'Sản phẩm trên Qdrant', icon: 'check' },
     { id: 'demo', label: 'Test demo', icon: 'bot' },
   ];
   protected readonly productFilters: AiProductVectorFilter[] = ['ALL', 'SYNCED', 'NOT_SYNCED', 'FAILED', 'DRIFT'];
@@ -139,7 +146,7 @@ export class AiManagementPageComponent {
       .pipe(finalize(() => this.loadingDatasets.set(false)))
       .subscribe({
         next: datasets => this.datasets.set(datasets),
-        error: () => this.toastService.error('Khong the tai danh sach dataset AI.'),
+        error: () => this.toastService.error('Không thể tải danh sách dataset AI.'),
       });
   }
 
@@ -150,7 +157,7 @@ export class AiManagementPageComponent {
       .pipe(finalize(() => this.loadingProducts.set(false)))
       .subscribe({
         next: statuses => this.productStatuses.set(statuses),
-        error: () => this.toastService.error('Khong the tai trang thai san pham tren Qdrant.'),
+        error: () => this.toastService.error('Không thể tải trạng thái sản phẩm trên Qdrant.'),
       });
   }
 
@@ -182,9 +189,14 @@ export class AiManagementPageComponent {
   }
 
   protected saveDataset(): void {
+    if (this.editingDatasetId() ? !this.canUpdateAi() : !this.canCreateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     const payload = this.datasetDraft();
     if (!payload.name.trim()) {
-      this.toastService.error('Vui long nhap ten dataset.');
+      this.toastService.error('Vui lòng nhập tên dataset.');
       return;
     }
 
@@ -200,13 +212,18 @@ export class AiManagementPageComponent {
         next: dataset => {
           this.upsertDataset(dataset);
           this.cancelEditDataset();
-          this.toastService.success(editingId ? 'Da cap nhat dataset.' : 'Da tao dataset.');
+          this.toastService.success(editingId ? 'Đã cập nhật dataset.' : 'Đã tạo dataset.');
         },
-        error: err => this.toastService.error(readError(err, 'Khong the luu dataset.')),
+        error: err => this.toastService.error(readError(err, 'Không thể lưu dataset.')),
       });
   }
 
   protected archiveDataset(dataset: AiDataset): void {
+    if (!this.canDeleteAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     if (!confirm(`Archive dataset "${dataset.name}"?`)) {
       return;
     }
@@ -214,13 +231,18 @@ export class AiManagementPageComponent {
     this.aiManagementService.archiveDataset(dataset.id).subscribe({
       next: updated => {
         this.upsertDataset(updated);
-        this.toastService.success('Da archive dataset.');
+        this.toastService.success('Đã archive dataset.');
       },
-      error: () => this.toastService.error('Khong the archive dataset.'),
+      error: () => this.toastService.error('Không thể archive dataset.'),
     });
   }
 
   protected uploadDocument(datasetId: string, event: Event): void {
+    if (!this.canCreateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) {
@@ -237,24 +259,34 @@ export class AiManagementPageComponent {
       .subscribe({
         next: document => {
           this.upsertDocument(datasetId, document);
-          this.toastService.success('Da upload va ingest tai lieu.');
+          this.toastService.success('Đã upload và ingest tài liệu.');
         },
-        error: err => this.toastService.error(readError(err, 'Khong the upload tai lieu.')),
+        error: err => this.toastService.error(readError(err, 'Không thể upload tài liệu.')),
       });
   }
 
   protected reingestDocument(document: AiDocument): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.aiManagementService.reingestDocument(document.id).subscribe({
       next: updatedDocument => {
         this.upsertDocument(document.datasetId, updatedDocument);
-        this.toastService.success('Da reingest tai lieu.');
+        this.toastService.success('Đã reingest tài liệu.');
       },
-      error: () => this.toastService.error('Khong the reingest tai lieu.'),
+      error: () => this.toastService.error('Không thể reingest tài liệu.'),
     });
   }
 
   protected deleteDocument(document: AiDocument): void {
-    if (!confirm(`Xoa tai lieu "${document.fileName}"?`)) {
+    if (!this.canDeleteAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
+    if (!confirm(`Xóa tài liệu "${document.fileName}"?`)) {
       return;
     }
 
@@ -271,13 +303,18 @@ export class AiManagementPageComponent {
               : dataset
           )
         );
-        this.toastService.success('Da xoa tai lieu.');
+        this.toastService.success('Đã xóa tài liệu.');
       },
-      error: () => this.toastService.error('Khong the xoa tai lieu.'),
+      error: () => this.toastService.error('Không thể xóa tài liệu.'),
     });
   }
 
   protected syncVariant(item: AiProductVectorStatus): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.syncingVariantId.set(item.variantId);
     this.aiManagementService
       .syncProductVariant(item.variantId)
@@ -285,27 +322,37 @@ export class AiManagementPageComponent {
       .subscribe({
         next: updated => {
           this.upsertProductStatus(updated);
-          this.toastService.success('Da dong bo san pham qua Qdrant.');
+          this.toastService.success('Đã đồng bộ sản phẩm qua Qdrant.');
         },
         error: err => {
           this.loadProductStatuses();
-          this.toastService.error(readError(err, 'Dong bo san pham that bai.'));
+          this.toastService.error(readError(err, 'Đồng bộ sản phẩm thất bại.'));
         },
       });
   }
 
   protected verifyVariant(item: AiProductVectorStatus): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.verifyingVariantId.set(item.variantId);
     this.aiManagementService
       .verifyProductVariant(item.variantId)
       .pipe(finalize(() => this.verifyingVariantId.set(null)))
       .subscribe({
         next: updated => this.upsertProductStatus(updated),
-        error: err => this.toastService.error(readError(err, 'Verify Qdrant that bai.')),
+        error: err => this.toastService.error(readError(err, 'Verify Qdrant thất bại.')),
       });
   }
 
   protected verifyAllProducts(): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.verifyingAllProducts.set(true);
     this.aiManagementService
       .verifyAllProducts()
@@ -313,30 +360,40 @@ export class AiManagementPageComponent {
       .subscribe({
         next: statuses => {
           this.productStatuses.set(statuses);
-          this.toastService.success('Da verify Qdrant cho san pham.');
+          this.toastService.success('Đã verify Qdrant cho sản phẩm.');
         },
-        error: err => this.toastService.error(readError(err, 'Verify tat ca san pham that bai.')),
+        error: err => this.toastService.error(readError(err, 'Verify tất cả sản phẩm thất bại.')),
       });
   }
 
   protected reindexProducts(): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.reindexingProducts.set(true);
     this.aiManagementService
       .reindexProducts()
       .pipe(finalize(() => this.reindexingProducts.set(false)))
       .subscribe({
         next: () => {
-          this.toastService.success('Da bat dau reindex san pham.');
+          this.toastService.success('Đã bắt đầu reindex sản phẩm.');
           this.loadProductStatuses();
         },
-        error: err => this.toastService.error(readError(err, 'Reindex san pham that bai.')),
+        error: err => this.toastService.error(readError(err, 'Reindex sản phẩm thất bại.')),
       });
   }
 
   protected runDemo(): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     const message = this.demoMessage().trim();
     if (!message) {
-      this.toastService.error('Nhap cau hoi demo truoc khi gui.');
+      this.toastService.error('Nhập câu hỏi demo trước khi gửi.');
       return;
     }
 
@@ -373,7 +430,7 @@ export class AiManagementPageComponent {
         error: err => {
           this.demoMessages.update(messages => messages.filter(item => item.id !== userMessage.id));
           this.demoMessage.set(message);
-          this.toastService.error(readError(err, 'Khong the chay demo AI.'));
+          this.toastService.error(readError(err, 'Không thể chạy demo AI.'));
         },
       });
   }
@@ -386,20 +443,20 @@ export class AiManagementPageComponent {
 
   protected documentStatusLabel(status: AiDocument['ingestStatus']): string {
     const labels: Record<AiDocument['ingestStatus'], string> = {
-      UPLOADED: 'Da tai len',
-      PROCESSING: 'Dang xu ly',
-      READY: 'San sang',
-      FAILED: 'Loi ingest',
+      UPLOADED: 'Đã tải lên',
+      PROCESSING: 'Đang xử lý',
+      READY: 'Sẵn sàng',
+      FAILED: 'Lỗi ingest',
     };
     return labels[status];
   }
 
   protected syncStatusLabel(status: AiProductVectorStatus['syncStatus']): string {
     const labels: Record<AiProductVectorStatus['syncStatus'], string> = {
-      NOT_SYNCED: 'Chua sync',
-      SYNCING: 'Dang sync',
-      SYNCED: 'Da sync',
-      FAILED: 'Loi',
+      NOT_SYNCED: 'Chưa sync',
+      SYNCING: 'Đang sync',
+      SYNCED: 'Đã sync',
+      FAILED: 'Lỗi',
     };
     return labels[status];
   }
@@ -411,9 +468,9 @@ export class AiManagementPageComponent {
   }
 
   protected productQdrantLabel(value: boolean | null | undefined): string {
-    if (value === true) return 'Co tren Qdrant';
-    if (value === false) return 'Lech Qdrant';
-    return 'Chua verify';
+    if (value === true) return 'Có trên Qdrant';
+    if (value === false) return 'Lệch Qdrant';
+    return 'Chưa verify';
   }
 
   private upsertDataset(dataset: AiDataset): void {

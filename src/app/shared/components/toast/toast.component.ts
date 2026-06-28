@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   LucideCircleAlert,
   LucideCircleCheck,
@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-toast',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     ToastModule,

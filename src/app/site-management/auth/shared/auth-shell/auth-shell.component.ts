@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -7,7 +7,8 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './auth-shell.component.html',
-  styleUrl: './auth-shell.component.css'
+  styleUrl: './auth-shell.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthShellComponent {
   readonly layout = input<'stack' | 'split'>('stack');

@@ -73,6 +73,7 @@
           class="customer-action-button"
           [class.customer-action-button--lock]="selectedCustomer.active"
           [class.customer-action-button--unlock]="!selectedCustomer.active"
+          [disabled]="!canUpdateStatus()"
           (click)="
             statusChange.emit({
               customerId: selectedCustomer.customerId,

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
   LucideLayoutDashboard,
@@ -21,6 +21,7 @@ interface AccountNavItem {
 
 @Component({
   selector: 'app-account-layout',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

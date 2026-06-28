@@ -19,6 +19,121 @@
 }
 
 @layer utilities {}
+
+@layer components {
+  .zt-management-primary-action,
+  .zt-management-secondary-action,
+  .zt-management-icon-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 42px;
+    border-radius: var(--zt-management-radius-sm, 8px);
+    font-family: var(--zt-font-sans);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1;
+    text-decoration: none;
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      color 0.18s ease,
+      box-shadow 0.18s ease;
+    white-space: nowrap;
+  }
+
+  .zt-management-primary-action {
+    border: 0;
+    background: var(--zt-management-accent, #fbbc04);
+    color: #1c1b1b;
+    padding: 0 18px;
+    text-transform: uppercase;
+  }
+
+  .zt-management-primary-action:hover {
+    background: #ffd633;
+  }
+
+  .zt-management-secondary-action {
+    border: 1px solid var(--zt-management-border, #e5e7eb);
+    background: #ffffff;
+    color: #374151;
+    padding: 0 16px;
+    text-transform: uppercase;
+  }
+
+  .zt-management-secondary-action:hover {
+    border-color: #d1d5db;
+    background: #f9fafb;
+    color: #111827;
+  }
+
+  .zt-management-icon-action {
+    width: 38px;
+    min-height: 38px;
+    border: 1px solid var(--zt-management-border, #e5e7eb);
+    background: #ffffff;
+    color: #4b5563;
+    padding: 0;
+  }
+
+  .zt-management-icon-action:hover {
+    background: #f9fafb;
+    color: #111827;
+  }
+
+  .zt-management-primary-action svg,
+  .zt-management-secondary-action svg,
+  .zt-management-icon-action svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .zt-management-primary-action:focus-visible,
+  .zt-management-secondary-action:focus-visible,
+  .zt-management-icon-action:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 199, 0, 0.2);
+  }
+
+  .zt-management-primary-action:disabled,
+  .zt-management-secondary-action:disabled,
+  .zt-management-icon-action:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .zt-management-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .zt-management-stats-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .zt-management-table-scroll {
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  @media (max-width: 1180px) {
+    .zt-management-stats-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 760px) {
+    .zt-management-stats-grid,
+    .zt-management-stats-grid--3 {
+      grid-template-columns: 1fr;
+    }
+  }
+}
 html:has(app-admin-layout),
 body:has(app-admin-layout) {
   width: 100%;
@@ -28,12 +143,94 @@ body:has(app-admin-layout) {
 
 
 :root {
+  --zt-font-sans: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --zt-font-display: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --zt-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --zt-text-xs: 11px;
+  --zt-text-sm: 13px;
+  --zt-text-base: 15px;
+  --zt-text-lg: 18px;
+  --zt-text-xl: 22px;
+  --zt-text-2xl: 28px;
+  --zt-text-3xl: 36px;
+  --zt-text-4xl: 48px;
+  --zt-weight-body: 500;
+  --zt-weight-label: 700;
+  --zt-weight-heading: 800;
+  --zt-weight-display: 900;
   --zt-scrollbar-size: 8px;
   --zt-scrollbar-button-size: 12px;
   --zt-scrollbar-thumb: rgba(174, 169, 160, 0.78);
   --zt-scrollbar-thumb-hover: rgba(136, 130, 120, 0.86);
   --zt-scrollbar-arrow: rgba(174, 169, 160, 0.78);
   --zt-scrollbar-track: transparent;
+  --zt-management-surface: #ffffff;
+  --zt-management-surface-muted: #fbfaf8;
+  --zt-management-surface-warm: #fcf9f8;
+  --zt-management-text: #1c1b1b;
+  --zt-management-heading: #111827;
+  --zt-management-text-subtle: rgba(79, 70, 50, 0.72);
+  --zt-management-text-muted: rgba(79, 70, 50, 0.6);
+  --zt-management-border: #e5e7eb;
+  --zt-management-border-soft: rgba(210, 197, 171, 0.16);
+  --zt-management-accent: #fbbc04;
+  --zt-management-accent-strong: #ffc700;
+  --zt-management-danger: #e11d48;
+  --zt-management-success: #059669;
+  --zt-management-info: #0891b2;
+  --zt-management-radius-sm: 8px;
+  --zt-management-radius-lg: 10px;
+  --zt-management-radius-xl: 18px;
+  --zt-management-shadow-soft: 0 16px 42px rgba(28, 27, 27, 0.045);
+  --zt-management-shadow-card: 0 14px 34px rgba(17, 24, 39, 0.055);
+}
+
+html,
+body {
+  font-family: var(--zt-font-sans);
+  font-size: var(--zt-text-base);
+  font-weight: var(--zt-weight-body);
+  letter-spacing: 0;
+  text-rendering: geometricPrecision;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+textarea,
+select,
+.p-component,
+.p-inputtext,
+.p-button,
+.p-dialog,
+.p-drawer,
+.p-popover,
+.p-tooltip,
+.p-select,
+.p-datepicker,
+.p-menu,
+.p-confirm-dialog {
+  font-family: var(--zt-font-sans) !important;
+  letter-spacing: 0;
+}
+
+.zt-font-display,
+.font-scifi,
+.site-header__wordmark {
+  font-family: var(--zt-font-display);
+}
+
+.zt-font-mono,
+.font-mono,
+.text-mono,
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--zt-font-mono);
 }
 
 :where(
@@ -285,7 +482,7 @@ app-site-header {
    GLOBAL PRIMENG CONFIRM DIALOG CUSTOM CUSTOMIZATION
    ========================================================================== */
 .zt-confirm-dialog {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  font-family: var(--zt-font-sans) !important;
 }
 
 .zt-confirm-dialog.p-dialog {

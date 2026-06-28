@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, OnInit } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +22,9 @@ import {
 import { ReportsStore } from '../../data-access/store/reports.store';
 import { ReportPeriod, ReportsTab, IProductReport, ICustomerSegment } from '../../data-access/models/reports.model';
 import { ReportsEvent } from '../../data-access/models/reports.event';
+import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 interface ChartTooltipContext {
   dataset: {
@@ -56,6 +59,7 @@ interface ChartData {
 
 @Component({
   selector: 'app-management-reports-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -74,6 +78,7 @@ interface ChartData {
     LucideBot,
     LucideCalendar,
     LucideAlertTriangle,
+    HasPermissionDirective,
   ],
   providers: [ReportsStore],
   templateUrl: './management-reports.component.html',
@@ -81,25 +86,26 @@ interface ChartData {
 })
 export class ManagementReportsPageComponent implements OnInit {
   protected readonly store = inject(ReportsStore);
+  private readonly permissionService = inject(PermissionService);
   protected readonly ReportsTab = ReportsTab;
   protected readonly ReportPeriod = ReportPeriod;
   private readonly sanitizer = inject(DomSanitizer);
-  
+
   // 4 visual tabs: 'revenue' | 'products' | 'customers' | 'inventory'
   protected activeSubTab: 'revenue' | 'products' | 'customers' | 'inventory' = 'revenue';
-  
+
   // Custom date selection
   protected customStartDate: Date | null = null;
   protected customEndDate: Date | null = null;
   protected showCustomDatePanel = false;
-  
+
   // Drill-down dialog states
   protected showProductDetailsDialog = false;
   protected selectedProductDetails: IProductReport | null = null;
-  
+
   protected showCustomerDetailsDialog = false;
   protected selectedCustomerDetails: ICustomerSegment | null = null;
-  
+
   // Export Wizard states
   protected showExportWizardDialog = false;
   protected exportOptions = {
@@ -109,7 +115,7 @@ export class ManagementReportsPageComponent implements OnInit {
     customers: true,
     aiAnalysis: true
   };
-  
+
   // Interactive SVG chart tooltip
   protected hoveredPoint: { label: string; current: number; prev: number; diff: number; svgX: number; svgY: number } | null = null;
   protected tooltipX = 0;
@@ -177,8 +183,8 @@ export class ManagementReportsPageComponent implements OnInit {
       },
       y: {
         beginAtZero: true,
-        ticks: { 
-          color: '#6B7280', 
+        ticks: {
+          color: '#6B7280',
           padding: 10,
           font: { family: 'Inter', size: 12, weight: '500' },
           callback: (value: number | string) => {
@@ -215,6 +221,10 @@ export class ManagementReportsPageComponent implements OnInit {
   });
 
   protected triggerAiAnalysis() {
+    if (!this.permissionService.has(PermissionCode.REPORT_ANALYZE)) {
+      return;
+    }
+
     this.store.dispatch({ type: ReportsEvent.AnalyzeClicked, payload: this.activeSubTab });
   }
 
@@ -283,7 +293,7 @@ export class ManagementReportsPageComponent implements OnInit {
   protected getAverageDailyRevenue(): number {
     const summary = this.store.summary();
     if (!summary) return 0;
-    
+
     const period = this.store.period();
     if (period === ReportPeriod.Today) {
       return summary.totalRevenue;
@@ -410,7 +420,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += ` xmlns:x="urn:schemas-microsoft-com:office:excel"\n`;
     xml += ` xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"\n`;
     xml += ` xmlns:html="http://www.w3.org/TR/REC-html40">\n`;
-    
+
     xml += ` <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">\n`;
     xml += `  <Author>ZenTech System</Author>\n`;
     xml += `  <Created>${new Date().toISOString()}</Created>\n`;
@@ -422,19 +432,19 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `   <Alignment ss:Vertical="Center"/>\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Color="#111827"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="BannerTitle">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="14" ss:Bold="1" ss:Color="#FFFFFF"/>\n`;
     xml += `   <Interior ss:Color="#101010" ss:Pattern="Solid"/>\n`;
     xml += `   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="BannerSubtitle">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="9" ss:Color="#9CA3AF"/>\n`;
     xml += `   <Interior ss:Color="#101010" ss:Pattern="Solid"/>\n`;
     xml += `   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="SectionHeader">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="11" ss:Bold="1" ss:Color="#4F46E5"/>\n`;
     xml += `   <Interior ss:Color="#EEF2FF" ss:Pattern="Solid"/>\n`;
@@ -443,7 +453,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#4F46E5"/>\n`;
     xml += `   </Borders>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="TableHeader">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Bold="1" ss:Color="#374151"/>\n`;
     xml += `   <Interior ss:Color="#F9FAFB" ss:Pattern="Solid"/>\n`;
@@ -455,7 +465,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `   </Borders>\n`;
     xml += `   <Alignment ss:Vertical="Center" ss:Horizontal="Left"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="TableHeaderRight">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Bold="1" ss:Color="#374151"/>\n`;
     xml += `   <Interior ss:Color="#F9FAFB" ss:Pattern="Solid"/>\n`;
@@ -467,7 +477,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `   </Borders>\n`;
     xml += `   <Alignment ss:Vertical="Center" ss:Horizontal="Right"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="TableCell">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Color="#1F2937"/>\n`;
     xml += `   <Borders>\n`;
@@ -478,7 +488,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `   </Borders>\n`;
     xml += `   <Alignment ss:Vertical="Center" ss:Horizontal="Left"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="TableCellRight">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Color="#1F2937"/>\n`;
     xml += `   <Borders>\n`;
@@ -500,7 +510,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `   </Borders>\n`;
     xml += `   <Alignment ss:Vertical="Center" ss:Horizontal="Center"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="TotalRow">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Bold="1" ss:Color="#111827"/>\n`;
     xml += `   <Interior ss:Color="#F9FAFB" ss:Pattern="Solid"/>\n`;
@@ -510,7 +520,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `   </Borders>\n`;
     xml += `   <Alignment ss:Vertical="Center" ss:Horizontal="Left"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="AiCell">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Color="#1F2937"/>\n`;
     xml += `   <Interior ss:Color="#F0FDF4" ss:Pattern="Solid"/>\n`;
@@ -522,7 +532,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `   </Borders>\n`;
     xml += `   <Alignment ss:Vertical="Top" ss:Horizontal="Left" ss:WrapText="1"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="TotalRowRight">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Bold="1" ss:Color="#111827"/>\n`;
     xml += `   <Interior ss:Color="#F9FAFB" ss:Pattern="Solid"/>\n`;
@@ -532,7 +542,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `   </Borders>\n`;
     xml += `   <Alignment ss:Vertical="Center" ss:Horizontal="Right"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="CurrencyCell">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Color="#1F2937"/>\n`;
     xml += `   <Borders>\n`;
@@ -567,7 +577,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `   <Alignment ss:Vertical="Center" ss:Horizontal="Right"/>\n`;
     xml += `   <NumberFormat ss:Format="0.0%"/>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="BadgeGold">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Bold="1" ss:Color="#B45309"/>\n`;
     xml += `   <Interior ss:Color="#FEF3C7" ss:Pattern="Solid"/>\n`;
@@ -579,7 +589,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E5E7EB"/>\n`;
     xml += `   </Borders>\n`;
     xml += `  </Style>\n`;
-    
+
     xml += `  <Style ss:ID="BadgeSilver">\n`;
     xml += `   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Bold="1" ss:Color="#374151"/>\n`;
     xml += `   <Interior ss:Color="#F3F4F6" ss:Pattern="Solid"/>\n`;
@@ -596,21 +606,21 @@ export class ManagementReportsPageComponent implements OnInit {
     // Worksheet & Table Config
     xml += ` <Worksheet ss:Name="Báo cáo Quản trị">\n`;
     xml += `  <Table>\n`;
-    
+
     // Explicit column widths (Column A to E) to prevent ### overflow
     xml += `   <Column ss:Width="260"/>\n`; // A: Tên / Chỉ số
     xml += `   <Column ss:Width="160"/>\n`; // B: Giá trị / Biến thể
     xml += `   <Column ss:Width="120"/>\n`; // C: Đơn vị / Sản lượng
     xml += `   <Column ss:Width="160"/>\n`; // D: Doanh thu / Email
     xml += `   <Column ss:Width="140"/>\n`; // E: Tồn kho / Phân hạng
-    
+
     // 1. Corporate Brand Banner Rows (Row 1-2 merged)
     xml += `   <Row ss:Height="28">\n`;
     xml += `    <Cell ss:MergeAcross="4" ss:StyleID="BannerTitle">\n`;
     xml += `     <Data ss:Type="String">ZENTECH - BÁO CÁO THỐNG KÊ HOẠT ĐỘNG KINH DOANH CHUYÊN SÂU</Data>\n`;
     xml += `    </Cell>\n`;
     xml += `   </Row>\n`;
-    
+
     xml += `   <Row ss:Height="22">\n`;
     xml += `    <Cell ss:MergeAcross="4" ss:StyleID="BannerSubtitle">\n`;
     let subtitleStr = `Xuất ngày: ${new Date().toLocaleString()} | Chu kỳ: ${this.getPeriodLabel(this.store.period())}`;
@@ -620,7 +630,7 @@ export class ManagementReportsPageComponent implements OnInit {
     xml += `     <Data ss:Type="String">${this.escapeXmlValue(subtitleStr)}</Data>\n`;
     xml += `    </Cell>\n`;
     xml += `   </Row>\n`;
-    
+
     xml += `   <Row ss:Height="15"/>\n`; // Spacing row
 
     // 2. Summary KPI section
@@ -818,18 +828,18 @@ export class ManagementReportsPageComponent implements OnInit {
         const cleaned = this.cleanMarkdownForExcel(aiText);
         content = this.escapeXmlValue(cleaned).replace(/\n/g, '&#10;');
       }
-      
+
       // Calculate approximate height to fit text (WrapText requires fixed height in old XML standard)
       const lineBreaks = (content.match(/&#10;/g) || []).length;
       const height = Math.max(80, (content.length / 80) * 15 + lineBreaks * 15);
-      
+
       xml += `   <Row ss:Height="${Math.round(height)}">\n`;
       xml += `    <Cell ss:MergeAcross="4" ss:StyleID="AiCell">\n`;
       xml += `     <Data ss:Type="String">${content}</Data>\n`;
       xml += `    </Cell>\n`;
       xml += `   </Row>\n`;
     }
-    
+
     xml += `  </Table>\n`;
     xml += ` </Worksheet>\n`;
     xml += `</Workbook>\n`;

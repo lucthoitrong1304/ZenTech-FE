@@ -45,16 +45,20 @@
             <span class="text-[#81765f]">({{ product().reviewCount }} đánh giá)</span>
           }
         </p>
+      } @else {
+        <p class="text-sm text-[#4f4632]">
+          0/5 <span class="text-[#81765f]">(0 đánh giá)</span>
+        </p>
       }
     </div>
 
     <div class="flex items-end gap-3">
       <span class="text-2xl font-black text-[#be0037]">
-        {{ product().price | currency: 'USD' : 'symbol' : '1.0-0' }}
+        {{ product().price | currency: 'VND' : '' : '1.0-0' }} đ
       </span>
       @if (product().originalPrice) {
         <span class="pb-1 text-sm text-[#81765f] line-through">
-          {{ product().originalPrice | currency: 'USD' : 'symbol' : '1.0-0' }}
+          {{ product().originalPrice | currency: 'VND' : '' : '1.0-0' }} đ
         </span>
       }
     </div>

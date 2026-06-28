@@ -1,6 +1,6 @@
 import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { DecimalPipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import {
   LucideChevronLeft,
   LucideChevronRight,
@@ -16,6 +16,7 @@ import { ManagementProductGroup } from '../../data-access/models/management-prod
 
 @Component({
   selector: 'app-product-group-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     HasPermissionDirective,

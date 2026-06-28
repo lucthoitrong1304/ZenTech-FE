@@ -4,7 +4,6 @@ import { Router, RouterLink } from '@angular/router';
 import { LucideLogIn, LucideMessageCircle } from '@lucide/angular';
 import { MediaPreviewDialogComponent } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
-import { CallSignalingService } from '../../../../core/services/call-signaling.service';
 import { CustomerChatComposerComponent } from '../customer-chat-composer/customer-chat-composer.component';
 import { CustomerChatHeaderComponent } from '../customer-chat-header/customer-chat-header.component';
 import { CustomerChatLauncherComponent } from '../customer-chat-launcher/customer-chat-launcher.component';
@@ -36,7 +35,6 @@ import { CustomerTicketStatus } from '../../data-access/models/customer-chat.mod
 })
 export class CustomerChatPopupComponent implements OnInit {
   private readonly router = inject(Router);
-  private readonly callSignalingService = inject(CallSignalingService);
   protected readonly store = inject(CustomerChatStore);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
   protected readonly loginQueryParams = computed(() => ({ returnUrl: this.router.url || '/' }));
@@ -55,39 +53,19 @@ export class CustomerChatPopupComponent implements OnInit {
     this.previewItem.set(null);
   }
 
-  protected startStaffCall(): void {
-    const staffEmail = this.store.staff()?.email?.trim();
-    const sessionStatus = this.store.session()?.status;
-
-    if (sessionStatus !== 'AGENT_HANDLING') {
-      console.warn(
-        '[WebRTC] Cannot call staff because the active conversation is not handled by staff.',
-        sessionStatus
-      );
-      return;
-    }
-
-    if (!staffEmail) {
-      console.warn('[WebRTC] Cannot call staff because the active staff email is missing.');
-      return;
-    }
-
-    this.callSignalingService.initiateCall(staffEmail);
-  }
-
   protected isTicketResolved(ticketStatus: CustomerTicketStatus): boolean {
     return ticketStatus.status === 'RESOLVED' || ticketStatus.status === 'CLOSED';
   }
 
   protected getTicketStatusTitle(ticketStatus: CustomerTicketStatus): string {
     return this.isTicketResolved(ticketStatus)
-      ? 'S\u1ef1 c\u1ed1 \u0111\u00e3 \u0111\u01b0\u1ee3c kh\u1eafc ph\u1ee5c'
-      : 'ZenTech \u0111\u00e3 ghi nh\u1eadn s\u1ef1 c\u1ed1';
+      ? 'Sự cố đã được khắc phục'
+      : 'ZenTech đã ghi nhận sự cố';
   }
 
   protected getTicketStatusMessage(ticketStatus: CustomerTicketStatus): string {
     return this.isTicketResolved(ticketStatus)
-      ? 'B\u1ea1n c\u00f3 th\u1ec3 th\u1eed l\u1ea1i. N\u1ebfu v\u1eabn ch\u01b0a \u1ed5n, h\u00e3y nh\u1eafn nh\u00e2n vi\u00ean h\u1ed7 tr\u1ee3.'
-      : 'T\u1ee5i m\u00ecnh \u0111ang ki\u1ec3m tra. B\u1ea1n c\u00f3 th\u1ec3 nh\u1eafn th\u00eam th\u00f4ng tin n\u1ebfu c\u1ea7n.';
+      ? 'Bạn có thể thử lại. Nếu vẫn chưa ổn, hãy nhắn nhân viên hỗ trợ.'
+      : 'Tụi mình đang kiểm tra. Bạn có thể nhắn thêm thông tin nếu cần.';
   }
 }

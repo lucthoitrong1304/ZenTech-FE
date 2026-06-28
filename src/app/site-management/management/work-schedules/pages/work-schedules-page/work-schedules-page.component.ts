@@ -1,9 +1,11 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   Component,
+  ChangeDetectionStrategy,
   ElementRef,
   OnDestroy,
   ViewChild,
+  computed,
   effect,
   inject,
   signal,
@@ -38,9 +40,12 @@ import {
   ShiftType,
 } from '../../data-access/models/work-schedule.models';
 import { WorkScheduleStore } from '../../data-access/store/work-schedule.store';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 @Component({
   selector: 'app-work-schedules-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -70,6 +75,8 @@ export class WorkSchedulesPageComponent implements OnDestroy {
   private locationMapRef?: ElementRef<HTMLDivElement>;
 
   protected readonly store = inject(WorkScheduleStore);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canUpdateSchedule = computed(() => this.permissionService.has(PermissionCode.SCHEDULE_UPDATE));
   private readonly toastService = inject(ToastService);
   protected readonly pageSlots = Array.from({ length: 5 }, (_, index) => index);
   protected readonly hasMapTilerApiKey = !!environment.mapTilerApiKey;
@@ -397,7 +404,7 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     if (!('geolocation' in navigator)) {
       this.locatingCurrentPosition.set(false);
       this.toastService.warning(
-        'Trinh duyet chua ho tro lay vi tri. Vui long nhap toa do thu cong.',
+        'Trình duyệt chưa hỗ trợ lấy vị trí. Vui lòng nhập tọa độ thủ công.',
       );
       return;
     }
@@ -416,7 +423,7 @@ export class WorkSchedulesPageComponent implements OnDestroy {
       },
       () => {
         this.locatingCurrentPosition.set(false);
-        this.toastService.warning('Vui long mo quyen vi tri de lay toa do GPS hien tai.');
+        this.toastService.warning('Vui lòng mở quyền vị trí để lấy tọa độ GPS hiện tại.');
       },
       {
         enableHighAccuracy: true,

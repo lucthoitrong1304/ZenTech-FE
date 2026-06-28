@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, effect, inject, untracked } from '@angular/core';
 import {
   LucideChevronLeft,
   LucideChevronRight,
@@ -22,12 +22,15 @@ import {
   ManagementEmployeeSort,
 } from '../../data-access/models/management-employee.models';
 import { ManagementEmployeesStore } from '../../data-access/store/management-employees.store';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 type ActiveFilterValue = 'all' | 'active' | 'inactive';
 type RoleFilterValue = 'all' | ManagementEmployeeRole;
 
 @Component({
   selector: 'app-management-employees-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -53,6 +56,9 @@ type RoleFilterValue = 'all' | ManagementEmployeeRole;
 export class ManagementEmployeesPageComponent {
   protected readonly store = inject(ManagementEmployeesStore);
   private readonly toastService = inject(ToastService);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canCreateEmployee = computed(() => this.permissionService.has(PermissionCode.EMPLOYEE_CREATE));
+  protected readonly canUpdateEmployee = computed(() => this.permissionService.has(PermissionCode.EMPLOYEE_UPDATE));
   protected readonly employeeRoles: ManagementEmployeeRole[] = ['MANAGER', 'EMPLOYEE'];
   protected readonly pageSlots = Array.from({ length: 5 }, (_, index) => index);
 
@@ -120,6 +126,12 @@ export class ManagementEmployeesPageComponent {
   }
 
   protected submitCreateEmployee(event: Event): void {
+    if (!this.canCreateEmployee()) {
+      event.preventDefault();
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     event.preventDefault();
     this.store.createEmployee();
   }
@@ -179,4 +191,3 @@ function readInputValue(event: Event): string {
 function readSelectValue(event: Event): string {
   return event.target instanceof HTMLSelectElement ? event.target.value : '';
 }
-

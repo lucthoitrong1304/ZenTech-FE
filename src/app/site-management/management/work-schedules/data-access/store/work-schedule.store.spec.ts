@@ -3,6 +3,7 @@ import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import {
+  AttendanceLocationPolicy,
   EmployeeWeeklySchedule,
   Shift,
   WorkSchedulePage,
@@ -46,7 +47,11 @@ describe('WorkScheduleStore', () => {
     const employee = createEmployee();
     const getShifts = vi.fn(() => of([shift]));
     const getWeeklySchedules = vi.fn(() => of(createPage([employee])));
-    const store = configureStore({ getShifts, getWeeklySchedules });
+    const store = configureStore({
+      getShifts,
+      getLocationPolicy: vi.fn(() => of(createLocationPolicy())),
+      getWeeklySchedules,
+    });
 
     store.loadWorkspace();
 
@@ -65,6 +70,7 @@ describe('WorkScheduleStore', () => {
     const getWeeklySchedules = vi.fn(() => of(createPage([employee])));
     const store = configureStore({
       getShifts: vi.fn(() => of([shift])),
+      getLocationPolicy: vi.fn(() => of(createLocationPolicy())),
       getWeeklySchedules,
       assignShift,
     });
@@ -77,15 +83,17 @@ describe('WorkScheduleStore', () => {
       employeeId: 'employee-1',
       shiftId: 'shift-1',
       workDate: '2026-05-25',
+      reason: '',
     });
     expect(store.assignModalOpen()).toBe(false);
-    expect(store.successMessage()).toBe('Da cap nhat ca lam viec.');
+    expect(store.successMessage()).toBe('Đã cập nhật ca làm việc.');
   });
 
   it('sends selectAll for bulk assignment without employee ids', () => {
     const bulkAssignShifts = vi.fn(() => of(undefined));
     const store = configureStore({
       getShifts: vi.fn(() => of([createShift()])),
+      getLocationPolicy: vi.fn(() => of(createLocationPolicy())),
       getWeeklySchedules: vi.fn(() => of(createPage([createEmployee()]))),
       bulkAssignShifts,
     });
@@ -101,12 +109,14 @@ describe('WorkScheduleStore', () => {
       shiftId: 'shift-1',
       startDate: store.query().weekStartDate,
       endDate: store.query().weekEndDate,
+      reason: '',
     });
   });
 
   it('keeps the settings modal open when shift update fails', () => {
     const store = configureStore({
       getShifts: vi.fn(() => of([createShift()])),
+      getLocationPolicy: vi.fn(() => of(createLocationPolicy())),
       getWeeklySchedules: vi.fn(() => of(createPage([createEmployee()]))),
       updateShifts: vi.fn(() => throwError(() => new Error('failed'))),
     });
@@ -118,7 +128,7 @@ describe('WorkScheduleStore', () => {
 
     expect(store.saving()).toBe(false);
     expect(store.settingsModalOpen()).toBe(true);
-    expect(store.errorMessage()).toBe('Khong the cap nhat cau hinh ca.');
+    expect(store.errorMessage()).toBe('Không thể cập nhật cấu hình ca.');
   });
 });
 
@@ -160,5 +170,17 @@ function createPage(employees: EmployeeWeeklySchedule[]): WorkSchedulePage {
     totalElements: employees.length,
     totalPages: employees.length > 0 ? 1 : 0,
     last: true,
+  };
+}
+
+function createLocationPolicy(): AttendanceLocationPolicy {
+  return {
+    id: 'policy-1',
+    enabled: false,
+    shapeType: 'CIRCLE',
+    centerLatitude: null,
+    centerLongitude: null,
+    radiusMeters: null,
+    polygonPoints: [],
   };
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/core';
 import {
   LucideCheck,
   LucideCrown,
@@ -13,6 +13,7 @@ import { PermissionMatrixStore } from '../../data-access/permission-matrix.store
 
 @Component({
   selector: 'app-admin-permissions',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

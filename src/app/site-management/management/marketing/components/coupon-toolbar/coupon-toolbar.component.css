@@ -1,169 +1,235 @@
 @import "tailwindcss" reference;
 
+:host {
+  display: block;
+}
+
 .coupon-toolbar {
-  @apply flex flex-col xl:flex-row xl:items-center justify-between gap-4;
-  padding: 18px;
-  border: 1px solid rgba(229, 231, 235, 0.88);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.045);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #e7e9ee;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 28px rgba(17, 24, 39, 0.04);
 }
 
 .search-box {
-  @apply relative flex-1 min-w-0;
+  position: relative;
+  min-width: 260px;
+  flex: 1 1 420px;
 }
 
 .search-icon {
-  @apply absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280];
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  width: 18px;
+  height: 18px;
+  color: #98a2b3;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 .search-input {
-  @apply w-full rounded-full border border-[#E5E7EB] bg-[#F9FAFB] pl-10 pr-4 text-sm text-[#111827] transition-all focus:outline-none focus:border-[#4F46E5] focus:bg-white focus:ring-1 focus:ring-[#4F46E5];
-  height: 44px;
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #dfe3ea;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #344054;
+  padding: 0 16px 0 42px;
+  font-size: 13px;
+  font-weight: 650;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.search-input:focus {
+  border-color: #b8c0ff;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 .filters-container {
-  @apply flex flex-wrap items-center gap-2.5;
+  display: flex;
   min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
 }
 
 .filter-select-group {
-  @apply flex items-center gap-2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .filter-label {
-  @apply text-[10px] font-bold text-[#6B7280] uppercase whitespace-nowrap;
-  letter-spacing: 0.04em;
-}
-
-.filter-select {
-  @apply rounded-full border border-[#E5E7EB] bg-white px-4 text-xs font-semibold text-[#374151] transition-all cursor-pointer focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5];
-  height: 44px;
-  padding-right: 42px;
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, #6b7280 50%),
-    linear-gradient(135deg, #6b7280 50%, transparent 50%);
-  background-position:
-    calc(100% - 22px) 19px,
-    calc(100% - 16px) 19px;
-  background-repeat: no-repeat;
-  background-size: 6px 6px, 6px 6px;
-  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.035);
-}
-
-.filter-select:hover {
-  border-color: #c7d2fe;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 :host ::ng-deep .marketing-filter-select {
+  display: flex !important;
   min-width: 184px !important;
-  height: 44px !important;
-  border: 1px solid #e5e7eb !important;
-  border-radius: 999px !important;
+  min-height: 42px !important;
+  align-items: center !important;
+  border: 1px solid #dfe3ea !important;
+  border-radius: 10px !important;
   background: #ffffff !important;
-  box-shadow: 0 8px 18px rgba(17, 24, 39, 0.035) !important;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
+  box-shadow: none !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease !important;
 }
 
 :host ::ng-deep .marketing-filter-select:hover,
 :host ::ng-deep .marketing-filter-select.p-focus {
-  border-color: #c7d2fe !important;
-  box-shadow: 0 12px 26px rgba(79, 70, 229, 0.08) !important;
+  border-color: #b8c0ff !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
 }
 
 :host ::ng-deep .marketing-filter-select .p-select-label {
   display: flex !important;
-  align-items: center !important;
   height: 100% !important;
-  padding: 0 0 0 20px !important;
-  color: #374151 !important;
-  font-size: 12px !important;
-  font-weight: 700 !important;
+  align-items: center !important;
+  padding: 0 0 0 13px !important;
+  color: #344054 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
 }
 
 :host ::ng-deep .marketing-filter-select .p-select-dropdown {
-  width: 42px !important;
-  color: #6b7280 !important;
+  width: 34px !important;
+  color: #667085 !important;
 }
 
 ::ng-deep .marketing-filter-panel {
   overflow: hidden !important;
   min-width: 214px !important;
-  border: 1px solid rgba(199, 210, 254, 0.9) !important;
-  border-radius: 18px !important;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96)) !important;
-  box-shadow:
-    0 22px 50px rgba(17, 24, 39, 0.12),
-    0 8px 18px rgba(79, 70, 229, 0.08) !important;
-  backdrop-filter: blur(14px);
+  border: 1px solid #e7e9ee !important;
+  border-radius: 10px !important;
+  background: #ffffff !important;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.13) !important;
 }
 
 ::ng-deep .marketing-filter-panel .p-select-list {
-  padding: 8px !important;
+  padding: 6px !important;
 }
 
 ::ng-deep .marketing-filter-panel .p-select-option {
   min-height: 38px !important;
   margin: 2px 0 !important;
-  border-radius: 12px !important;
-  color: #374151 !important;
-  font-size: 12px !important;
+  border-radius: 8px !important;
+  color: #344054 !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
-  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease !important;
 }
 
-::ng-deep .marketing-filter-panel .p-select-option:hover {
-  background: #eef2ff !important;
-  color: #4338ca !important;
-  transform: translateX(2px);
+::ng-deep .marketing-filter-panel .p-select-option:hover,
+::ng-deep .marketing-filter-panel .p-select-option.p-focus {
+  background: #f8fafc !important;
+  color: #101828 !important;
 }
 
 ::ng-deep .marketing-filter-panel .p-select-option.p-select-option-selected,
 ::ng-deep .marketing-filter-panel .p-select-option.p-highlight,
 ::ng-deep .marketing-filter-panel .p-select-option[aria-selected='true'] {
-  background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
-  color: #ffffff !important;
-  box-shadow: 0 10px 20px rgba(79, 70, 229, 0.22) !important;
+  background: #fff7d6 !important;
+  color: #101828 !important;
 }
 
 .button-group {
-  @apply flex items-center gap-2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-apply,
+.btn-reset {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 10px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 850;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
 .btn-apply {
-  @apply rounded-full bg-[#4F46E5] px-5 text-white text-xs font-bold uppercase transition-all hover:bg-[#4338CA] disabled:opacity-50 disabled:cursor-not-allowed;
-  min-height: 44px;
+  border: 1px solid #f0b400;
+  background: #fbbc04;
+  color: #111827;
+}
+
+.btn-apply:hover:not(:disabled) {
+  background: #f4b400;
+}
+
+.btn-apply:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .btn-reset {
-  @apply flex items-center gap-1.5 rounded-full border border-[#E5E7EB] bg-white px-4 text-xs font-bold text-[#374151] transition-all hover:bg-rose-50 hover:text-rose-600;
-  min-height: 44px;
+  border: 1px solid #dfe3ea;
+  background: #ffffff;
+  color: #344054;
+}
+
+.btn-reset:hover {
+  border-color: #fecdd3;
+  background: #fff1f3;
+  color: #c01048;
 }
 
 .reset-icon {
-  @apply w-4 h-4;
+  width: 16px;
+  height: 16px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1180px) {
+  .coupon-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .search-box {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 760px) {
   .filters-container,
   .filter-select-group,
-  .filter-select,
   .button-group,
   .btn-apply,
   .btn-reset {
     width: 100%;
   }
 
-  :host ::ng-deep .marketing-filter-select {
-    width: 100% !important;
-    min-width: 0 !important;
+  .filters-container {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .filter-select-group {
     align-items: stretch;
     flex-direction: column;
     gap: 6px;
+  }
+
+  :host ::ng-deep .marketing-filter-select {
+    width: 100% !important;
+    min-width: 0 !important;
   }
 }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, effect, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, computed, effect, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
@@ -20,6 +20,7 @@ import { AdminProfileStore } from '../../data-access/store/admin-profile.store';
 
 @Component({
   selector: 'app-admin-profile',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

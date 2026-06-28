@@ -1,85 +1,76 @@
-<section class="management-products-page">
-  <div class="product-command">
-    <div>
-      <nav class="product-eyebrow" aria-label="Product breadcrumb">
-        <span>Hệ thống</span>
-        <span>/</span>
-        <strong>Quản lý Sản phẩm</strong>
-      </nav>
-      <h1>Quản lý Sản phẩm</h1>
-      <p>Quản lý danh mục, tồn kho, SKU và trạng thái hiển thị sản phẩm.</p>
-    </div>
-
-    <button appHasPermission="PRODUCT_CREATE" type="button" class="product-primary-action" (click)="addProduct()">
+<app-management-page-shell>
+  <app-management-page-hero
+    eyebrow="Trung tâm quản lý sản phẩm"
+    title="Quản lý Sản phẩm"
+    description="Quản lý danh mục, tồn kho, SKU và trạng thái hiển thị sản phẩm."
+  >
+    <button
+      hero-actions
+      appHasPermission="PRODUCT_CREATE"
+      type="button"
+      class="zt-management-primary-action"
+      (click)="addProduct()"
+    >
       <svg lucidePackagePlus [attr.stroke-width]="2.2"></svg>
       <span>Thêm sản phẩm mới</span>
     </button>
+  </app-management-page-hero>
+
+  <div class="zt-management-stats-grid">
+    <app-management-stat-card
+      label="Tổng sản phẩm"
+      [value]="store.stats().totalProducts"
+      hint="+12% tháng này"
+      tone="info"
+    >
+      <svg stat-icon lucideWarehouse [attr.stroke-width]="2"></svg>
+    </app-management-stat-card>
+
+    <app-management-stat-card
+      label="Hết hàng"
+      [value]="store.stats().outOfStock"
+      hint="Cần nhập thêm"
+      tone="danger"
+    >
+      <svg stat-icon lucideTriangleAlert [attr.stroke-width]="2"></svg>
+    </app-management-stat-card>
+
+    <app-management-stat-card
+      label="Giá trị kho"
+      [value]="formatVnd(store.stats().inventoryValue)"
+      hint="Ước tính theo tồn kho"
+      tone="accent"
+    >
+      <svg stat-icon lucideWallet [attr.stroke-width]="2"></svg>
+    </app-management-stat-card>
+
+    <app-management-stat-card
+      label="AI dự báo xu hướng"
+      value="Gaming +25%"
+      [hint]="store.stats().lowStock + ' SKU cần theo dõi tồn kho'"
+      tone="warning"
+    >
+      <svg stat-icon lucideSparkles [attr.stroke-width]="2"></svg>
+    </app-management-stat-card>
   </div>
 
-  <div class="product-stats-grid">
-    <article>
-      <span class="product-stat-icon product-stat-icon--secondary">
-        <svg lucideWarehouse [attr.stroke-width]="2"></svg>
-      </span>
-      <div>
-        <p>Tổng sản phẩm</p>
-        <strong>{{ store.stats().totalProducts }}</strong>
-        <small>
-          <svg lucideTrendingUp [attr.stroke-width]="2"></svg>
-          +12% tháng này
-        </small>
-      </div>
-    </article>
-
-    <article>
-      <span class="product-stat-icon product-stat-icon--danger">
-        <svg lucideTriangleAlert [attr.stroke-width]="2"></svg>
-      </span>
-      <div>
-        <p>Hết hàng</p>
-        <strong>{{ store.stats().outOfStock }}</strong>
-        <small class="product-stat-alert">Cần nhập thêm</small>
-      </div>
-    </article>
-
-    <article>
-      <span class="product-stat-icon">
-        <svg lucideWallet [attr.stroke-width]="2"></svg>
-      </span>
-      <div>
-        <p>Giá trị kho</p>
-        <strong>{{ store.stats().inventoryValue | currency: 'VND' : 'symbol' : '1.0-0' }}</strong>
-        <small>Ước tính theo tồn kho</small>
-      </div>
-    </article>
-
-    <article class="product-ai-card">
-      <span class="product-stat-icon">
-        <svg lucideSparkles [attr.stroke-width]="2"></svg>
-      </span>
-      <div>
-        <p>AI dự báo xu hướng</p>
-        <strong>Nhu cầu Gaming tăng 25%</strong>
-        <small>{{ store.stats().lowStock }} SKU đang sắp hết hàng</small>
-      </div>
-    </article>
-  </div>
-
-  <app-product-toolbar
-    [keyword]="store.query().keyword"
-    [categoryId]="store.query().categoryId"
-    [stockStatus]="store.query().stockStatus"
-    [sort]="store.query().sort"
-    [categories]="store.categories()"
-    [activeFilterCount]="store.activeFilterCount()"
-    [loading]="store.loading()"
-    (keywordChange)="store.setKeyword($event)"
-    (categoryChange)="store.setCategoryFilter($event)"
-    (stockStatusChange)="setStockFilter($event)"
-    (sortChange)="setSort($event)"
-    (applyFilters)="store.applyFilters()"
-    (resetFilters)="store.resetFilters()"
-  />
+  <app-management-toolbar-surface>
+    <app-product-toolbar
+      [keyword]="store.query().keyword"
+      [categoryId]="store.query().categoryId"
+      [stockStatus]="store.query().stockStatus"
+      [sort]="store.query().sort"
+      [categories]="store.categories()"
+      [activeFilterCount]="store.activeFilterCount()"
+      [loading]="store.loading()"
+      (keywordChange)="store.setKeyword($event)"
+      (categoryChange)="store.setCategoryFilter($event)"
+      (stockStatusChange)="setStockFilter($event)"
+      (sortChange)="setSort($event)"
+      (applyFilters)="store.applyFilters()"
+      (resetFilters)="store.resetFilters()"
+    />
+  </app-management-toolbar-surface>
 
   <app-product-table
     [products]="store.products()"
@@ -108,4 +99,4 @@
     (save)="store.submitProductForm()"
     (draftChange)="store.updateFormValue($event)"
   />
-</section>
+</app-management-page-shell>

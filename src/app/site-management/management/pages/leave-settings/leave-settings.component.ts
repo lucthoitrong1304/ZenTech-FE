@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideLoader2, LucidePlus, LucideSave } from '@lucide/angular';
 import { ApiService } from '../../../../core/api/api.service';
@@ -47,6 +47,7 @@ interface LeaveQuota {
 
 @Component({
   selector: 'app-leave-settings',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, FormsModule, LucideLoader2, LucidePlus, LucideSave],
   templateUrl: './leave-settings.component.html',

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject, signal, computed, effect, NgZone } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnDestroy, OnInit, inject, signal, computed, effect, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -76,6 +76,7 @@ interface ClientLogStackContext {
 
 @Component({
   selector: 'app-admin-issues',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -782,8 +783,10 @@ export class IssuesComponent implements OnInit, OnDestroy {
       { label: 'timestamp', value: this.formatLogDateTime(log.timestamp) },
     ];
 
-    if (log.traceId) {
-      metadata.push({ label: 'trace_id', value: log.traceId });
+    const traceId = this.getEffectiveTraceId(log, stackContext);
+
+    if (traceId) {
+      metadata.push({ label: 'trace_id', value: traceId });
     }
 
     if (stackContext?.eventType) {
@@ -831,12 +834,13 @@ export class IssuesComponent implements OnInit, OnDestroy {
         const timestamp = new Date(log.timestamp);
 
         const context = this.parseClientLogStack(log.details);
+        const traceId = this.getEffectiveTraceId(log, context);
         const textMetadata = this.extractHttpMetadataFromText(`${log.message}\n${log.details || ''}`);
         const metadata = {
           apiPath: context?.apiPath ? this.normalizeApiPath(context.apiPath) : textMetadata.apiPath,
           httpMethod: context?.method || textMetadata.httpMethod,
           statusCode: context?.statusCode ?? textMetadata.statusCode,
-          errorMessage: context?.reason || log.message.split('|')[0]?.trim() || log.message,
+          errorMessage: context?.reason ? this.sanitizeVisibleLogText(context.reason) : this.sanitizeVisibleLogText(log.message.split('|')[0]?.trim() || log.message),
           userEmail: context?.userEmail ?? null,
           userRole: context?.userRole ?? null,
           latestContext: context,
@@ -852,7 +856,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
             occurrences: 1,
             firstSeen: timestamp,
             lastSeen: timestamp,
-            traceIds: log.traceId ? [log.traceId] : [],
+            traceIds: traceId ? [traceId] : [],
             ...metadata,
             logs: [log],
           });
@@ -877,8 +881,8 @@ export class IssuesComponent implements OnInit, OnDestroy {
           existingIssue.latestContext = metadata.latestContext;
         }
 
-        if (log.traceId && !existingIssue.traceIds.includes(log.traceId)) {
-          existingIssue.traceIds.push(log.traceId);
+        if (traceId && !existingIssue.traceIds.includes(traceId)) {
+          existingIssue.traceIds.push(traceId);
         }
       });
 
@@ -889,13 +893,118 @@ export class IssuesComponent implements OnInit, OnDestroy {
   private getIssueTitle(log: SystemLog): string {
     const context = this.parseClientLogStack(log.details);
 
-    if (context?.eventType && context.apiPath) {
-      return `${this.toFriendlyJourneyTitle(context.eventType, log.message)} · ${context.method || 'HTTP'} ${this.normalizeApiPath(context.apiPath)}`;
+    if (context?.eventType) {
+      const journeyTitle = this.toFriendlyJourneyTitle(context.eventType, log.message);
+
+      if (context.apiPath) {
+        return `${journeyTitle} · ${context.method || 'HTTP'} ${this.normalizeApiPath(context.apiPath)}`;
+      }
+
+      if (context.eventType === 'RouteGuardDenied') {
+        return this.getRouteGuardIssueTitle(context);
+      }
+
+      return journeyTitle;
     }
 
-    return log.message.split('|')[0]?.trim() || log.message;
+    return this.toConciseTechnicalIssueTitle(log.message);
   }
 
+  protected getIssueDisplaySignature(issue: LogIssue): string {
+    return this.sanitizeVisibleLogText(issue.signature);
+  }
+
+  protected getLogDisplayMessage(log: SystemLog): string {
+    return this.sanitizeVisibleLogText(log.message);
+  }
+
+  protected getTraceSummary(issue: LogIssue): string {
+    const count = issue.traceIds.length;
+    return count ? `${count} mã trace` : 'Chưa có trace';
+  }
+
+  protected getPrimaryTraceId(issue: LogIssue): string {
+    return issue.traceIds[0] || 'N/A';
+  }
+
+  protected getIssueShortSummary(issue: LogIssue): string {
+    if (issue.latestContext?.reason) {
+      return this.sanitizeVisibleLogText(issue.latestContext.reason);
+    }
+
+    return this.sanitizeVisibleLogText(issue.errorMessage || issue.title);
+  }
+
+  private getEffectiveTraceId(log: SystemLog, context: ClientLogStackContext | null = this.parseClientLogStack(log.details)): string {
+    return (log.traceId || context?.traceId || '').trim();
+  }
+
+  private getRouteGuardIssueTitle(context: ClientLogStackContext): string {
+    const routeLabel = context.routeUrl?.startsWith('/admin') ? 'Admin' : context.routeUrl;
+
+    if (context.reason === 'UnauthenticatedAdminAccess') {
+      return 'Người dùng chưa đăng nhập bị chặn khỏi khu vực Admin';
+    }
+
+    if (context.reason === 'MissingAdminRole') {
+      return 'Người dùng không đủ quyền truy cập khu vực Admin';
+    }
+
+    return routeLabel ? `Bị chặn truy cập · ${routeLabel}` : 'Bị chặn truy cập';
+  }
+
+  private toConciseTechnicalIssueTitle(message: string): string {
+    const cleaned = this.sanitizeVisibleLogText(message.split('|')[0]?.trim() || message);
+    const lower = cleaned.toLowerCase();
+
+    if (lower.includes('error starting tomcat context')) {
+      if (lower.includes('entitymanagerfactory') || lower.includes('jpa')) {
+        return 'Backend startup failed: unresolved JPA EntityManager dependency';
+      }
+
+      if (lower.includes('unsatisfieddependencyexception')) {
+        return 'Backend startup failed: unsatisfied Spring dependency';
+      }
+
+      return 'Backend startup failed: Tomcat context error';
+    }
+
+    const clientAbortPath = cleaned.match(/Client aborted connection .*?path:\s*([^\s]+)/i)?.[1];
+    if (clientAbortPath) {
+      return `Client aborted connection · ${clientAbortPath}`;
+    }
+
+    if (lower.includes('unsatisfieddependencyexception')) {
+      return 'Spring dependency injection failed';
+    }
+
+    if (lower.includes('beancreationexception')) {
+      return 'Spring bean creation failed';
+    }
+
+    if (lower.includes('cannot resolve reference to bean')) {
+      return 'Spring bean reference could not be resolved';
+    }
+
+    return cleaned.length > 140 ? `${cleaned.slice(0, 137).trim()}...` : cleaned;
+  }
+
+  private sanitizeVisibleLogText(value: string | null | undefined): string {
+    if (!value) {
+      return 'N/A';
+    }
+
+    const cleaned = value
+      .replace(/'[^']*\\x[0-9A-Fa-f]{2}[^']*'/g, "'[encoded value]'")
+      .replace(/\\x[0-9A-Fa-f]{2}/g, ' ')
+      .replace(/\\u[0-9A-Fa-f]{4}/g, ' ')
+      .replace(/\\[rntbf]/g, ' ')
+      .replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return cleaned || 'N/A';
+  }
   private getIssueSignature(log: SystemLog): string {
     const context = this.parseClientLogStack(log.details);
     const baseMessage = this.normalizeIssueMessage(log.message);
@@ -959,7 +1068,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
       case 'RouteGuardDenied':
         return 'Bị chặn truy cập';
       default:
-        return eventType || fallbackMessage.split('|')[0]?.trim() || fallbackMessage;
+        return eventType || this.sanitizeVisibleLogText(fallbackMessage.split('|')[0]?.trim() || fallbackMessage);
     }
   }
 

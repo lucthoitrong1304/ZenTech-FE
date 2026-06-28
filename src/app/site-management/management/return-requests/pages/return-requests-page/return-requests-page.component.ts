@@ -1,6 +1,6 @@
 import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { PaginatorModule } from 'primeng/paginator';
@@ -17,10 +17,12 @@ import {
 } from '@lucide/angular';
 import { ReturnRequestStore } from '../../data-access/store/return-request.store';
 import { ReturnRequest, ReturnRequestStatus } from '../../data-access/models/return-request.model';
+import { ManagementPageShellComponent } from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 
 @Component({
   selector: 'app-return-requests-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     HasPermissionDirective,
@@ -36,7 +38,8 @@ import { ToastService } from '../../../../../shared/components/toast/toast.servi
     LucideSlidersHorizontal,
     LucideSearch,
     LucideCalendar,
-    LucideFileDown
+    LucideFileDown,
+    ManagementPageShellComponent
   ],
   templateUrl: './return-requests-page.component.html',
   styleUrl: './return-requests-page.component.css',

@@ -1,3 +1,5 @@
+import { PermissionCode } from '../../../../core/permissions/permission.models';
+
 export interface CommandPaletteItem {
   id: string;
   icon: string;
@@ -5,6 +7,7 @@ export interface CommandPaletteItem {
   description?: string;
   path?: string;
   action?: () => void;
+  permission?: PermissionCode;
 }
 
 export interface CommandPaletteGroup {

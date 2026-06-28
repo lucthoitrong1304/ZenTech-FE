@@ -1,22 +1,37 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, effect, inject, untracked } from '@angular/core';
 import { filter, take } from 'rxjs';
 import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
+import {
+  ManagementErrorStateComponent,
+  ManagementPageHeroComponent,
+  ManagementPageShellComponent,
+  ManagementStatCardComponent,
+  ManagementToolbarSurfaceComponent,
+} from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { CustomerDetailDialogComponent } from '../../components/customer-detail-dialog/customer-detail-dialog.component';
 import { CustomerTableComponent } from '../../components/customer-table/customer-table.component';
 import { CustomerToolbarComponent } from '../../components/customer-toolbar/customer-toolbar.component';
 import { CustomerActiveFilter, CustomerSort } from '../../data-access/models/customer.models';
 import { CustomerStore } from '../../data-access/store/customer.store';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 @Component({
   selector: 'app-customer-list',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
     CustomerDetailDialogComponent,
     CustomerTableComponent,
     CustomerToolbarComponent,
+    ManagementErrorStateComponent,
+    ManagementPageHeroComponent,
+    ManagementPageShellComponent,
+    ManagementStatCardComponent,
+    ManagementToolbarSurfaceComponent,
   ],
   templateUrl: './customer-list.component.html',
   styleUrl: './customer-list.component.css',
@@ -25,6 +40,8 @@ import { CustomerStore } from '../../data-access/store/customer.store';
 export class CustomerListComponent {
   private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canUpdateCustomer = computed(() => this.permissionService.has(PermissionCode.CUSTOMER_UPDATE));
   protected readonly store = inject(CustomerStore);
 
   protected readonly activeFilterLabel = computed(() => {
@@ -108,6 +125,11 @@ export class CustomerListComponent {
   }
 
   protected confirmStatusChange(event: { customerId: string; active: boolean }): void {
+    if (!this.canUpdateCustomer()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.confirmService
       .open({
         title: event.active ? 'Mở khóa tài khoản' : 'Khóa tài khoản',

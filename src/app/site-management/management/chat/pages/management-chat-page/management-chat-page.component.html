@@ -29,13 +29,12 @@
         <app-chat-header
           [conversation]="conversation"
           [mediaDrawerOpen]="store.mediaDrawerOpen()"
-          [canCall]="conversation.status !== 'CLOSED' && !!conversation.customer.email"
+          [canUpdate]="canUpdateChat()"
           (mediaClicked)="store.toggleMediaDrawer()"
           (searchClicked)="store.toggleSearchSidebar()"
-          (callClicked)="startCustomerCall(conversation.customer.email)"
-          (acceptClicked)="store.acceptConversation()"
+          (acceptClicked)="canUpdateChat() && store.acceptConversation()"
           (transferClicked)="openTransferDialog()"
-          (closeClicked)="store.closeConversation()"
+          (closeClicked)="canUpdateChat() && store.closeConversation()"
         />
 
         @if (primaryRelatedTicket(); as ticket) {
@@ -88,20 +87,32 @@
           </div>
         }
 
-        <app-message-timeline
-          [conversation]="conversation"
-          [messages]="store.selectedMessages()"
-          [highlightedMessageId]="store.highlightedMessageId()"
-          (previewRequested)="openPreview($event)"
-          (highlightCleared)="store.clearHighlightedMessage()"
-        />
+        <div class="relative flex min-h-0 flex-1 flex-col">
+          <app-message-timeline
+            [conversation]="conversation"
+            [messages]="store.selectedMessages()"
+            [highlightedMessageId]="store.highlightedMessageId()"
+            (previewRequested)="openPreview($event)"
+            (highlightCleared)="store.clearHighlightedMessage()"
+          />
+
+          @if (store.messagesLoading()) {
+            <div class="pointer-events-none absolute inset-x-0 top-0 z-20 h-0.5 overflow-hidden bg-[#efe7cf]">
+              <span class="management-chat-loading-bar block h-full w-1/3 bg-[#ffc700]"></span>
+            </div>
+            <div class="pointer-events-none absolute right-4 top-4 z-20 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-[#4f4632] shadow-sm ring-1 ring-[#d2c5ab]/30">
+              Đang tải hội thoại...
+            </div>
+          }
+        </div>
 
         @if (store.canReplyToSelectedConversation()) {
           <app-chat-composer
             [uploads]="store.uploads()"
             [hasPendingAttachments]="store.hasPendingAttachments()"
-            (messageSubmitted)="store.sendStaffMessage($event)"
-            (filesSelected)="store.selectStaffFiles($event)"
+            [disabled]="store.messagesLoading() || !canUpdateChat()"
+            (messageSubmitted)="canUpdateChat() && store.sendStaffMessage($event)"
+            (filesSelected)="canUpdateChat() && store.selectStaffFiles($event)"
             (uploadRemoved)="store.removeStaffUpload($event)"
           />
         }
@@ -132,7 +143,7 @@
   <app-media-preview-dialog [item]="previewItem()" (closed)="closePreview()" />
 
   <p-dialog
-    header="Chuy&#7875;n ti&#7871;p h&#7897;i tho&#7841;i"
+    header="Chuyển tiếp hội thoại"
     [modal]="true"
     [visible]="transferDialogOpen()"
     (visibleChange)="transferDialogOpen.set($event)"
@@ -140,9 +151,9 @@
   >
     <div class="flex flex-col gap-4 py-4">
       <p class="text-sm text-[#4f4632]">
-        Ch&#7885;n nh&#226;n vi&#234;n &#273;ang online &#273;&#7875; chuy&#7875;n ti&#7871;p cu&#7897;c h&#7897;i tho&#7841;i n&#224;y:
+        Chọn nhân viên đang online để chuyển tiếp cuộc hội thoại này:
       </p>
-      
+
       <select
         [ngModel]="selectedStaffId()"
         (ngModelChange)="selectedStaffId.set($event)"
@@ -168,14 +179,12 @@
         <button
           type="button"
           class="rounded-[8px] bg-[#645efb] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5b54e3] disabled:cursor-not-allowed disabled:opacity-50"
-          [disabled]="!selectedStaffId() || store.loading()"
+          [disabled]="!canUpdateChat() || !selectedStaffId() || store.loading()"
           (click)="submitTransfer()"
         >
-          {{ store.loading() ? '\u0110ang chuy\u1ec3n...' : 'Chuy\u1ec3n ti\u1ebfp' }}
+          {{ store.loading() ? 'Đang chuyển...' : 'Chuyển tiếp' }}
         </button>
       </div>
     </ng-template>
   </p-dialog>
 </section>
-
-

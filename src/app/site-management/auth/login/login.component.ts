@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
   effect,
   ElementRef,
@@ -50,6 +51,7 @@ declare const google: any;
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
   providers: [LoginStore],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements AfterViewInit {
   // Lấy reference của div phủ tàng hình
@@ -90,6 +92,7 @@ export class LoginComponent implements AfterViewInit {
       }
     });
   }
+
   ngAfterViewInit(): void {
     this.initGoogleIdentityServices();
   }
@@ -138,37 +141,38 @@ export class LoginComponent implements AfterViewInit {
     });
   }
 
+  // Kiểm tra lỗi khi login
   protected hasControlError(controlName: 'email' | 'password', errorCode: string): boolean {
     const control = this.loginForm.controls[controlName];
-
     return control.hasError(errorCode) && (control.dirty || control.touched);
   }
 
+  // Sau khi login thành công điều hướng đúng URL dựa trên role
   private getPostLoginRoute(): string {
     const roles = this.authSessionStore.currentUser()?.roles || [];
-
-    return resolvePostLoginRoute(roles, this.route.snapshot.queryParamMap.get('returnUrl'));
-  }
-}
-
-export function resolvePostLoginRoute(roles: string[], returnUrl: string | null): string {
-  if (hasRole(roles, Role.ADMIN)) {
-    return '/admin/dashboard';
-  }
-  return hasRole(roles, Role.OWNER) || hasRole(roles, Role.MANAGER) || hasRole(roles, Role.EMPLOYEE)
-    ? '/management/dashboard'
-    : getSafeReturnUrl(returnUrl);
-}
-
-export function getSafeReturnUrl(returnUrl: string | null): string {
-  if (
-    !returnUrl ||
-    !returnUrl.startsWith('/') ||
-    returnUrl.startsWith('//') ||
-    returnUrl.includes('://')
-  ) {
-    return '/';
+    return this.resolvePostLoginRoute(roles, this.route.snapshot.queryParamMap.get('returnUrl'));
   }
 
-  return returnUrl;
+  private resolvePostLoginRoute(roles: string[], returnUrl: string | null): string {
+    if (hasRole(roles, Role.ADMIN)) {
+      return '/admin/dashboard';
+    }
+
+    return hasRole(roles, Role.OWNER) || hasRole(roles, Role.MANAGER) || hasRole(roles, Role.EMPLOYEE)
+      ? '/management/dashboard'
+      : this.getSafeReturnUrl(returnUrl);
+  }
+
+  private getSafeReturnUrl(returnUrl: string | null): string {
+    if (
+      !returnUrl ||
+      !returnUrl.startsWith('/') ||
+      returnUrl.startsWith('//') ||
+      returnUrl.includes('://')
+    ) {
+      return '/';
+    }
+
+    return returnUrl;
+  }
 }

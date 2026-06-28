@@ -1,6 +1,6 @@
 import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, effect, inject, untracked, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   LucideSearch,
@@ -29,6 +29,7 @@ import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { DatePicker } from 'primeng/datepicker';
 import { PopoverModule } from 'primeng/popover';
+import { ManagementPageShellComponent } from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { ManagementInventoryStore } from '../../data-access/store/management-inventory.store';
 import { InventoryAdjustDialogComponent } from '../../components/inventory-adjust-dialog/inventory-adjust-dialog.component';
@@ -60,6 +61,7 @@ enum InventoryDateFilterOption {
 
 @Component({
   selector: 'app-management-inventory-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     HasPermissionDirective,
@@ -93,6 +95,7 @@ enum InventoryDateFilterOption {
     DatePicker,
     PopoverModule,
     LucideCopy,
+    ManagementPageShellComponent,
   ],
   templateUrl: './management-inventory-page.component.html',
   styleUrl: './management-inventory-page.component.css',

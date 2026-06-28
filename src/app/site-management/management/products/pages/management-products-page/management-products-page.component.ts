@@ -1,16 +1,21 @@
 import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
-import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import {
   LucidePackagePlus,
   LucideSparkles,
   LucideTriangleAlert,
-  LucideTrendingUp,
   LucideWallet,
   LucideWarehouse,
 } from '@lucide/angular';
 import { filter, take } from 'rxjs';
 import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
+import {
+  ManagementPageHeroComponent,
+  ManagementPageShellComponent,
+  ManagementStatCardComponent,
+  ManagementToolbarSurfaceComponent,
+} from '../../../../../shared/components/management-ui';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { ProductTableComponent } from '../../components/product-table/product-table.component';
 import { ProductToolbarComponent } from '../../components/product-toolbar/product-toolbar.component';
@@ -23,17 +28,20 @@ import { ManagementProductsStore } from '../../data-access/store/management-prod
 
 @Component({
   selector: 'app-management-products-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     HasPermissionDirective,
     CommonModule,
-    CurrencyPipe,
     LucidePackagePlus,
     LucideSparkles,
     LucideTriangleAlert,
-    LucideTrendingUp,
     LucideWallet,
     LucideWarehouse,
+    ManagementPageHeroComponent,
+    ManagementPageShellComponent,
+    ManagementStatCardComponent,
+    ManagementToolbarSurfaceComponent,
     ProductTableComponent,
     ProductToolbarComponent,
     ProductDialogComponent,
@@ -89,11 +97,15 @@ export class ManagementProductsPageComponent {
     this.store.openEditDialog(product.productId);
   }
 
+  protected formatVnd(value: number): string {
+    return `${new Intl.NumberFormat('vi-VN').format(value)} đ`;
+  }
+
   protected confirmDeleteProduct(product: ManagementProduct): void {
     this.confirmService
       .open({
         title: 'Xóa sản phẩm',
-        content: `Bạn có chắc muốn xóa ${product.name} khỏi danh sách mock không?`,
+        content: `Bạn có chắc muốn xóa ${product.name} khỏi danh sách sản phẩm không?`,
       })
       .pipe(
         take(1),

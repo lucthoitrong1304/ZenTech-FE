@@ -20,7 +20,7 @@
   min-height: 72px;
   padding: 0 28px;
   border-bottom: 1px solid #e5e7eb;
-  background: rgba(246, 248, 251, 0.96);
+  background: rgba(251, 250, 248, 0.96);
   box-shadow: none;
   backdrop-filter: blur(18px);
 }
@@ -53,7 +53,7 @@
   gap: 0.06em;
   color: #111827;
   font-size: 20px;
-  font-weight: 950;
+  font-weight: 900;
   font-style: italic;
   line-height: 1;
   letter-spacing: 0;
@@ -81,10 +81,10 @@
 }
 
 .management-breadcrumb__trigger {
+  font-family: var(--zt-font-sans);
+  line-height: 1.6;
   border-style: solid;
   cursor: pointer;
-  font-family: inherit;
-  line-height: 1;
   transition:
     background-color 0.18s ease,
     border-color 0.18s ease,
@@ -95,6 +95,7 @@
 .management-breadcrumb__trigger span {
   min-width: 0;
   overflow: hidden;
+  padding-block: 1px;
   text-overflow: ellipsis;
 }
 
@@ -104,7 +105,11 @@
   flex-shrink: 0;
 }
 
-.management-breadcrumb__trigger:hover,
+.management-breadcrumb__trigger:hover {
+  outline: none;
+  box-shadow: none;
+}
+
 .management-breadcrumb__trigger:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(255, 199, 0, 0.18);
@@ -115,11 +120,12 @@
   border-radius: 10px;
   background: #fff8df;
   color: #9a6b00;
-  font-size: 10px;
-  font-weight: 750;
-  padding: 7px 11px;
+
+  font-size: 12px;
+  font-weight: 800;
+  padding: 9px 12px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
 }
 
 .management-breadcrumb__section:hover,
@@ -133,9 +139,10 @@
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   background: #ffffff;
-  padding: 9px 13px;
-  font-size: 12px;
-  font-weight: 650;
+  padding: 10px 14px;
+
+  font-size: 13px;
+  font-weight: 700;
   color: #4b5563;
   box-shadow: none;
   text-transform: uppercase;
@@ -617,11 +624,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: inherit;
-  font-size: 11px;
-  font-weight: 720;
-  letter-spacing: 0.02em;
-  line-height: 1.35;
-  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.65;
+  text-transform: none;
   white-space: nowrap;
 }
 
@@ -630,11 +637,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: #8b867c;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 650;
-  letter-spacing: 0.02em;
-  line-height: 1.25;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  line-height: 1.45;
+  text-transform: none;
   white-space: nowrap;
 }
 

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnDestroy, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   LucideCheck,
@@ -27,6 +27,7 @@ interface ProductImageItem {
 
 @Component({
   selector: 'app-product-dialog',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -194,7 +195,7 @@ export class ProductDialogComponent implements OnDestroy {
         representativeImageKey: state.representativeImageKey || imageKeys[0] || null,
       });
     } catch {
-      alert('KhÃ´ng thá»ƒ táº£i áº£nh sáº£n pháº©m lÃªn. Vui lÃ²ng thá»­ láº¡i.');
+      alert('Không thể tải ảnh sản phẩm lên. Vui lòng thử lại.');
     } finally {
       this.uploadingImages.set(false);
     }

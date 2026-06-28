@@ -1,5 +1,5 @@
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import {
   LucideChevronLeft,
   LucideChevronRight,
@@ -11,6 +11,7 @@ import { CustomerSummary } from '../../data-access/models/customer.models';
 
 @Component({
   selector: 'app-customer-table',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -33,6 +34,7 @@ export class CustomerTableComponent {
   readonly size = input.required<number>();
   readonly totalElements = input.required<number>();
   readonly totalPages = input.required<number>();
+  readonly canUpdateStatus = input<boolean>(false);
 
   readonly viewCustomer = output<string>();
   readonly pageChange = output<{ page: number; size: number }>();

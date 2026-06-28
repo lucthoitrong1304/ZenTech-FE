@@ -38,18 +38,12 @@ export interface CustomerChatMessageAttachment {
   thumbnailUrl: string | null;
 }
 
-export interface CallHistoryData {
-  duration: string;
-  status: string;
-}
-
 export interface CustomerChatMessage {
   id: string;
   sender: CustomerChatMessageSender;
   senderName: string;
   messageType?: ChatMessageType;
   body: string;
-  callData?: CallHistoryData;
   sentAtLabel: string;
   attachments: CustomerChatMessageAttachment[];
   recommendedProducts?: ChatProductRecommendation[];
@@ -138,7 +132,6 @@ export enum ChatMessageType {
   FILE = 'FILE',
   MEDIA = 'MEDIA',
   SYSTEM = 'SYSTEM',
-  CALL = 'CALL',
   TEXT_STREAM_CHUNK = 'TEXT_STREAM_CHUNK',
 }
 
@@ -252,7 +245,7 @@ export function formatTime(dateStr: string): string {
     const mins = String(d.getMinutes()).padStart(2, '0');
     return `${hrs}:${mins}`;
   } catch {
-    return 'Vá»«a xong';
+    return 'Vừa xong';
   }
 }
 
@@ -349,7 +342,6 @@ export function mapToCustomerChatSession(
       senderName,
       messageType: m.messageType,
       body: m.content || '',
-      callData: m.messageType === ChatMessageType.CALL && m.content ? (() => { try { return JSON.parse(m.content); } catch { return undefined; } })() : undefined,
       sentAtLabel: formatTime(m.createdAt),
       attachments: (m.attachments || []).map((att) => ({
         id: att.id,

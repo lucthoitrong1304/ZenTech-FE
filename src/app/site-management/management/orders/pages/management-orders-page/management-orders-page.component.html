@@ -1,46 +1,57 @@
-<section class="orders-page">
-  <div class="orders-command">
-    <div class="orders-command__copy">
-      <span class="orders-kicker">Order Control Center</span>
-      <h1>Quản lý Đơn hàng</h1>
-      <p>Theo dõi, xử lý và cập nhật trạng thái các đơn hàng trong hệ thống.</p>
-    </div>
-
-    <button type="button" class="orders-primary-action" (click)="exportReport()">
+<app-management-page-shell>
+  <app-management-page-hero
+    eyebrow="Trung tâm điều phối đơn hàng"
+    title="Quản lý Đơn hàng"
+    description="Theo dõi, xử lý và cập nhật trạng thái các đơn hàng trong hệ thống."
+  >
+    <button
+      hero-actions
+      type="button"
+      class="zt-management-primary-action"
+      (click)="exportReport()"
+    >
       <svg lucideFileDown [attr.stroke-width]="2.2"></svg>
       <span>Xuất báo cáo</span>
     </button>
+  </app-management-page-hero>
+
+  <div class="zt-management-stats-grid zt-management-stats-grid--3">
+    <app-management-stat-card
+      label="Tổng đơn hàng"
+      [value]="store.totalElements()"
+      hint="Tổng số bản ghi phù hợp"
+      [hasIcon]="false"
+    />
+    <app-management-stat-card
+      label="Trang hiện tại"
+      [value]="store.totalPages() === 0 ? 0 : store.query().page + 1"
+      [hint]="store.totalPages() + ' trang'"
+      [hasIcon]="false"
+    />
+    <app-management-stat-card
+      label="Đang hiển thị"
+      [value]="store.orders().length"
+      hint="Đơn hàng trên trang này"
+      [hasIcon]="false"
+    />
   </div>
 
-  <div class="orders-stats">
-    <article>
-      <span>Tổng đơn hàng</span>
-      <strong>{{ store.totalElements() }}</strong>
-    </article>
-    <article>
-      <span>Trang hiện tại</span>
-      <strong>{{ store.totalPages() === 0 ? 0 : store.query().page + 1 }}</strong>
-    </article>
-    <article>
-      <span>Đang hiển thị</span>
-      <strong>{{ store.orders().length }}</strong>
-    </article>
-  </div>
-
-  <app-order-toolbar
-    [keyword]="store.query().keyword"
-    [status]="store.query().status"
-    [dateFilter]="store.query().dateFilter"
-    [sort]="store.query().sort"
-    [activeFilterCount]="store.activeFilterCount()"
-    [loading]="store.loading()"
-    (keywordChange)="setKeyword($event)"
-    (statusChange)="setStatusFilter($event)"
-    (dateFilterChange)="setDateFilter($event)"
-    (sortChange)="setSort($event)"
-    (applyFilters)="store.applyFilters()"
-    (resetFilters)="store.resetFilters()"
-  />
+  <app-management-toolbar-surface>
+    <app-order-toolbar
+      [keyword]="store.query().keyword"
+      [status]="store.query().status"
+      [dateFilter]="store.query().dateFilter"
+      [sort]="store.query().sort"
+      [activeFilterCount]="store.activeFilterCount()"
+      [loading]="store.loading()"
+      (keywordChange)="setKeyword($event)"
+      (statusChange)="setStatusFilter($event)"
+      (dateFilterChange)="setDateFilter($event)"
+      (sortChange)="setSort($event)"
+      (applyFilters)="store.applyFilters()"
+      (resetFilters)="store.resetFilters()"
+    />
+  </app-management-toolbar-surface>
 
   <app-order-table
     [orders]="store.orders()"
@@ -77,4 +88,4 @@
     (draftChange)="updateDraft($event)"
     (quantityChange)="updateQuantity($event)"
   />
-</section>
+</app-management-page-shell>

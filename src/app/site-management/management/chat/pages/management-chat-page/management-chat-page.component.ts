@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CallSignalingService } from '../../../../../core/services/call-signaling.service';
 import { MediaPreviewDialogComponent } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import { ChatComposerComponent } from '../../components/chat-composer/chat-composer.component';
@@ -21,6 +20,8 @@ import { ManagementTicketService } from '../../../tickets/data-access/services/m
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 @Component({
   selector: 'app-management-chat-page',
@@ -45,13 +46,14 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManagementChatPageComponent implements OnInit, OnDestroy {
-  private readonly callSignalingService = inject(CallSignalingService);
   protected readonly store = inject(ManagementChatStore);
   protected readonly managementShellUi = inject(ManagementShellUiState);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly ticketService = inject(ManagementTicketService);
   private readonly websocketService = inject(WebsocketService);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canUpdateChat = computed(() => this.permissionService.has(PermissionCode.CHAT_UPDATE));
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
   protected readonly transferDialogOpen = signal(false);
   protected readonly selectedStaffId = signal<string | null>(null);
@@ -82,13 +84,6 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
       this.loadRelatedTickets(email);
     });
 
-    this.callSignalingService.callEnded.subscribe(
-      ({ durationStr, status, isCaller }) => {
-        if (isCaller) {
-          this.store.sendCallMessage({ duration: durationStr, status });
-        }
-      }
-    );
   }
 
 
@@ -140,10 +135,10 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
   }
 
   protected ticketStatusLabel(ticket: ManagementTicket): string {
-    if (ticket.status === 'OPEN') return '\u0110ang m\u1edf';
-    if (ticket.status === 'IN_PROGRESS') return '\u0110ang x\u1eed l\u00fd';
-    if (ticket.status === 'RESOLVED') return '\u0110\u00e3 x\u1eed l\u00fd';
-    return '\u0110\u00e3 \u0111\u00f3ng';
+    if (ticket.status === 'OPEN') return 'Đang mở';
+    if (ticket.status === 'IN_PROGRESS') return 'Đang xử lý';
+    if (ticket.status === 'RESOLVED') return 'Đã xử lý';
+    return 'Đã đóng';
   }
 
   private loadRelatedTickets(email: string): void {
@@ -175,30 +170,28 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
     this.previewItem.set(item);
   }
 
-  protected startCustomerCall(targetEmail: string | null): void {
-    if (!targetEmail) {
-      return;
-    }
-
-    this.callSignalingService.initiateCall(targetEmail);
-  }
-
   protected closePreview(): void {
     this.previewItem.set(null);
   }
 
   protected openTransferDialog(): void {
+    if (!this.canUpdateChat()) {
+      return;
+    }
+
     this.store.loadActiveStaffList();
     this.transferDialogOpen.set(true);
     this.selectedStaffId.set(null);
   }
 
   protected submitTransfer(): void {
+    if (!this.canUpdateChat()) {
+      return;
+    }
+
     if (this.selectedStaffId()) {
       this.store.transferConversation(this.selectedStaffId());
       this.transferDialogOpen.set(false);
     }
   }
 }
-
-

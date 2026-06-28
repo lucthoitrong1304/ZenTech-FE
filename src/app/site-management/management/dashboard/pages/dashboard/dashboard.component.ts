@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, OnDestroy, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
@@ -68,6 +68,7 @@ const LIVE_RESOLVED_DEDUPE_WINDOW_MS = 5000;
 
 @Component({
   selector: 'app-dashboard',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input, output, ViewChild, inject, OnDestroy, HostListener, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, input, output, ViewChild, inject, OnDestroy, HostListener, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError, takeUntil } from 'rxjs/operators';
@@ -34,6 +34,7 @@ export interface HeaderUser {
 
 @Component({
   selector: 'app-site-header',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

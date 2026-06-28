@@ -15,13 +15,11 @@
           [product]="store.product()"
           [status]="store.session()?.status || null"
           [sharedSidebarOpen]="store.fullSidebarMode() === 'SHARED'"
-          [canCall]="store.canCallStaff()"
           (closeClicked)="store.requestConversationDetails()"
           (sharedClicked)="store.requestSharedContent()"
-          (callClicked)="startStaffCall()"
         />
 
-        @if (store.loading()) {
+        @if (store.loading() && store.conversations().length === 0 && !store.session()) {
           <div class="grid flex-1 place-items-center bg-[#fcf9f8] text-sm font-semibold text-[#4f4632]">
             Đang tải cuộc trò chuyện...
           </div>
@@ -76,7 +74,11 @@
             </aside>
 
             <section class="flex min-w-0 flex-1 flex-col bg-[#fcf9f8]">
-              @if (store.session()) {
+              @if (store.loading()) {
+                <div class="grid flex-1 place-items-center bg-[#fcf9f8] text-sm font-semibold text-[#4f4632]">
+                  Đang tải cuộc trò chuyện...
+                </div>
+              } @else if (store.session()) {
                 @if (store.customerTicketStatus(); as ticketStatus) {
                   <div
                     class="customer-ticket-banner"
@@ -103,7 +105,7 @@
 
                 @if (store.aiResponding()) {
                   <div class="border-t border-[#d2c5ab]/25 bg-white px-5 py-3 text-xs font-semibold text-[#4f4632]">
-                    ZenTech AI dang tra loi...
+                    ZenTech AI đang trả lời...
                   </div>
                 }
 
@@ -197,16 +199,6 @@
                         <p class="mt-1 text-sm font-semibold text-[#4f4632]">{{ currentContact.roleLabel }}</p>
                       </div>
                       <div class="flex gap-2">
-                        @if (store.canCallStaff()) {
-                          <button
-                            type="button"
-                            class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
-                            (click)="startStaffCall()"
-                            title="Gọi hỗ trợ"
-                          >
-                            <svg lucidePhone class="h-5 w-5" [attr.stroke-width]="2"></svg>
-                          </button>
-                        }
                         <button
                           type="button"
                           class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"

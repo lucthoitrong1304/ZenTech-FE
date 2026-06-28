@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
@@ -13,6 +13,7 @@ import { LucideArrowLeft, LucideShoppingCart } from '@lucide/angular';
 
 @Component({
   selector: 'app-cart-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,

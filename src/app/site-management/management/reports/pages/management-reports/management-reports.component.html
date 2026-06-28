@@ -6,34 +6,34 @@
       <h1>Báo cáo & Thống kê</h1>
       <p>Theo dõi doanh thu bán lẻ, hiệu suất danh mục hàng và tồn kho hệ thống thời gian thực.</p>
     </div>
-    
+
     <div class="reports-command__actions">
       <!-- Bộ lọc chu kỳ thời gian -->
       <div class="reports-period-selector">
-        <button 
-          type="button" 
-          class="reports-period-btn" 
+        <button
+          type="button"
+          class="reports-period-btn"
           [class.reports-period-btn--active]="store.period() === ReportPeriod.Today && !showCustomDatePanel"
           (click)="selectPeriod(ReportPeriod.Today)">
           Hôm nay
         </button>
-        <button 
-          type="button" 
-          class="reports-period-btn" 
+        <button
+          type="button"
+          class="reports-period-btn"
           [class.reports-period-btn--active]="store.period() === ReportPeriod.Last7Days && !showCustomDatePanel"
           (click)="selectPeriod(ReportPeriod.Last7Days)">
           7 ngày
         </button>
-        <button 
-          type="button" 
-          class="reports-period-btn" 
+        <button
+          type="button"
+          class="reports-period-btn"
           [class.reports-period-btn--active]="store.period() === ReportPeriod.Last30Days && !showCustomDatePanel"
           (click)="selectPeriod(ReportPeriod.Last30Days)">
           30 ngày
         </button>
-        <button 
-          type="button" 
-          class="reports-period-btn" 
+        <button
+          type="button"
+          class="reports-period-btn"
           [class.reports-period-btn--active]="showCustomDatePanel"
           (click)="selectPeriod(ReportPeriod.Custom)">
           Tự chọn
@@ -41,8 +41,8 @@
       </div>
 
       <!-- Nút Xuất Báo Cáo chuyên nghiệp -->
-      <button 
-        type="button" 
+      <button
+        type="button"
         class="reports-primary-action"
         (click)="openExportWizard()"
         [disabled]="store.loading()">
@@ -79,9 +79,9 @@
             ></p-datepicker>
           </div>
         </div>
-        <button 
-          type="button" 
-          class="reports-date-submit-btn" 
+        <button
+          type="button"
+          class="reports-date-submit-btn"
           (click)="applyCustomDates()">
           Áp dụng
         </button>
@@ -144,33 +144,33 @@
 
     <!-- THANH DIỀU HƯỚNG TABS TỐI GIẢN QUẢN TRỊ -->
     <div class="reports-tabs-bar">
-      <button 
-        type="button" 
-        class="reports-tab-link" 
+      <button
+        type="button"
+        class="reports-tab-link"
         [class.reports-tab-link--active]="activeSubTab === 'revenue'"
         (click)="setSubTab('revenue')">
         <svg lucideChartBar></svg>
         <span>Doanh thu & Bán lẻ</span>
       </button>
-      <button 
-        type="button" 
-        class="reports-tab-link" 
+      <button
+        type="button"
+        class="reports-tab-link"
         [class.reports-tab-link--active]="activeSubTab === 'products'"
         (click)="setSubTab('products')">
         <svg lucideShoppingCart></svg>
         <span>Sản phẩm & Danh mục</span>
       </button>
-      <button 
-        type="button" 
-        class="reports-tab-link" 
+      <button
+        type="button"
+        class="reports-tab-link"
         [class.reports-tab-link--active]="activeSubTab === 'customers'"
         (click)="setSubTab('customers')">
         <svg lucideUsers></svg>
         <span>Khách hàng VIP & Vouchers</span>
       </button>
-      <button 
-        type="button" 
-        class="reports-tab-link" 
+      <button
+        type="button"
+        class="reports-tab-link"
         [class.reports-tab-link--active]="activeSubTab === 'inventory'"
         (click)="setSubTab('inventory')">
         <svg lucidePackage></svg>
@@ -180,7 +180,7 @@
 
     <!-- NỘI DUNG CHI TIẾT TỪNG TAB VÀ AI COPILOT SIDEBAR -->
     <div class="reports-copilot-layout mt-6">
-      
+
       <!-- CỘT TRÁI: DỮ LIỆU CHÍNH -->
       <div class="reports-main-data-col">
 
@@ -319,9 +319,9 @@
                   @for (product of store.products(); track product.productName + product.variantName) {
                     <tr class="table-hover-row">
                       <td>
-                        <button 
-                          type="button" 
-                          class="table-link-btn" 
+                        <button
+                          type="button"
+                          class="table-link-btn"
                           (click)="openProductDetails(product)">
                           {{ product.productName }}
                         </button>
@@ -335,9 +335,9 @@
                         </span>
                       </td>
                       <td>
-                        <button 
-                          type="button" 
-                          class="table-action-details-btn" 
+                        <button
+                          type="button"
+                          class="table-action-details-btn"
                           (click)="openProductDetails(product)">
                           Xem
                         </button>
@@ -372,8 +372,8 @@
                     </span>
                   </div>
                   <div class="reports-progress-container">
-                    <div 
-                      class="reports-progress-fill transition-all duration-500" 
+                    <div
+                      class="reports-progress-fill transition-all duration-500"
                       [class.reports-progress-fill--index0]="idx % 4 === 0"
                       [class.reports-progress-fill--index1]="idx % 4 === 1"
                       [class.reports-progress-fill--index2]="idx % 4 === 2"
@@ -414,9 +414,9 @@
                   @for (customer of store.customers(); track customer.email) {
                     <tr class="table-hover-row">
                       <td>
-                        <button 
-                          type="button" 
-                          class="table-link-btn" 
+                        <button
+                          type="button"
+                          class="table-link-btn"
                           (click)="openCustomerDetails(customer)">
                           {{ customer.customerName }}
                         </button>
@@ -598,10 +598,10 @@
                 <p>Phân tích chuyên sâu dữ liệu hiện tại</p>
               </div>
             </div>
-            <button 
-              (click)="triggerAiAnalysis()" 
+            <button
+              (click)="triggerAiAnalysis()"
               [disabled]="store.isAnalyzing()"
-              class="reports-ai-analyze-btn">
+              class="reports-ai-analyze-btn" appHasPermission="REPORT_ANALYZE">
               <i *ngIf="store.isAnalyzing()" class="pi pi-spin pi-spinner text-sm"></i>
               <span>{{ store.isAnalyzing() ? 'Đang chạy...' : 'Phân tích' }}</span>
             </button>
@@ -635,21 +635,21 @@
 </section>
 
 <!-- ==================== DIALOG CHI TIẾT SẢN PHẨM ==================== -->
-<p-dialog 
-  header="Chi tiết Sản phẩm" 
-  [(visible)]="showProductDetailsDialog" 
-  [modal]="true" 
+<p-dialog
+  header="Chi tiết Sản phẩm"
+  [(visible)]="showProductDetailsDialog"
+  [modal]="true"
   [draggable]="false"
   [resizable]="false"
   [closable]="true"
   styleClass="reports-custom-dialog"
   [style]="{ width: '480px' }">
-  
+
   @if (selectedProductDetails) {
     <div class="dialog-content-wrapper">
     <div class="dialog-split-layout">
       <div class="dialog-image-col">
-        <img [src]="selectedProductDetails.imageUrl || 'assets/images/placeholder-product.png'" 
+        <img [src]="selectedProductDetails.imageUrl || 'assets/images/placeholder-product.png'"
              alt="{{ selectedProductDetails.productName }}"
              class="dialog-product-img" />
       </div>
@@ -682,9 +682,9 @@
       </div>
     </div>
       <div class="dialog-actions-row" style="justify-content: flex-end;">
-        <button 
-          type="button" 
-          class="dialog-btn-close" 
+        <button
+          type="button"
+          class="dialog-btn-close"
           (click)="showProductDetailsDialog = false">
           Đóng lại
         </button>
@@ -694,16 +694,16 @@
 </p-dialog>
 
 <!-- ==================== DIALOG CHI TIẾT KHÁCH HÀNG VIP ==================== -->
-<p-dialog 
-  header="Chi tiết Khách hàng" 
-  [(visible)]="showCustomerDetailsDialog" 
-  [modal]="true" 
+<p-dialog
+  header="Chi tiết Khách hàng"
+  [(visible)]="showCustomerDetailsDialog"
+  [modal]="true"
   [draggable]="false"
   [resizable]="false"
   [closable]="true"
   styleClass="reports-custom-dialog"
   [style]="{ width: '480px' }">
-  
+
   @if (selectedCustomerDetails) {
   <div class="dialog-content-wrapper">
     <div class="dialog-customer-header">
@@ -728,7 +728,7 @@
           <span class="dialog-customer-address-value">{{ selectedCustomerDetails.address || 'Chưa cập nhật' }}</span>
         </div>
       </div>
-      
+
       <div class="dialog-stats-grid">
         <div class="dialog-field-block">
           <span class="dialog-label">Tổng đơn hàng</span>
@@ -742,9 +742,9 @@
     </div>
 
     <div class="dialog-actions-row" style="justify-content: flex-end;">
-      <button 
-        type="button" 
-        class="dialog-btn-close" 
+      <button
+        type="button"
+        class="dialog-btn-close"
         (click)="showCustomerDetailsDialog = false">
         Đóng lại
       </button>
@@ -754,16 +754,16 @@
 </p-dialog>
 
 <!-- ==================== DIALOG WIZARD XUẤT BÁO CÁO ==================== -->
-<p-dialog 
-  header="Cấu hình trích xuất tệp tin Báo cáo" 
-  [(visible)]="showExportWizardDialog" 
-  [modal]="true" 
+<p-dialog
+  header="Cấu hình trích xuất tệp tin Báo cáo"
+  [(visible)]="showExportWizardDialog"
+  [modal]="true"
   [draggable]="false"
   [resizable]="false"
   [closable]="true"
   styleClass="reports-custom-dialog"
   [style]="{ width: '450px' }">
-  
+
   <div class="reports-dialog-layout">
     <div class="dialog-meta-panel">
       <h4 class="dialog-meta-title">Cấu hình trường dữ liệu xuất (.CSV)</h4>
@@ -814,15 +814,15 @@
     </div>
 
     <div class="dialog-actions-row">
-      <button 
-        type="button" 
-        class="dialog-btn-close" 
+      <button
+        type="button"
+        class="dialog-btn-close"
         (click)="showExportWizardDialog = false">
         Hủy bỏ
       </button>
-      <button 
-        type="button" 
-        class="dialog-btn-approve" 
+      <button
+        type="button"
+        class="dialog-btn-approve"
         (click)="exportToCsv()"
         [disabled]="!exportOptions.summary && !exportOptions.products && !exportOptions.coupons && !exportOptions.customers">
         Xác nhận tải tệp

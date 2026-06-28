@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal, untracked } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -14,6 +14,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { RegisterStore } from '../data-access/store/register.store';
 import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
+
+const PASSWORD_COMPLEXITY_PATTERN = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{6,}$/;
 
 @Component({
   selector: 'app-register',
@@ -34,6 +36,7 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
   providers: [RegisterStore],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterComponent {
   private readonly formBuilder = inject(FormBuilder);
@@ -53,7 +56,14 @@ export class RegisterComponent {
     {
       fullName: [''],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.pattern(PASSWORD_COMPLEXITY_PATTERN),
+        ],
+      ],
       confirmPassword: ['', [Validators.required]],
     },
     {

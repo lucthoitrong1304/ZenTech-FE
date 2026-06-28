@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal, untracked } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -14,6 +14,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { PasswordRecoveryStore } from '../data-access/store/password-recovery.store';
 import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
+
+const PASSWORD_COMPLEXITY_PATTERN = /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{6,}$/;
 
 @Component({
   selector: 'app-reset-password',
@@ -32,6 +34,7 @@ import { AuthShellComponent } from '../shared/auth-shell/auth-shell.component';
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.css'],
   providers: [PasswordRecoveryStore],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResetPasswordComponent {
   private readonly formBuilder = inject(FormBuilder);
@@ -51,7 +54,14 @@ export class ResetPasswordComponent {
   protected readonly token = this.route.snapshot.queryParamMap.get('token')?.trim() || '';
   protected readonly resetPasswordForm = this.formBuilder.nonNullable.group(
     {
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      newPassword: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.pattern(PASSWORD_COMPLEXITY_PATTERN),
+        ],
+      ],
       confirmPassword: ['', [Validators.required]],
     },
     {

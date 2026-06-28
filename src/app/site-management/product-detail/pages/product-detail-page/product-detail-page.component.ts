@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideChevronDown, LucideChevronUp } from '@lucide/angular';
@@ -20,9 +20,11 @@ import { ProductDetailGalleryComponent } from '../../components/product-detail-g
 import { ProductReviewListComponent } from '../../components/product-review-list/product-review-list.component';
 import { ClientLogService } from '../../../../core/logging/client-log.service';
 import { ClientLogEventType } from '../../../../core/logging/client-log.model';
+import { setupLogoutMessageEffects } from '../../../auth/data-access/utils/logout-message-effects.util';
 
 @Component({
   selector: 'app-product-detail-page',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     CommonModule,
@@ -133,29 +135,7 @@ export class ProductDetailPageComponent {
       }
     });
 
-    effect(() => {
-      const message = this.authSessionStore.logoutSuccessMessage();
-
-      if (message) {
-        untracked(() => {
-        this.toastService.success(message);
-        this.authSessionStore.clearLogoutMessages();
-        this.router.navigate(['/']);
-        });
-      }
-    });
-
-    effect(() => {
-      const message = this.authSessionStore.logoutWarningMessage();
-
-      if (message) {
-        untracked(() => {
-        this.toastService.warning(message);
-        this.authSessionStore.clearLogoutMessages();
-        this.router.navigate(['/']);
-        });
-      }
-    });
+    setupLogoutMessageEffects(this.authSessionStore, this.toastService, this.router);
   }
 
   onImageSelect(image: string): void {

@@ -176,12 +176,13 @@
                   <span class="logs-linked-incident-pill" role="button" tabindex="0" (click)="openLinkedIncident(link, $event)">Incident {{ link.incidentCode }}</span>
                 }
                 <h3>{{ issue.title }}</h3>
-                <p>{{ issue.signature }}</p>
+                <p class="logs-issue-summary-text">{{ getIssueShortSummary(issue) }}</p>
+                <p>{{ getIssueDisplaySignature(issue) }}</p>
               </div>
               <div class="logs-issue-stats">
                 <strong>{{ issue.occurrences }}</strong>
-                <span>occurrences</span>
-                <small>Last seen {{ issue.lastSeen | date:'HH:mm:ss dd/MM/yyyy' }}</small>
+                <span>lần xuất hiện</span>
+                <small>Lần cuối {{ issue.lastSeen | date:'HH:mm:ss dd/MM/yyyy' }}</small>
               </div>
             </button>
           }
@@ -203,7 +204,7 @@
     <section class="logs-modal-panel logs-issue-modal-panel" role="dialog" aria-modal="true" aria-labelledby="issue-detail-title" (click)="$event.stopPropagation()">
       <div class="logs-modal-header">
         <div>
-          <p class="logs-modal-kicker">Sentry-lite issue</p>
+          <p class="logs-modal-kicker">Vấn đề Admin</p>
           <h3 id="issue-detail-title" class="logs-modal-title">{{ issue.title }}</h3>
         </div>
         <button type="button" class="logs-modal-close-btn" (click)="closeIssueDetails()" aria-label="Đóng chi tiết issue">×</button>
@@ -212,8 +213,8 @@
       <div class="logs-modal-meta-row">
         <span class="logs-level-badge" [class]="'level-' + issue.level.toLowerCase()">{{ issue.level }}</span>
         <span class="service-source-tag" [class]="'source-' + issue.category.toLowerCase()">{{ issue.category }}</span>
-        <span class="logs-modal-time">{{ issue.occurrences }} occurrences</span>
-        <span class="logs-modal-time">Last seen {{ issue.lastSeen | date:'HH:mm:ss dd/MM/yyyy' }}</span>
+        <span class="logs-modal-time">{{ issue.occurrences }} lần xuất hiện</span>
+        <span class="logs-modal-time">Lần cuối {{ issue.lastSeen | date:'HH:mm:ss dd/MM/yyyy' }}</span>
         <span class="logs-issue-status-badge" [class]="getIssueBadgeClass(issue)">{{ getIssueBadgeLabel(issue) }}</span>
         @if (getIssueLink(issue); as link) {
           <button type="button" class="logs-linked-incident-pill" (click)="openLinkedIncident(link, $event)">Incident {{ link.incidentCode }}</button>
@@ -229,16 +230,17 @@
 
       <div class="logs-issue-summary-grid">
         <div class="logs-issue-summary-card">
-          <span>First seen</span>
+          <span>Lần đầu thấy</span>
           <strong>{{ issue.firstSeen | date:'HH:mm:ss dd/MM/yyyy' }}</strong>
         </div>
         <div class="logs-issue-summary-card">
-          <span>Last seen</span>
+          <span>Lần cuối thấy</span>
           <strong>{{ issue.lastSeen | date:'HH:mm:ss dd/MM/yyyy' }}</strong>
         </div>
         <div class="logs-issue-summary-card">
-          <span>Trace IDs</span>
-          <strong>{{ issue.traceIds.length || 0 }}</strong>
+          <span>Trace</span>
+          <strong>{{ getTraceSummary(issue) }}</strong>
+          <small>{{ getPrimaryTraceId(issue) }}</small>
         </div>
         <div class="logs-issue-summary-card">
           <span>API</span>
@@ -249,11 +251,11 @@
           <strong>{{ issue.statusCode || 'N/A' }}</strong>
         </div>
         <div class="logs-issue-summary-card">
-          <span>User</span>
+          <span>Người dùng</span>
           <strong>{{ issue.userEmail || 'N/A' }}</strong>
         </div>
         <div class="logs-issue-summary-card">
-          <span>Role</span>
+          <span>Vai trò</span>
           <strong>{{ issue.userRole || 'N/A' }}</strong>
         </div>
       </div>
@@ -261,7 +263,7 @@
       <div class="logs-inspector-section">
         <button type="button" class="logs-inspector-section-title">
           <span>⌄</span>
-          <span>Issue signature</span>
+          <span>Chữ ký issue</span>
         </button>
         <div class="logs-inspector-log-line">{{ issue.signature }}</div>
       </div>
@@ -269,14 +271,14 @@
       <div class="logs-inspector-section">
         <button type="button" class="logs-inspector-section-title">
           <span>⌄</span>
-          <span>Related log instances</span>
+          <span>Log liên quan</span>
           <span class="logs-related-count">{{ getRelatedLogs(issue).length }} / {{ issue.logs.length }}</span>
         </button>
         <div class="logs-related-list">
           @for (relatedLog of getRelatedLogs(issue); track relatedLog.id) {
             <button type="button" class="logs-related-item" (click)="openRelatedLogDetails(issue, relatedLog)">
               <span class="logs-level-badge" [class]="'level-' + relatedLog.level.toLowerCase()">{{ relatedLog.level }}</span>
-              <span class="logs-related-message">{{ relatedLog.message }}</span>
+              <span class="logs-related-message">{{ getLogDisplayMessage(relatedLog) }}</span>
               <span class="logs-related-time">{{ relatedLog.timestamp | date:'HH:mm:ss' }}</span>
             </button>
           }
@@ -284,7 +286,7 @@
         @if (shouldShowRelatedLogsToggle(issue)) {
           <div class="logs-related-footer">
             <button type="button" class="logs-related-toggle-btn" (click)="toggleRelatedLogs(issue, $event)">
-              {{ isRelatedLogsExpanded(issue) ? 'Collapse to latest 5' : 'Show all ' + issue.logs.length + ' occurrences' }}
+              {{ isRelatedLogsExpanded(issue) ? 'Thu gọn còn 5 log mới nhất' : 'Hiển thị tất cả ' + issue.logs.length + ' lần xuất hiện' }}
             </button>
           </div>
         }
@@ -324,7 +326,7 @@
         </div>
         <div>
           <span>Trace ID</span>
-          <strong>{{ issue.traceIds[0] || 'N/A' }}</strong>
+          <strong>{{ getPrimaryTraceId(issue) }}</strong>
         </div>
         <div>
           <span>Error</span>

@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { LucideFilter, LucideSearch, LucideX } from '@lucide/angular';
 import {
   ManagementProductCategory,
@@ -7,6 +7,7 @@ import {
 
 @Component({
   selector: 'app-product-toolbar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [LucideFilter, LucideSearch, LucideX],
   templateUrl: './product-toolbar.component.html',

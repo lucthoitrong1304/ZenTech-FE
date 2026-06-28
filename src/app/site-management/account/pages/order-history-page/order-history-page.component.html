@@ -88,8 +88,8 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-3 lg:justify-end">
-          <span class="inline-flex h-8 items-center rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.14em]" [ngClass]="statusClass(order.orderStatus)">
-            {{ orderStatusLabel(order.orderStatus) }}
+          <span class="inline-flex h-8 items-center rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.14em]" [ngClass]="statusClass(order.orderStatus, order.paymentStatus)">
+            {{ orderStatusLabel(order.orderStatus, order.paymentStatus) }}
           </span>
           @if (order.orderStatus === 'COMPLETED') {
             <button
@@ -147,8 +147,8 @@
           </div>
           <div>
             <p class="text-[10px] font-bold uppercase tracking-wider text-[#81765f]">Trạng thái</p>
-            <span class="inline-flex h-7 items-center rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.15em] mt-1" [ngClass]="statusClass(detail.orderStatus)">
-              {{ orderStatusLabel(detail.orderStatus) }}
+            <span class="inline-flex h-7 items-center rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.15em] mt-1" [ngClass]="statusClass(detail.orderStatus, detail.paymentStatus)">
+              {{ orderStatusLabel(detail.orderStatus, detail.paymentStatus) }}
             </span>
           </div>
         </div>
