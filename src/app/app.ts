@@ -8,6 +8,8 @@ import { CustomerChatPopupComponent } from './site-management/customer-chat/comp
 import { CategoryNavigationStore } from './site-management/shared/data-access/store/category-navigation.store';
 import { AuthStorageService } from './core/services/auth-storage.service';
 import { RouteClientLogService } from './core/logging/route-client-log.service';
+import { Role } from './site-management/auth/data-access/models/auth.enums';
+import { hasRole } from './site-management/auth/data-access/utils/auth-role.utils';
 
 @Component({
   selector: 'app-root',
@@ -32,7 +34,12 @@ export class App {
   protected readonly showCustomerChat = computed(() => {
     const url = this.currentUrl();
     const session = this.authStorageService.getSession();
-    const isStaff = session?.roles.some(role => ['OWNER', 'MANAGER', 'EMPLOYEE', 'ADMIN'].includes(role)) ?? false;
+    const roles = session?.roles ?? [];
+    const isStaff =
+      hasRole(roles, Role.OWNER) ||
+      hasRole(roles, Role.MANAGER) ||
+      hasRole(roles, Role.EMPLOYEE) ||
+      hasRole(roles, Role.ADMIN);
 
     if (isStaff) {
       return false;

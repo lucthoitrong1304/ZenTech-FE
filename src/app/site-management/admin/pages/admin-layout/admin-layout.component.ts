@@ -15,7 +15,6 @@ import {
   LucideChevronDown,
   LucideMenu,
   LucideX,
-  LucideBell,
   LucideCommand,
   LucideShieldAlert,
   LucideGauge
@@ -71,7 +70,6 @@ const DEFAULT_HEADER: AdminHeaderState = {
     LucideChevronDown,
     LucideMenu,
     LucideX,
-    LucideBell,
     LucideCommand,
     LucideShieldAlert,
     LucideGauge
