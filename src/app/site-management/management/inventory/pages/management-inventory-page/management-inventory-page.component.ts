@@ -4,10 +4,6 @@ import { Component, ChangeDetectionStrategy, effect, inject, untracked, signal }
 import { FormsModule } from '@angular/forms';
 import {
   LucideSearch,
-  LucideWarehouse,
-  LucideTriangleAlert,
-  LucideChevronRight,
-  LucideSparkles,
   LucidePackage,
   LucideHistory,
   LucidePlus,
@@ -77,10 +73,6 @@ enum InventoryDateFilterOption {
     ButtonModule,
     TooltipModule,
     LucideSearch,
-    LucideWarehouse,
-    LucideTriangleAlert,
-    LucideChevronRight,
-    LucideSparkles,
     LucidePackage,
     LucideHistory,
     LucidePlus,
