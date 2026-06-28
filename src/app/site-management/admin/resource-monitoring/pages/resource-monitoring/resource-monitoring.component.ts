@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
 import { DatePicker } from 'primeng/datepicker';
+import { DialogModule } from 'primeng/dialog';
+import { TooltipModule } from 'primeng/tooltip';
 import {
   LucideActivity,
   LucideAlertTriangle,
@@ -20,10 +22,12 @@ import {
   LucideZap,
 } from '@lucide/angular';
 import { finalize } from 'rxjs';
-import { AdminDashboardService } from '../../../dashboard/data-access/dashboard.service';
+import { AdminObservabilityService } from '../../data-access/admin-observability.service';
 import {
   AdminObservabilityData,
   DashboardPeriod,
+  ObservabilityDependency,
+  ObservabilityDependencyDetail,
   ObservabilityHistoryPoint,
 } from '../../../dashboard/data-access/dashboard.models';
 
@@ -44,14 +48,14 @@ interface MetricDefinition {
   selector: 'app-resource-monitoring',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FormsModule, ChartModule, DatePicker, LucideActivity, LucideAlertTriangle,
+  imports: [CommonModule, FormsModule, ChartModule, DatePicker, DialogModule, TooltipModule, LucideActivity, LucideAlertTriangle,
     LucideCalendarDays, LucideCheckCircle2, LucideCircleHelp, LucideClock3, LucideCpu, LucideDatabase, LucideGauge,
     LucideNetwork, LucideRefreshCw, LucideServer, LucideZap],
   templateUrl: './resource-monitoring.component.html',
   styleUrl: './resource-monitoring.component.css',
 })
 export class ResourceMonitoringComponent implements OnInit, OnDestroy {
-  private readonly service = inject(AdminDashboardService);
+  private readonly service = inject(AdminObservabilityService);
   private readonly route = inject(ActivatedRoute);
 
   protected readonly period = signal<DashboardPeriod>('7D');
@@ -60,6 +64,10 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
   protected readonly error = signal<string | null>(null);
   protected readonly selectedMetric = signal<MetricKey>('cpuUsagePercent');
   protected readonly refreshIn = signal(15);
+  protected readonly dependencyDetailVisible = signal(false);
+  protected readonly dependencyDetailLoading = signal(false);
+  protected readonly dependencyDetailError = signal<string | null>(null);
+  protected readonly selectedDependencyDetail = signal<ObservabilityDependencyDetail | null>(null);
 
   protected dateRange: Date[] | null = null;
   protected readonly maxDate = new Date();
@@ -218,6 +226,26 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
     return `${value.toFixed(1)}%`;
   }
 
+  protected metricCapacityLabel(metric: MetricKey): string {
+    const health = this.data()?.health;
+    if (!health) return '';
+    if (metric === 'cpuUsagePercent') return health.cpuCoreCount != null ? `${health.cpuCoreCount} cores` : '';
+    if (metric === 'ramUsagePercent' && health.ramUsedBytes != null && health.ramTotalBytes != null) {
+      return `${this.formatBytes(health.ramUsedBytes)} / ${this.formatBytes(health.ramTotalBytes)}`;
+    }
+    if (metric === 'diskUsagePercent' && health.diskUsedBytes != null && health.diskTotalBytes != null) {
+      return `${this.formatBytes(health.diskUsedBytes)} / ${this.formatBytes(health.diskTotalBytes)}`;
+    }
+    if (metric === 'jvmHeapUsagePercent' && health.jvmHeapUsedBytes != null && health.jvmHeapMaxBytes != null) {
+      return `${this.formatBytes(health.jvmHeapUsedBytes)} / ${this.formatBytes(health.jvmHeapMaxBytes)}`;
+    }
+    return '';
+  }
+  protected metricWidth(value: number | null, unit: '%' | 'req/min' | 'ms'): number {
+    if (value == null) return 0;
+    const cap = unit === '%' ? 100 : Math.max(value, 1);
+    return Math.max(0, Math.min(100, (value / cap) * 100));
+  }
   protected metricStatus(metric: MetricDefinition, value: number | null): 'unknown' | 'stable' | 'warning' | 'critical' {
     if (value == null) return 'unknown';
     if (metric.key === 'requestsPerMinute') return value >= metric.threshold ? 'warning' : 'stable';
@@ -299,6 +327,38 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
   }
 
   protected dependencyClass(status: string): string { return `dependency-card dependency-card--${status.toLowerCase()}`; }
+
+  protected openDependencyDetail(dependency: ObservabilityDependency): void {
+    this.dependencyDetailVisible.set(true);
+    this.dependencyDetailLoading.set(true);
+    this.dependencyDetailError.set(null);
+    this.selectedDependencyDetail.set(null);
+    this.service.getDependencyDetail(dependency.name)
+      .pipe(finalize(() => this.dependencyDetailLoading.set(false)))
+      .subscribe({
+        next: (response) => this.selectedDependencyDetail.set(response.data),
+        error: () => this.dependencyDetailError.set('Không thể tải chi tiết dịch vụ. Vui lòng thử lại.'),
+      });
+  }
+
+  protected onDependencyDialogVisibleChange(visible: boolean): void {
+    this.dependencyDetailVisible.set(visible);
+    if (!visible) {
+      this.selectedDependencyDetail.set(null);
+      this.dependencyDetailError.set(null);
+      this.dependencyDetailLoading.set(false);
+    }
+  }
+
+  protected dependencyGroupLabel(group: string | null | undefined): string {
+    if (group === 'Business service') return 'Dịch vụ nghiệp vụ';
+    if (group === 'Observability infrastructure') return 'Hạ tầng giám sát';
+    return group ?? 'Hệ thống';
+  }
+
+  protected dependencyDetailStatusClass(status: string | null | undefined): string {
+    return `detail-status detail-status--${(status ?? 'DOWN').toLowerCase()}`;
+  }
 
   private load(silent = false): void {
     if (!silent) this.isLoading.set(true);
