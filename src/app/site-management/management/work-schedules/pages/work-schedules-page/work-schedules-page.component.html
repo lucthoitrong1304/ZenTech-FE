@@ -166,7 +166,8 @@
                     [class.work-schedules-cell--empty]="!shift"
                     [style.border-left-color]="shift?.colorCode || null"
                     [style.background-color]="shift ? shift.colorCode + '13' : null"
-                    (click)="store.openAssignModal(employee, date, shift)"
+                    [disabled]="!canUpdateSchedule()"
+                    (click)="canUpdateSchedule() && store.openAssignModal(employee, date, shift)"
                   >
                     @if (shift) {
                       <strong [style.color]="shift.colorCode">{{ shift.shiftName }}</strong>
@@ -256,7 +257,7 @@
 @if (store.assignModalOpen()) {
   @if (store.selectedCell(); as cell) {
     <div class="work-schedules-modal-backdrop" role="presentation">
-      <form class="work-schedules-modal" (submit)="$event.preventDefault(); store.assignShift()">
+      <form class="work-schedules-modal" (submit)="$event.preventDefault(); canUpdateSchedule() && store.assignShift()">
         <header class="work-schedules-modal__header">
           <div>
             <p>Assign Shift</p>
@@ -334,7 +335,7 @@
 
 @if (store.bulkModalOpen()) {
   <div class="work-schedules-modal-backdrop" role="presentation">
-    <form class="work-schedules-modal" (submit)="$event.preventDefault(); store.bulkAssign()">
+    <form class="work-schedules-modal" (submit)="$event.preventDefault(); canUpdateSchedule() && store.bulkAssign()">
       <header class="work-schedules-modal__header">
         <div>
           <p>Bulk Assign</p>
@@ -432,7 +433,7 @@
 
 @if (store.copyModalOpen()) {
   <div class="work-schedules-modal-backdrop" role="presentation">
-    <form class="work-schedules-modal" (submit)="$event.preventDefault(); store.copyWeek()">
+    <form class="work-schedules-modal" (submit)="$event.preventDefault(); canUpdateSchedule() && store.copyWeek()">
       <header class="work-schedules-modal__header">
         <div>
           <p>Copy Week</p>
@@ -517,7 +518,7 @@
       class="work-schedules-modal work-schedules-modal--wide"
       (submit)="
         $event.preventDefault();
-        store.settingsTab() === 'location' ? store.saveLocationPolicy() : store.saveShiftSettings()
+        canUpdateSchedule() && (store.settingsTab() === 'location' ? store.saveLocationPolicy() : store.saveShiftSettings())
       "
     >
       <header class="work-schedules-modal__header">
@@ -791,7 +792,7 @@
           type="submit"
           class="work-schedules-primary-action"
           [disabled]="
-            store.settingsTab() === 'location' ? !store.canSaveLocationPolicy() : store.saving()
+            !canUpdateSchedule() || (store.settingsTab() === 'location' ? !store.canSaveLocationPolicy() : store.saving())
           "
         >
           @if (store.saving()) {

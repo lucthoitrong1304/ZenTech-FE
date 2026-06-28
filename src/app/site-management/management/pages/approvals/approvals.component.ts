@@ -1,9 +1,11 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../../core/api/api.service';
 import { environment } from '../../../../../environments/environment';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucideCheck, LucideRefreshCw, LucideX } from '@lucide/angular';
+import { PermissionService } from '../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../core/permissions/permission.models';
 
 type LeaveTypeUnit = 'DAY' | 'HOUR';
 
@@ -43,6 +45,8 @@ interface LeaveRequest {
 export class ApprovalsComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly toastService = inject(ToastService);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canApprove = computed(() => this.permissionService.has(PermissionCode.APPROVAL_APPROVE));
 
   leaves = signal<LeaveRequest[]>([]);
 
@@ -59,6 +63,11 @@ export class ApprovalsComponent implements OnInit {
   }
 
   approveLeave(id: string, status: 'APPROVED' | 'REJECTED'): void {
+    if (!this.canApprove()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.apiService.post<null, ApiResponse<LeaveRequest>>(`${environment.apiBaseUrl}/management/leaves/${id}/approve`, null, {
       params: { status }
     }).subscribe({

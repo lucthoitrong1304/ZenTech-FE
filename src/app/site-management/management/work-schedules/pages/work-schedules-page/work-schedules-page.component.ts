@@ -5,6 +5,7 @@ import {
   ElementRef,
   OnDestroy,
   ViewChild,
+  computed,
   effect,
   inject,
   signal,
@@ -39,6 +40,8 @@ import {
   ShiftType,
 } from '../../data-access/models/work-schedule.models';
 import { WorkScheduleStore } from '../../data-access/store/work-schedule.store';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 @Component({
   selector: 'app-work-schedules-page',
@@ -72,6 +75,8 @@ export class WorkSchedulesPageComponent implements OnDestroy {
   private locationMapRef?: ElementRef<HTMLDivElement>;
 
   protected readonly store = inject(WorkScheduleStore);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canUpdateSchedule = computed(() => this.permissionService.has(PermissionCode.SCHEDULE_UPDATE));
   private readonly toastService = inject(ToastService);
   protected readonly pageSlots = Array.from({ length: 5 }, (_, index) => index);
   protected readonly hasMapTilerApiKey = !!environment.mapTilerApiKey;

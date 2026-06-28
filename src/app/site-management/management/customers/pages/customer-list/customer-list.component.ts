@@ -15,6 +15,8 @@ import { CustomerTableComponent } from '../../components/customer-table/customer
 import { CustomerToolbarComponent } from '../../components/customer-toolbar/customer-toolbar.component';
 import { CustomerActiveFilter, CustomerSort } from '../../data-access/models/customer.models';
 import { CustomerStore } from '../../data-access/store/customer.store';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 @Component({
   selector: 'app-customer-list',
@@ -38,6 +40,8 @@ import { CustomerStore } from '../../data-access/store/customer.store';
 export class CustomerListComponent {
   private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canUpdateCustomer = computed(() => this.permissionService.has(PermissionCode.CUSTOMER_UPDATE));
   protected readonly store = inject(CustomerStore);
 
   protected readonly activeFilterLabel = computed(() => {
@@ -121,6 +125,11 @@ export class CustomerListComponent {
   }
 
   protected confirmStatusChange(event: { customerId: string; active: boolean }): void {
+    if (!this.canUpdateCustomer()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.confirmService
       .open({
         title: event.active ? 'Mở khóa tài khoản' : 'Khóa tài khoản',

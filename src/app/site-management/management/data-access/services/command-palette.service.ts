@@ -4,6 +4,8 @@ import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/
 import { ApiService } from '../../../../core/api/api.service';
 import { environment } from '../../../../../environments/environment';
 import { CommandPaletteGroup, ApiResponseDto, GlobalSearchResponse } from '../models/command-palette.models';
+import { PermissionService } from '../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../core/permissions/permission.models';
 
 export type { CommandPaletteItem, CommandPaletteGroup } from '../models/command-palette.models';
 
@@ -12,6 +14,7 @@ export type { CommandPaletteItem, CommandPaletteGroup } from '../models/command-
 })
 export class CommandPaletteService {
   private readonly apiService = inject(ApiService);
+  private readonly permissionService = inject(PermissionService);
   private readonly baseUrl = environment.apiBaseUrl;
 
   private readonly _isOpen = signal<boolean>(false);
@@ -32,16 +35,17 @@ export class CommandPaletteService {
     title: 'Điều hướng nhanh',
     items: [
       { id: 'nav-dashboard', icon: 'LayoutDashboard', label: 'Bảng điều khiển', path: '/management/dashboard' },
-      { id: 'nav-orders', icon: 'ShoppingBag', label: 'Quản lý đơn hàng', path: '/management/orders' },
-      { id: 'nav-products', icon: 'Package', label: 'Quản lý sản phẩm', path: '/management/products' },
-      { id: 'nav-customers', icon: 'Users', label: 'Khách hàng', path: '/management/customers' },
-      { id: 'nav-chat', icon: 'MessageCircle', label: 'Hỗ trợ khách hàng', path: '/management/chat' }
+      { id: 'nav-orders', icon: 'ShoppingBag', label: 'Quản lý đơn hàng', path: '/management/orders', permission: PermissionCode.ORDER_VIEW },
+      { id: 'nav-products', icon: 'Package', label: 'Quản lý sản phẩm', path: '/management/products', permission: PermissionCode.PRODUCT_VIEW },
+      { id: 'nav-customers', icon: 'Users', label: 'Khách hàng', path: '/management/customers', permission: PermissionCode.CUSTOMER_VIEW },
+      { id: 'nav-chat', icon: 'MessageCircle', label: 'Hỗ trợ khách hàng', path: '/management/chat', permission: PermissionCode.CHAT_VIEW }
     ]
   };
 
   constructor() {
     // Khởi tạo data mặc định
-    this._results.set([this.defaultNavigation]);
+    this._results.set([this.getDefaultNavigation()]);
+    this.permissionService.ensureLoaded().subscribe(() => this._results.set([this.getDefaultNavigation()]));
 
     // Đăng ký luồng tìm kiếm tối ưu bằng RxJS
     this.search$.pipe(
@@ -49,7 +53,16 @@ export class CommandPaletteService {
       distinctUntilChanged(),
       switchMap(query => {
         if (!query.trim()) {
-          this._results.set([this.defaultNavigation]);
+          this._results.set([this.getDefaultNavigation()]);
+    this.permissionService.ensureLoaded().subscribe(() => this._results.set([this.getDefaultNavigation()]));
+          this._isLoading.set(false);
+          return of(null);
+        }
+
+        const canSearchManagement = this.permissionService.has(PermissionCode.PRODUCT_VIEW)
+          || this.permissionService.has(PermissionCode.ORDER_VIEW)
+          || this.permissionService.has(PermissionCode.CUSTOMER_VIEW);
+        if (!canSearchManagement) {
           this._isLoading.set(false);
           return of(null);
         }
@@ -77,7 +90,7 @@ export class CommandPaletteService {
 
       // Lọc navigation hiện tại dựa trên query của user
       const lowerQuery = this._searchQuery().toLowerCase();
-      const filteredNav = this.defaultNavigation.items.filter(item => 
+      const filteredNav = this.getDefaultNavigation().items.filter(item =>
         item.label.toLowerCase().includes(lowerQuery)
       );
 
@@ -90,7 +103,7 @@ export class CommandPaletteService {
       }
 
       // Nhóm sản phẩm từ API
-      if (data.products && data.products.length > 0) {
+      if (this.permissionService.has(PermissionCode.PRODUCT_VIEW) && data.products && data.products.length > 0) {
         newResults.push({
           id: 'products',
           title: 'Sản phẩm',
@@ -105,7 +118,7 @@ export class CommandPaletteService {
       }
 
       // Nhóm đơn hàng từ API
-      if (data.orders && data.orders.length > 0) {
+      if (this.permissionService.has(PermissionCode.ORDER_VIEW) && data.orders && data.orders.length > 0) {
         newResults.push({
           id: 'orders',
           title: 'Đơn hàng',
@@ -120,7 +133,7 @@ export class CommandPaletteService {
       }
 
       // Nhóm khách hàng từ API
-      if (data.customers && data.customers.length > 0) {
+      if (this.permissionService.has(PermissionCode.CUSTOMER_VIEW) && data.customers && data.customers.length > 0) {
         newResults.push({
           id: 'customers',
           title: 'Khách hàng',
@@ -139,6 +152,15 @@ export class CommandPaletteService {
     });
   }
 
+
+  private getDefaultNavigation(): CommandPaletteGroup {
+    return {
+      ...this.defaultNavigation,
+      items: this.defaultNavigation.items.filter(item =>
+        !item.permission || this.permissionService.has(item.permission)
+      ),
+    };
+  }
   open(): void {
     this._isOpen.set(true);
   }

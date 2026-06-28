@@ -87,7 +87,7 @@
                 }
               </td>
               <td class="text-center">
-                @if (v.status === CustomerVoucherStatus.AVAILABLE) {
+                @if (canRevoke() && v.status === CustomerVoucherStatus.AVAILABLE) {
                   <button
                     type="button"
                     class="btn-action-revoke"

@@ -11,15 +11,19 @@
     </div>
 
     <div class="header-actions">
-      <button type="button" class="btn-issue-header" (click)="store.openIssueDialog()">
-        <svg lucideUserCheck [size]="16"></svg>
-        <span>Phát hành voucher</span>
-      </button>
+      @if (canIssueVoucher()) {
+        <button type="button" class="btn-issue-header" (click)="store.openIssueDialog()">
+          <svg lucideUserCheck [size]="16"></svg>
+          <span>Phát hành voucher</span>
+        </button>
+      }
 
-      <button type="button" class="btn-create-header" (click)="onCreateCoupon()">
-        <svg lucidePlus [size]="16"></svg>
-        <span>Tạo mã giảm giá</span>
-      </button>
+      @if (canCreateMarketing()) {
+        <button type="button" class="btn-create-header" (click)="onCreateCoupon()">
+          <svg lucidePlus [size]="16"></svg>
+          <span>Tạo mã giảm giá</span>
+        </button>
+      }
     </div>
   </div>
 
@@ -115,6 +119,9 @@
         [pageEnd]="store.pageCouponsEnd()"
         [canGoPrevious]="store.canCouponsPrevious()"
         [canGoNext]="store.canCouponsNext()"
+        [canUpdate]="canUpdateMarketing()"
+        [canDelete]="canDeleteMarketing()"
+        [canIssue]="canIssueVoucher()"
         (editCoupon)="onEditCoupon($event)"
         (deleteCoupon)="onDeleteCoupon($event)"
         (toggleActive)="onToggleActive($event)"
@@ -188,6 +195,7 @@
         [pageEnd]="store.pageVouchersEnd()"
         [canGoPrevious]="store.canVouchersPrevious()"
         [canGoNext]="store.canVouchersNext()"
+        [canRevoke]="canDeleteMarketing()"
         (pageChange)="store.goToVoucherPage($event)"
         (revoke)="onRevokeVoucher($event)"
       ></app-customer-voucher-table>
