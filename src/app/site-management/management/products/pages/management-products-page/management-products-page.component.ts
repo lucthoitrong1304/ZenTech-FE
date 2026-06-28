@@ -1,5 +1,5 @@
 import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import {
   LucidePackagePlus,
@@ -33,7 +33,6 @@ import { ManagementProductsStore } from '../../data-access/store/management-prod
   imports: [
     HasPermissionDirective,
     CommonModule,
-    CurrencyPipe,
     LucidePackagePlus,
     LucideSparkles,
     LucideTriangleAlert,
