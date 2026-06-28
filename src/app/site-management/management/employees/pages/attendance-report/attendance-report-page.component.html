@@ -3,24 +3,27 @@
   <!-- Header -->
   <div class="atr-command">
     <div class="atr-command__copy">
-      <span class="atr-kicker">Điều hành kinh doanh</span>
+      <span class="atr-kicker">Thống kê chấm công nhân sự</span>
       <h1>Báo cáo chấm công</h1>
       <p>Theo dõi thống kê và chi tiết lịch sử chấm công của nhân viên.</p>
     </div>
+  </div>
 
-    <!-- Date Filter -->
+  <!-- Date Filter Toolbar -->
+  <div class="atr-toolbar">
     <div class="atr-filter-bar">
       <div class="atr-filter-group">
-        <label class="atr-filter-label">Từ</label>
+        <label class="atr-filter-label">Từ ngày</label>
         <input type="date" [(ngModel)]="startDate" class="atr-filter-input" />
       </div>
-      <div class="atr-filter-sep"></div>
+      <div class="atr-filter-sep">đến</div>
       <div class="atr-filter-group">
-        <label class="atr-filter-label">Đến</label>
+        <label class="atr-filter-label">Đến ngày</label>
         <input type="date" [(ngModel)]="endDate" class="atr-filter-input" />
       </div>
       <button (click)="onFilter()" class="atr-filter-btn">
-        Lọc dữ liệu
+        <svg lucideFilter [attr.stroke-width]="2.2"></svg>
+        <span>Lọc dữ liệu</span>
       </button>
     </div>
   </div>

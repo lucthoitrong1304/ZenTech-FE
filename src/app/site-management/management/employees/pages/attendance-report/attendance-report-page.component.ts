@@ -4,13 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { AttendanceReportStore } from '../../../data-access/store/attendance-report.store';
 import { AttendanceStatisticsCardsComponent } from './components/attendance-statistics-cards/attendance-statistics-cards.component';
 import { AttendanceTableComponent } from './components/attendance-table/attendance-table.component';
-import { LucideAlertCircle } from '@lucide/angular';
+import { LucideAlertCircle, LucideFilter } from '@lucide/angular';
 
 @Component({
   selector: 'app-attendance-report',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, FormsModule, AttendanceStatisticsCardsComponent, AttendanceTableComponent, LucideAlertCircle],
+  imports: [CommonModule, FormsModule, AttendanceStatisticsCardsComponent, AttendanceTableComponent, LucideAlertCircle, LucideFilter],
   templateUrl: './attendance-report-page.component.html',
   styleUrl: './attendance-report-page.component.css'
 })
