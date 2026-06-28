@@ -31,7 +31,7 @@
   margin: 0;
   color: #817969;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -40,7 +40,7 @@
   margin: 8px 0 6px;
   color: #111827;
   font-size: clamp(30px, 2.9vw, 42px);
-  font-weight: 820;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.02;
 }
@@ -65,7 +65,7 @@
   background: #ecfdf3;
   color: #067647;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -217,7 +217,7 @@
 .tck-date-sep {
   color: #667085;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 :host ::ng-deep p-select {
@@ -298,7 +298,7 @@
   border-radius: 999px;
   color: #ffffff;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   object-fit: cover;
 }
 
@@ -329,7 +329,7 @@
   overflow: hidden;
   color: #111827;
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -372,7 +372,7 @@
   background: #f8fafc;
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.25;
   text-transform: uppercase;
@@ -405,7 +405,7 @@
 .tck-td--mono {
   color: #4f46e5;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-weight: 850;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -413,7 +413,7 @@
   max-width: 320px;
   overflow: hidden;
   color: #101828;
-  font-weight: 750;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -449,7 +449,7 @@
   border-radius: 999px;
   color: #ffffff;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   object-fit: cover;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
 }
@@ -513,7 +513,7 @@
   overflow: hidden;
   color: #101828;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -542,7 +542,7 @@
   border-radius: 999px;
   padding: 0 10px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1;
   white-space: nowrap;
 }
@@ -597,7 +597,7 @@
   color: #344054;
   padding: 0 10px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -636,7 +636,7 @@
 
 .tck-pagination-info strong {
   color: #101828;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .tck-pagination-controls,
@@ -650,7 +650,7 @@
 .tck-size-label {
   color: #667085;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .tck-size-select {
@@ -699,7 +699,7 @@
   color: #101828;
   padding: 0 12px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .tck-modal-backdrop {
@@ -744,7 +744,7 @@
   margin: 0 0 6px;
   color: #817969;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -752,7 +752,7 @@
   margin: 0;
   color: #101828;
   font-size: 22px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -813,7 +813,7 @@
 .tck-modal-label {
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -821,7 +821,7 @@
 .tck-modal-value {
   color: #101828;
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .tck-modal-description {
@@ -902,7 +902,7 @@
   border: 2px solid #ffffff;
   border-radius: 999px;
   font-size: 10px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .tck-rank-badge-overlay--first {

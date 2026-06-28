@@ -34,7 +34,7 @@
   display: block;
   color: #817969;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -43,7 +43,7 @@
   margin: 8px 0 0;
   color: #111827;
   font-size: clamp(30px, 2.9vw, 42px);
-  font-weight: 820;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.02;
 }
@@ -84,7 +84,7 @@
 
 .atr-filter-label {
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   color: #667085;
   text-transform: uppercase;
   white-space: nowrap;
@@ -122,7 +122,7 @@
   align-items: center;
   justify-content: center;
   font-family: inherit;
-  font-weight: 850;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
   min-height: 42px;
@@ -220,7 +220,7 @@
   margin: 0;
   color: #101828;
   font-size: 18px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .atr-table-card-header p {

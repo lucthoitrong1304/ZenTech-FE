@@ -96,7 +96,7 @@ export type ManagementStatTone = 'neutral' | 'accent' | 'info' | 'success' | 'wa
       .zt-management-stat__copy > span {
         color: #6b7280;
         font-size: 10px;
-        font-weight: 800;
+        font-weight: 700;
         letter-spacing: 0.04em;
         text-transform: uppercase;
       }
@@ -105,7 +105,7 @@ export type ManagementStatTone = 'neutral' | 'accent' | 'info' | 'success' | 'wa
         margin-top: 6px;
         color: inherit;
         font-size: 20px;
-        font-weight: 760;
+        font-weight: 700;
         line-height: 1.15;
       }
 

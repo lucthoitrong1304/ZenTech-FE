@@ -31,7 +31,7 @@
 .ai-page__header h2 {
   margin: 0;
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .ai-page__metrics {
@@ -283,7 +283,7 @@ button:disabled,
 .product-table__head {
   color: #64748b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   background: #f8fafc;
 }
@@ -310,7 +310,7 @@ button:disabled,
   color: #475569;
   background: #f8fafc;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .status-pill--ready {
@@ -392,7 +392,7 @@ button:disabled,
   margin-bottom: 6px;
   color: #64748b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .demo-composer {
@@ -484,7 +484,7 @@ button:disabled,
   margin: 0;
   color: #817969;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -493,7 +493,7 @@ button:disabled,
   margin: 8px 0 0;
   color: #111827;
   font-size: clamp(30px, 2.9vw, 42px);
-  font-weight: 820;
+  font-weight: 700;
   line-height: 1.02;
 }
 
@@ -517,13 +517,13 @@ button:disabled,
 .ai-page__metrics strong {
   color: #0f172a;
   font-size: 26px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .ai-page__metrics span {
   color: #64748b;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .ai-tabs {
@@ -538,7 +538,7 @@ button:disabled,
   border-radius: 10px;
   color: #667085;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .ai-tab--active {
@@ -577,7 +577,7 @@ button:disabled,
   min-height: 40px;
   border-radius: 10px;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .ai-primary-button {
@@ -601,7 +601,7 @@ button:disabled,
   background: #f8fafc;
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .document-table__row,
@@ -615,7 +615,7 @@ button:disabled,
   min-height: 26px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 @media (max-width: 1024px) {

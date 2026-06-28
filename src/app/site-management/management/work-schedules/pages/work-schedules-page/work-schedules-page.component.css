@@ -32,7 +32,7 @@
   display: block;
   color: #817969;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -41,7 +41,7 @@
   margin: 8px 0 0;
   color: #111827;
   font-size: clamp(30px, 2.9vw, 42px);
-  font-weight: 820;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.02;
 }
@@ -69,7 +69,7 @@
   align-items: center;
   justify-content: center;
   font-family: inherit;
-  font-weight: 850;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
   min-height: 42px;
@@ -285,7 +285,7 @@ button:disabled {
   margin: 0;
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -294,7 +294,7 @@ button:disabled {
   margin: 4px 0 0;
   color: #101828;
   font-size: 20px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -330,7 +330,7 @@ button:disabled {
   background: #f8fafc !important;
   color: #667085 !important;
   font-size: 12px !important;
-  font-weight: 850 !important;
+  font-weight: 700 !important;
   text-transform: uppercase !important;
   border-bottom: 1px solid #e7e9ee !important;
   padding: 14px 16px !important;
@@ -373,7 +373,7 @@ button:disabled {
   background: #f3f4f6;
   color: #4f46e5;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -425,7 +425,7 @@ button:disabled {
   gap: 4px;
   color: #667085;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -441,7 +441,7 @@ button:disabled {
 
 .work-schedules-cell strong {
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -470,7 +470,7 @@ button:disabled {
 .work-schedules-empty h3 {
   margin: 0;
   font-size: 16px;
-  font-weight: 850;
+  font-weight: 700;
   color: #101828;
 }
 
@@ -511,7 +511,7 @@ button:disabled {
   background: #ffffff;
   color: #667085;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -566,7 +566,7 @@ button:disabled {
   margin: 0;
   color: #667085;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -574,7 +574,7 @@ button:disabled {
   margin: 4px 0 0;
   color: #101828;
   font-size: 20px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .work-schedules-modal__close {
@@ -617,7 +617,7 @@ button:disabled {
 .work-schedules-summary-line span {
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 

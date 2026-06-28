@@ -13,7 +13,7 @@
 
   <section class="grid gap-4">
     <h3
-      class="border-b border-[#d2c5ab]/30 px-2 pb-2 text-[13px] font-black uppercase tracking-[0.1em]"
+      class="border-b border-[#d2c5ab]/30 px-2 pb-2 text-[13px] font-bold uppercase tracking-[0.1em]"
     >
       Tr&#7841;ng th&#225;i t&#432; v&#7845;n
     </h3>
@@ -25,7 +25,7 @@
           class="flex min-h-11 w-full items-center justify-between rounded-[8px] px-3 text-left transition"
           [ngClass]="
             activeStatus() === item.status
-              ? 'border-l-4 border-[#ffc700] bg-white pl-2 font-black text-[#1c1b1b] shadow-[0_16px_40px_-34px_rgba(28,27,27,0.45)]'
+              ? 'border-l-4 border-[#ffc700] bg-white pl-2 font-bold text-[#1c1b1b] shadow-[0_16px_40px_-34px_rgba(28,27,27,0.45)]'
               : 'text-[#4f4632] hover:bg-white hover:text-[#1c1b1b]'
           "
           (click)="statusSelected.emit(item.status)"
@@ -33,7 +33,7 @@
           <span class="min-w-0 truncate">{{ item.label }}</span>
           @if (item.count > 0) {
             <span
-              class="ml-3 min-w-5 rounded-full px-2 py-0.5 text-center text-[11px] font-black"
+              class="ml-3 min-w-5 rounded-full px-2 py-0.5 text-center text-[11px] font-bold"
               [ngClass]="
                 activeStatus() === item.status
                   ? 'bg-[#ffc700] text-[#1c1b1b]'
@@ -50,7 +50,7 @@
 
   <section class="grid gap-4">
     <h3
-      class="border-b border-[#d2c5ab]/30 px-2 pb-2 text-[13px] font-black uppercase tracking-[0.1em]"
+      class="border-b border-[#d2c5ab]/30 px-2 pb-2 text-[13px] font-bold uppercase tracking-[0.1em]"
     >
       Yêu cầu chuyên gia
     </h3>
@@ -62,7 +62,7 @@
           class="flex min-h-11 w-full items-center justify-between rounded-[8px] px-3 text-left transition"
           [ngClass]="
             activeExpertRequest() === item.status
-              ? 'border-l-4 border-[#ffc700] bg-white pl-2 font-black text-[#1c1b1b] shadow-[0_16px_40px_-34px_rgba(28,27,27,0.45)]'
+              ? 'border-l-4 border-[#ffc700] bg-white pl-2 font-bold text-[#1c1b1b] shadow-[0_16px_40px_-34px_rgba(28,27,27,0.45)]'
               : 'text-[#4f4632] hover:bg-white hover:text-[#1c1b1b]'
           "
           (click)="expertRequestSelected.emit(item.status)"
@@ -70,7 +70,7 @@
           <span class="min-w-0 truncate">{{ item.label }}</span>
           @if (item.count > 0) {
             <span
-              class="ml-3 min-w-5 rounded-full px-2 py-0.5 text-center text-[11px] font-black"
+              class="ml-3 min-w-5 rounded-full px-2 py-0.5 text-center text-[11px] font-bold"
               [ngClass]="
                 activeExpertRequest() === item.status
                   ? 'bg-[#ffc700] text-[#1c1b1b]'

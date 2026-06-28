@@ -44,7 +44,7 @@
   margin-bottom: 8px;
   color: #817969;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -57,7 +57,7 @@
   margin: 0;
   color: #111827;
   font-size: clamp(30px, 2.9vw, 42px);
-  font-weight: 820;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.02;
 }
@@ -90,7 +90,7 @@
   border-radius: 10px;
   padding: 0 20px;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
   white-space: nowrap;
   transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
@@ -147,7 +147,7 @@
   margin: 0;
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -162,7 +162,7 @@
   overflow-wrap: anywhere;
   color: #101828;
   font-size: clamp(22px, 2vw, 28px);
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.08;
 }
@@ -252,7 +252,7 @@
   cursor: pointer;
   padding: 0 14px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   transition: background 160ms ease, color 160ms ease;
 }
 
@@ -369,7 +369,7 @@
   border-radius: 10px;
   padding: 0 16px;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 

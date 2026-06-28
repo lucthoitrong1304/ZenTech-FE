@@ -600,7 +600,7 @@
   display: block;
   color: #817969;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -608,7 +608,7 @@
   margin: 8px 0 0;
   color: #111827;
   font-size: clamp(30px, 2.9vw, 42px);
-  font-weight: 820;
+  font-weight: 700;
   line-height: 1.02;
 }
 
@@ -627,7 +627,7 @@
   min-height: 42px;
   border-radius: 10px;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: none;
 }
 
@@ -655,7 +655,7 @@
 .pay-periods-card-header h3 {
   color: #0f172a;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .pay-periods-card-header p {
@@ -680,7 +680,7 @@
   background: #f8fafc;
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -692,7 +692,7 @@
 
 .period-name-cell {
   color: #0f172a;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .status-badge,
@@ -700,7 +700,7 @@
   min-height: 30px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .modal-dialog {

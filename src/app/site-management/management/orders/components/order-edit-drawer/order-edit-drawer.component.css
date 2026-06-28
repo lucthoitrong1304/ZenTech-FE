@@ -52,7 +52,7 @@
   margin: 0;
   color: #4f46e5;
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -60,7 +60,7 @@
 .order-edit__header h2 {
   margin: 5px 0 0;
   font-size: 22px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .order-edit__icon {
@@ -108,7 +108,7 @@
 .order-edit__readonly span {
   color: rgba(79, 70, 50, 0.68);
   font-size: 10px;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -152,7 +152,7 @@
 .order-edit__submit-error {
   color: #dc2626;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .order-edit__split {
@@ -202,7 +202,7 @@
   color: #fbbc04;
   object-fit: cover;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .order-edit-item__copy {
@@ -219,7 +219,7 @@
   text-overflow: ellipsis;
   color: #1c1b1b;
   font-size: 13px;
-  font-weight: 900;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -232,7 +232,7 @@
 .order-edit-item__quantity {
   color: rgba(79, 70, 50, 0.8);
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .order-edit-summary {
@@ -262,7 +262,7 @@
 .order-edit-summary__total strong {
   color: #765b00;
   font-size: 24px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .order-edit-summary__total em {
@@ -271,7 +271,7 @@
   color: #ffffff;
   font-size: 9px;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 700;
   padding: 5px 8px;
   text-transform: uppercase;
 }
@@ -288,7 +288,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
   transition: all 0.2s ease;
 }

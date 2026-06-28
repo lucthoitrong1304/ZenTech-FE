@@ -2041,7 +2041,7 @@
   display: block;
   color: #817969;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -2049,7 +2049,7 @@
   margin: 8px 0 0;
   color: #111827;
   font-size: clamp(30px, 2.9vw, 42px);
-  font-weight: 820;
+  font-weight: 700;
   line-height: 1.02;
 }
 
@@ -2075,7 +2075,7 @@
   padding: 0 16px;
   color: #667085;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: none;
 }
 
@@ -2092,7 +2092,7 @@
   background: #fbbc04;
   color: #111827;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: none;
   box-shadow: 0 12px 28px rgba(251, 188, 4, 0.12);
 }
@@ -2140,20 +2140,20 @@
 .reports-stats span {
   color: #64748b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .reports-stats strong {
   color: #0f172a;
   font-size: clamp(24px, 1.8vw, 30px);
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .reports-card-header h3 {
   color: #0f172a;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .reports-card-header p {
@@ -2187,7 +2187,7 @@
   border-radius: 0;
   color: #777166;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: none;
 }
 
@@ -2275,7 +2275,7 @@
   margin-bottom: 6px;
   color: #817969;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -2286,7 +2286,7 @@
 .reports-ai-header h3 {
   color: #0f172a;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.25;
 }
@@ -2303,14 +2303,14 @@
 .reports-chart-hero-metric span {
   color: #64748b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
 .reports-chart-hero-metric strong {
   color: #0f172a;
   font-size: 16px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .reports-chart-wrapper {
@@ -2334,7 +2334,7 @@
   color: #111827;
   box-shadow: none;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .reports-live-pill::before {
@@ -2360,14 +2360,14 @@
 .quick-metrics-hero strong {
   color: #0f172a;
   font-size: clamp(24px, 2vw, 30px);
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .quick-metric-row--tile strong,
 .payment-share-info--premium strong {
   color: #0f172a;
   font-size: 14px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .quick-metric-icon,
@@ -2383,7 +2383,7 @@
 .payment-share-info span:first-child {
   color: #334155;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .reports-progress-container,
@@ -2420,7 +2420,7 @@
 .reports-faulty-warehouse-stat-label {
   color: #64748b;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -2430,7 +2430,7 @@
 .reports-faulty-warehouse-stat-value {
   color: #0f172a;
   font-size: clamp(24px, 1.8vw, 30px);
-  font-weight: 850;
+  font-weight: 700;
   white-space: normal;
 }
 
@@ -2441,7 +2441,7 @@
 .reports-faulty-warehouse-title {
   color: #0f172a;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .reports-faulty-warehouse-badge {
@@ -2449,7 +2449,7 @@
   background: #fff1f2;
   color: #be123c;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .reports-faulty-warehouse-stats-wrapper {
@@ -2468,7 +2468,7 @@
   background: #f8fafc;
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -2488,7 +2488,7 @@
   min-height: 26px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: none;
 }
 
@@ -2496,7 +2496,7 @@
 .table-action-details-btn {
   color: #4f46e5;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .reports-ai-side-panel {

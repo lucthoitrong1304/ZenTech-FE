@@ -55,7 +55,7 @@
 .header-kicker {
   color: rgba(255, 199, 0, 0.78);
   font-size: 9px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
@@ -103,7 +103,7 @@
 }
 
 .loading-title {
-  @apply text-lg font-black text-[#111827] mb-2;
+  @apply text-lg font-bold text-[#111827] mb-2;
 }
 
 .loading-desc {
@@ -128,7 +128,7 @@
 }
 
 .report-pill {
-  @apply inline-flex items-center gap-2 rounded-full bg-[#111827] px-3 py-1.5 text-[11px] font-black uppercase text-[#FFC700];
+  @apply inline-flex items-center gap-2 rounded-full bg-[#111827] px-3 py-1.5 text-[11px] font-bold uppercase text-[#FFC700];
 }
 
 .report-pill svg {
@@ -144,12 +144,12 @@
 }
 
 :host ::ng-deep .ai-markdown h1 {
-  @apply text-2xl font-black text-[#111827] mt-1 mb-5;
+  @apply text-2xl font-bold text-[#111827] mt-1 mb-5;
   letter-spacing: 0;
 }
 
 :host ::ng-deep .ai-markdown h2 {
-  @apply text-base font-black text-[#111827] mt-6 mb-3;
+  @apply text-base font-bold text-[#111827] mt-6 mb-3;
 }
 
 :host ::ng-deep .ai-markdown h3 {
@@ -203,7 +203,7 @@
 }
 
 .footer-close-btn {
-  @apply inline-flex items-center justify-center rounded-full border border-[#E5E7EB] bg-white px-6 py-2.5 text-xs font-black text-[#374151] transition-colors hover:bg-[#F3F4F6] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC700];
+  @apply inline-flex items-center justify-center rounded-full border border-[#E5E7EB] bg-white px-6 py-2.5 text-xs font-bold text-[#374151] transition-colors hover:bg-[#F3F4F6] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC700];
   min-width: 150px;
 }
 

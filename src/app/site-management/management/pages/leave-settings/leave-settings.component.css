@@ -28,14 +28,14 @@
 .leave-quota-card__title label span {
   color: #6b7280;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
 .leave-settings-hero h1,
 .leave-settings-panel__header h2 {
   margin: 4px 0 0;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -72,7 +72,7 @@
   margin-top: 6px;
   color: #111827;
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .leave-settings-grid {
@@ -158,7 +158,7 @@
 .leave-type-card__body strong {
   color: #111827;
   font-size: 14px;
-  font-weight: 850;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -174,7 +174,7 @@
   background: rgba(22, 163, 74, 0.1);
   color: #15803d;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 700;
   padding: 4px 9px;
 }
 
@@ -274,7 +274,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   padding: 0 14px;
   white-space: nowrap;
 }
@@ -346,7 +346,7 @@
   display: block;
   color: #111827;
   font-size: 15px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .leave-quota-card__title div span,
@@ -445,7 +445,7 @@
 .leave-settings-modal__header span {
   color: #6b7280;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -453,7 +453,7 @@
   margin: 4px 0 0;
   color: #111827;
   font-size: 20px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -548,7 +548,7 @@
 .leave-quota-card__title label span {
   color: #817969;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -556,7 +556,7 @@
   margin: 8px 0 0;
   color: #111827;
   font-size: clamp(30px, 2.9vw, 42px);
-  font-weight: 820;
+  font-weight: 700;
   line-height: 1.02;
 }
 
@@ -588,7 +588,7 @@
 .leave-quota-total strong {
   color: #0f172a;
   font-size: 24px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .leave-settings-panel {
@@ -602,7 +602,7 @@
 .leave-settings-panel__header h2 {
   color: #0f172a;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .leave-settings-panel__header p {
@@ -643,7 +643,7 @@
   min-height: 42px;
   border-radius: 10px;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: none;
 }
 

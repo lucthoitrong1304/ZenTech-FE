@@ -64,7 +64,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       h2 {
         color: #111827;
         font-size: 16px;
-        font-weight: 760;
+        font-weight: 700;
         letter-spacing: 0;
       }
 

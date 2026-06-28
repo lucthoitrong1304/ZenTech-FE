@@ -26,7 +26,7 @@
   margin: 28px 0 10px;
   color: rgba(79, 70, 50, 0.58);
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -35,7 +35,7 @@
   margin: 0;
   color: #1c1b1b;
   font-size: clamp(34px, 5vw, 68px);
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.07em;
   line-height: 0.94;
 }
@@ -65,7 +65,7 @@
 .management-placeholder__grid strong {
   color: #fbbc04;
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.14em;
 }
 
@@ -73,7 +73,7 @@
   margin: 24px 0 10px;
   color: #1c1b1b;
   font-size: 20px;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: -0.04em;
 }
 

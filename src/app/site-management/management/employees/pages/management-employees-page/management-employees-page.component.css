@@ -32,7 +32,7 @@
   display: block;
   color: #817969;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -41,7 +41,7 @@
   margin: 8px 0 0;
   color: #111827;
   font-size: clamp(30px, 2.9vw, 42px);
-  font-weight: 820;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.02;
 }
@@ -62,7 +62,7 @@
   align-items: center;
   justify-content: center;
   font-family: inherit;
-  font-weight: 850;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
   min-height: 42px;
@@ -242,7 +242,7 @@ button:disabled {
   margin: 0;
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -251,7 +251,7 @@ button:disabled {
   margin: 4px 0 0;
   color: #101828;
   font-size: 20px;
-  font-weight: 850;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -288,7 +288,7 @@ button:disabled {
   background: #f8fafc !important;
   color: #667085 !important;
   font-size: 12px !important;
-  font-weight: 850 !important;
+  font-weight: 700 !important;
   text-transform: uppercase !important;
   border-bottom: 1px solid #e7e9ee !important;
   padding: 16px 24px !important;
@@ -336,7 +336,7 @@ button:disabled {
   background: #f3f4f6;
   color: #4f46e5;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   border: 1px solid rgba(79, 70, 229, 0.12);
 }
 
@@ -363,7 +363,7 @@ button:disabled {
   display: inline-flex;
   border-radius: 999px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   padding: 4px 10px;
   text-transform: uppercase;
 }
@@ -433,7 +433,7 @@ button:disabled {
 .employees-empty h3 {
   margin: 0;
   font-size: 16px;
-  font-weight: 850;
+  font-weight: 700;
   color: #101828;
 }
 
@@ -474,7 +474,7 @@ button:disabled {
   background: #ffffff;
   color: #667085;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -533,7 +533,7 @@ button:disabled {
   margin: 0;
   color: #667085;
   font-size: 11px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -541,7 +541,7 @@ button:disabled {
   margin: 4px 0 0;
   color: #101828;
   font-size: 20px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .employees-modal__close {
@@ -664,7 +664,7 @@ button:disabled {
 .employees-detail h3 {
   margin: 0;
   font-size: 18px;
-  font-weight: 850;
+  font-weight: 700;
   color: #101828;
 }
 
@@ -696,7 +696,7 @@ button:disabled {
 .employees-detail dt {
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
