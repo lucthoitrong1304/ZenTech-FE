@@ -170,6 +170,53 @@
           <div><small>Kiểm tra lúc</small><strong>{{ detail.lastCheckedAt | date:'HH:mm:ss dd/MM/yyyy' }}</strong></div>
         </section>
 
+        <section class="dependency-detail-panel connection-topology-panel">
+          <h3>Mô hình kết nối & Kiểm tra phản hồi</h3>
+          <div class="topology-container">
+            <div class="topology-node backend-node">
+              <span class="node-icon"><svg lucideServer></svg></span>
+              <strong>ZenTech Backend</strong>
+            </div>
+
+            <div class="topology-connector" [class.connector-down]="detail.status !== 'UP'">
+              <div class="connector-line">
+                @if (detail.status === 'UP') {
+                  <span class="flow-pulse"></span>
+                } @else {
+                  <svg lucideAlertTriangle class="connector-warning-icon"></svg>
+                }
+              </div>
+            </div>
+
+            <div class="topology-node service-node" [class.node-down]="detail.status !== 'UP'">
+              <span class="node-icon">
+                @if (detail.name === 'MySQL' || detail.name === 'Qdrant') { <svg lucideDatabase></svg> }
+                @else if (detail.name === 'RabbitMQ') { <svg lucideNetwork></svg> }
+                @else { <svg lucideServer></svg> }
+              </span>
+              <strong>{{ detail.name }}</strong>
+            </div>
+          </div>
+
+          <div class="topology-actions">
+            <button type="button" class="ping-btn" (click)="pingCurrentDependency()" [disabled]="pingLoading()">
+              <svg lucideRefreshCw [class.spinning]="pingLoading()"></svg>
+              {{ pingLoading() ? 'Đang gửi gói tin ping...' : 'Ping kiểm tra phản hồi' }}
+            </button>
+
+            @if (pingResult(); as ping) {
+              <div class="ping-result-badge" [class.ping-success]="ping.status === 'UP'" [class.ping-failed]="ping.status !== 'UP'">
+                <span class="ping-pulse-indicator"></span>
+                @if (ping.status === 'UP') {
+                  <span>Phản hồi: <strong>{{ ping.latencyMs }} ms</strong> (Tốt)</span>
+                } @else {
+                  <span>Mất kết nối</span>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
         <section class="dependency-detail-panel">
           <h3>Kết nối</h3>
           <div class="detail-kv"><span>Endpoint</span><code>{{ detail.endpoint }}</code></div>

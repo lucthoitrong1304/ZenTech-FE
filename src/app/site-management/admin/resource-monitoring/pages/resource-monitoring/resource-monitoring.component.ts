@@ -68,6 +68,8 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
   protected readonly dependencyDetailLoading = signal(false);
   protected readonly dependencyDetailError = signal<string | null>(null);
   protected readonly selectedDependencyDetail = signal<ObservabilityDependencyDetail | null>(null);
+  protected readonly pingLoading = signal(false);
+  protected readonly pingResult = signal<{ status: 'UP' | 'DEGRADED' | 'DOWN'; latencyMs: number } | null>(null);
 
   protected dateRange: Date[] | null = null;
   protected readonly maxDate = new Date();
@@ -333,6 +335,7 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
     this.dependencyDetailLoading.set(true);
     this.dependencyDetailError.set(null);
     this.selectedDependencyDetail.set(null);
+    this.pingResult.set(null);
     this.service.getDependencyDetail(dependency.name)
       .pipe(finalize(() => this.dependencyDetailLoading.set(false)))
       .subscribe({
@@ -347,7 +350,34 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
       this.selectedDependencyDetail.set(null);
       this.dependencyDetailError.set(null);
       this.dependencyDetailLoading.set(false);
+      this.pingResult.set(null);
+      this.pingLoading.set(false);
     }
+  }
+
+  protected pingCurrentDependency(): void {
+    const detail = this.selectedDependencyDetail();
+    if (!detail) return;
+    this.pingLoading.set(true);
+    this.service.pingDependency(detail.name)
+      .pipe(finalize(() => this.pingLoading.set(false)))
+      .subscribe({
+        next: (response) => {
+          this.pingResult.set(response.data);
+          if (response.data) {
+            this.selectedDependencyDetail.update((current) => {
+              if (!current) return null;
+              return {
+                ...current,
+                status: response.data.status,
+              };
+            });
+          }
+        },
+        error: () => {
+          this.pingResult.set(null);
+        }
+      });
   }
 
   protected dependencyGroupLabel(group: string | null | undefined): string {

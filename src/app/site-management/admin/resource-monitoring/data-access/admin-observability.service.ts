@@ -25,4 +25,8 @@ export class AdminObservabilityService {
   getDependencyDetail(name: string): Observable<ApiResponse<ObservabilityDependencyDetail>> {
     return this.api.get<ApiResponse<ObservabilityDependencyDetail>>(`${this.baseUrl}/dependencies/${encodeURIComponent(name)}`);
   }
+
+  pingDependency(name: string): Observable<ApiResponse<{ status: 'UP' | 'DEGRADED' | 'DOWN'; latencyMs: number }>> {
+    return this.api.get<ApiResponse<{ status: 'UP' | 'DEGRADED' | 'DOWN'; latencyMs: number }>>(`${this.baseUrl}/dependencies/${encodeURIComponent(name)}/ping`);
+  }
 }

@@ -843,3 +843,206 @@
 .threshold-chip .help-icon:hover {
   color: var(--metric-color, #64748b);
 }
+
+/* Connection Topology Panel */
+.connection-topology-panel {
+  padding: 16px;
+}
+.topology-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 24px 0;
+  overflow-x: auto;
+}
+.topology-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #fafbfc;
+  width: 145px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+.topology-node .node-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  box-shadow: inset 0 0 0 1px #bfdbfe;
+}
+.topology-node .node-icon svg {
+  width: 18px;
+  height: 18px;
+}
+.topology-node strong {
+  font-size: 12px;
+  color: #1e293b;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+.backend-node .node-icon {
+  background: #f8fafc;
+  color: #475569;
+  box-shadow: inset 0 0 0 1px #cbd5e1;
+}
+.topology-node.node-down {
+  border-color: #fecdd3;
+  background: #fff1f2;
+}
+.topology-node.node-down .node-icon {
+  background: #ffe4e6;
+  color: #e11d48;
+  box-shadow: inset 0 0 0 1px #fecdd3;
+}
+.topology-connector {
+  flex: 1;
+  min-width: 60px;
+  max-width: 160px;
+  height: 4px;
+  position: relative;
+  background: #10b981;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
+}
+.topology-connector.connector-down {
+  background: #ef4444;
+  box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);
+}
+.topology-connector .connector-line {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.flow-pulse {
+  position: absolute;
+  top: -3px;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #10b981, 0 0 16px #10b981;
+  animation: flow 2s infinite linear;
+}
+.connector-warning-icon {
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  color: #ef4444;
+  background: #fff;
+  border-radius: 50%;
+}
+@keyframes flow {
+  0% { left: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+/* Topology Actions & Ping */
+.topology-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  border-top: 1px solid #edf2f7;
+  padding-top: 16px;
+}
+.ping-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #4f46e5;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.20s ease;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+.ping-btn:hover:not(:disabled) {
+  background: #4338ca;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
+}
+.ping-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.ping-btn:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.ping-result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.ping-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+.ping-failed {
+  background: #fff1f2;
+  color: #9f1239;
+  border: 1px solid #fecdd3;
+}
+.ping-pulse-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  position: relative;
+  flex-shrink: 0;
+}
+.ping-success .ping-pulse-indicator::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid #059669;
+  animation: ping-pulse-anim 1.2s infinite ease-out;
+}
+@keyframes ping-pulse-anim {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@media (max-width: 520px) {
+  .topology-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ping-btn {
+    justify-content: center;
+  }
+  .ping-result-badge {
+    justify-content: center;
+  }
+}
