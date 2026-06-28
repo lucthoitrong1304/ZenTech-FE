@@ -40,7 +40,7 @@
 .customer-table th {
   background: #f8fafc;
   padding: 16px 20px;
-  font-weight: 850;
+  font-weight: 700;
   color: #475467;
   border-bottom: 1px solid #edf0f4;
   text-transform: uppercase;
@@ -68,7 +68,7 @@
 
 .customer-index {
   color: #4f46e5;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .customer-identity {
@@ -110,7 +110,7 @@
 
 .customer-identity strong {
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .customer-identity small,
@@ -128,7 +128,7 @@
   justify-content: center;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   padding: 5px 11px;
   text-transform: uppercase;
   background: rgba(22, 163, 74, 0.12);
@@ -270,7 +270,7 @@
   margin: 0;
   color: #667085;
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 700;
 }
 
 .customer-page-buttons {
@@ -290,7 +290,7 @@
   width: 40px;
   height: 40px;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   transition: all 0.15s ease;
   box-shadow: none;
 }

@@ -12,7 +12,7 @@
           (error)="onImageError(conversation().id)"
         />
       } @else {
-        <span class="grid h-10 w-10 place-items-center rounded-[5px] bg-[#645efb] text-xs font-black text-white">
+        <span class="grid h-10 w-10 place-items-center rounded-[5px] bg-[#645efb] text-xs font-bold text-white">
           {{ conversation().customer.initials }}
         </span>
       }
@@ -23,7 +23,7 @@
     </span>
 
     <div class="min-w-0">
-      <h2 class="truncate text-base font-black text-[#1c1b1b]">
+      <h2 class="truncate text-base font-bold text-[#1c1b1b]">
         {{ conversation().customer.fullName }}
       </h2>
       <div class="flex items-center gap-1.5">
@@ -82,7 +82,7 @@
     @if (conversation().status !== 'STAFF_HANDLING' && conversation().status !== 'CLOSED') {
       <button
         type="button"
-        class="chat-header-action chat-header-action--accept min-h-10 rounded-[8px] bg-[#ffc700] px-4 text-sm font-black text-[#1c1b1b] shadow-sm transition hover:bg-[#f5bf00]"
+        class="chat-header-action chat-header-action--accept min-h-10 rounded-[8px] bg-[#ffc700] px-4 text-sm font-bold text-[#1c1b1b] shadow-sm transition hover:bg-[#f5bf00]"
         (click)="acceptClicked.emit()"
         aria-label="Tiếp nhận tư vấn"
         title="Tiếp nhận tư vấn"

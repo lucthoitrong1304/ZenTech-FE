@@ -4,10 +4,6 @@ import { Component, ChangeDetectionStrategy, effect, inject, untracked, signal }
 import { FormsModule } from '@angular/forms';
 import {
   LucideSearch,
-  LucideWarehouse,
-  LucideTriangleAlert,
-  LucideChevronRight,
-  LucideSparkles,
   LucidePackage,
   LucideHistory,
   LucidePlus,
@@ -77,10 +73,6 @@ enum InventoryDateFilterOption {
     ButtonModule,
     TooltipModule,
     LucideSearch,
-    LucideWarehouse,
-    LucideTriangleAlert,
-    LucideChevronRight,
-    LucideSparkles,
     LucidePackage,
     LucideHistory,
     LucidePlus,
@@ -420,13 +412,13 @@ export class ManagementInventoryPageComponent {
           <style>
             body { font-family: Inter, Arial, sans-serif; color: #111827; }
             table { border-collapse: collapse; width: 100%; }
-            .report-title { font-size: 20px; font-weight: 800; color: #111827; text-align: center; background: #FFC700; }
+            .report-title { font-size: 20px; font-weight: 700; color: #111827; text-align: center; background: #FFC700; }
             .report-subtitle { font-size: 12px; color: #374151; text-align: center; background: #FFF7CC; }
             .summary-table td { border: 1px solid #E5E7EB; padding: 8px 10px; font-size: 12px; }
             .summary-label { background: #F9FAFB; font-weight: 700; color: #374151; }
-            .summary-import { color: #16A34A; font-weight: 800; text-align: center; }
-            .summary-export { color: #E11D48; font-weight: 800; text-align: center; }
-            .summary-count { color: #4F46E5; font-weight: 800; text-align: center; }
+            .summary-import { color: #16A34A; font-weight: 700; text-align: center; }
+            .summary-export { color: #E11D48; font-weight: 700; text-align: center; }
+            .summary-count { color: #4F46E5; font-weight: 700; text-align: center; }
             .data-table th { background: #101010; color: #FFFFFF; font-size: 12px; font-weight: 700; border: 1px solid #374151; padding: 10px 8px; text-align: center; }
             .data-table td { border: 1px solid #E5E7EB; padding: 8px 10px; font-size: 12px; vertical-align: middle; }
             .cell-center { text-align: center; }
@@ -434,8 +426,8 @@ export class ManagementInventoryPageComponent {
             .cell-product { font-weight: 700; color: #111827; }
             .type-import { background: #F0FDF4; color: #16A34A; font-weight: 700; }
             .type-export { background: #FFF1F2; color: #E11D48; font-weight: 700; }
-            .qty-import { color: #16A34A; font-weight: 800; }
-            .qty-export { color: #E11D48; font-weight: 800; }
+            .qty-import { color: #16A34A; font-weight: 700; }
+            .qty-export { color: #E11D48; font-weight: 700; }
           </style>
         </head>
         <body>
@@ -512,20 +504,20 @@ export class ManagementInventoryPageComponent {
           <style>
             body { font-family: Inter, Arial, sans-serif; color: #111827; }
             table { border-collapse: collapse; width: 100%; }
-            .report-title { font-size: 20px; font-weight: 800; color: #111827; text-align: center; background: #FFC700; }
+            .report-title { font-size: 20px; font-weight: 700; color: #111827; text-align: center; background: #FFC700; }
             .report-subtitle { font-size: 12px; color: #374151; text-align: center; background: #FFF7CC; }
             .summary-table td { border: 1px solid #E5E7EB; padding: 8px 10px; font-size: 12px; }
             .summary-label { background: #F9FAFB; font-weight: 700; color: #374151; }
-            .summary-count { color: #4F46E5; font-weight: 800; text-align: center; }
-            .summary-warning { color: #E11D48; font-weight: 800; text-align: center; }
+            .summary-count { color: #4F46E5; font-weight: 700; text-align: center; }
+            .summary-warning { color: #E11D48; font-weight: 700; text-align: center; }
             .data-table th { background: #101010; color: #FFFFFF; font-size: 12px; font-weight: 700; border: 1px solid #374151; padding: 10px 8px; text-align: center; }
             .data-table td { border: 1px solid #E5E7EB; padding: 8px 10px; font-size: 12px; vertical-align: middle; }
             .cell-center { text-align: center; }
             .cell-number { text-align: right; }
             .cell-product { font-weight: 700; color: #111827; }
-            .stock-qty { font-weight: 800; color: #4F46E5; }
-            .faulty-qty { font-weight: 800; color: #E11D48; }
-            .inventory-value { font-weight: 800; color: #111827; }
+            .stock-qty { font-weight: 700; color: #4F46E5; }
+            .faulty-qty { font-weight: 700; color: #E11D48; }
+            .inventory-value { font-weight: 700; color: #111827; }
             .status-in-stock { background: #F0FDF4; color: #16A34A; font-weight: 700; }
             .status-low-stock { background: #FFF7CC; color: #92400E; font-weight: 700; }
             .status-out-of-stock { background: #FFF1F2; color: #E11D48; font-weight: 700; }
@@ -756,18 +748,18 @@ export class ManagementInventoryPageComponent {
             body { margin: 0; font-family: Inter, Arial, sans-serif; color: #111827; background: #FFFFFF; }
             .report { width: 100%; }
             .brand { display: grid; grid-template-columns: 52px 1fr auto; align-items: center; gap: 14px; padding: 14px 18px; background: #101010; color: #FFFFFF; border-radius: 12px; }
-            .brand-logo { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px; background: #FFC700; color: #111827; font-weight: 900; }
+            .brand-logo { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 999px; background: #FFC700; color: #111827; font-weight: 700; }
             .brand h2 { margin: 0; font-size: 15px; letter-spacing: 0.08em; }
             .brand p { margin: 4px 0 0; font-size: 10px; color: #D1D5DB; }
             .meta { text-align: right; font-size: 10px; line-height: 1.7; }
             .title { margin: 18px 0 14px; text-align: center; }
-            .title span { display: inline-block; padding: 4px 12px; border-radius: 999px; background: #FFF7CC; font-size: 9px; font-weight: 800; letter-spacing: 0.14em; }
-            .title h1 { margin: 7px 0 0; font-size: 20px; font-weight: 900; }
+            .title span { display: inline-block; padding: 4px 12px; border-radius: 999px; background: #FFF7CC; font-size: 9px; font-weight: 700; letter-spacing: 0.14em; }
+            .title h1 { margin: 7px 0 0; font-size: 20px; font-weight: 700; }
             .title p { margin: 6px 0 0; color: #6B7280; font-size: 10px; }
             .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
             .summary-card { padding: 10px 12px; border: 1px solid #E5E7EB; border-radius: 12px; background: #F9FAFB; }
-            .summary-card span { display: block; color: #6B7280; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
-            .summary-card strong { display: block; margin-top: 4px; font-size: 18px; font-weight: 900; }
+            .summary-card span { display: block; color: #6B7280; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+            .summary-card strong { display: block; margin-top: 4px; font-size: 18px; font-weight: 700; }
             .summary-import strong, .qty-import { color: #16A34A; }
             .summary-export strong, .qty-export { color: #E11D48; }
             .summary-count strong, .qty-count, .inventory-value, .index { color: #4F46E5; }
@@ -780,14 +772,14 @@ export class ManagementInventoryPageComponent {
             .center { text-align: center; }
             .money { text-align: right; white-space: nowrap; }
             .date { white-space: nowrap; color: #4B5563; }
-            .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 8px; font-weight: 800; white-space: nowrap; }
+            .badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 8px; font-weight: 700; white-space: nowrap; }
             .badge-import, .status-in-stock { background: #F0FDF4; color: #16A34A; }
             .badge-export, .status-out-of-stock { background: #FFF1F2; color: #E11D48; }
             .status-low-stock { background: #FFF7CC; color: #92400E; }
             .note { margin-top: 10px; padding: 10px 12px; border-left: 4px solid #FFC700; background: #FFF7CC; border-radius: 8px; color: #374151; font-size: 9px; }
             .signatures { display: flex; justify-content: space-between; margin-top: 28px; padding: 0 90px; page-break-inside: avoid; }
             .signature { width: 220px; text-align: center; }
-            .signature-title { margin: 0; font-size: 11px; font-weight: 800; }
+            .signature-title { margin: 0; font-size: 11px; font-weight: 700; }
             .signature-line { width: 160px; height: 46px; margin: 0 auto 6px; border-bottom: 1px solid #9CA3AF; }
             .signature-hint { margin: 0; font-size: 9px; color: #6B7280; }
             @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }

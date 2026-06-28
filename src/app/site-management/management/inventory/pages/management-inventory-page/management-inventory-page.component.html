@@ -1,210 +1,93 @@
 <app-management-page-shell>
-  <section class="inventory-command">
-    <div class="inventory-command__copy">
-      <span class="inventory-command__kicker">Inventory Control Center</span>
+  <div class="inventory-command">
+    <div>
+      <span class="inventory-command__eyebrow">Trung tâm quản lý kho hàng</span>
       <h1>Quản lý kho hàng</h1>
       <p>Giám sát tồn kho, nhật ký nhập xuất và cảnh báo thiếu hàng theo thời gian thực.</p>
     </div>
 
     <div class="inventory-command__actions">
-      <div class="inventory-mode-selector" aria-label="Chọn chế độ quản lý kho">
-        <button
-          type="button"
-          class="inventory-mode-btn"
-          [class.inventory-mode-btn--active]="store.activeTab() === 'stock'"
-          (click)="setTab('stock')"
-        >
-          Tồn kho
-        </button>
-        <button
-          type="button"
-          class="inventory-mode-btn"
-          [class.inventory-mode-btn--active]="store.activeTab() === 'faulty'"
-          (click)="setTab('faulty')"
-        >
-          Kho lỗi
-        </button>
-        <button
-          type="button"
-          class="inventory-mode-btn"
-          [class.inventory-mode-btn--active]="store.activeTab() === 'logs'"
-          (click)="setTab('logs')"
-        >
-          Nhật ký
-        </button>
-      </div>
-
-
-      <button type="button" class="inventory-command__primary-action" (click)="exportExcel()">
+      <button type="button" class="inventory-primary-action" (click)="exportExcel()">
         <svg lucideDownload [attr.stroke-width]="2.2"></svg>
         <span>Xuất báo cáo</span>
       </button>
     </div>
-  </section>
+  </div>
+
   <!-- Stats Header Section -->
-  <section class="inventory-stats-grid">
+  <div class="inventory-stats">
     @if (store.activeTab() === 'stock') {
       <!-- Stat 1: Total Items -->
-      <article class="metric-card metric-card--total">
-        <div class="metric-card__icon">
-          <svg lucideWarehouse class="stat-icon"></svg>
-        </div>
-        <div class="metric-card__content">
-          <p class="metric-card__label">Tổng mặt hàng</p>
-          <strong class="metric-card__value">{{ store.stats().totalItems }}</strong>
-          <div class="metric-progress-wrapper">
-            <div class="metric-progress-bar">
-              <div class="metric-progress-fill metric-progress-fill--total" style="width: 100%"></div>
-            </div>
-            <span class="metric-progress-text">Biến thể trong hệ thống</span>
-          </div>
-        </div>
+      <article class="inventory-stat-card">
+        <span>Tổng mặt hàng</span>
+        <strong>{{ store.stats().totalItems }}</strong>
+        <small>Biến thể trong hệ thống</small>
       </article>
 
       <!-- Stat 2: Out of stock -->
-      <article class="metric-card metric-card--locked">
-        <div class="metric-card__icon">
-          <svg lucidePackage class="stat-icon"></svg>
-        </div>
-        <div class="metric-card__content">
-          <p class="metric-card__label">Hết hàng</p>
-          <strong class="metric-card__value" [class.text-rose-600]="store.stats().outOfStockCount > 0">
-            {{ store.stats().outOfStockCount }}
-          </strong>
-          <div class="metric-progress-wrapper">
-            <div class="metric-progress-bar">
-              <div class="metric-progress-fill metric-progress-fill--danger" [style.width.%]="getOutOfStockPercentage()"></div>
-            </div>
-            <span class="metric-progress-text">{{ getOutOfStockPercentage() }}% cần nhập hàng gấp</span>
-          </div>
-        </div>
+      <article class="inventory-stat-card">
+        <span>Hết hàng</span>
+        <strong [class.text-rose-600]="store.stats().outOfStockCount > 0">
+          {{ store.stats().outOfStockCount }}
+        </strong>
+        <small>{{ getOutOfStockPercentage() }}% cần nhập hàng gấp</small>
       </article>
 
       <!-- Stat 3: Low stock -->
-      <article class="metric-card metric-card--warning">
-        <div class="metric-card__icon">
-          <svg lucideTriangleAlert class="stat-icon"></svg>
-        </div>
-        <div class="metric-card__content">
-          <p class="metric-card__label">Sắp hết hàng</p>
-          <strong class="metric-card__value" [class.text-amber-500]="store.stats().lowStockCount > 0">
-            {{ store.stats().lowStockCount }}
-          </strong>
-          <div class="metric-progress-wrapper">
-            <div class="metric-progress-bar">
-              <div class="metric-progress-fill metric-progress-fill--warning" [style.width.%]="getLowStockPercentage()"></div>
-            </div>
-            <span class="metric-progress-text">{{ getLowStockPercentage() }}% dưới 10 sản phẩm</span>
-          </div>
-        </div>
+      <article class="inventory-stat-card">
+        <span>Sắp hết hàng</span>
+        <strong [class.text-amber-500]="store.stats().lowStockCount > 0">
+          {{ store.stats().lowStockCount }}
+        </strong>
+        <small>{{ getLowStockPercentage() }}% dưới 10 sản phẩm</small>
       </article>
     } @else if (store.activeTab() === 'faulty') {
       <!-- Faulty Stats 1: Faulty Variants -->
-      <article class="metric-card metric-card--locked bg-rose-50/20 border-rose-100/50">
-        <div class="metric-card__icon bg-rose-100/50 text-rose-600">
-          <svg lucideTriangleAlert class="stat-icon"></svg>
-        </div>
-        <div class="metric-card__content">
-          <p class="metric-card__label text-rose-800/60">Biến thể bị lỗi</p>
-          <strong class="metric-card__value text-rose-600">{{ store.stats().totalFaultyVariants }}</strong>
-          <div class="metric-progress-wrapper">
-            <div class="metric-progress-bar">
-              <div class="metric-progress-fill metric-progress-fill--danger" [style.width.%]="getFaultyVariantsPercentage()"></div>
-            </div>
-            <span class="metric-progress-text">{{ getFaultyVariantsPercentage() }}% biến thể có hàng hỏng</span>
-          </div>
-        </div>
+      <article class="inventory-stat-card">
+        <span>Biến thể bị lỗi</span>
+        <strong class="text-rose-600">{{ store.stats().totalFaultyVariants }}</strong>
+        <small>{{ getFaultyVariantsPercentage() }}% biến thể có hàng hỏng</small>
       </article>
 
       <!-- Faulty Stats 2: Total Faulty Quantity -->
-      <article class="metric-card metric-card--warning bg-amber-50/20 border-amber-100/50">
-        <div class="metric-card__icon bg-amber-100/50 text-amber-600">
-          <svg lucidePackage class="stat-icon"></svg>
-        </div>
-        <div class="metric-card__content">
-          <p class="metric-card__label text-amber-800/60">Tổng số lượng lỗi</p>
-          <strong class="metric-card__value text-amber-600">{{ store.stats().totalFaultyQuantity }}</strong>
-          <div class="metric-progress-wrapper">
-            <div class="metric-progress-bar">
-              <div class="metric-progress-fill metric-progress-fill--warning" style="width: 100%"></div>
-            </div>
-            <span class="metric-progress-text">Sản phẩm lỗi đang lưu kho</span>
-          </div>
-        </div>
+      <article class="inventory-stat-card">
+        <span>Tổng số lượng lỗi</span>
+        <strong class="text-amber-600">{{ store.stats().totalFaultyQuantity }}</strong>
+        <small>Sản phẩm lỗi đang lưu kho</small>
       </article>
 
       <!-- Faulty Stats 3: High Faulty Alert Count -->
-      <article class="metric-card metric-card--locked bg-red-50/30 border-red-200/50">
-        <div class="metric-card__icon bg-red-100 text-red-600">
-          <svg lucideTriangleAlert class="stat-icon"></svg>
-        </div>
-        <div class="metric-card__content">
-          <p class="metric-card__label text-red-800/70">Mặt hàng lỗi nhiều (>= 10)</p>
-          <strong class="metric-card__value text-red-600">{{ store.stats().highFaultyAlertCount }}</strong>
-          <div class="metric-progress-wrapper">
-            <div class="metric-progress-bar">
-              <div class="metric-progress-fill metric-progress-fill--danger" [style.width.%]="getHighFaultyAlertPercentage()"></div>
-            </div>
-            <span class="metric-progress-text">Cần tiêu hủy hoặc thanh lý gấp</span>
-          </div>
-        </div>
+      <article class="inventory-stat-card">
+        <span>Mặt hàng lỗi nhiều (>= 10)</span>
+        <strong class="text-rose-600">{{ store.stats().highFaultyAlertCount }}</strong>
+        <small>Cần tiêu hủy hoặc thanh lý</small>
       </article>
     } @else {
       <!-- Transaction Stats 1: Total Imports -->
-      <article class="metric-card metric-card--total bg-emerald-50/20 border-emerald-100/50">
-        <div class="metric-card__icon bg-emerald-100/50 text-emerald-600">
-          <svg lucideTrendingUp class="stat-icon"></svg>
-        </div>
-        <div class="metric-card__content">
-          <p class="metric-card__label text-emerald-800/60">Tổng lượng nhập</p>
-          <strong class="metric-card__value text-emerald-600">+{{ store.logsStats().totalImports }}</strong>
-          <div class="metric-progress-wrapper">
-            <div class="metric-progress-bar">
-              <div class="metric-progress-fill metric-progress-fill--success" [style.width.%]="getImportPercentage()"></div>
-            </div>
-            <span class="metric-progress-text">{{ getImportPercentage() }}% tổng lượng hàng luân chuyển</span>
-          </div>
-        </div>
+      <article class="inventory-stat-card">
+        <span>Tổng lượng nhập</span>
+        <strong class="text-emerald-600">+{{ store.logsStats().totalImports }}</strong>
+        <small>{{ getImportPercentage() }}% tổng hàng luân chuyển</small>
       </article>
 
       <!-- Transaction Stats 2: Total Exports -->
-      <article class="metric-card metric-card--locked bg-rose-50/20 border-rose-100/50">
-        <div class="metric-card__icon bg-rose-100/50 text-rose-600">
-          <svg lucideTrendingDown class="stat-icon"></svg>
-        </div>
-        <div class="metric-card__content">
-          <p class="metric-card__label text-rose-800/60">Tổng lượng xuất</p>
-          <strong class="metric-card__value text-rose-600">-{{ store.logsStats().totalExports }}</strong>
-          <div class="metric-progress-wrapper">
-            <div class="metric-progress-bar">
-              <div class="metric-progress-fill metric-progress-fill--danger" [style.width.%]="getExportPercentage()"></div>
-            </div>
-            <span class="metric-progress-text">{{ getExportPercentage() }}% tổng lượng hàng luân chuyển</span>
-          </div>
-        </div>
+      <article class="inventory-stat-card">
+        <span>Tổng lượng xuất</span>
+        <strong class="text-rose-600">-{{ store.logsStats().totalExports }}</strong>
+        <small>{{ getExportPercentage() }}% tổng hàng luân chuyển</small>
       </article>
 
       <!-- Transaction Stats 3: Total Count -->
-      <article class="metric-card metric-card--warning bg-amber-50/20 border-amber-100/50">
-        <div class="metric-card__icon bg-amber-100/50 text-amber-600">
-          <svg lucideHistory class="stat-icon"></svg>
-        </div>
-        <div class="metric-card__content">
-          <p class="metric-card__label text-amber-800/60">Tổng giao dịch</p>
-          <strong class="metric-card__value text-amber-600">{{ store.logsStats().totalCount }}</strong>
-          <div class="metric-progress-wrapper">
-            <div class="metric-progress-bar">
-              <div class="metric-progress-fill metric-progress-fill--warning" style="width: 100%"></div>
-            </div>
-            <span class="metric-progress-text">Bản ghi nhật ký phát sinh trong kỳ</span>
-          </div>
-        </div>
+      <article class="inventory-stat-card">
+        <span>Tổng giao dịch</span>
+        <strong class="text-amber-600">{{ store.logsStats().totalCount }}</strong>
+        <small>Bản ghi nhật ký phát sinh</small>
       </article>
     }
 
-    <!-- Stat 4: AI Status Cyber Card (Clickable & Premium design) -->
+    <!-- Stat 4: AI Status Card -->
     <article
-      class="metric-card metric-card--ai"
+      class="inventory-stat-card inventory-stat-card--ai"
       role="button"
       tabindex="0"
       aria-label="Mở báo cáo phân tích AI tồn kho"
@@ -212,28 +95,17 @@
       (keydown.enter)="openAiRecommend()"
       (keydown.space)="openAiRecommend()"
     >
-      <div class="metric-card__icon">
-        <svg lucideSparkles class="stat-icon"></svg>
+      <div class="ai-status-header">
+        <span>Giám sát AI</span>
+        <span class="ai-live-indicator">
+          <span class="indicator-dot"></span>
+          <span class="indicator-text">Sẵn sàng</span>
+        </span>
       </div>
-      <div class="metric-card__content">
-        <div class="ai-status-header">
-          <p class="metric-card__label">Giám sát AI</p>
-          <span class="ai-live-indicator">
-            <span class="indicator-dot"></span>
-            <span class="indicator-text">Sẵn sàng</span>
-          </span>
-        </div>
-        <strong class="metric-card__value">TỰ ĐỘNG</strong>
-        <div class="metric-progress-wrapper">
-          <span class="metric-progress-text">Xem đề xuất nhập hàng thông minh</span>
-          <div class="ai-action-link">
-            <span>Mở phân tích AI</span>
-            <svg lucideChevronRight class="hint-arrow"></svg>
-          </div>
-        </div>
-      </div>
+      <strong>TỰ ĐỘNG</strong>
+      <small>Xem đề xuất nhập hàng thông minh</small>
     </article>
-  </section>
+  </div>
 
   <div class="inventory-tabs-bar">
     <button
@@ -242,8 +114,7 @@
       [class.inventory-tab-link--active]="store.activeTab() === 'stock'"
       (click)="setTab('stock')"
     >
-      <svg lucideWarehouse></svg>
-      <span>Kho hàng & tồn kho</span>
+      Tồn kho
     </button>
     <button
       type="button"
@@ -251,8 +122,7 @@
       [class.inventory-tab-link--active]="store.activeTab() === 'faulty'"
       (click)="setTab('faulty')"
     >
-      <svg lucideTriangleAlert></svg>
-      <span>Kho hàng lỗi/hỏng</span>
+      Kho lỗi
     </button>
     <button
       type="button"
@@ -260,8 +130,7 @@
       [class.inventory-tab-link--active]="store.activeTab() === 'logs'"
       (click)="setTab('logs')"
     >
-      <svg lucideHistory></svg>
-      <span>Nhật ký nhập/xuất</span>
+      Nhật ký
     </button>
   </div>
 
@@ -269,64 +138,23 @@
     <div class="inventory-main-data-col">
   <!-- Filters & Actions Toolbar -->
   <div class="toolbar-container">
-    <!-- Top Row: Search & Actions -->
-    <div class="toolbar-row toolbar-row--top">
-      <div class="search-box">
-        <svg lucideSearch class="search-icon"></svg>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Tìm kiếm sản phẩm, biến thể..."
-          [ngModel]="searchVal()"
-          (ngModelChange)="handleSearch($event)"
-        />
-        @if (searchVal()) {
-          <button type="button" class="search-clear-btn" (click)="clearSearch()">
-            <svg lucideX class="clear-icon"></svg>
-          </button>
-        }
-      </div>
-
-      <div class="toolbar-actions">
-        @if (store.activeTab() === 'stock' || store.activeTab() === 'faulty') {
-          <div class="inventory-view-toggles">
-            <button
-              type="button"
-              class="view-toggle-btn"
-              [class.view-toggle-btn--active]="viewMode() === 'card'"
-              (click)="toggleViewMode('card')"
-              title="Xem dạng thẻ"
-            >
-              <svg lucideLayoutGrid></svg>
-            </button>
-            <button
-              type="button"
-              class="view-toggle-btn"
-              [class.view-toggle-btn--active]="viewMode() === 'table'"
-              (click)="toggleViewMode('table')"
-              title="Xem dạng bảng"
-            >
-              <svg lucideLayoutList></svg>
-            </button>
-          </div>
-        }
-        <button
-          type="button"
-          class="btn-action-export btn-action-export--pdf"
-          (click)="exportPdf()"
-          [title]="(store.activeTab() === 'stock' || store.activeTab() === 'faulty') ? 'In PDF tồn kho' : 'In báo cáo PDF'"
-        >
-          <svg lucidePrinter class="action-icon"></svg>
-          <span>In PDF</span>
+    <div class="search-box">
+      <svg lucideSearch class="search-icon"></svg>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Tìm kiếm sản phẩm, biến thể..."
+        [ngModel]="searchVal()"
+        (ngModelChange)="handleSearch($event)"
+      />
+      @if (searchVal()) {
+        <button type="button" class="search-clear-btn" (click)="clearSearch()">
+          <svg lucideX class="clear-icon"></svg>
         </button>
-      </div>
+      }
     </div>
 
-    <!-- Subtle divider line between Search/Actions and Filters -->
-    <div class="toolbar-divider"></div>
-
-    <!-- Bottom Row: Filter Dropdowns -->
-    <div class="toolbar-row toolbar-row--filters">
+    <div class="filters-group">
       @if (store.activeTab() === 'stock' || store.activeTab() === 'faulty') {
         <p-select
           inputId="inventory-status-filter"
@@ -418,7 +246,7 @@
           inputId="inventory-staff-filter"
           styleClass="inventory-dropdown inventory-dropdown--staff"
           appendTo="body"
-          panelStyleClass="inventory-filter-panel inventory-filter-panel--staff"
+          panelStyleClass="inventory-filter-panel"
           [options]="staffOptions"
           [ngModel]="store.logsQuery().employeeId || ''"
           optionLabel="label"
@@ -455,6 +283,40 @@
           </ng-template>
         </p-select>
       }
+    </div>
+
+    <div class="toolbar-actions">
+      @if (store.activeTab() === 'stock' || store.activeTab() === 'faulty') {
+        <div class="inventory-view-toggles">
+          <button
+            type="button"
+            class="view-toggle-btn"
+            [class.view-toggle-btn--active]="viewMode() === 'card'"
+            (click)="toggleViewMode('card')"
+            title="Xem dạng thẻ"
+          >
+            <svg lucideLayoutGrid></svg>
+          </button>
+          <button
+            type="button"
+            class="view-toggle-btn"
+            [class.view-toggle-btn--active]="viewMode() === 'table'"
+            (click)="toggleViewMode('table')"
+            title="Xem dạng bảng"
+          >
+            <svg lucideLayoutList></svg>
+          </button>
+        </div>
+      }
+      <button
+        type="button"
+        class="inventory-secondary-action"
+        (click)="exportPdf()"
+        [title]="(store.activeTab() === 'stock' || store.activeTab() === 'faulty') ? 'In PDF tồn kho' : 'In báo cáo PDF'"
+      >
+        <svg lucidePrinter class="action-icon"></svg>
+        <span>In PDF</span>
+      </button>
     </div>
   </div>
 
@@ -521,7 +383,7 @@
                 <div class="flex justify-end w-full">
                   <button
                     type="button"
-                    class="btn-action-quick"
+                    class="inventory-secondary-action"
                     appHasPermission="INVENTORY_UPDATE"
                     (click)="openAdjust(item)"
                   >
@@ -621,7 +483,7 @@
                 <div class="card-footer">
                   <button
                     type="button"
-                    class="btn-action-quick"
+                    class="inventory-secondary-action"
                     appHasPermission="INVENTORY_UPDATE"
                     (click)="openAdjust(item)"
                   >
@@ -724,7 +586,7 @@
                 <div class="flex justify-end w-full">
                   <button
                     type="button"
-                    class="btn-action-quick"
+                    class="inventory-secondary-action"
                     appHasPermission="INVENTORY_UPDATE"
                     (click)="openAdjust(item)"
                   >
@@ -820,7 +682,7 @@
                 <div class="card-footer">
                   <button
                     type="button"
-                    class="btn-action-quick"
+                    class="inventory-secondary-action"
                     appHasPermission="INVENTORY_UPDATE"
                     (click)="openAdjust(item)"
                   >

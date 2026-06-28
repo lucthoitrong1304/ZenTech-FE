@@ -56,7 +56,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         display: block;
         color: var(--zt-management-text-muted, rgba(79, 70, 50, 0.6));
         font-size: 10px;
-        font-weight: 800;
+        font-weight: 700;
         letter-spacing: 0;
         text-transform: uppercase;
       }
@@ -65,7 +65,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         margin: 8px 0;
         color: var(--zt-management-heading, #111827);
         font-size: 24px;
-        font-weight: 760;
+        font-weight: 700;
         letter-spacing: 0;
         line-height: 1.05;
       }

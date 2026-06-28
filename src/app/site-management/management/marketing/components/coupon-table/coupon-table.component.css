@@ -63,7 +63,7 @@
   margin: 0 0 6px;
   color: #101828;
   font-size: 18px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .table-empty p {
@@ -92,7 +92,7 @@
   background: #f8fafc;
   color: #667085;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1.25;
   text-transform: uppercase;
@@ -136,7 +136,7 @@
   padding: 0 11px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 13px;
-  font-weight: 850;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -149,7 +149,7 @@
   border-radius: 999px;
   padding: 0 10px;
   font-size: 12px;
-  font-weight: 850;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -195,7 +195,7 @@
 .discount-value strong {
   color: #101828;
   font-size: 14px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .discount-value small {
@@ -250,7 +250,7 @@
 .separator {
   color: #98a2b3;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -351,7 +351,7 @@
 
 .pagination-info strong {
   color: #101828;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .pagination-buttons {
@@ -372,7 +372,7 @@
   cursor: pointer;
   padding: 0 14px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
@@ -396,7 +396,7 @@
   color: #101828;
   padding: 0 12px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 @media (max-width: 760px) {

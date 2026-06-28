@@ -36,7 +36,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
       strong {
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 700;
       }
 
       span {
@@ -53,7 +53,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
         color: #ffffff;
         font: inherit;
         font-size: 12px;
-        font-weight: 760;
+        font-weight: 700;
         padding: 0 16px;
       }
 

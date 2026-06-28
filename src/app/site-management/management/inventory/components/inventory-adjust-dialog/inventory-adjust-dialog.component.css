@@ -165,7 +165,7 @@
 }
 
 .btn-save {
-  @apply inline-flex items-center justify-center rounded-full border-none bg-[#FFC700] px-6 py-2.5 text-xs font-black text-[#111827] shadow-sm transition-colors hover:bg-[#FFD633] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5];
+  @apply inline-flex items-center justify-center rounded-full border-none bg-[#FFC700] px-6 py-2.5 text-xs font-bold text-[#111827] shadow-sm transition-colors hover:bg-[#FFD633] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4F46E5];
 }
 
 .btn-save:disabled, .btn-cancel:disabled {

@@ -19,14 +19,14 @@
 :host ::ng-deep .zt-management-hero__eyebrow {
   color: #817969 !important;
   font-size: 12px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
   letter-spacing: 0 !important;
 }
 
 :host ::ng-deep .zt-management-hero h1 {
   color: #111827 !important;
   font-size: clamp(30px, 2.9vw, 42px) !important;
-  font-weight: 820 !important;
+  font-weight: 700 !important;
   letter-spacing: 0 !important;
   line-height: 1.02 !important;
 }
@@ -46,7 +46,7 @@
   color: #111827 !important;
   padding: 0 20px !important;
   font-size: 13px !important;
-  font-weight: 850 !important;
+  font-weight: 700 !important;
   letter-spacing: 0 !important;
   text-transform: none !important;
   box-shadow: none !important;
@@ -72,14 +72,14 @@
 :host ::ng-deep .zt-management-stat__copy > span {
   color: #667085 !important;
   font-size: 12px !important;
-  font-weight: 850 !important;
+  font-weight: 700 !important;
   letter-spacing: 0 !important;
 }
 
 :host ::ng-deep .zt-management-stat strong {
   color: #101828 !important;
   font-size: clamp(22px, 2vw, 28px) !important;
-  font-weight: 850 !important;
+  font-weight: 700 !important;
   letter-spacing: 0 !important;
   line-height: 1.08 !important;
 }

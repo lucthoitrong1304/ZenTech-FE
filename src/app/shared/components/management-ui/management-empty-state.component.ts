@@ -45,7 +45,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       strong {
         color: #111827;
         font-size: 15px;
-        font-weight: 760;
+        font-weight: 700;
       }
 
       p {

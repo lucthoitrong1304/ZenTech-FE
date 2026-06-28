@@ -19,7 +19,7 @@
 .customer-toolbar__summary span {
   color: #667085;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -27,7 +27,7 @@
 .customer-toolbar__summary strong {
   color: #111827;
   font-size: 14px;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .customer-toolbar__search,
