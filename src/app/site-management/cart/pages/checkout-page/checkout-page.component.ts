@@ -156,16 +156,16 @@ export class CheckoutPageComponent {
           this.checkoutCreated.set(true);
           this.cartStore.clearCart();
 
-          // Ghi nhận thanh toán thành công
-          this.businessEventService.record({
-            eventType: BusinessEventType.PAYMENT_SUCCESS,
-            amount: totalAmount,
-          });
-
           if (checkout.paymentUrl) {
             window.location.href = checkout.paymentUrl;
             return;
           }
+
+          // COD finishes on-site; online gateway payments are confirmed by backend callbacks.
+          this.businessEventService.record({
+            eventType: BusinessEventType.PAYMENT_SUCCESS,
+            amount: totalAmount,
+          });
 
           this.toastService.success('Đặt hàng thành công. Đơn đang chờ xác nhận thanh toán COD.');
           this.router.navigate(['/checkout/result'], {
