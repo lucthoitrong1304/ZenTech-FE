@@ -1,6 +1,12 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
-import { addEntity, setAllEntities, updateEntity, withEntities } from '@ngrx/signals/entities';
+import {
+  addEntity,
+  removeAllEntities,
+  setAllEntities,
+  updateEntity,
+  withEntities,
+} from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { catchError, EMPTY, pipe, Subscription, mergeMap, tap, switchMap } from 'rxjs';
 import { INotification } from '../models/notification.model';
@@ -8,6 +14,7 @@ import { NotificationService } from '../services/notification.service';
 import { WebsocketService } from '../services/websocket.service';
 
 interface NotificationState {
+  accountId: string | null;
   unreadCount: number;
   loading: boolean;
   isOpen: boolean;
@@ -21,6 +28,7 @@ const NOTIFICATION_ENTITY_CONFIG = {
 export const NotificationStore = signalStore(
   { providedIn: 'root' },
   withState<NotificationState>({
+    accountId: null,
     unreadCount: 0,
     loading: false,
     isOpen: false,
@@ -51,10 +59,37 @@ export const NotificationStore = signalStore(
   ) => {
     let wsSubscription: Subscription | null = null;
 
+    const stopWebSocket = (): void => {
+      if (wsSubscription) {
+        wsSubscription.unsubscribe();
+        wsSubscription = null;
+      }
+      wsService.disconnect();
+    };
+
+    const startWebSocket = (): void => {
+      wsService.connect();
+      if (wsSubscription) {
+        wsSubscription.unsubscribe();
+      }
+      wsSubscription = wsService.subscribe<INotification>('/user/queue/notifications')
+        .subscribe(notification => {
+          handleNewNotification(notification);
+        });
+    };
+
     const loadNotifications = rxMethod<void>(
       pipe(
-        tap(() => patchState(store, { loading: true })),
+        tap(() => {
+          if (!store.accountId()) {
+            return;
+          }
+          patchState(store, { loading: true });
+        }),
         switchMap(() =>
+          !store.accountId()
+            ? EMPTY
+            :
           notificationService.getNotifications(0, 20).pipe(
             tap({
               next: (page) => {
@@ -75,6 +110,9 @@ export const NotificationStore = signalStore(
     const loadUnreadCount = rxMethod<void>(
       pipe(
         switchMap(() =>
+          !store.accountId()
+            ? EMPTY
+            :
           notificationService.getUnreadCount().pipe(
             tap((res) => patchState(store, { unreadCount: res.count })),
             catchError(() => EMPTY)
@@ -96,6 +134,8 @@ export const NotificationStore = signalStore(
           notificationService.markAsRead(id).pipe(
             catchError((err) => {
               console.error('Failed to mark notification as read:', err);
+              loadNotifications();
+              loadUnreadCount();
               return EMPTY;
             })
           )
@@ -141,30 +181,45 @@ export const NotificationStore = signalStore(
       togglePopover(open: boolean) {
         patchState(store, { isOpen: open });
       },
-      initWebSocket() {
-        wsService.connect();
-        if (wsSubscription) {
-          wsSubscription.unsubscribe();
+      resetForAccount(accountId: string | null) {
+        if (store.accountId() === accountId) {
+          if (accountId && store.notificationEntities().length === 0) {
+            loadNotifications();
+            loadUnreadCount();
+            startWebSocket();
+          }
+          return;
         }
-        wsSubscription = wsService.subscribe<INotification>('/user/queue/notifications')
-          .subscribe(notification => {
-            handleNewNotification(notification);
-          });
+
+        stopWebSocket();
+        patchState(
+          store,
+          removeAllEntities(NOTIFICATION_ENTITY_CONFIG),
+          {
+            accountId,
+            unreadCount: 0,
+            loading: false,
+            isOpen: false,
+          }
+        );
+
+        if (accountId) {
+          loadNotifications();
+          loadUnreadCount();
+          startWebSocket();
+        }
+      },
+      initWebSocket() {
+        if (store.accountId()) {
+          startWebSocket();
+        }
       },
       destroyWebSocket() {
-        if (wsSubscription) {
-          wsSubscription.unsubscribe();
-        }
-        wsService.disconnect();
+        stopWebSocket();
       }
     };
   }),
   withHooks({
-    onInit(store) {
-      store.loadNotifications();
-      store.loadUnreadCount();
-      store.initWebSocket();
-    },
     onDestroy(store) {
       store.destroyWebSocket();
     }

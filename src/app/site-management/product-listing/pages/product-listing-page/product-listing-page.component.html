@@ -46,7 +46,9 @@
         [productCount]="productListingStore.sortedProducts().length"
         [sortOptions]="sortOptions"
         [selectedSort]="productListingStore.sortBy()"
+        [selectedMinRating]="productListingStore.minRating()"
         (sortChange)="onSortChange($event)"
+        (ratingChange)="onRatingChange($event)"
       />
 
       @if (productListingStore.isEmpty()) {
@@ -95,7 +97,39 @@
       </section>
 
       <!-- Custom Toolbar for Search -->
-      <div class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8 flex justify-end">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 pt-6 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-[11px] font-bold uppercase tracking-[0.18em] text-[#81765f]">Đánh giá:</span>
+          <button
+            type="button"
+            (click)="onRatingChange(null)"
+            class="rounded-[10px] border px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] transition"
+            [class.border-[#4b41e1]]="productListingStore.minRating() === null"
+            [class.bg-[#4b41e1]]="productListingStore.minRating() === null"
+            [class.text-white]="productListingStore.minRating() === null"
+            [class.border-[#d2c5ab]/60]="productListingStore.minRating() !== null"
+            [class.bg-white]="productListingStore.minRating() !== null"
+            [class.text-[#4f4632]]="productListingStore.minRating() !== null"
+          >
+            Tất cả
+          </button>
+          @for (rating of [5, 4, 3, 2, 1]; track rating) {
+            <button
+              type="button"
+              (click)="onRatingChange(rating)"
+              class="rounded-[10px] border px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] transition"
+              [class.border-[#4b41e1]]="productListingStore.minRating() === rating"
+              [class.bg-[#4b41e1]]="productListingStore.minRating() === rating"
+              [class.text-white]="productListingStore.minRating() === rating"
+              [class.border-[#d2c5ab]/60]="productListingStore.minRating() !== rating"
+              [class.bg-white]="productListingStore.minRating() !== rating"
+              [class.text-[#4f4632]]="productListingStore.minRating() !== rating"
+            >
+              {{ rating }}+ sao
+            </button>
+          }
+        </div>
+
         <div class="relative inline-block text-left" id="searchSortToolbar">
           <div class="flex items-center gap-3">
             <span class="text-[11px] font-bold uppercase tracking-[0.18em] text-[#81765f]">Sắp xếp theo:</span>

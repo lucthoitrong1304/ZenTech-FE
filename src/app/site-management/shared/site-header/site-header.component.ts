@@ -77,13 +77,14 @@ export class SiteHeaderComponent implements OnDestroy {
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(query => {
-        if (!query.trim()) {
+        const trimmedQuery = query.trim();
+        if (!trimmedQuery) {
           this.instantResults.set([]);
           this.loadingResults.set(false);
           return of(null);
         }
         this.loadingResults.set(true);
-        return this.productCatalogService.getProducts({ search: query, size: 5 }).pipe(
+        return this.productCatalogService.getProducts({ search: trimmedQuery, size: 5 }).pipe(
           catchError(() => {
             this.loadingResults.set(false);
             return of(null);
@@ -184,7 +185,7 @@ export class SiteHeaderComponent implements OnDestroy {
   onSearchInput(event: Event): void {
     const query = (event.target as HTMLInputElement).value;
     this.searchQuery.set(query);
-    this.searchSubject.next(query);
+    this.searchSubject.next(query.trim());
   }
 
   triggerSearch(): void {

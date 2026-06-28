@@ -319,6 +319,8 @@ function createReview(id: string, rating: number): ProductReview {
     title: 'Customer review',
     comment: 'Works well',
     createdAt: '2026-04-26T00:00:00.000Z',
+    isOwner: false,
+    imageKeys: [],
     imageUrls: [],
   };
 }

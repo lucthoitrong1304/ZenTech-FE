@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { ProductReview } from '../../../product-catalog/data-access/models/product-catalog.models';
 
 @Component({
@@ -11,4 +11,5 @@ import { ProductReview } from '../../../product-catalog/data-access/models/produ
 })
 export class ProductReviewListComponent {
   readonly reviews = input<ProductReview[]>([]);
+  readonly editReview = output<ProductReview>();
 }

@@ -265,11 +265,14 @@
               class="rounded-full border-2 border-[#101010] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[#101010] transition hover:bg-[#101010] hover:text-white cursor-pointer"
               (click)="openReviewModal()"
             >
-              Viết đánh giá
+              {{ currentUser()?.isAuthenticated ? 'Viết đánh giá' : 'Đăng nhập để viết đánh giá' }}
             </button>
           </div>
 
-          <app-product-review-list [reviews]="product.reviews" />
+          <app-product-review-list
+            [reviews]="product.reviews"
+            (editReview)="editReview($event)"
+          />
         </div>
       </section>
 
@@ -283,6 +286,7 @@
           [submitting]="productDetailStore.reviewSubmitting()"
           [imageUploading]="productDetailStore.reviewImageUploading()"
           [videoUploading]="productDetailStore.reviewVideoUploading()"
+          [isEditing]="productDetailStore.editingReviewId() !== null"
           (draftChange)="onReviewDraftChange($event)"
           (imageSelect)="onReviewImageSelect($event)"
           (imageRemove)="onReviewImageRemove($event)"

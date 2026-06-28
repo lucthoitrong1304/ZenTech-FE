@@ -9,7 +9,10 @@ import { ToastService } from '../../../../shared/components/toast/toast.service'
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { CartItemDraft } from '../../../cart/data-access/models/cart.model';
 import { CartStore } from '../../../cart/data-access/store/cart.store';
-import { ProductListItem } from '../../../product-catalog/data-access/models/product-catalog.models';
+import {
+  ProductListItem,
+  ProductReview,
+} from '../../../product-catalog/data-access/models/product-catalog.models';
 import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
 import { SiteHeaderComponent } from '../../../shared/site-header/site-header.component';
 import { ProductCardComponent } from '../../../product-listing/components/product-card/product-card.component';
@@ -175,7 +178,16 @@ export class ProductDetailPageComponent {
   }
 
   openReviewModal(): void {
+    if (!this.authSessionStore.isAuthenticated()) {
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+
     this.productDetailStore.openReviewModal();
+  }
+
+  editReview(review: ProductReview): void {
+    this.productDetailStore.openEditReviewModal(review);
   }
 
   closeReviewModal(): void {

@@ -55,9 +55,16 @@ export interface ProductCategoryListingQuery {
   page: number;
   size: number;
   sort: ProductCategoryListingSort;
+  minRating?: number | null;
 }
 
-export type ProductCategoryListingSort = 'NEWEST' | 'PRICE_ASC' | 'PRICE_DESC';
+export type ProductCategoryListingSort =
+  | 'NEWEST'
+  | 'OLDEST'
+  | 'PRICE_ASC'
+  | 'PRICE_DESC'
+  | 'RATING_ASC'
+  | 'RATING_DESC';
 
 export interface ProductSpec {
   label: string;
@@ -71,6 +78,9 @@ export interface ProductReview {
   title: string;
   comment: string;
   createdAt: string;
+  isOwner: boolean;
+  imageKeys: string[];
+  videoKey?: string;
   imageUrls: string[];
   videoUrl?: string;
 }
@@ -81,7 +91,7 @@ export interface ProductReviewPayload {
   title?: string;
   comment: string;
   imageKeys?: string[];
-  videoKey?: string;
+  videoKey?: string | null;
 }
 
 export interface ProductDetail extends ProductListItem {

@@ -37,6 +37,7 @@ export interface StoredAuthSession {
 
 export interface CurrentAuthUser {
   isAuthenticated: boolean;
+  accountId: string;
   fullName?: string;
   avatarUrl?: string | null;
   roles: string[];
@@ -113,6 +114,7 @@ export class AuthStorageService {
 
     return {
       isAuthenticated: true,
+      accountId: session?.accountId || '',
       fullName: session?.fullName || session?.email,
       avatarUrl: session?.avatarUrl || null,
       roles: session?.roles || [],

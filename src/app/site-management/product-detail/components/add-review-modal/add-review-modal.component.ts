@@ -37,6 +37,7 @@ export class AddReviewModalComponent {
   readonly submitting = input(false);
   readonly imageUploading = input(false);
   readonly videoUploading = input(false);
+  readonly isEditing = input(false);
 
   readonly draftChange = output<ProductReviewDraft>();
   readonly imageSelect = output<File[]>();

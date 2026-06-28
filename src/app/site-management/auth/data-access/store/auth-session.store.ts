@@ -23,6 +23,7 @@ import { AuthRefreshService } from '../../../../core/services/auth-refresh.servi
 import { decodeJwt } from '../../../../shared/utils/jwt.util';
 import { of, timer } from 'rxjs';
 import { Router } from '@angular/router';
+import { NotificationStore } from '../../../../core/store/notification.store';
 
 interface ProfileResponseData {
   fullName?: string;
@@ -67,6 +68,7 @@ export const AuthSessionStore = signalStore(
       profileService = inject(ProfileService),
       authRefreshService = inject(AuthRefreshService),
       router = inject(Router),
+      notificationStore = inject(NotificationStore),
     ) => {
       const completeLogout = (
         successMessage: string | null,
@@ -78,6 +80,7 @@ export const AuthSessionStore = signalStore(
           logoutSuccessMessage: successMessage,
           logoutWarningMessage: warningMessage,
         });
+        notificationStore.resetForAccount(null);
         startTokenRefreshTimer('');
       };
 
@@ -203,6 +206,7 @@ export const AuthSessionStore = signalStore(
           logoutSuccessMessage: null,
           logoutWarningMessage: null,
         });
+        notificationStore.resetForAccount(response.accountId);
         loadProfile();
         startTokenRefreshTimer(response.accessToken);
       };
@@ -317,6 +321,9 @@ export const AuthSessionStore = signalStore(
         typeof authStorageService.isAuthenticated === 'function' &&
         authStorageService.isAuthenticated()
       ) {
+        const session = authStorageService.getSession();
+        const notificationStore = inject(NotificationStore);
+        notificationStore.resetForAccount(session?.accountId ?? null);
         store.loadProfile();
 
         const token = authStorageService.getAccessToken();

@@ -25,6 +25,7 @@ interface ProductListingUiState {
   category: ProductCategory | null;
   searchQuery: string | null;
   sortBy: ProductSortOptionValue;
+  minRating: number | null;
   page: number;
   size: number;
   totalItems: number;
@@ -51,6 +52,7 @@ const INITIAL_STATE: ProductListingUiState = {
   category: null,
   searchQuery: null,
   sortBy: 'featured',
+  minRating: null,
   page: 0,
   size: 10,
   totalItems: 0,
@@ -89,6 +91,7 @@ export const ProductListingStore = signalStore(
       category: listing.category,
       searchQuery: store.searchQuery(),
       sortBy: store.sortBy(),
+      minRating: store.minRating(),
       page: listing.page,
       size: listing.size,
       totalItems: listing.totalItems,
@@ -116,6 +119,7 @@ export const ProductListingStore = signalStore(
               categorySlug: event.slug,
               category: cat,
               searchQuery: null,
+              minRating: store.minRating(),
               page: 0,
               totalItems: 0,
               totalPages: 0,
@@ -251,16 +255,20 @@ export const ProductListingStore = signalStore(
       }
     };
 
-    const loadCategory = rxMethod<{ slug: string; sortBy: ProductSortOptionValue }>(
+    const loadCategory = rxMethod<{ slug: string; sortBy: ProductSortOptionValue; minRating?: number | null }>(
       pipe(
-        tap(({ slug }) => handleEvent({ type: ProductListingEventType.CategoryLoadStarted, slug })),
-        switchMap(({ slug, sortBy }) =>
+        tap(({ slug, minRating }) => {
+          handleEvent({ type: ProductListingEventType.CategoryLoadStarted, slug });
+          patchState(store, { minRating: minRating ?? null });
+        }),
+        switchMap(({ slug, sortBy, minRating }) =>
           categoryNavigationStore.resolveCategoryBySlug(slug).pipe(
             switchMap(category =>
               productCatalogService.getCategoryListing(category, {
                 page: 0,
                 size: store.size(),
                 sort: toApiSort(sortBy),
+                minRating: minRating ?? null,
               })
             ),
             tap({
@@ -282,16 +290,18 @@ export const ProductListingStore = signalStore(
       )
     );
 
-    const searchProducts = rxMethod<{ query: string; sortBy: ProductSortOptionValue }>(
+    const searchProducts = rxMethod<{ query: string; sortBy: ProductSortOptionValue; minRating?: number | null }>(
       pipe(
-        tap(({ query }) => {
+        tap(({ query, minRating }) => {
+          const trimmedQuery = query.trim();
           patchState(
             store,
             removeAllEntities(PRODUCT_ENTITY_CONFIG),
             {
               categorySlug: null,
               category: null,
-              searchQuery: query,
+              searchQuery: trimmedQuery,
+              minRating: minRating ?? null,
               page: 0,
               totalItems: 0,
               totalPages: 0,
@@ -305,12 +315,13 @@ export const ProductListingStore = signalStore(
             }
           );
         }),
-        switchMap(({ query, sortBy }) =>
+        switchMap(({ query, sortBy, minRating }) =>
           productCatalogService.getProducts({
-            search: query,
+            search: query.trim(),
             page: 0,
             size: store.size(),
             sort: toApiSort(sortBy),
+            minRating: minRating ?? null,
           }).pipe(
             tap({
               next: response => {
@@ -369,7 +380,7 @@ export const ProductListingStore = signalStore(
           const slug = store.categorySlug();
           const query = store.searchQuery();
 
-          if (query) {
+          if (query !== null) {
             handleEvent({ type: ProductListingEventType.MoreProductsLoadStarted });
             return productCatalogService
               .getProducts({
@@ -377,6 +388,7 @@ export const ProductListingStore = signalStore(
                 page: store.page() + 1,
                 size: store.size(),
                 sort: toApiSort(store.sortBy()),
+                minRating: store.minRating(),
               })
               .pipe(
                 tap({
@@ -414,6 +426,7 @@ export const ProductListingStore = signalStore(
               page: store.page() + 1,
               size: store.size(),
               sort: toApiSort(store.sortBy()),
+              minRating: store.minRating(),
             })
             .pipe(
               tap({
@@ -439,13 +452,14 @@ export const ProductListingStore = signalStore(
 
           handleEvent({ type: ProductListingEventType.SortRefreshStarted, sortBy });
 
-          if (query) {
+          if (query !== null) {
             return productCatalogService
               .getProducts({
                 search: query,
                 page: 0,
                 size: store.size(),
                 sort: toApiSort(sortBy),
+                minRating: store.minRating(),
               })
               .pipe(
                 tap({
@@ -479,6 +493,7 @@ export const ProductListingStore = signalStore(
               page: 0,
               size: store.size(),
               sort: toApiSort(sortBy),
+              minRating: store.minRating(),
             })
             .pipe(
               tap({
@@ -498,6 +513,10 @@ export const ProductListingStore = signalStore(
       searchProducts,
       loadMore,
       changeSort,
+      changeMinRating(minRating: number | null): void {
+        patchState(store, { minRating });
+        changeSort(store.sortBy());
+      },
       addProductToCart: rxMethod<ProductListItem>(
         pipe(
           tap(product =>
@@ -549,10 +568,16 @@ export const ProductListingStore = signalStore(
 
 function toApiSort(sortBy: ProductSortOptionValue): ProductCategoryListingSort {
   switch (sortBy) {
+    case 'oldest':
+      return 'OLDEST';
     case 'price-asc':
       return 'PRICE_ASC';
     case 'price-desc':
       return 'PRICE_DESC';
+    case 'rating-asc':
+      return 'RATING_ASC';
+    case 'rating-desc':
+      return 'RATING_DESC';
     case 'featured':
     default:
       return 'NEWEST';

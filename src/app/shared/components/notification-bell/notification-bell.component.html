@@ -86,13 +86,13 @@
         <div class="flex-1 min-w-0">
           <div class="flex items-start justify-between gap-2">
             <p class="text-xs font-black uppercase tracking-wide text-white/90 leading-snug break-words m-0" [ngClass]="{'text-white font-black': !notification.isRead}">
-              {{ notification.title }}
+              {{ formatNotificationTitle(notification.title) }}
             </p>
             <!-- Unread Dot Indicator -->
             <span *ngIf="!notification.isRead" class="w-1.5 h-1.5 bg-[#4b41e1] rounded-full mt-1.5 flex-shrink-0"></span>
           </div>
           <p class="text-xs text-white/60 line-clamp-2 mt-1 leading-relaxed m-0 font-medium">
-            {{ notification.content }}
+            {{ formatNotificationContent(notification.content) }}
           </p>
           <p class="text-[9px] font-black uppercase tracking-wider text-white/40 mt-1.5 m-0">
             {{ notification.createdAt | date:'HH:mm dd/MM/yyyy' }}

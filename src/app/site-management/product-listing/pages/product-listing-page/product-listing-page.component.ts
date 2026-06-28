@@ -76,11 +76,13 @@ export class ProductListingPageComponent {
           this.productListingStore.loadCategory({
             slug,
             sortBy: this.productListingStore.sortBy(),
+            minRating: this.productListingStore.minRating(),
           });
         } else {
           this.productListingStore.searchProducts({
             query,
             sortBy: this.productListingStore.sortBy(),
+            minRating: this.productListingStore.minRating(),
           });
         }
       });
@@ -126,6 +128,10 @@ export class ProductListingPageComponent {
 
   onSortChange(sortBy: ProductSortOptionValue): void {
     this.productListingStore.changeSort(sortBy);
+  }
+
+  onRatingChange(minRating: number | null): void {
+    this.productListingStore.changeMinRating(minRating);
   }
 
   onLoadMore(): void {
