@@ -68,36 +68,62 @@ export class AccountOverviewPageComponent {
     }
   });
 
-  protected orderStatusLabel(status: string): string {
+  protected orderStatusLabel(status: string, paymentStatus?: string): string {
     const normalized = status.toUpperCase();
+    const normalizedPaymentStatus = paymentStatus?.toUpperCase();
     switch (normalized) {
       case 'CREATED':
-        return 'Mới tạo';
+        return normalizedPaymentStatus === 'SUCCESS' || normalizedPaymentStatus === 'PAID'
+          ? 'Chờ xác nhận'
+          : 'Chờ thanh toán';
       case 'PENDING':
         return 'Chờ thanh toán';
+      case 'CONFIRMED':
       case 'PROCESSING':
         return 'Đang xử lý';
       case 'SHIPPED':
         return 'Đang giao hàng';
       case 'DELIVERED':
         return 'Đã giao hàng';
+      case 'COMPLETED':
+        return 'Đã hoàn thành';
       case 'CANCELLED':
         return 'Đã hủy';
+      case 'RETURN_REQUESTED':
+        return 'Yêu cầu trả hàng';
+      case 'RETURNED':
+        return 'Đã trả hàng';
       default:
         return status;
     }
   }
 
-  protected statusClass(status: string): string {
+  protected statusClass(status: string, paymentStatus?: string): string {
     const normalizedStatus = status.toLowerCase();
+    const normalizedPaymentStatus = paymentStatus?.toUpperCase();
+
+    if (
+      normalizedStatus === 'created' &&
+      (normalizedPaymentStatus === 'SUCCESS' || normalizedPaymentStatus === 'PAID')
+    ) {
+      return 'bg-[#e2dfff] text-[#3323cc]';
+    }
+
     switch (normalizedStatus) {
       case 'pending':
+      case 'created':
       case 'processing':
+      case 'confirmed':
         return 'bg-[#ffdf94] text-[#6e5400]';
       case 'cancelled':
         return 'bg-[#ffdad6] text-[#93000a]';
       case 'delivered':
+      case 'completed':
         return 'bg-[#d8f5dd] text-[#166534]';
+      case 'return_requested':
+        return 'bg-[#fef3c7] text-[#92400e]';
+      case 'returned':
+        return 'bg-[#fee2e2] text-[#991b1b]';
       case 'shipped':
       default:
         return 'bg-[#e2dfff] text-[#3323cc]';

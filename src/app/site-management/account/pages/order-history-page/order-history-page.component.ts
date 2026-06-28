@@ -215,8 +215,17 @@ export class OrderHistoryPageComponent {
       });
   }
 
-  protected statusClass(status: string): string {
+  protected statusClass(status: string, paymentStatus?: string): string {
     const normalizedStatus = status.toLowerCase();
+    const normalizedPaymentStatus = paymentStatus?.toUpperCase();
+
+    if (
+      normalizedStatus === 'created' &&
+      (normalizedPaymentStatus === 'SUCCESS' || normalizedPaymentStatus === 'PAID')
+    ) {
+      return 'bg-[#e2dfff] text-[#3323cc]';
+    }
+
     switch (normalizedStatus) {
       case 'pending':
       case 'created':
@@ -239,10 +248,14 @@ export class OrderHistoryPageComponent {
     }
   }
 
-  protected orderStatusLabel(status: string): string {
+  protected orderStatusLabel(status: string, paymentStatus?: string): string {
     const normalized = status.toUpperCase();
+    const normalizedPaymentStatus = paymentStatus?.toUpperCase();
     switch (normalized) {
       case 'CREATED':
+        if (normalizedPaymentStatus === 'SUCCESS' || normalizedPaymentStatus === 'PAID') {
+          return 'Chờ xác nhận';
+        }
         return 'Chờ thanh toán';
       case 'PENDING':
         return 'Chờ thanh toán';

@@ -128,8 +128,8 @@
                 </div>
               </div>
               <div class="flex items-center justify-between gap-4 md:justify-end">
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider" [ngClass]="statusClass(order.orderStatus)">
-                  {{ orderStatusLabel(order.orderStatus) }}
+                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider" [ngClass]="statusClass(order.orderStatus, order.paymentStatus)">
+                  {{ orderStatusLabel(order.orderStatus, order.paymentStatus) }}
                 </span>
                 <span class="text-lg font-bold text-[#1c1b1b] leading-none">{{ order.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
               </div>
