@@ -26,6 +26,8 @@ import {
   AiProductVectorStatus,
 } from '../../data-access/models/ai-management.models';
 import { AiManagementService } from '../../data-access/services/ai-management.service';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 type AiManagementTab = 'datasets' | 'products' | 'demo';
 type DemoMessageRole = 'customer' | 'assistant';
@@ -65,6 +67,10 @@ interface DemoMessage {
 export class AiManagementPageComponent {
   private readonly aiManagementService = inject(AiManagementService);
   private readonly toastService = inject(ToastService);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canCreateAi = computed(() => this.permissionService.has(PermissionCode.AI_CREATE));
+  protected readonly canUpdateAi = computed(() => this.permissionService.has(PermissionCode.AI_UPDATE));
+  protected readonly canDeleteAi = computed(() => this.permissionService.has(PermissionCode.AI_DELETE));
 
   protected readonly activeTab = signal<AiManagementTab>('datasets');
   protected readonly tabs: { id: AiManagementTab; label: string; icon: string }[] = [
@@ -183,6 +189,11 @@ export class AiManagementPageComponent {
   }
 
   protected saveDataset(): void {
+    if (this.editingDatasetId() ? !this.canUpdateAi() : !this.canCreateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     const payload = this.datasetDraft();
     if (!payload.name.trim()) {
       this.toastService.error('Vui lòng nhập tên dataset.');
@@ -208,6 +219,11 @@ export class AiManagementPageComponent {
   }
 
   protected archiveDataset(dataset: AiDataset): void {
+    if (!this.canDeleteAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     if (!confirm(`Archive dataset "${dataset.name}"?`)) {
       return;
     }
@@ -222,6 +238,11 @@ export class AiManagementPageComponent {
   }
 
   protected uploadDocument(datasetId: string, event: Event): void {
+    if (!this.canCreateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) {
@@ -245,6 +266,11 @@ export class AiManagementPageComponent {
   }
 
   protected reingestDocument(document: AiDocument): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.aiManagementService.reingestDocument(document.id).subscribe({
       next: updatedDocument => {
         this.upsertDocument(document.datasetId, updatedDocument);
@@ -255,6 +281,11 @@ export class AiManagementPageComponent {
   }
 
   protected deleteDocument(document: AiDocument): void {
+    if (!this.canDeleteAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     if (!confirm(`Xóa tài liệu "${document.fileName}"?`)) {
       return;
     }
@@ -279,6 +310,11 @@ export class AiManagementPageComponent {
   }
 
   protected syncVariant(item: AiProductVectorStatus): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.syncingVariantId.set(item.variantId);
     this.aiManagementService
       .syncProductVariant(item.variantId)
@@ -296,6 +332,11 @@ export class AiManagementPageComponent {
   }
 
   protected verifyVariant(item: AiProductVectorStatus): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.verifyingVariantId.set(item.variantId);
     this.aiManagementService
       .verifyProductVariant(item.variantId)
@@ -307,6 +348,11 @@ export class AiManagementPageComponent {
   }
 
   protected verifyAllProducts(): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.verifyingAllProducts.set(true);
     this.aiManagementService
       .verifyAllProducts()
@@ -321,6 +367,11 @@ export class AiManagementPageComponent {
   }
 
   protected reindexProducts(): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.reindexingProducts.set(true);
     this.aiManagementService
       .reindexProducts()
@@ -335,6 +386,11 @@ export class AiManagementPageComponent {
   }
 
   protected runDemo(): void {
+    if (!this.canUpdateAi()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     const message = this.demoMessage().trim();
     if (!message) {
       this.toastService.error('Nhập câu hỏi demo trước khi gửi.');

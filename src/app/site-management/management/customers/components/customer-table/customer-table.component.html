@@ -91,6 +91,7 @@
                       customer.active ? 'Khóa tài khoản khách hàng' : 'Mở khóa tài khoản khách hàng'
                     "
                     [title]="customer.active ? 'Khóa tài khoản' : 'Mở khóa tài khoản'"
+                    [disabled]="!canUpdateStatus()"
                     (click)="
                       statusChange.emit({ customerId: customer.customerId, active: !customer.active })
                     "

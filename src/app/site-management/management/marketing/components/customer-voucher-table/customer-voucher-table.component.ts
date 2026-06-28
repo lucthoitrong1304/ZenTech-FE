@@ -21,6 +21,7 @@ export class CustomerVoucherTableComponent {
   pageEnd = input<number>(0);
   canGoPrevious = input<boolean>(false);
   canGoNext = input<boolean>(false);
+  canRevoke = input<boolean>(false);
 
   pageChange = output<number>();
   revoke = output<string>();
@@ -29,6 +30,9 @@ export class CustomerVoucherTableComponent {
   protected readonly CustomerVoucherStatus = CustomerVoucherStatus;
 
   protected onRevoke(id: string): void {
+    if (!this.canRevoke()) {
+      return;
+    }
     this.revoke.emit(id);
   }
 }

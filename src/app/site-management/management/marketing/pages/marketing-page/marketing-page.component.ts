@@ -1,5 +1,5 @@
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, effect, inject, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   LucideUserCheck,
@@ -22,6 +22,8 @@ import { CustomerVoucherTableComponent } from '../../components/customer-voucher
 import { IssueVoucherDialogComponent } from '../../components/issue-voucher-dialog/issue-voucher-dialog.component';
 import { CustomerVoucherStatus, ManagementCoupon } from '../../data-access/models/marketing.models';
 import { MarketingStore } from '../../data-access/store/marketing.store';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 @Component({
   selector: 'app-marketing-page',
@@ -54,6 +56,12 @@ export class MarketingPageComponent {
   protected readonly store = inject(MarketingStore);
   private readonly confirmService = inject(ConfirmService);
   private readonly toastService = inject(ToastService);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canCreateMarketing = computed(() => this.permissionService.has(PermissionCode.MARKETING_CREATE));
+  protected readonly canUpdateMarketing = computed(() => this.permissionService.has(PermissionCode.MARKETING_UPDATE));
+  protected readonly canDeleteMarketing = computed(() => this.permissionService.has(PermissionCode.MARKETING_DELETE));
+  protected readonly canViewCustomers = computed(() => this.permissionService.has(PermissionCode.CUSTOMER_VIEW));
+  protected readonly canIssueVoucher = computed(() => this.canCreateMarketing() && this.canViewCustomers());
   protected readonly voucherStatusOptions = [
     { label: 'Tất cả trạng thái', value: 'all' },
     { label: 'Sẵn có (chưa sử dụng)', value: CustomerVoucherStatus.AVAILABLE },
@@ -86,14 +94,26 @@ export class MarketingPageComponent {
   }
 
   protected onCreateCoupon(): void {
+    if (!this.canCreateMarketing()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
     this.store.openCreateDialog();
   }
 
   protected onEditCoupon(coupon: ManagementCoupon): void {
+    if (!this.canUpdateMarketing()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
     this.store.openEditDialog(coupon.id);
   }
 
   protected onDeleteCoupon(coupon: ManagementCoupon): void {
+    if (!this.canDeleteMarketing()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
     this.confirmService
       .open({
         title: 'Xóa mã ưu đãi',
@@ -109,14 +129,26 @@ export class MarketingPageComponent {
   }
 
   protected onToggleActive(coupon: ManagementCoupon): void {
+    if (!this.canUpdateMarketing()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
     this.store.toggleActive(coupon.id);
   }
 
   protected onIssueCoupon(coupon: ManagementCoupon): void {
+    if (!this.canIssueVoucher()) {
+      this.toastService.error(this.canCreateMarketing() ? 'Không có quyền xem khách hàng để phát voucher.' : 'Không có quyền thực hiện thao tác này.');
+      return;
+    }
     this.store.openIssueDialog(coupon.id);
   }
 
   protected onRevokeVoucher(voucherId: string): void {
+    if (!this.canDeleteMarketing()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
     this.confirmService
       .open({
         title: 'Thu hồi voucher',

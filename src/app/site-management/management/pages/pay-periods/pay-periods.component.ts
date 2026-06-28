@@ -1,10 +1,12 @@
-import { Component, ChangeDetectionStrategy, OnInit, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/api/api.service';
 import { environment } from '../../../../../environments/environment';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucideLock, LucideUnlock, LucidePlus, LucideLoader2 } from '@lucide/angular';
+import { PermissionService } from '../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../core/permissions/permission.models';
 
 interface PayPeriod {
   id: string;
@@ -27,6 +29,8 @@ interface PayPeriod {
 export class PayPeriodsComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly toastService = inject(ToastService);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canUpdatePayPeriod = computed(() => this.permissionService.has(PermissionCode.PAY_PERIOD_UPDATE));
   private readonly baseUrl = `${environment.apiBaseUrl}/management/pay-periods`;
 
   periods = signal<PayPeriod[]>([]);
@@ -55,6 +59,11 @@ export class PayPeriodsComponent implements OnInit {
   }
 
   openCreateModal() {
+    if (!this.canUpdatePayPeriod()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.newPeriod = {
       name: '',
       startDate: '',
@@ -68,6 +77,11 @@ export class PayPeriodsComponent implements OnInit {
   }
 
   createPeriod() {
+    if (!this.canUpdatePayPeriod()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     if (!this.newPeriod.name || !this.newPeriod.startDate || !this.newPeriod.endDate) {
       this.toastService.error('Vui lòng điền đầy đủ thông tin.');
       return;
@@ -86,6 +100,11 @@ export class PayPeriodsComponent implements OnInit {
   }
 
   toggleLock(period: PayPeriod) {
+    if (!this.canUpdatePayPeriod()) {
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
     this.submittingId.set(period.id);
     const lock = !period.locked;
     this.apiService.post<any, any>(`${this.baseUrl}/${period.id}/lock`, null, {

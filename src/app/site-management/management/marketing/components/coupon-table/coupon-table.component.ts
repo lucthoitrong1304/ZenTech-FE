@@ -34,6 +34,9 @@ export class CouponTableComponent {
   pageEnd = input<number>(0);
   canGoPrevious = input<boolean>(false);
   canGoNext = input<boolean>(false);
+  canUpdate = input<boolean>(false);
+  canDelete = input<boolean>(false);
+  canIssue = input<boolean>(false);
 
   editCoupon = output<ManagementCoupon>();
   deleteCoupon = output<ManagementCoupon>();

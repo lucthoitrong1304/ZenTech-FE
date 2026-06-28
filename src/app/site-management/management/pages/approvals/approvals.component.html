@@ -35,10 +35,10 @@
               <td>{{ req.reason }}</td>
               <td>
                 <div class="flex justify-end gap-2">
-                  <button (click)="approveLeave(req.id, 'APPROVED')" class="approvals-action-btn approvals-action-btn--approve" title="Phê duyệt">
+                  <button [disabled]="!canApprove()" (click)="approveLeave(req.id, 'APPROVED')" class="approvals-action-btn approvals-action-btn--approve" title="Phê duyệt">
                     <svg lucideCheck class="w-4 h-4"></svg>
                   </button>
-                  <button (click)="approveLeave(req.id, 'REJECTED')" class="approvals-action-btn approvals-action-btn--reject" title="Từ chối">
+                  <button [disabled]="!canApprove()" (click)="approveLeave(req.id, 'REJECTED')" class="approvals-action-btn approvals-action-btn--reject" title="Từ chối">
                     <svg lucideX class="w-4 h-4"></svg>
                   </button>
                 </div>

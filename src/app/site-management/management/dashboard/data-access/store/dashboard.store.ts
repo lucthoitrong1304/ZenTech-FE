@@ -19,6 +19,8 @@ import {
 } from '../../../business-impact/data-access/models/management-business-impact.model';
 import { ManagementTicketService } from '../../../tickets/data-access/services/management-ticket.service';
 import { ManagementTicket, ManagementTicketQuery, TicketStatus } from '../../../tickets/data-access/models/management-ticket.models';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 export interface DashboardUiState {
   period: ReportPeriod;
@@ -98,6 +100,7 @@ export const DashboardStore = signalStore(
     const orderService = inject(ManagementOrderService);
     const impactService = inject(ManagementBusinessImpactService);
     const ticketService = inject(ManagementTicketService);
+    const permissionService = inject(PermissionService);
 
     const loadDashboardData = rxMethod<{
       period: ReportPeriod;
@@ -113,124 +116,141 @@ export const DashboardStore = signalStore(
             patchState(store, { errorMessage: null });
           }
         }),
-        switchMap(({ period, startDate, endDate }) => {
-          const customStart = startDate || undefined;
-          const customEnd = endDate || undefined;
-          const periodRange = getLocalPeriodRange(period, startDate, endDate);
-          const effectiveStart = periodRange.start;
-          const effectiveEnd = periodRange.end;
+        switchMap(({ period, startDate, endDate }) => permissionService.ensureLoaded().pipe(
+          switchMap(() => {
+            const canViewReports = permissionService.has(PermissionCode.REPORT_VIEW);
+            const canViewOrders = permissionService.has(PermissionCode.ORDER_VIEW);
+            const canViewChat = permissionService.has(PermissionCode.CHAT_VIEW);
+            const customStart = startDate || undefined;
+            const customEnd = endDate || undefined;
+            const periodRange = getLocalPeriodRange(period, startDate, endDate);
+            const effectiveStart = periodRange.start;
+            const effectiveEnd = periodRange.end;
 
-          // Prepare order query
-          const orderQuery: ManagementOrderQuery = {
-            page: 0,
-            size: 5,
-            sort: 'createdAt,desc',
-            keyword: '',
-            status: 'all',
-            dateFilter: period === ReportPeriod.Custom ? 'all' : (
-              period === ReportPeriod.Today ? 'today' : (
-                period === ReportPeriod.Last7Days ? 'last7days' : 'last30days'
-              )
-            ),
-            startDate: customStart,
-            endDate: customEnd,
-          };
+            const emptyPermissionMessage = 'Không có quyền xem dữ liệu này';
+            const emptySummary = { success: false, data: null, message: emptyPermissionMessage };
+            const emptyList = { success: false, data: [], message: emptyPermissionMessage };
+            const emptyIncidentPage = { success: false, data: { content: [] }, message: emptyPermissionMessage };
+            const emptyOrdersPage = { orders: [], page: 0, size: 5, totalElements: 0, totalPages: 0, last: true };
+            const emptyTodayOrdersPage = { orders: [], page: 0, size: 100, totalElements: 0, totalPages: 0, last: true };
+            const emptyTicketsPage = { content: [], totalElements: 0, totalPages: 0, size: 15, page: 0, last: true };
 
-          const todayOrderRange = getLocalPeriodRange(ReportPeriod.Today);
-          const todayRevenueOrderQuery: ManagementOrderQuery = {
-            page: 0,
-            size: 100,
-            sort: 'createdAt,asc',
-            keyword: '',
-            status: 'all',
-            dateFilter: 'all',
-            startDate: todayOrderRange.start,
-            endDate: todayOrderRange.end,
-          };
+            const orderQuery: ManagementOrderQuery = {
+              page: 0,
+              size: 5,
+              sort: 'createdAt,desc',
+              keyword: '',
+              status: 'all',
+              dateFilter: period === ReportPeriod.Custom ? 'all' : (
+                period === ReportPeriod.Today ? 'today' : (
+                  period === ReportPeriod.Last7Days ? 'last7days' : 'last30days'
+                )
+              ),
+              startDate: customStart,
+              endDate: customEnd,
+            };
 
-          // Prepare system fix tickets query
-          const ticketQuery: ManagementTicketQuery = {
-            page: 0,
-            size: 15, // Get more to filter unresolved in client
-            status: 'ALL',
-            priority: 'ALL',
-            assigneeEmail: 'ALL',
-            customerEmail: '',
-            search: '',
-            startDate: effectiveStart,
-            endDate: effectiveEnd,
-          };
+            const todayOrderRange = getLocalPeriodRange(ReportPeriod.Today);
+            const todayRevenueOrderQuery: ManagementOrderQuery = {
+              page: 0,
+              size: 100,
+              sort: 'createdAt,asc',
+              keyword: '',
+              status: 'all',
+              dateFilter: 'all',
+              startDate: todayOrderRange.start,
+              endDate: todayOrderRange.end,
+            };
 
-          return forkJoin({
-            summary: reportsService.getSummary(period, customStart, customEnd).pipe(
-              catchError(() => of({ success: false, data: null, message: '' }))
-            ),
-            revenueSeries: reportsService.getRevenueSeries(period, customStart, customEnd).pipe(
-              catchError(() => of({ success: false, data: [], message: '' }))
-            ),
-            products: reportsService.getProductPerformance(period, customStart, customEnd).pipe(
-              catchError(() => of({ success: false, data: [], message: '' }))
-            ),
-            ordersPage: orderService.getOrders(orderQuery).pipe(
-              catchError(() => of({ orders: [], page: 0, size: 5, totalElements: 0, totalPages: 0, last: true }))
-            ),
-            todayRevenueOrdersPage: orderService.getOrders(todayRevenueOrderQuery).pipe(
-              catchError(() => of({ orders: [], page: 0, size: 100, totalElements: 0, totalPages: 0, last: true }))
-            ),
-            impactStats: impactService.getDashboardStats(effectiveStart, effectiveEnd).pipe(
-              catchError(() => of({ success: false, data: null, message: '' }))
-            ),
-            incidentsPage: impactService.getIncidents(0, 5, null, effectiveStart, effectiveEnd).pipe(
-              catchError(() => of({ success: false, data: { content: [] }, message: '' }))
-            ),
-            activeIncidentsPage: impactService.getIncidents(0, 50, null).pipe(
-              catchError(() => of({ success: false, data: { content: [] }, message: '' }))
-            ),
-            ticketsPage: ticketService.getTickets(ticketQuery).pipe(
-              catchError(() => of({ content: [], totalElements: 0, totalPages: 0, size: 15, page: 0, last: true }))
-            ),
-          }).pipe(
-            tap({
-              next: (results) => {
-                // Filter active unresolved technical tickets
-                const activeTickets = (results.ticketsPage.content || []).filter(
-                  (t) => t.status !== TicketStatus.RESOLVED
-                );
-                const activeIncidents = (results.activeIncidentsPage.data.content || []).filter(
-                  (incident) => !['RESOLVED', 'CLOSED', 'DONE'].includes(String(incident.status || '').toUpperCase())
-                );
+            const ticketQuery: ManagementTicketQuery = {
+              page: 0,
+              size: 15,
+              status: 'ALL',
+              priority: 'ALL',
+              assigneeEmail: 'ALL',
+              customerEmail: '',
+              search: '',
+              startDate: effectiveStart,
+              endDate: effectiveEnd,
+            };
 
-                patchState(store, {
-                  summary: results.summary.data ?? null,
-                  revenueSeries: results.revenueSeries.data,
-                  products: (results.products.data || []).slice(0, 5), // Keep top 5 best sellers
-                  recentOrders: results.ordersPage.orders,
-                  todayRevenueOrders: results.todayRevenueOrdersPage.orders || [],
-                  impactStats: results.impactStats.data ?? null,
-                  incidents: results.incidentsPage.data.content || [],
-                  activeIncidents,
-                  activeTickets: activeTickets.slice(0, 5), // Keep top 5 active tickets
-                  loading: false,
-                });
-              },
-              error: (err) => {
-                console.error('Failed to load dashboard metrics:', err);
-                patchState(store, {
-                  loading: false,
-                  errorMessage: 'Không thể đồng bộ dữ liệu từ hệ thống quản trị kinh doanh.',
-                });
-              },
-            }),
-            catchError(() => EMPTY)
-          );
-        })
+            return forkJoin({
+              summary: canViewReports ? reportsService.getSummary(period, customStart, customEnd).pipe(
+                catchError(() => of({ success: false, data: null, message: '' }))
+              ) : of(emptySummary),
+              revenueSeries: canViewReports ? reportsService.getRevenueSeries(period, customStart, customEnd).pipe(
+                catchError(() => of({ success: false, data: [], message: '' }))
+              ) : of(emptyList),
+              products: canViewReports ? reportsService.getProductPerformance(period, customStart, customEnd).pipe(
+                catchError(() => of({ success: false, data: [], message: '' }))
+              ) : of(emptyList),
+              ordersPage: canViewOrders ? orderService.getOrders(orderQuery).pipe(
+                catchError(() => of(emptyOrdersPage))
+              ) : of(emptyOrdersPage),
+              todayRevenueOrdersPage: canViewOrders ? orderService.getOrders(todayRevenueOrderQuery).pipe(
+                catchError(() => of(emptyTodayOrdersPage))
+              ) : of(emptyTodayOrdersPage),
+              impactStats: canViewReports ? impactService.getDashboardStats(effectiveStart, effectiveEnd).pipe(
+                catchError(() => of({ success: false, data: null, message: '' }))
+              ) : of(emptySummary),
+              incidentsPage: canViewReports ? impactService.getIncidents(0, 5, null, effectiveStart, effectiveEnd).pipe(
+                catchError(() => of(emptyIncidentPage))
+              ) : of(emptyIncidentPage),
+              activeIncidentsPage: canViewReports ? impactService.getIncidents(0, 50, null).pipe(
+                catchError(() => of(emptyIncidentPage))
+              ) : of(emptyIncidentPage),
+              ticketsPage: canViewChat ? ticketService.getTickets(ticketQuery).pipe(
+                catchError(() => of(emptyTicketsPage))
+              ) : of(emptyTicketsPage),
+            }).pipe(
+              tap({
+                next: (results) => {
+                  const activeTickets = (results.ticketsPage.content || []).filter(
+                    (t) => t.status !== TicketStatus.RESOLVED
+                  );
+                  const activeIncidents = (results.activeIncidentsPage.data.content || []).filter(
+                    (incident) => !['RESOLVED', 'CLOSED', 'DONE'].includes(String(incident.status || '').toUpperCase())
+                  );
+
+                  patchState(store, {
+                    summary: results.summary.data ?? null,
+                    revenueSeries: results.revenueSeries.data,
+                    products: (results.products.data || []).slice(0, 5),
+                    recentOrders: results.ordersPage.orders,
+                    todayRevenueOrders: results.todayRevenueOrdersPage.orders || [],
+                    impactStats: results.impactStats.data ?? null,
+                    incidents: results.incidentsPage.data.content || [],
+                    activeIncidents,
+                    activeTickets: activeTickets.slice(0, 5),
+                    loading: false,
+                  });
+                },
+                error: (err) => {
+                  console.error('Failed to load dashboard metrics:', err);
+                  patchState(store, {
+                    loading: false,
+                    errorMessage: 'Không thể đồng bộ dữ liệu từ hệ thống quản trị kinh doanh.',
+                  });
+                },
+              }),
+              catchError(() => EMPTY)
+            );
+          })
+        ))
       )
     );
-
     const loadIncidentDetail = rxMethod<string>(
       pipe(
         tap(() => patchState(store, { loadingIncidentDetail: true, showIncidentDialog: true })),
         switchMap((incidentId) => {
+          if (!permissionService.has(PermissionCode.REPORT_VIEW)) {
+            patchState(store, {
+              loadingIncidentDetail: false,
+              errorMessage: 'Không có quyền xem dữ liệu này',
+            });
+            return EMPTY;
+          }
+
           return forkJoin({
             detail: impactService.getIncidentDetail(incidentId),
             users: impactService.getAffectedUsers(incidentId),
@@ -261,6 +281,11 @@ export const DashboardStore = signalStore(
       pipe(
         tap(() => patchState(store, { loadingIncidentDetail: true })),
         switchMap((incidentId) => {
+          if (!permissionService.has(PermissionCode.REPORT_ANALYZE)) {
+            patchState(store, { loadingIncidentDetail: false });
+            return EMPTY;
+          }
+
           return impactService.analyzeAi(incidentId).pipe(
             tap({
               next: (res) => {

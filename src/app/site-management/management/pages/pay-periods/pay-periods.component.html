@@ -6,7 +6,7 @@
       <h1>Quản lý kỳ công</h1>
       <p>Tạo kỳ công mới và quản lý trạng thái khóa dữ liệu tính công hàng tháng cho nhân viên.</p>
     </div>
-    <button (click)="openCreateModal()" class="pay-periods-primary-action">
+    <button (click)="openCreateModal()" [disabled]="!canUpdatePayPeriod()" class="pay-periods-primary-action">
       <svg lucidePlus class="w-4 h-4"></svg>
       <span>Tạo kỳ công</span>
     </button>
@@ -62,8 +62,9 @@
                   }
                 </td>
                 <td class="text-right action-cell">
-                  <button (click)="toggleLock(period)" 
-                          [disabled]="submittingId() === period.id"
+                  <button (click)="toggleLock(period)"
+                          [disabled]="!canUpdatePayPeriod() || submittingId() === period.id"
+
                           [ngClass]="period.locked ? 'btn-action btn-action--unlock' : 'btn-action btn-action--lock'">
                     @if (submittingId() === period.id) {
                       <svg lucideLoader2 class="w-3.5 h-3.5 animate-spin mr-1.5"></svg>
@@ -103,7 +104,7 @@
         </div>
         <h4>Chưa có kỳ công nào</h4>
         <p>Hệ thống chưa ghi nhận chu kỳ tính công nào. Hãy tạo mới một kỳ công để bắt đầu quản lý chấm công và lương thưởng.</p>
-        <button (click)="openCreateModal()" class="empty-state-btn">
+        <button (click)="openCreateModal()" [disabled]="!canUpdatePayPeriod()" class="empty-state-btn">
           <svg lucidePlus class="w-4 h-4"></svg>
           <span>Tạo kỳ công đầu tiên</span>
         </button>
@@ -119,13 +120,13 @@
           <h2>Tạo kỳ công mới</h2>
           <button (click)="closeCreateModal()" class="modal-close-btn" aria-label="Đóng">✕</button>
         </header>
-        
+
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Tên kỳ công</label>
             <input type="text" [(ngModel)]="newPeriod.name" placeholder="Ví dụ: Kỳ công Tháng 06/2026" class="form-input" />
           </div>
-          
+
           <div class="form-grid">
             <div class="form-group">
               <label class="form-label">Ngày bắt đầu</label>
@@ -140,7 +141,7 @@
 
         <footer class="modal-footer">
           <button (click)="closeCreateModal()" class="modal-btn modal-btn--secondary">Hủy</button>
-          <button (click)="createPeriod()" class="modal-btn modal-btn--primary">Tạo mới</button>
+          <button (click)="createPeriod()" [disabled]="!canUpdatePayPeriod()" class="modal-btn modal-btn--primary">Tạo mới</button>
         </footer>
       </div>
     </div>

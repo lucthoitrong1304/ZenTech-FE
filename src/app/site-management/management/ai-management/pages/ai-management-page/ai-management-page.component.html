@@ -58,7 +58,7 @@
           <option value="ACTIVE">ACTIVE</option>
           <option value="ARCHIVED">ARCHIVED</option>
         </select>
-        <button type="submit" class="ai-primary-button" [disabled]="savingDataset()">
+        <button type="submit" class="ai-primary-button" [disabled]="savingDataset() || (editingDatasetId() ? !canUpdateAi() : !canCreateAi())">
           <svg lucideSave></svg>
           <span>{{ editingDatasetId() ? 'Lưu dataset' : 'Thêm dataset' }}</span>
         </button>
@@ -79,16 +79,16 @@
             </div>
 
             <div class="dataset-card__actions">
-              <button type="button" class="ai-secondary-button" (click)="editDataset(dataset)">
+              <button type="button" class="ai-secondary-button" [disabled]="!canUpdateAi()" (click)="editDataset(dataset)">
                 <svg lucideSave></svg>
                 <span>Sửa</span>
               </button>
-              <label class="ai-secondary-button upload-button" [class.ai-secondary-button--loading]="uploadingDatasetId() === dataset.id">
+              <label class="ai-secondary-button upload-button" [class.ai-secondary-button--loading]="uploadingDatasetId() === dataset.id" [class.opacity-50]="!canCreateAi()">
                 <svg lucideUpload></svg>
                 <span>{{ uploadingDatasetId() === dataset.id ? 'Đang upload' : 'Upload tài liệu' }}</span>
-                <input type="file" accept=".pdf,.txt,.md" (change)="uploadDocument(dataset.id, $event)" />
+                <input type="file" accept=".pdf,.txt,.md" [disabled]="!canCreateAi()" (change)="uploadDocument(dataset.id, $event)" />
               </label>
-              <button type="button" class="ai-danger-button" (click)="archiveDataset(dataset)" [disabled]="dataset.status === 'ARCHIVED'">
+              <button type="button" class="ai-danger-button" (click)="archiveDataset(dataset)" [disabled]="!canDeleteAi() || dataset.status === 'ARCHIVED'">
                 <svg lucideArchive></svg>
                 <span>Archive</span>
               </button>
@@ -109,10 +109,10 @@
                   </span>
                   <span>{{ document.chunkCount }} / {{ formatFileSize(document.fileSize) }}</span>
                   <span class="row-actions">
-                    <button type="button" class="ai-icon-button" (click)="reingestDocument(document)" title="Reingest">
+                    <button type="button" class="ai-icon-button" [disabled]="!canUpdateAi()" (click)="reingestDocument(document)" title="Reingest">
                       <svg lucideRefreshCw></svg>
                     </button>
-                    <button type="button" class="ai-icon-button ai-icon-button--danger" (click)="deleteDocument(document)" title="Xóa">
+                    <button type="button" class="ai-icon-button ai-icon-button--danger" [disabled]="!canDeleteAi()" (click)="deleteDocument(document)" title="Xóa">
                       <svg lucideTrash2></svg>
                     </button>
                   </span>
@@ -149,11 +149,11 @@
             </button>
           }
         </div>
-        <button type="button" class="ai-secondary-button" (click)="verifyAllProducts()" [disabled]="verifyingAllProducts()">
+        <button type="button" class="ai-secondary-button" (click)="verifyAllProducts()" [disabled]="!canUpdateAi() || verifyingAllProducts()">
           <svg lucideCheckCircle2></svg>
           <span>Verify tất cả</span>
         </button>
-        <button type="button" class="ai-primary-button" (click)="reindexProducts()" [disabled]="reindexingProducts()">
+        <button type="button" class="ai-primary-button" (click)="reindexProducts()" [disabled]="!canUpdateAi() || reindexingProducts()">
           <svg lucideRefreshCw></svg>
           <span>Reindex toàn bộ</span>
         </button>
@@ -184,11 +184,11 @@
             </span>
             <span>{{ item.lastSyncedAt ? (item.lastSyncedAt | date:'short') : 'Chưa có' }}</span>
             <span class="row-actions">
-              <button type="button" class="ai-secondary-button" (click)="syncVariant(item)" [disabled]="syncingVariantId() === item.variantId">
+              <button type="button" class="ai-secondary-button" (click)="syncVariant(item)" [disabled]="!canUpdateAi() || syncingVariantId() === item.variantId">
                 <svg lucideRefreshCw></svg>
                 <span>{{ syncingVariantId() === item.variantId ? 'Đang sync' : 'Sync' }}</span>
               </button>
-              <button type="button" class="ai-secondary-button" (click)="verifyVariant(item)" [disabled]="verifyingVariantId() === item.variantId">
+              <button type="button" class="ai-secondary-button" (click)="verifyVariant(item)" [disabled]="!canUpdateAi() || verifyingVariantId() === item.variantId">
                 <svg lucideCheckCircle2></svg>
                 <span>{{ verifyingVariantId() === item.variantId ? 'Đang verify' : 'Verify' }}</span>
               </button>
@@ -225,7 +225,7 @@
           <textarea rows="3" placeholder="Khách hàng hỏi gì?" [ngModel]="demoMessage()" name="demoMessage" (ngModelChange)="demoMessage.set($event)"></textarea>
           <div>
             <button type="button" class="ai-secondary-button" (click)="clearDemoConversation()">Xóa hội thoại</button>
-            <button type="submit" class="ai-primary-button" [disabled]="demoLoading()">
+            <button type="submit" class="ai-primary-button" [disabled]="!canUpdateAi() || demoLoading()">
               <svg lucidePlay></svg>
               <span>Gửi demo</span>
             </button>

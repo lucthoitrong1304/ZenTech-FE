@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MediaPreviewDialogComponent } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
@@ -20,6 +20,8 @@ import { ManagementTicketService } from '../../../tickets/data-access/services/m
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { PermissionService } from '../../../../../core/permissions/permission.service';
+import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
 @Component({
   selector: 'app-management-chat-page',
@@ -50,6 +52,8 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly ticketService = inject(ManagementTicketService);
   private readonly websocketService = inject(WebsocketService);
+  private readonly permissionService = inject(PermissionService);
+  protected readonly canUpdateChat = computed(() => this.permissionService.has(PermissionCode.CHAT_UPDATE));
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
   protected readonly transferDialogOpen = signal(false);
   protected readonly selectedStaffId = signal<string | null>(null);
@@ -171,17 +175,23 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
   }
 
   protected openTransferDialog(): void {
+    if (!this.canUpdateChat()) {
+      return;
+    }
+
     this.store.loadActiveStaffList();
     this.transferDialogOpen.set(true);
     this.selectedStaffId.set(null);
   }
 
   protected submitTransfer(): void {
+    if (!this.canUpdateChat()) {
+      return;
+    }
+
     if (this.selectedStaffId()) {
       this.store.transferConversation(this.selectedStaffId());
       this.transferDialogOpen.set(false);
     }
   }
 }
-
-

@@ -14,6 +14,7 @@ import { ManagementChatConversation } from '../../data-access/models/management-
 export class ChatHeaderComponent {
   readonly conversation = input.required<ManagementChatConversation>();
   readonly mediaDrawerOpen = input.required<boolean>();
+  readonly canUpdate = input<boolean>(false);
 
   readonly mediaClicked = output<void>();
   readonly searchClicked = output<void>();

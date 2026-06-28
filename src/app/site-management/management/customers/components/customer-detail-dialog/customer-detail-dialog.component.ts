@@ -43,6 +43,7 @@ export class CustomerDetailDialogComponent {
   readonly ordersSize = input.required<number>();
   readonly ordersTotalElements = input.required<number>();
   readonly ordersTotalPages = input.required<number>();
+  readonly canUpdateStatus = input<boolean>(false);
 
   readonly close = output<void>();
   readonly ordersPageChange = output<{ page: number; size: number }>();
