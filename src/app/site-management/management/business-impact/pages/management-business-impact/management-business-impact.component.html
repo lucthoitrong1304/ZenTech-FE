@@ -206,7 +206,7 @@
                   </span>
                 </td>
                 <td class="text-rose-600 font-semibold">
-                  {{ formatVND(inc.revenueLoss) }}
+                  {{ formatVND(getEffectiveRevenueLoss(inc)) }}
                 </td>
                 <td>
                   <span class="mb-status-badge" [class]="'status-' + inc.status.toLowerCase()">
@@ -348,7 +348,7 @@
                     <div class="mb-metric-comp-col">
                       <span class="mb-metric-comp-label">Doanh thu kỳ vọng</span>
                       <strong class="mb-metric-comp-val text-gray-900">
-                        {{ formatVND(store.selectedIncident()?.expectedRevenue) }}
+                        {{ formatVND(getEffectiveExpectedRevenue(store.selectedIncident())) }}
                       </strong>
                     </div>
                     <div class="mb-metric-comp-col">
@@ -363,7 +363,7 @@
                     <div class="flex justify-between items-center">
                       <span class="text-sm font-semibold text-gray-700">Thiệt hại Doanh thu:</span>
                       <strong class="text-lg font-bold text-rose-600">
-                        - {{ formatVND(store.selectedIncident()?.revenueLoss) }}
+                        - {{ formatVND(getEffectiveRevenueLoss(store.selectedIncident())) }}
                       </strong>
                     </div>
                   </div>
@@ -373,7 +373,7 @@
                     <div class="mb-metric-comp-col">
                       <span class="mb-metric-comp-label">Đơn hàng kỳ vọng</span>
                       <span class="mb-metric-comp-val text-gray-800 font-medium">
-                        {{ store.selectedIncident()?.expectedOrders }} đơn
+                        {{ getEffectiveExpectedOrders(store.selectedIncident()) }} đơn
                       </span>
                     </div>
                     <div class="mb-metric-comp-col">
@@ -388,7 +388,7 @@
                     <div class="flex justify-between items-center">
                       <span class="text-sm font-semibold text-gray-700">Đơn hàng bị mất:</span>
                       <strong class="text-md font-bold text-rose-600">
-                        - {{ store.selectedIncident()?.lostOrders }} đơn
+                        - {{ getEffectiveLostOrders(store.selectedIncident()) }} đơn
                       </strong>
                     </div>
                   </div>
