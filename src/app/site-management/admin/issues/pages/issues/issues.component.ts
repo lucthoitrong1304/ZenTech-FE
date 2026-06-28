@@ -652,12 +652,26 @@ export class IssuesComponent implements OnInit, OnDestroy {
   }
 
   private inferDefaultSeverity(issue: LogIssue): IncidentSeverity {
-    if ((issue.statusCode ?? 0) >= 500 || issue.level === LogLevel.ERROR) {
+    const statusCode = issue.statusCode ?? 0;
+
+    if (statusCode >= 500) {
       return IncidentSeverity.HIGH;
     }
+
+    if ([401, 403, 404].includes(statusCode)) {
+      return IncidentSeverity.LOW;
+    }
+
+    if ([400, 409].includes(statusCode)) {
+      return IncidentSeverity.MEDIUM;
+    }
+
+    if (issue.level === LogLevel.ERROR) {
+      return IncidentSeverity.HIGH;
+    }
+
     return IncidentSeverity.MEDIUM;
   }
-
   private formatDateToLocalInput(date: Date): string {
     const pad = (n: number) => n.toString().padStart(2, '0');
     const yyyy = date.getFullYear();
