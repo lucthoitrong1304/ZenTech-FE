@@ -29,24 +29,30 @@
     </div>
     <div class="health-grid">
       @for (metric of metrics.slice(0, 4); track metric.key) {
-        <button type="button" class="health-card" [class.selected]="selectedMetric() === metric.key" (click)="selectMetric(metric.key)">
+        <button type="button" class="health-card" [class.selected]="selectedMetric() === metric.key" [style.--metric-color]="metric.color" (click)="selectMetric(metric.key)">
           <span class="health-icon">
             @if (metric.key === 'cpuUsagePercent') { <svg lucideCpu></svg> }
             @else if (metric.key === 'ramUsagePercent') { <svg lucideDatabase></svg> }
             @else if (metric.key === 'diskUsagePercent') { <svg lucideServer></svg> }
             @else { <svg lucideGauge></svg> }
           </span>
-          <span class="health-main"><small>{{ metric.name }} <svg lucideCircleHelp class="help-icon" [attr.title]="metric.description"></svg></small><strong>{{ formatMetric(current(metric.key), metric.unit) }}</strong><em [class]="metricStatusClass(metric, current(metric.key))">{{ metricStatusLabel(metric, current(metric.key)) }}</em></span>
+          <span class="health-main">
+            <small>{{ metric.name }} <svg lucideCircleHelp class="help-icon" [pTooltip]="metric.description" tooltipPosition="top"></svg></small>
+            <strong>{{ formatMetric(current(metric.key), metric.unit) }}</strong>
+            @if (metricCapacityLabel(metric.key)) { <span class="health-detail">{{ metricCapacityLabel(metric.key) }}</span> }
+            <span class="health-meter"><i [style.width.%]="metricWidth(current(metric.key), metric.unit)"></i></span>
+            <em [class]="metricStatusClass(metric, current(metric.key))">{{ metricStatusLabel(metric, current(metric.key)) }}</em>
+          </span>
           <span class="tone-dot" [class.warning]="resourceTone(current(metric.key)) === 'warning'" [class.critical]="resourceTone(current(metric.key)) === 'critical'"></span>
           <span class="health-stats"><span>Trung bình <b>{{ formatMetric(average(metric.key), metric.unit) }}</b></span><span>Cao nhất <b>{{ formatMetric(maximum(metric.key), metric.unit) }}</b></span></span>
         </button>
       }
     </div>
     <div class="runtime-strip">
-      <span [attr.title]="runtimeHelp('uptime')"><svg lucideClock3></svg>Thời gian hoạt động <b>{{ uptimeLabel(data()?.health?.processUptimeSeconds) }}</b><svg lucideCircleHelp class="help-icon"></svg></span>
-      <span [attr.title]="runtimeHelp('processCpu')"><svg lucideCpu></svg>CPU của backend <b>{{ formatMetric(data()?.health?.processCpuUsagePercent ?? null, '%') }}</b><svg lucideCircleHelp class="help-icon"></svg></span>
-      <span [attr.title]="runtimeHelp('threads')"><svg lucideActivity></svg>Luồng xử lý <b>{{ data()?.health?.liveThreads ?? 'N/A' }} đang chạy / {{ data()?.health?.peakThreads ?? 'N/A' }} cao nhất</b><svg lucideCircleHelp class="help-icon"></svg></span>
-      <span [attr.title]="runtimeHelp('heap')"><svg lucideDatabase></svg>Bộ nhớ Java <b>{{ formatBytes(data()?.health?.jvmHeapUsedBytes) }} / {{ formatBytes(data()?.health?.jvmHeapMaxBytes) }}</b><svg lucideCircleHelp class="help-icon"></svg></span>
+      <span><svg lucideClock3></svg>Thời gian hoạt động <b>{{ uptimeLabel(data()?.health?.processUptimeSeconds) }}</b><svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('uptime')" tooltipPosition="top"></svg></span>
+      <span><svg lucideCpu></svg>CPU của backend <b>{{ formatMetric(data()?.health?.processCpuUsagePercent ?? null, '%') }}</b><svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('processCpu')" tooltipPosition="top"></svg></span>
+      <span><svg lucideActivity></svg>Luồng xử lý <b>{{ data()?.health?.liveThreads ?? 'N/A' }} đang chạy / {{ data()?.health?.peakThreads ?? 'N/A' }} cao nhất</b><svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('threads')" tooltipPosition="top"></svg></span>
+      <span><svg lucideDatabase></svg>Bộ nhớ Java <b>{{ formatBytes(data()?.health?.jvmHeapUsedBytes) }} / {{ formatBytes(data()?.health?.jvmHeapMaxBytes) }}</b><svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('heap')" tooltipPosition="top"></svg></span>
     </div>
   </section>
 
@@ -54,13 +60,13 @@
     <div class="section-heading"><div><span class="eyebrow">HIỆU SUẤT API</span><h2>Hiệu suất API</h2><p>Lưu lượng, tỷ lệ lỗi và độ trễ của HTTP server.</p></div></div>
     <div class="api-grid">
       <button type="button" class="api-card" [class.selected]="selectedMetric() === 'requestsPerMinute'" (click)="selectMetric('requestsPerMinute')">
-        <span class="api-icon green"><svg lucideNetwork></svg></span><small>Lưu lượng API <svg lucideCircleHelp class="help-icon" title="Số yêu cầu API backend nhận được trong một phút."></svg></small><strong>{{ formatMetric(data()?.api?.requestsPerMinute ?? null, 'req/min') }}</strong><em [class]="metricStatusClass(metrics[4], data()?.api?.requestsPerMinute ?? null)">{{ metricStatusLabel(metrics[4], data()?.api?.requestsPerMinute ?? null) }}</em><p>{{ data()?.api?.activeRequests ?? 0 }} yêu cầu đang xử lý</p>
+        <span class="api-icon green"><svg lucideNetwork></svg></span><small>Lưu lượng API <svg lucideCircleHelp class="help-icon" pTooltip="Số yêu cầu API backend nhận được trong một phút." tooltipPosition="top"></svg></small><strong>{{ formatMetric(data()?.api?.requestsPerMinute ?? null, 'req/min') }}</strong><em [class]="metricStatusClass(metrics[4], data()?.api?.requestsPerMinute ?? null)">{{ metricStatusLabel(metrics[4], data()?.api?.requestsPerMinute ?? null) }}</em><p>{{ data()?.api?.activeRequests ?? 0 }} yêu cầu đang xử lý</p>
       </button>
       <button type="button" class="api-card" [class.selected]="selectedMetric() === 'errorRatePercent'" (click)="selectMetric('errorRatePercent')">
-        <span class="api-icon rose"><svg lucideAlertTriangle></svg></span><small>Tỷ lệ lỗi API <svg lucideCircleHelp class="help-icon" title="Phần trăm yêu cầu trả về lỗi HTTP 4xx hoặc 5xx."></svg></small><strong>{{ formatMetric(data()?.api?.errorRatePercent ?? null, '%') }}</strong><em [class]="metricStatusClass(metrics[5], data()?.api?.errorRatePercent ?? null)">{{ metricStatusLabel(metrics[5], data()?.api?.errorRatePercent ?? null) }}</em><p>Từ 5% trở lên sẽ được đánh dấu cần chú ý</p>
+        <span class="api-icon rose"><svg lucideAlertTriangle></svg></span><small>Tỷ lệ lỗi API <svg lucideCircleHelp class="help-icon" pTooltip="Phần trăm yêu cầu trả về lỗi HTTP 4xx hoặc 5xx." tooltipPosition="top"></svg></small><strong>{{ formatMetric(data()?.api?.errorRatePercent ?? null, '%') }}</strong><em [class]="metricStatusClass(metrics[5], data()?.api?.errorRatePercent ?? null)">{{ metricStatusLabel(metrics[5], data()?.api?.errorRatePercent ?? null) }}</em><p>Từ 5% trở lên sẽ được đánh dấu cần chú ý</p>
       </button>
       <button type="button" class="api-card" [class.selected]="selectedMetric() === 'p95LatencyMs'" (click)="selectMetric('p95LatencyMs')">
-        <span class="api-icon violet"><svg lucideZap></svg></span><small>Độ trễ P95 <svg lucideCircleHelp class="help-icon" title="95% yêu cầu API phản hồi nhanh hơn con số này."></svg></small><strong>{{ formatMetric(data()?.api?.p95LatencyMs ?? null, 'ms') }}</strong><em [class]="metricStatusClass(metrics[6], data()?.api?.p95LatencyMs ?? null)">{{ metricStatusLabel(metrics[6], data()?.api?.p95LatencyMs ?? null) }}</em><p>Độ trễ trung bình {{ formatMetric(data()?.api?.averageLatencyMs ?? null, 'ms') }}</p>
+        <span class="api-icon violet"><svg lucideZap></svg></span><small>Độ trễ P95 <svg lucideCircleHelp class="help-icon" pTooltip="95% yêu cầu API phản hồi nhanh hơn con số này." tooltipPosition="top"></svg></small><strong>{{ formatMetric(data()?.api?.p95LatencyMs ?? null, 'ms') }}</strong><em [class]="metricStatusClass(metrics[6], data()?.api?.p95LatencyMs ?? null)">{{ metricStatusLabel(metrics[6], data()?.api?.p95LatencyMs ?? null) }}</em><p>Độ trễ trung bình {{ formatMetric(data()?.api?.averageLatencyMs ?? null, 'ms') }}</p>
       </button>
     </div>
   </section>
@@ -68,7 +74,7 @@
   <section class="detail-chart-card">
     <div class="section-heading chart-heading">
       <div><span class="eyebrow">PHÂN TÍCH CHI TIẾT</span><h2>Biểu đồ chi tiết · {{ selectedDefinition().name }}</h2><p>{{ historyRangeLabel() }}</p></div>
-      <div class="threshold-chip" [attr.title]="'Hệ thống đánh dấu cần chú ý khi ' + selectedDefinition().name + ' vượt mức này.'">Mức cần chú ý {{ formatMetric(selectedDefinition().threshold, selectedDefinition().unit) }} <svg lucideCircleHelp class="help-icon"></svg></div>
+      <div class="threshold-chip" [pTooltip]="'Hệ thống đánh dấu cần chú ý khi ' + selectedDefinition().name + ' vượt mức này.'">Mức cần chú ý {{ formatMetric(selectedDefinition().threshold, selectedDefinition().unit) }} <svg lucideCircleHelp class="help-icon"></svg></div>
     </div>
     <div class="metric-selector">
       @for (metric of metrics; track metric.key) {
@@ -86,11 +92,11 @@
     <div class="section-heading"><div><span class="eyebrow">CẢNH BÁO BẤT THƯỜNG</span><h2>Top bất thường</h2><p>API chậm, API lỗi và các lần metric vượt ngưỡng.</p></div></div>
     <div class="anomaly-grid">
       <article class="anomaly-card"><header><span class="orange"><svg lucideClock3></svg></span><div><h3>API phản hồi chậm</h3><p>Thời gian phản hồi trung bình từ 500 ms trong 15 phút</p></div></header>
-        @if (data()?.slowApis?.length) { <div class="rank-list">@for (item of data()!.slowApis; track item.method + item.uri) { <div><b>{{ item.method }}</b><span [attr.title]="item.uri">{{ item.uri }}</span><strong>{{ item.value | number:'1.0-1' }} {{ item.unit }}</strong></div> }</div> }
+        @if (data()?.slowApis?.length) { <div class="rank-list">@for (item of data()!.slowApis; track item.method + item.uri) { <div><b>{{ item.method }}</b><span [pTooltip]="item.uri">{{ item.uri }}</span><strong>{{ item.value | number:'1.0-1' }} {{ item.unit }}</strong></div> }</div> }
         @else { <div class="mini-empty">Chưa ghi nhận API chậm.</div> }
       </article>
       <article class="anomaly-card"><header><span class="rose"><svg lucideAlertTriangle></svg></span><div><h3>API phát sinh lỗi</h3><p>Số lỗi phía người dùng (4xx) và máy chủ (5xx) trong 15 phút</p></div></header>
-        @if (data()?.errorApis?.length) { <div class="rank-list error-rank-list">@for (item of data()!.errorApis; track item.method + item.uri + item.status) { <div><b>{{ item.status }}</b><span [attr.title]="item.method + ' ' + item.uri"><i>{{ item.method }}</i> {{ item.uri }}</span><strong>{{ item.value | number:'1.0-0' }} {{ item.unit }}</strong></div> }</div> }
+        @if (data()?.errorApis?.length) { <div class="rank-list error-rank-list">@for (item of data()!.errorApis; track item.method + item.uri + item.status) { <div><b>{{ item.status }}</b><span [pTooltip]="item.method + ' ' + item.uri"><i>{{ item.method }}</i> {{ item.uri }}</span><strong>{{ item.value | number:'1.0-0' }} {{ item.unit }}</strong></div> }</div> }
         @else { <div class="mini-empty">Không có lỗi trong cửa sổ gần nhất.</div> }
       </article>
       <article class="anomaly-card"><header><span class="violet"><svg lucideZap></svg></span><div><h3>Lần cần chú ý</h3><p>Metric đã vượt mức cảnh báo trong kỳ</p></div></header>
@@ -107,7 +113,7 @@
       <div class="dependency-group-heading"><div><strong>Dịch vụ nghiệp vụ</strong><span>Ảnh hưởng trực tiếp đến dữ liệu, hàng đợi và tính năng AI.</span></div><b>{{ businessDependencies().length }} dịch vụ</b></div>
       <div class="dependency-grid">
         @for (dependency of businessDependencies(); track dependency.name) {
-          <article [class]="dependencyClass(dependency.status)">
+          <button type="button" [class]="dependencyClass(dependency.status)" (click)="openDependencyDetail(dependency)" [pTooltip]="'Xem chi tiết config ' + dependency.name" tooltipPosition="top">
             <span class="dependency-icon">
               @if (dependency.name === 'MySQL' || dependency.name === 'Qdrant') { <svg lucideDatabase></svg> }
               @else if (dependency.name === 'RabbitMQ') { <svg lucideNetwork></svg> }
@@ -116,7 +122,7 @@
             <div><small>{{ dependency.name }}</small><strong>{{ dependencyStatusLabel(dependency.status) }}</strong><p>{{ dependency.detail }}</p></div>
             <svg lucideCheckCircle2 class="status-icon"></svg>
             @if (dependency.primaryValue != null) { <footer><span>{{ dependencyValueLabel(dependency.primaryValue, dependency.primaryUnit) }}</span>@if (dependency.secondaryValue != null) { <span>{{ dependencyValueLabel(dependency.secondaryValue, dependency.secondaryUnit) }}</span> }</footer> }
-          </article>
+          </button>
         }
       </div>
     </div>
@@ -125,13 +131,132 @@
       <div class="dependency-group-heading"><div><strong>Hạ tầng giám sát</strong><span>Thu thập metric, lưu log và chuyển telemetry về hệ thống quan sát.</span></div><b>{{ observabilityDependencies().length }} dịch vụ</b></div>
       <div class="dependency-grid">
         @for (dependency of observabilityDependencies(); track dependency.name) {
-          <article [class]="dependencyClass(dependency.status)">
+          <button type="button" [class]="dependencyClass(dependency.status)" (click)="openDependencyDetail(dependency)" [pTooltip]="'Xem chi tiết config ' + dependency.name" tooltipPosition="top">
             <span class="dependency-icon"><svg lucideServer></svg></span>
             <div><small>{{ dependency.name }}</small><strong>{{ dependencyStatusLabel(dependency.status) }}</strong><p>{{ dependency.detail }}</p></div>
             <svg lucideCheckCircle2 class="status-icon"></svg>
-          </article>
+          </button>
         }
       </div>
     </div>
   </section>
+
+  <p-dialog
+    [visible]="dependencyDetailVisible()"
+    (visibleChange)="onDependencyDialogVisibleChange($event)"
+    [modal]="true"
+    [dismissableMask]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: 'min(860px, calc(100vw - 28px))' }"
+    styleClass="dependency-detail-dialog"
+  >
+    <ng-template pTemplate="header">
+      <div class="dependency-detail-title">
+        <span class="dependency-detail-icon"><svg lucideServer></svg></span>
+        <div><small>CHI TIẾT DỊCH VỤ</small><strong>{{ selectedDependencyDetail()?.name || 'Đang tải' }}</strong></div>
+      </div>
+    </ng-template>
+
+    @if (dependencyDetailLoading()) {
+      <div class="dependency-detail-state"><svg lucideRefreshCw class="spinning"></svg><span>Đang tải config và health check...</span></div>
+    } @else if (dependencyDetailError()) {
+      <div class="dependency-detail-state dependency-detail-state--error"><svg lucideAlertTriangle></svg><span>{{ dependencyDetailError() }}</span></div>
+    } @else if (selectedDependencyDetail(); as detail) {
+      <div class="dependency-detail-content">
+        <section class="dependency-detail-overview">
+          <div><small>Nhóm</small><strong>{{ dependencyGroupLabel(detail.group) }}</strong></div>
+          <div><small>Trạng thái</small><strong [class]="dependencyDetailStatusClass(detail.status)">{{ dependencyStatusLabel(detail.status) }}</strong></div>
+          <div><small>Kiểm tra lúc</small><strong>{{ detail.lastCheckedAt | date:'HH:mm:ss dd/MM/yyyy' }}</strong></div>
+        </section>
+
+        <section class="dependency-detail-panel connection-topology-panel">
+          <h3>Mô hình kết nối & Kiểm tra phản hồi</h3>
+          <div class="topology-container">
+            <div class="topology-node backend-node">
+              <span class="node-icon"><svg lucideServer></svg></span>
+              <strong>ZenTech Backend</strong>
+            </div>
+
+            <div class="topology-connector" [class.connector-down]="detail.status !== 'UP'">
+              <div class="connector-line">
+                @if (detail.status === 'UP') {
+                  <span class="flow-pulse"></span>
+                } @else {
+                  <svg lucideAlertTriangle class="connector-warning-icon"></svg>
+                }
+              </div>
+            </div>
+
+            <div class="topology-node service-node" [class.node-down]="detail.status !== 'UP'">
+              <span class="node-icon">
+                @if (detail.name === 'MySQL' || detail.name === 'Qdrant') { <svg lucideDatabase></svg> }
+                @else if (detail.name === 'RabbitMQ') { <svg lucideNetwork></svg> }
+                @else { <svg lucideServer></svg> }
+              </span>
+              <strong>{{ detail.name }}</strong>
+            </div>
+          </div>
+
+          <div class="topology-actions">
+            <button type="button" class="ping-btn" (click)="pingCurrentDependency()" [disabled]="pingLoading()">
+              <svg lucideRefreshCw [class.spinning]="pingLoading()"></svg>
+              {{ pingLoading() ? 'Đang gửi gói tin ping...' : 'Ping kiểm tra phản hồi' }}
+            </button>
+
+            @if (pingResult(); as ping) {
+              <div class="ping-result-badge" [class.ping-success]="ping.status === 'UP'" [class.ping-failed]="ping.status !== 'UP'">
+                <span class="ping-pulse-indicator"></span>
+                @if (ping.status === 'UP') {
+                  <span>Phản hồi: <strong>{{ ping.latencyMs }} ms</strong> (Tốt)</span>
+                } @else {
+                  <span>Mất kết nối</span>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <section class="dependency-detail-panel">
+          <h3>Kết nối</h3>
+          <div class="detail-kv"><span>Endpoint</span><code>{{ detail.endpoint }}</code></div>
+          <div class="detail-kv"><span>Health check</span><code>{{ detail.healthCheckPath }}</code></div>
+          <div class="detail-kv"><span>Mô tả</span><p>{{ detail.detail }}</p></div>
+        </section>
+
+        <section class="dependency-detail-panel">
+          <h3>Config đang dùng</h3>
+          <div class="config-table">
+            @for (item of detail.configItems; track item.key) {
+              <div class="config-row"><code>{{ item.key }}</code><span [class.masked]="item.sensitive" [pTooltip]="item.sensitive ? 'Giá trị nhạy cảm đã được mask ở backend' : item.source" tooltipPosition="top">{{ item.value }}</span><em>{{ item.editable ? 'Có thể sửa' : 'Chỉ xem' }}</em></div>
+            }
+          </div>
+        </section>
+
+        @if (detail.metrics.length) {
+          <section class="dependency-detail-panel">
+            <h3>Metric hiện tại</h3>
+            <div class="metric-snapshot-grid">
+              @for (metric of detail.metrics; track metric.label) {
+                <div class="metric-snapshot-card">
+                  <small>{{ metric.label }}</small>
+                  <div class="metric-value-wrapper">
+                    <strong>{{ metric.value }}</strong>
+                    <span>{{ metric.unit }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        @if (detail.notes.length) {
+          <section class="dependency-detail-panel dependency-detail-notes">
+            <h3>Ghi chú vận hành</h3>
+            @for (note of detail.notes; track note) { <p>{{ note }}</p> }
+          </section>
+        }
+      </div>
+    }
+  </p-dialog>
 </div>

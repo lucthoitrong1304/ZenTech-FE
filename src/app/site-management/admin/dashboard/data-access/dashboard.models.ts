@@ -118,8 +118,13 @@ export interface ApiResponse<T> {
 
 export interface ObservabilityHealthOverview {
   cpuUsagePercent: number | null;
+  cpuCoreCount: number | null;
   ramUsagePercent: number | null;
+  ramUsedBytes: number | null;
+  ramTotalBytes: number | null;
   diskUsagePercent: number | null;
+  diskUsedBytes: number | null;
+  diskTotalBytes: number | null;
   jvmHeapUsagePercent: number | null;
   jvmHeapUsedBytes: number | null;
   jvmHeapMaxBytes: number | null;
@@ -168,6 +173,33 @@ export interface ObservabilityDependency {
   primaryUnit: string | null;
   secondaryValue: number | null;
   secondaryUnit: string | null;
+}
+
+export interface ObservabilityDependencyConfigItem {
+  key: string;
+  value: string;
+  source: string;
+  sensitive: boolean;
+  editable: boolean;
+}
+
+export interface ObservabilityDependencyMetricItem {
+  label: string;
+  value: string;
+  unit: string;
+}
+
+export interface ObservabilityDependencyDetail {
+  name: string;
+  group: string;
+  status: 'UP' | 'DEGRADED' | 'DOWN';
+  detail: string;
+  endpoint: string;
+  healthCheckPath: string;
+  lastCheckedAt: string;
+  configItems: ObservabilityDependencyConfigItem[];
+  metrics: ObservabilityDependencyMetricItem[];
+  notes: string[];
 }
 
 export interface AdminObservabilityData {
