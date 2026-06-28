@@ -53,6 +53,7 @@ describe('CustomerChatStore', () => {
       getMyConversations: vi.fn(() => of(createPage(conversations))),
       getMessages: vi.fn(() => of(createPage(messages))),
       createOrGetConversation: vi.fn(() => of(conversation)),
+      getTicketStatus: vi.fn(() => of(null)),
       createNewConversation: vi.fn(() => of(createConversation('conversation-2'))),
       uploadFile: vi.fn(() =>
         options.uploadFails
@@ -182,7 +183,7 @@ describe('CustomerChatStore', () => {
 
   it('skips customer chat loading for staff sessions', () => {
     const { store, chatService, websocketService } = configureStore({
-      session: { accountId: 'staff-1', roles: ['EMPLOYEE'] },
+      session: { accountId: 'staff-1', roles: ['ROLE_ADMIN'] },
     });
 
     store.loadSession();

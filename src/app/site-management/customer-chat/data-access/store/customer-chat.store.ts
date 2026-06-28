@@ -13,6 +13,8 @@ import {
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, Subscription, catchError, filter, forkJoin, map, of, pipe, switchMap, tap } from 'rxjs';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
+import { Role } from '../../../auth/data-access/models/auth.enums';
+import { hasRole } from '../../../auth/data-access/utils/auth-role.utils';
 import { CustomerChatEvent, CustomerChatEventType } from '../models/customer-chat.event';
 import {
   ChatAttachmentType,
@@ -192,15 +194,16 @@ export const CustomerChatStore = signalStore(
     ) => {
       let messageSub: Subscription | null = null;
       let conversationSub: Subscription | null = null;
-    let ticketStatusSub: Subscription | null = null;
+      let ticketStatusSub: Subscription | null = null;
 
       const isStaffSession = (): boolean => {
-        const session = authStorageService.getSession();
+        const roles = authStorageService.getSession()?.roles ?? [];
 
         return (
-          session?.roles.some((role) =>
-            ['OWNER', 'MANAGER', 'EMPLOYEE', 'ADMIN'].includes(role)
-          ) ?? false
+          hasRole(roles, Role.OWNER) ||
+          hasRole(roles, Role.MANAGER) ||
+          hasRole(roles, Role.EMPLOYEE) ||
+          hasRole(roles, Role.ADMIN)
         );
       };
 
