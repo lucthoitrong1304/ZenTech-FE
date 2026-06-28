@@ -518,3 +518,141 @@
     flex-direction: column;
   }
 }
+
+/* System admin visual refresh */
+.leave-settings-page {
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  color: #1c1b1b;
+}
+
+.leave-settings-hero {
+  min-height: 132px;
+  gap: 24px;
+  padding: 28px 30px;
+  border: 1px solid rgba(226, 232, 240, 0.78);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(251, 250, 248, 0.94)),
+    linear-gradient(135deg, rgba(251, 188, 4, 0.08), transparent 40%),
+    linear-gradient(315deg, rgba(79, 70, 229, 0.07), transparent 38%);
+  box-shadow: 0 12px 34px rgba(17, 24, 39, 0.045);
+}
+
+.leave-settings-kicker,
+.leave-settings-panel__header span,
+.leave-settings-form span,
+.leave-quota-toolbar span,
+.leave-quota-total span,
+.leave-quota-card__title label span {
+  color: #817969;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.leave-settings-hero h1 {
+  margin: 8px 0 0;
+  color: #111827;
+  font-size: clamp(30px, 2.9vw, 42px);
+  font-weight: 820;
+  line-height: 1.02;
+}
+
+.leave-settings-hero p {
+  max-width: 760px;
+  margin: 8px 0 0;
+  color: #6f6658;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.leave-settings-summary {
+  grid-template-columns: repeat(3, minmax(116px, 1fr));
+  gap: 12px;
+}
+
+.leave-settings-summary > div,
+.leave-quota-total {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(199, 210, 254, 0.58);
+  border-radius: 12px;
+  background: linear-gradient(105deg, rgba(251, 188, 4, 0.08), rgba(255, 255, 255, 0.96) 44%, rgba(238, 242, 255, 0.52) 100%);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+}
+
+.leave-settings-summary strong,
+.leave-quota-total strong {
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 850;
+}
+
+.leave-settings-panel {
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+  padding: 22px;
+}
+
+.leave-settings-panel__header h2 {
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.leave-settings-panel__header p {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.leave-type-card,
+.leave-quota-card {
+  border-color: rgba(226, 232, 240, 0.92);
+  border-radius: 12px;
+  box-shadow: none;
+  transform: none;
+}
+
+.leave-type-card:hover {
+  transform: none;
+}
+
+.leave-settings-form input,
+.leave-settings-form select,
+.leave-settings-form textarea,
+.leave-quota-toolbar input,
+.leave-quota-toolbar select,
+.leave-quota-card__title input {
+  min-height: 46px;
+  border-color: #dce3ed;
+  border-radius: 10px;
+  background: #f8fafc;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.leave-settings-primary-btn,
+.leave-settings-secondary-btn,
+.leave-settings-ghost-btn {
+  min-height: 42px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 850;
+  text-transform: none;
+}
+
+.leave-settings-primary-btn {
+  border: 1px solid rgba(217, 164, 6, 0.42);
+  background: #fbbc04;
+  color: #111827;
+}
+
+.leave-settings-modal {
+  border-radius: 12px;
+}
