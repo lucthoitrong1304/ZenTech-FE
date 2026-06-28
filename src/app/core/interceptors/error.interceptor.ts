@@ -107,7 +107,11 @@ function logHttpFailure(
   }
 
   const traceId = req.headers.get('X-Trace-Id') ?? undefined;
-  const reason = error.statusText || error.message;
+  const reason = getHttpErrorReason(error);
+
+  if (status === 401) {
+    return;
+  }
 
   // 2. Request bị network error, timeout, CORS, server không phản hồi => ERROR với statusCode = 0
   if (status === 0 || status === null || status === undefined) {
@@ -162,7 +166,45 @@ function logHttpFailure(
   }
 }
 
-// Hàm phụ trợ xử lý luồng 401
+function getHttpErrorReason(error: HttpErrorResponse): string {
+  const responseError = error.error;
+  const candidates = [
+    typeof responseError === 'object' && responseError !== null ? responseError.message : undefined,
+    typeof responseError === 'object' && responseError !== null ? responseError.error : undefined,
+    typeof responseError === 'string' ? responseError : undefined,
+    getMeaningfulHttpErrorMessage(error),
+    error.statusText && error.statusText !== 'OK' ? error.statusText : undefined,
+    getFallbackReason(error.status),
+  ];
+
+  return candidates.find((candidate): candidate is string => !!candidate && candidate.trim().length > 0) ?? 'Unknown HTTP error';
+}
+
+function getMeaningfulHttpErrorMessage(error: HttpErrorResponse): string | undefined {
+  if (!error.message || error.statusText === 'OK') {
+    return undefined;
+  }
+
+  return error.message;
+}
+function getFallbackReason(status: number): string | undefined {
+  switch (status) {
+    case 400:
+      return 'Bad Request';
+    case 401:
+      return 'Unauthorized';
+    case 403:
+      return 'Forbidden';
+    case 404:
+      return 'Not Found';
+    case 409:
+      return 'Conflict';
+    case 429:
+      return 'Too Many Requests';
+    default:
+      return undefined;
+  }
+}
 function handle401Error(
   req: HttpRequest<unknown>,
   next: HttpHandlerFn,

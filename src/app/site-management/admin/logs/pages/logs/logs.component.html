@@ -226,7 +226,7 @@
         <div class="logs-modal-header">
           <div>
 
-            <p class="logs-modal-kicker">Chi tiết nhật ký hệ thống</p>
+            <p class="logs-modal-kicker">Chi tiết log</p>
             <h3 id="log-detail-title" class="logs-modal-title">{{ log.message }}</h3>
           </div>
           <button type="button" class="logs-modal-close-btn" (click)="closeLogDetails()" aria-label="Đóng chi tiết log">×</button>
@@ -254,7 +254,7 @@
 
           @if (getLogViewMode(log.id) === 'structured') {
             <div class="logs-trace-graph-panel">
-              <span class="logs-graph-title">Vị trí phát sinh trong chuỗi Request (Distributed Tracing):</span>
+              <span class="logs-graph-title">Vị trí ghi nhận trong request:</span>
               <div class="logs-trace-timeline">
                 <div class="logs-timeline-node" [class.logs-timeline-node--active]="log.category === 'FRONTEND'">
                   <svg lucideGlobe class="w-4 h-4"></svg>
@@ -351,7 +351,7 @@
               <div class="logs-ai-explain-panel">
                 @if (!explanations()[log.id] && !explainingIds()[log.id]) {
                   <div class="flex flex-col items-start gap-2">
-                    <span class="text-xs text-gray-500">Phát hiện log lỗi/cảnh báo hệ thống. Bạn có muốn AI giải thích và gợi ý fix?</span>
+                    <span class="text-xs text-gray-500">Phát hiện log lỗi/cảnh báo. Bạn có muốn AI giải thích và gợi ý fix?</span>
                     <button type="button" (click)="handleExplainLog(log)" class="logs-ai-explain-btn">
                       <svg lucideSparkles class="w-4 h-4 text-amber-500"></svg>
                       <span>AI Giải Thích Nhanh</span>
@@ -368,7 +368,7 @@
                   <div class="logs-ai-result-box">
                     <div class="logs-ai-result-header">
                       <svg lucideSparkles class="w-4 h-4 text-indigo-500"></svg>
-                      <strong>AI Chẩn Đoán Lỗi Hệ Thống:</strong>
+                      <strong>AI Chẩn Đoán Log:</strong>
                     </div>
                     <p class="logs-ai-result-text">{{ explanations()[log.id] }}</p>
                   </div>
