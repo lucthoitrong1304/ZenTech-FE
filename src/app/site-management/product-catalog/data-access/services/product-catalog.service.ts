@@ -42,15 +42,20 @@ export class ProductCatalogService {
       return throwError(() => new Error(PRODUCT_CATEGORY_NOT_FOUND));
     }
 
+    const params: Record<string, string | number | boolean> = {
+      page: query.page,
+      size: query.size,
+      sort: query.sort,
+    };
+    if (query.minRating) {
+      params['minRating'] = query.minRating;
+    }
+
     return this.apiService
       .get<PagedResponse<CategoryProductListItemResponseDto>>(
         `${this.categoriesBaseUrl}/${category.id}/products`,
         {
-          params: {
-            page: query.page,
-            size: query.size,
-            sort: query.sort,
-          },
+          params,
           context: publicCatalogContext(),
         }
       )
@@ -73,15 +78,22 @@ export class ProductCatalogService {
     sort?: string;
     page?: number;
     size?: number;
+    minRating?: number | null;
   }): Observable<PagedResponse<ProductListItem>> {
+    const trimmedSearch = query.search?.trim() ?? '';
+    const params: Record<string, string | number | boolean> = {
+      search: trimmedSearch,
+      sort: query.sort ?? 'NEWEST',
+      page: query.page ?? 0,
+      size: query.size ?? 10,
+    };
+    if (query.minRating) {
+      params['minRating'] = query.minRating;
+    }
+
     return this.apiService
       .get<PagedResponse<CategoryProductListItemResponseDto>>(this.productsBaseUrl, {
-        params: {
-          search: query.search ?? '',
-          sort: query.sort ?? 'NEWEST',
-          page: query.page ?? 0,
-          size: query.size ?? 10,
-        },
+        params,
         context: publicCatalogContext(),
       })
       .pipe(
@@ -117,7 +129,6 @@ export class ProductCatalogService {
             page: query.page,
             size: query.size,
           },
-          context: publicCatalogContext(),
         }
       )
       .pipe(map(response => response.items.map(toProductReview)));
@@ -133,6 +144,30 @@ export class ProductCatalogService {
           imageKeys: payload.imageKeys ?? [],
           videoKey: payload.videoKey,
         }
+      )
+      .pipe(map(toProductReview));
+  }
+
+  updateProductReview(
+    productId: string,
+    reviewId: string,
+    payload: ProductReviewPayload
+  ): Observable<ProductReview> {
+    const body: ProductReviewRequestDto = {
+      rating: payload.rating,
+      comment: payload.comment.trim(),
+    };
+    if (payload.imageKeys !== undefined) {
+      body.imageKeys = payload.imageKeys;
+    }
+    if (payload.videoKey !== undefined) {
+      body.videoKey = payload.videoKey;
+    }
+
+    return this.apiService
+      .put<ProductReviewRequestDto, ProductReviewItemResponseDto>(
+        `${this.productsBaseUrl}/${productId}/reviews/${reviewId}`,
+        body
       )
       .pipe(map(toProductReview));
   }
@@ -199,6 +234,8 @@ interface ProductReviewItemResponseDto {
   customerId: string;
   customerName: string | null;
   isOwner: boolean;
+  imageKeys: string[] | null;
+  videoKey: string | null;
   imageUrls: string[] | null;
   videoUrl: string | null;
 }
@@ -206,8 +243,8 @@ interface ProductReviewItemResponseDto {
 interface ProductReviewRequestDto {
   rating: number;
   comment: string;
-  imageKeys: string[];
-  videoKey?: string;
+  imageKeys?: string[];
+  videoKey?: string | null;
 }
 
 interface ProductReviewListQuery {
@@ -341,6 +378,9 @@ function toProductReview(review: ProductReviewItemResponseDto): ProductReview {
     title: 'Customer review',
     comment: review.comment?.trim() || '',
     createdAt: review.createdAt,
+    isOwner: review.isOwner,
+    imageKeys: uniqueStrings(review.imageKeys ?? []),
+    videoKey: review.videoKey?.trim() || undefined,
     imageUrls: uniqueStrings(review.imageUrls ?? []),
     videoUrl: review.videoUrl?.trim() || undefined,
   };

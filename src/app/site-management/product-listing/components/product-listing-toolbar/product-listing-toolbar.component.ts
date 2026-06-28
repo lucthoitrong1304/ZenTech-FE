@@ -20,9 +20,12 @@ export class ProductListingToolbarComponent {
   readonly productCount = input(0);
   readonly sortOptions = input<ProductSortOption[]>([]);
   readonly selectedSort = input<ProductSortOptionValue>('featured');
+  readonly selectedMinRating = input<number | null>(null);
   readonly sortChange = output<ProductSortOptionValue>();
+  readonly ratingChange = output<number | null>();
 
   readonly isOpen = signal(false);
+  readonly ratingOptions = [5, 4, 3, 2, 1];
 
   toggleDropdown(): void {
     this.isOpen.update(prev => !prev);
@@ -31,6 +34,10 @@ export class ProductListingToolbarComponent {
   selectOption(value: ProductSortOptionValue): void {
     this.sortChange.emit(value);
     this.isOpen.set(false);
+  }
+
+  selectRating(value: number | null): void {
+    this.ratingChange.emit(value);
   }
 
   @HostListener('document:click', ['$event'])

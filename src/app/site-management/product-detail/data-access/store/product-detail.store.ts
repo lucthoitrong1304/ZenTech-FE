@@ -61,6 +61,7 @@ const INITIAL_STATE: ProductDetailState = {
   error: null,
   isNotFound: false,
   reviewModalOpen: false,
+  editingReviewId: null,
   reviewSubmitting: false,
   reviewFormError: null,
   reviewDraft: EMPTY_REVIEW_DRAFT,
@@ -250,6 +251,7 @@ export const ProductDetailStore = signalStore(
           removeAllEntities(REVIEW_IMAGE_ENTITY_CONFIG),
           {
             reviewModalOpen: false,
+            editingReviewId: null,
             reviewSubmitting: false,
             reviewFormError: null,
             reviewDraft: { ...EMPTY_REVIEW_DRAFT },
@@ -273,6 +275,7 @@ export const ProductDetailStore = signalStore(
             error: null,
             isNotFound: false,
             reviewModalOpen: false,
+            editingReviewId: null,
             reviewSubmitting: false,
             reviewFormError: null,
             reviewDraft: { ...EMPTY_REVIEW_DRAFT },
@@ -307,6 +310,7 @@ export const ProductDetailStore = signalStore(
               reviews,
             },
             reviewModalOpen: false,
+            editingReviewId: null,
             reviewSubmitting: false,
             reviewFormError: null,
             reviewDraft: { ...EMPTY_REVIEW_DRAFT },
@@ -316,30 +320,83 @@ export const ProductDetailStore = signalStore(
         );
       };
 
+      const replaceReview = (review: ProductReview): void => {
+        const product = store.product();
+
+        if (!product) {
+          return;
+        }
+
+        const reviews = product.reviews.map(item => (item.id === review.id ? review : item));
+        const rating =
+          reviews.length > 0
+            ? Number(
+                (reviews.reduce((total, item) => total + item.rating, 0) / reviews.length).toFixed(1)
+              )
+            : undefined;
+
+        patchState(
+          store,
+          removeAllEntities(REVIEW_IMAGE_ENTITY_CONFIG),
+          {
+            product: {
+              ...product,
+              rating,
+              reviewCount: reviews.length,
+              reviews,
+            },
+            reviewModalOpen: false,
+            editingReviewId: null,
+            reviewSubmitting: false,
+            reviewFormError: null,
+            reviewDraft: { ...EMPTY_REVIEW_DRAFT },
+            reviewVideo: null,
+            reviewSuccessMessage: 'Đánh giá của bạn đã được cập nhật thành công',
+          }
+        );
+      };
+
       // Gửi review lên backend sau khi đã có sẵn imageKeys/videoKey.
       const submitReviewWithMediaKeys = (
         productId: string,
         draft: ProductReviewDraft,
         imageKeys: string[],
-        videoKey: string | undefined
-      ) =>
-        productCatalogService
-          .addProductReview(productId, { ...draft, imageKeys, videoKey })
+        videoKey: string | undefined,
+        reviewId: string | null
+      ) => {
+        const request$ = reviewId
+          ? productCatalogService.updateProductReview(productId, reviewId, {
+              ...draft,
+              imageKeys,
+              videoKey: videoKey ?? '',
+            })
+          : productCatalogService.addProductReview(productId, { ...draft, imageKeys, videoKey });
+
+        return request$
           .pipe(
             tap({
               next: review => {
                 clearPreviewUrls(readReviewImages());
                 clearVideoPreviewUrl(readReviewVideo());
-                addReview(review);
+                if (reviewId) {
+                  replaceReview(review);
+                } else {
+                  addReview(review);
+                }
               },
               error: () =>
                 patchState(store, {
                   reviewSubmitting: false,
-                  reviewFormError: { submit: 'Chưa thể gửi đánh giá. Vui lòng thử lại.' },
+                  reviewFormError: {
+                    submit: reviewId
+                      ? 'Chưa thể cập nhật đánh giá. Vui lòng thử lại.'
+                      : 'Chưa thể gửi đánh giá. Vui lòng thử lại.',
+                  },
                 }),
             }),
             catchError(() => EMPTY)
           );
+      };
 
       return {
         // Load chi tiết sản phẩm cùng danh sách review ban đầu.
@@ -412,6 +469,7 @@ export const ProductDetailStore = signalStore(
               }
 
               patchState(store, { reviewSubmitting: true, reviewFormError: null });
+              const editingReviewId = store.editingReviewId();
 
               // Gom các media chưa upload để xử lý trước khi tạo review.
               const pendingImages = readReviewImages().filter(
@@ -419,7 +477,7 @@ export const ProductDetailStore = signalStore(
               );
               const pendingVideo = readReviewVideo();
               const hasPendingVideo =
-                pendingVideo !== null && pendingVideo.status !== 'uploaded';
+                pendingVideo !== null && pendingVideo.status !== 'uploaded' && !!pendingVideo.file;
 
               // Nếu không còn media chờ upload thì gửi review ngay.
               if (pendingImages.length === 0 && !hasPendingVideo) {
@@ -427,7 +485,8 @@ export const ProductDetailStore = signalStore(
                   product.id,
                   draft,
                   getUploadedImageKeys(),
-                  getUploadedVideoKey()
+                  getUploadedVideoKey(),
+                  editingReviewId
                 );
               }
 
@@ -443,7 +502,7 @@ export const ProductDetailStore = signalStore(
 
               // Upload từng ảnh và giữ lại kết quả theo id để cập nhật đúng item preview.
               const imageUploads$ = pendingImages.map(image =>
-                reviewMediaUploadService.uploadReviewImage(image.file).pipe(
+                reviewMediaUploadService.uploadReviewImage(image.file as File).pipe(
                   map(
                     fileKey =>
                       ({
@@ -465,7 +524,7 @@ export const ProductDetailStore = signalStore(
               // Upload video nếu user có chọn video chưa upload.
               const videoUpload$ =
                 hasPendingVideo && pendingVideo
-                  ? reviewMediaUploadService.uploadReviewVideo(pendingVideo.file).pipe(
+                  ? reviewMediaUploadService.uploadReviewVideo(pendingVideo.file as File).pipe(
                       map((videoKey): { status: 'uploaded'; videoKey: string } => ({
                         status: 'uploaded',
                         videoKey,
@@ -531,7 +590,8 @@ export const ProductDetailStore = signalStore(
                     product.id,
                     draft,
                     getUploadedImageKeys(updatedImages),
-                    finalVideoKey
+                    finalVideoKey,
+                    editingReviewId
                   );
                 })
               );
@@ -547,6 +607,7 @@ export const ProductDetailStore = signalStore(
             removeAllEntities(REVIEW_IMAGE_ENTITY_CONFIG),
             {
               reviewModalOpen: true,
+              editingReviewId: null,
               reviewFormError: null,
               reviewDraft: { ...EMPTY_REVIEW_DRAFT },
               reviewVideo: null,
@@ -557,6 +618,46 @@ export const ProductDetailStore = signalStore(
         // Đóng modal review và reset toàn bộ dữ liệu nhập tạm.
         closeReviewModal(): void {
           resetReviewState();
+        },
+        openEditReviewModal(review: ProductReview): void {
+          clearPreviewUrls(readReviewImages());
+          clearVideoPreviewUrl(readReviewVideo());
+          const existingImages: ReviewImageUploadItem[] = review.imageKeys.map((fileKey, index) => ({
+            id: createReviewImageId(),
+            fileName: fileKey.split('/').pop() || `review-image-${index + 1}`,
+            previewUrl: review.imageUrls[index] ?? '',
+            status: 'uploaded',
+            fileKey,
+          }));
+          const existingVideo: ReviewVideoUploadItem | null = review.videoKey
+            ? {
+                id: createReviewMediaId(),
+                fileName: review.videoKey.split('/').pop() || 'review-video',
+                previewUrl: review.videoUrl ?? '',
+                status: 'uploaded',
+                videoKey: review.videoKey,
+              }
+            : null;
+
+          patchState(
+            store,
+            setAllEntities(existingImages, REVIEW_IMAGE_ENTITY_CONFIG),
+            {
+              reviewModalOpen: true,
+              editingReviewId: review.id,
+              reviewFormError: null,
+              reviewDraft: {
+                reviewerName: '',
+                rating: review.rating,
+                title: '',
+                comment: review.comment,
+                imageKeys: review.imageKeys,
+                videoKey: review.videoKey,
+              },
+              reviewVideo: existingVideo,
+              reviewSuccessMessage: null,
+            }
+          );
         },
         // Cập nhật nội dung draft từ modal, đồng thời giữ media keys đã upload.
         updateReviewDraft(draft: ProductReviewDraft): void {

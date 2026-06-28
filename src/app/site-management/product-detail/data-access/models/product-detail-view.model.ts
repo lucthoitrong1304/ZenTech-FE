@@ -17,7 +17,7 @@ export type ReviewImageUploadStatus = 'pending' | 'uploading' | 'uploaded' | 'fa
 
 export interface ReviewImageUploadItem {
   id: string;
-  file: File;
+  file?: File;
   fileName: string;
   previewUrl: string;
   status: ReviewImageUploadStatus;
@@ -29,7 +29,7 @@ export type ReviewVideoUploadStatus = 'pending' | 'uploading' | 'uploaded' | 'fa
 
 export interface ReviewVideoUploadItem {
   id: string;
-  file: File;
+  file?: File;
   fileName: string;
   previewUrl: string;
   status: ReviewVideoUploadStatus;
@@ -45,6 +45,7 @@ export interface ProductDetailViewModel {
   error: string | null;
   isNotFound: boolean;
   reviewModalOpen: boolean;
+  editingReviewId: string | null;
   reviewSubmitting: boolean;
   reviewFormError: ProductReviewFormError | null;
   reviewDraft: ProductReviewDraft;

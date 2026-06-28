@@ -13,7 +13,7 @@
     <header class="flex min-w-0 items-start justify-between gap-4">
       <div class="min-w-0">
         <h2 id="add-review-title" class="text-2xl font-bold text-[#101010]">
-          Viết đánh giá
+          {{ isEditing() ? 'Sửa đánh giá' : 'Viết đánh giá' }}
         </h2>
         <p class="mt-1 truncate text-sm font-semibold text-[#81765f]">
           {{ productName() }}
@@ -225,9 +225,11 @@
           Đang tải ảnh...
         } @else if (submitting()) {
           Đang gửi...
-        } @else {
-          Gửi đánh giá
-        }
+      } @else if (isEditing()) {
+        Cập nhật đánh giá
+      } @else {
+        Gửi đánh giá
+      }
       </button>
       <button
         type="button"
