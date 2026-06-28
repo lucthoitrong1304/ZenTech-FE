@@ -235,6 +235,32 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
   }
 
+  protected hasAffectedUsers(incident: ManagementIncidentImpactDto | null | undefined): boolean {
+    return (incident?.affectedUsers || 0) > 0;
+  }
+
+  protected getEffectiveRevenueLoss(incident: ManagementIncidentImpactDto | null | undefined): number {
+    if (!incident || !this.hasAffectedUsers(incident)) return 0;
+    return incident.revenueLoss || 0;
+  }
+
+  protected getEffectiveLostOrders(incident: ManagementIncidentImpactDto | null | undefined): number {
+    if (!incident || !this.hasAffectedUsers(incident)) return 0;
+    return incident.lostOrders || 0;
+  }
+
+  protected getEffectiveExpectedRevenue(incident: ManagementIncidentImpactDto | null | undefined): number {
+    if (!incident) return 0;
+    if (!this.hasAffectedUsers(incident)) return incident.actualRevenue || 0;
+    return incident.expectedRevenue || 0;
+  }
+
+  protected getEffectiveExpectedOrders(incident: ManagementIncidentImpactDto | null | undefined): number {
+    if (!incident) return 0;
+    if (!this.hasAffectedUsers(incident)) return incident.actualOrders || 0;
+    return incident.expectedOrders || 0;
+  }
+
   protected getFriendlyErrorName(apiPath: string | null | undefined): string {
     if (!apiPath) return 'Lỗi hệ thống không xác định';
     const path = apiPath.toLowerCase();
@@ -252,7 +278,7 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
     
     let score = 20; // base score
     if (incident.affectedUsers > 0) score += 30;
-    if (incident.expectedOrders > 1) score += 30;
+    if (this.getEffectiveExpectedOrders(incident) > 1) score += 30;
     if (incident.durationMinutes > 5) score += 20;
 
     const percentage = Math.min(score, 100);
@@ -272,12 +298,14 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
   protected getSeverityReasons(incident: ManagementIncidentImpactDto | null | undefined): string[] {
     if (!incident) return [];
     const reasons: string[] = [];
+    const revenueLoss = this.getEffectiveRevenueLoss(incident);
+    const lostOrders = this.getEffectiveLostOrders(incident);
     
-    if (incident.revenueLoss > 0) {
-      reasons.push(`Thiệt hại doanh thu: ${this.formatVND(incident.revenueLoss)}`);
+    if (revenueLoss > 0) {
+      reasons.push(`Thiệt hại doanh thu: ${this.formatVND(revenueLoss)}`);
     }
-    if (incident.lostOrders > 0) {
-      reasons.push(`Đơn hàng bị mất: ${incident.lostOrders} đơn`);
+    if (lostOrders > 0) {
+      reasons.push(`Đơn hàng bị mất: ${lostOrders} đơn`);
     }
     if (incident.apiPath && (incident.apiPath.includes('/checkout') || incident.apiPath.includes('/payment'))) {
       reasons.push('Checkout Flow (Funnel Weight 100%)');
@@ -314,8 +342,8 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
   protected getForecastDelta(incident: ManagementIncidentImpactDto | null | undefined) {
     if (!incident) return { revenueLossDelta: 0, lostOrdersDelta: 0, isSaturated: false };
     const factor = (incident.durationMinutes && incident.durationMinutes > 0) ? (60.0 / incident.durationMinutes) : 1.0;
-    const revenueLossDelta = incident.revenueLoss * factor;
-    const lostOrdersDelta = Math.round(incident.lostOrders * factor);
+    const revenueLossDelta = this.getEffectiveRevenueLoss(incident) * factor;
+    const lostOrdersDelta = Math.round(this.getEffectiveLostOrders(incident) * factor);
     const isSaturated = lostOrdersDelta === 0 && revenueLossDelta < 10000;
     return {
       revenueLossDelta,
@@ -334,7 +362,7 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
         code: inc.incidentCode,
         apiPath: inc.apiPath,
         serviceName: inc.serviceName,
-        revenueLoss: inc.revenueLoss,
+        revenueLoss: this.getEffectiveRevenueLoss(inc),
         occurredAt: inc.firstOccurredAt || inc.occurredAt
       }));
   }
