@@ -367,3 +367,34 @@
     border-radius: 10px;
   }
 }
+
+.approvals-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748b;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #4f46e5;
+  background: #f8fafc;
+}
+
+.tab-btn.active {
+  color: #4f46e5;
+  background: #eef2ff;
+}

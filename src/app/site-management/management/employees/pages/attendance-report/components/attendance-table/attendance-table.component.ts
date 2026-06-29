@@ -83,6 +83,9 @@ export class AttendanceTableComponent {
   }
 
   getStatusBadgeClass(status: string): string {
+    if (status && status.startsWith('WFH_')) {
+      return 'bg-green-50 text-green-700 border border-green-200';
+    }
     switch (status) {
       case 'ON_TIME': return 'bg-green-100 text-green-700';
       case 'LATE': return 'bg-red-100 text-red-700';
@@ -99,6 +102,10 @@ export class AttendanceTableComponent {
   }
 
   getStatusLabel(status: string): string {
+    if (status && status.startsWith('WFH_')) {
+      const rest = status.substring(4);
+      return 'WFH - ' + this.getStatusLabel(rest);
+    }
     switch (status) {
       case 'ON_TIME': return 'Đúng giờ';
       case 'LATE': return 'Đi muộn';
@@ -148,11 +155,18 @@ export class AttendanceTableComponent {
       default: return type;
     }
   }
-
   formatScheduleTime(time: string | null): string {
     return time ? time.slice(0, 5) : '--:--';
   }
 
+  formatPenaltyMinutes(minutes: number): string {
+    if (!minutes || minutes <= 0) return '0m';
+    if (minutes < 60) {
+      return `${minutes}m`;
+    }
+    const hours = minutes / 60.0;
+    return `${hours.toFixed(1)}h`;
+  }
   isLiveRecord(record: AttendanceRecordResponse): boolean {
     return !!(
       record.isProvisional ||

@@ -182,9 +182,16 @@
                             class="work-schedules-cell__shift"
                             [style.border-left-color]="shift.colorCode || '#4f46e5'"
                           >
-                            <span [style.color]="shift.colorCode || '#4f46e5'">{{
-                              shift.shiftName
-                            }}</span>
+                            <span [style.color]="shift.colorCode || '#4f46e5'" class="flex flex-col gap-1">
+                              <strong>{{ shift.shiftName }}</strong>
+                              <span *ngIf="shift.statusLabel" 
+                                    [class.bg-green-50]="shift.isWfh" [class.text-green-700]="shift.isWfh" [class.border-green-200]="shift.isWfh"
+                                    [class.bg-red-50]="shift.isLeave" [class.text-red-700]="shift.isLeave" [class.border-red-200]="shift.isLeave"
+                                    [class.bg-yellow-50]="shift.isSwap" [class.text-yellow-700]="shift.isSwap" [class.border-yellow-200]="shift.isSwap"
+                                    class="text-[9px] font-bold block px-1 py-0.5 rounded border text-center leading-tight">
+                                {{ shift.statusLabel }}
+                              </span>
+                            </span>
                             <small>{{ getShiftTimeRange(shift) }}</small>
                           </span>
                         }

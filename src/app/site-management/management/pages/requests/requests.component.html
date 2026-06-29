@@ -2,19 +2,37 @@
   <div class="requests-command">
     <div class="requests-command__copy">
       <span class="requests-kicker">Điều hành nhân sự</span>
-      <h1>Yêu cầu nghỉ phép</h1>
-      <p>Gửi yêu cầu Nghỉ, WFH, AFK hoặc các loại phép do owner cấu hình.</p>
+      <h1>Gửi đề xuất & Yêu cầu</h1>
+      <p>Gửi yêu cầu Nghỉ phép/WFH/AFK, Đổi ca làm việc, hoặc Điều chỉnh dữ liệu chấm công.</p>
     </div>
   </div>
 
-  <div class="requests-layout">
-    <div class="requests-form-panel">
-      <div class="requests-form animate-fade-in">
-        <h2 class="requests-form-title">Đăng ký yêu cầu</h2>
+  <!-- Tab Buttons -->
+  <div class="requests-tabs flex border-b border-gray-200 mb-6 bg-white p-2 rounded-lg shadow-sm">
+    <button (click)="switchTab('leave')" [class.active]="activeTab() === 'leave'" class="tab-btn">
+      <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      Nghỉ phép / WFH / AFK
+    </button>
+    <button (click)="switchTab('swap')" [class.active]="activeTab() === 'swap'" class="tab-btn">
+      <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 11l-4-4-4 4M21 12H3M7 13l4 4 4-4"/></svg>
+      Đổi ca làm việc
+    </button>
+    <button (click)="switchTab('adjust')" [class.active]="activeTab() === 'adjust'" class="tab-btn">
+      <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      Chỉnh sửa chấm công
+    </button>
+  </div>
 
-        <div class="requests-form-group">
-          <label class="requests-form-label">Loại phép</label>
-          <select [(ngModel)]="leaveData.leaveTypeId" class="requests-form-select">
+  <div class="requests-layout">
+    <div class="requests-form-panel bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      
+      <!-- TAB 1: LEAVE / WFH / AFK FORM -->
+      <div *ngIf="activeTab() === 'leave'" class="requests-form animate-fade-in">
+        <h2 class="requests-form-title text-xl font-bold mb-4 text-gray-800">Đăng ký Nghỉ, WFH, AFK</h2>
+
+        <div class="requests-form-group mb-4">
+          <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Loại phép</label>
+          <select [(ngModel)]="leaveData.leaveTypeId" class="requests-form-select w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
             @for (type of leaveTypes(); track type.id) {
               <option [value]="type.id">{{ type.name }} ({{ unitLabel(type.unit) }})</option>
             }
@@ -22,107 +40,284 @@
         </div>
 
         @if (selectedQuota(); as quota) {
-          <div class="requests-quota-summary">
+          <div class="requests-quota-summary grid grid-cols-4 gap-2 p-3 bg-blue-50 rounded-lg mb-4 text-center">
             <div>
-              <span>Hạn mức</span>
-              <strong>{{ quota.entitlement }} {{ unitLabel(quota.leaveType.unit) }}</strong>
+              <span class="text-xs text-gray-500 block">Hạn mức</span>
+              <strong class="text-sm text-blue-900">{{ quota.entitlement }} {{ unitLabel(quota.leaveType.unit) }}</strong>
             </div>
             <div>
-              <span>Đã duyệt</span>
-              <strong>{{ quota.approvedUsed }} {{ unitLabel(quota.leaveType.unit) }}</strong>
+              <span class="text-xs text-gray-500 block">Đã duyệt</span>
+              <strong class="text-sm text-green-700">{{ quota.approvedUsed }} {{ unitLabel(quota.leaveType.unit) }}</strong>
             </div>
             <div>
-              <span>Đang chờ</span>
-              <strong>{{ quota.pendingUsed }} {{ unitLabel(quota.leaveType.unit) }}</strong>
+              <span class="text-xs text-gray-500 block">Đang chờ</span>
+              <strong class="text-sm text-yellow-700">{{ quota.pendingUsed }} {{ unitLabel(quota.leaveType.unit) }}</strong>
             </div>
             <div>
-              <span>Còn lại</span>
-              <strong>{{ quota.remaining }} {{ unitLabel(quota.leaveType.unit) }}</strong>
+              <span class="text-xs text-gray-500 block">Còn lại</span>
+              <strong class="text-sm text-gray-800">{{ quota.remaining }} {{ unitLabel(quota.leaveType.unit) }}</strong>
             </div>
           </div>
         }
 
-        <div class="requests-form-grid">
+        <div class="requests-form-grid grid grid-cols-2 gap-4 mb-4">
           <div class="requests-form-group">
-            <label class="requests-form-label">Từ ngày</label>
-            <input type="date" [(ngModel)]="leaveData.startDate" class="requests-form-input" />
+            <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Từ ngày</label>
+            <input type="date" [(ngModel)]="leaveData.startDate" (change)="onLeaveDateChange()" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
           </div>
           <div class="requests-form-group">
-            <label class="requests-form-label">Đến ngày</label>
-            <input type="date" [(ngModel)]="leaveData.endDate" class="requests-form-input" />
+            <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Đến ngày</label>
+            <input type="date" [(ngModel)]="leaveData.endDate" (change)="onLeaveDateChange()" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
+          </div>
+        </div>
+
+        <!-- Shift Checkboxes for leave-by-shift -->
+        <div *ngIf="myDailyShifts().length > 0" class="my-shifts-selector mb-4 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+          <label class="text-sm font-semibold text-gray-700 block mb-2">Chọn ca nghỉ phép trong ngày:</label>
+          <div class="flex flex-col gap-2">
+            <div *ngFor="let s of myDailyShifts()" class="flex items-center">
+              <input type="checkbox" [id]="s.shiftId" [checked]="selectedShiftIds().includes(s.shiftId)" (change)="toggleShiftSelection(s.shiftId)" class="mr-2 h-4 w-4 text-blue-600 border-gray-300 rounded" />
+              <label [for]="s.shiftId" class="text-sm text-gray-800 flex items-center">
+                <span class="w-3 h-3 rounded-full mr-2" [style.backgroundColor]="s.colorCode"></span>
+                <strong>{{ s.shiftName }}</strong> &nbsp;({{ s.startTime }} - {{ s.endTime }})
+              </label>
+            </div>
           </div>
         </div>
 
         @if (isHourType()) {
-          <div class="requests-form-grid">
+          <div class="requests-form-grid grid grid-cols-2 gap-4 mb-4">
             <div class="requests-form-group">
-              <label class="requests-form-label">Giờ bắt đầu</label>
-              <input type="time" [(ngModel)]="leaveData.startTime" class="requests-form-input" />
+              <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Giờ bắt đầu</label>
+              <input type="time" [(ngModel)]="leaveData.startTime" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
             </div>
             <div class="requests-form-group">
-              <label class="requests-form-label">Giờ kết thúc</label>
-              <input type="time" [(ngModel)]="leaveData.endTime" class="requests-form-input" />
+              <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Giờ kết thúc</label>
+              <input type="time" [(ngModel)]="leaveData.endTime" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
             </div>
           </div>
         }
 
-        <div class="requests-form-group">
-          <label class="requests-form-label">Lý do</label>
+        <div class="requests-form-group mb-4">
+          <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Lý do</label>
           <textarea [(ngModel)]="leaveData.reason" rows="3"
                     placeholder="Nhập lý do chi tiết..."
-                    class="requests-form-textarea"></textarea>
+                    class="requests-form-textarea w-full p-2 border border-gray-300 rounded-md"></textarea>
         </div>
 
-        <button (click)="submitLeave()" [disabled]="submitting() || leaveTypes().length === 0" class="requests-submit-btn">
-          @if (submitting()) {
-            <svg lucideLoader2 class="w-4 h-4 animate-spin"></svg>
-          }
+        <button (click)="submitLeave()" [disabled]="submitting() || leaveTypes().length === 0" class="requests-submit-btn w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition flex justify-center items-center gap-2">
+          <svg *ngIf="submitting()" lucideLoader2 class="w-4 h-4 animate-spin"></svg>
           Gửi yêu cầu
         </button>
       </div>
+
+      <!-- TAB 2: SHIFT SWAP FORM -->
+      <div *ngIf="activeTab() === 'swap'" class="requests-form animate-fade-in">
+        <h2 class="requests-form-title text-xl font-bold mb-4 text-gray-800">Đăng ký Đổi ca / Trực thay</h2>
+
+        <div class="requests-form-group mb-4">
+          <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Đồng nghiệp muốn đổi/trực cùng</label>
+          <select [(ngModel)]="swapData.colleagueId" (change)="loadColleagueShifts()" class="requests-form-select w-full p-2 border border-gray-300 rounded-md">
+            <option value="">-- Chọn đồng nghiệp --</option>
+            @for (c of colleagues(); track c.id) {
+              <option [value]="c.id">{{ c.fullName }} ({{ c.email }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="requests-form-group mb-4">
+          <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Loại yêu cầu</label>
+          <div class="flex gap-4">
+            <label class="flex items-center text-sm text-gray-700">
+              <input type="radio" name="swapType" value="SWAP" [(ngModel)]="swapData.type" class="mr-2" /> Đổi ca (Hoán đổi 2 ca cho nhau)
+            </label>
+            <label class="flex items-center text-sm text-gray-700">
+              <input type="radio" name="swapType" value="COVER" [(ngModel)]="swapData.type" class="mr-2" /> Nhờ trực thay (Lịch bạn chuyển sang colleague)
+            </label>
+          </div>
+        </div>
+
+        <!-- My Shift settings -->
+        <h3 class="text-sm font-bold text-gray-700 mb-2 border-b pb-1">Ca của bạn:</h3>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="requests-form-group">
+            <label class="requests-form-label text-sm text-gray-600 block mb-1">Ngày làm việc cần đổi</label>
+            <input type="date" [(ngModel)]="swapData.myWorkDate" (change)="loadMySwapShifts()" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
+          </div>
+          <div class="requests-form-group">
+            <label class="requests-form-label text-sm text-gray-600 block mb-1">Chọn ca làm việc cần đổi</label>
+            <select [(ngModel)]="swapData.myShiftId" class="requests-form-select w-full p-2 border border-gray-300 rounded-md">
+              <option value="">-- Chọn ca của bạn --</option>
+              <option *ngFor="let s of mySwapShifts()" [value]="s.shiftId">{{ s.shiftName }} ({{ s.startTime }} - {{ s.endTime }})</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Colleague Shift settings (Only if SWAP) -->
+        <div *ngIf="swapData.type === 'SWAP'">
+          <h3 class="text-sm font-bold text-gray-700 mb-2 border-b pb-1">Ca của đồng nghiệp cần đổi:</h3>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="requests-form-group">
+              <label class="requests-form-label text-sm text-gray-600 block mb-1">Ngày ca của đồng nghiệp</label>
+              <input type="date" [(ngModel)]="swapData.colleagueWorkDate" (change)="loadColleagueShifts()" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
+            </div>
+            <div class="requests-form-group">
+              <label class="requests-form-label text-sm text-gray-600 block mb-1">Chọn ca muốn nhận</label>
+              <select [(ngModel)]="swapData.colleagueShiftId" class="requests-form-select w-full p-2 border border-gray-300 rounded-md">
+                <option value="">-- Chọn ca đồng nghiệp --</option>
+                <option *ngFor="let s of colleagueShifts()" [value]="s.shiftId">{{ s.shiftName }} ({{ s.startTime }} - {{ s.endTime }})</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="requests-form-group mb-4">
+          <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Lý do đổi ca</label>
+          <textarea [(ngModel)]="swapData.reason" rows="3"
+                    placeholder="Nhập lý do chi tiết..."
+                    class="requests-form-textarea w-full p-2 border border-gray-300 rounded-md"></textarea>
+        </div>
+
+        <button (click)="submitSwap()" [disabled]="submitting() || !swapData.colleagueId" class="requests-submit-btn w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition flex justify-center items-center gap-2">
+          <svg *ngIf="submitting()" lucideLoader2 class="w-4 h-4 animate-spin"></svg>
+          Gửi yêu cầu đổi ca
+        </button>
+      </div>
+
+      <!-- TAB 3: ATTENDANCE ADJUSTMENT FORM -->
+      <div *ngIf="activeTab() === 'adjust'" class="requests-form animate-fade-in">
+        <h2 class="requests-form-title text-xl font-bold mb-4 text-gray-800">Đăng ký Điều chỉnh chấm công</h2>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="requests-form-group">
+            <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Ngày cần chỉnh sửa</label>
+            <input type="date" [(ngModel)]="adjustData.workDate" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
+          </div>
+          <div class="requests-form-group">
+            <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Loại điều chỉnh</label>
+            <select [(ngModel)]="adjustData.type" class="requests-form-select w-full p-2 border border-gray-300 rounded-md">
+              <option value="FORGOT_CHECK_IN">Quên check-in</option>
+              <option value="FORGOT_CHECK_OUT">Quên check-out</option>
+              <option value="DEVICE_ERROR">Lỗi máy chấm công</option>
+              <option value="EDIT_TIME">Chỉnh sửa mốc giờ</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="requests-form-group mb-4">
+          <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Giờ đề xuất thay thế</label>
+          <input type="time" [(ngModel)]="adjustData.proposedTime" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
+        </div>
+
+        <div class="requests-form-group mb-4">
+          <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Lý do điều chỉnh công</label>
+          <textarea [(ngModel)]="adjustData.reason" rows="3"
+                    placeholder="Lý do chi tiết (ví dụ: Quên check-in khi vào cổng, máy hỏng...)"
+                    class="requests-form-textarea w-full p-2 border border-gray-300 rounded-md"></textarea>
+        </div>
+
+        <button (click)="submitAdjustment()" [disabled]="submitting() || !adjustData.workDate" class="requests-submit-btn w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700 transition flex justify-center items-center gap-2">
+          <svg *ngIf="submitting()" lucideLoader2 class="w-4 h-4 animate-spin"></svg>
+          Gửi yêu cầu chỉnh công
+        </button>
+      </div>
+
     </div>
 
-    <div class="requests-history-panel">
-      <div class="requests-history-header">
-        <svg class="requests-history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Right panel: History based on active tab -->
+    <div class="requests-history-panel bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex-1">
+      <div class="requests-history-header flex items-center gap-2 border-b pb-3 mb-4">
+        <svg class="requests-history-icon w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        <h3>Lịch sử đề xuất gần đây</h3>
+        <h3 class="text-lg font-bold text-gray-800">
+          @if (activeTab() === 'leave') { Lịch sử nghỉ / WFH / AFK }
+          @else if (activeTab() === 'swap') { Lịch sử đổi ca của bạn }
+          @else if (activeTab() === 'adjust') { Lịch sử yêu cầu chỉnh công }
+        </h3>
       </div>
 
-      <div class="requests-history-list">
-        @for (req of myRequestsHistory(); track req.id) {
-          <div class="requests-history-item">
-            <div class="requests-history-item-top">
-              <div class="requests-history-item-meta">
-                <strong>{{ req.title }}</strong>
-                <span>{{ req.subtitle }}</span>
+      <div class="requests-history-list overflow-y-auto max-h-[500px] flex flex-col gap-3">
+        
+        <!-- Leave Requests History -->
+        @if (activeTab() === 'leave') {
+          @for (req of myLeaves(); track req.id) {
+            <div class="requests-history-item p-4 bg-gray-50 border border-gray-150 rounded-xl hover:border-blue-200 transition">
+              <div class="requests-history-item-top flex justify-between items-start mb-2">
+                <div class="requests-history-item-meta flex flex-col">
+                  <strong class="text-sm font-semibold text-gray-800">{{ req.leaveType?.name ?? 'Yêu cầu' }}</strong>
+                  <span class="text-xs text-gray-500">{{ formatLeaveSubtitle(req) }}</span>
+                </div>
+                <span class="requests-status-badge text-xs px-2.5 py-1 rounded-full font-bold"
+                      [class.requests-status-badge--approved]="req.status === 'APPROVED'"
+                      [class.requests-status-badge--pending]="req.status === 'PENDING'"
+                      [class.requests-status-badge--rejected]="req.status === 'REJECTED'">
+                  {{ getStatusLabel(req.status) }}
+                </span>
               </div>
-              <span class="requests-status-badge"
-                    [class.requests-status-badge--approved]="req.status === 'APPROVED'"
-                    [class.requests-status-badge--pending]="req.status === 'PENDING'"
-                    [class.requests-status-badge--rejected]="req.status === 'REJECTED'">
-                {{ getStatusLabel(req.status) }}
+              <p class="requests-history-reason text-xs italic text-gray-600 mb-2">"{{ req.reason }}"</p>
+              <span class="requests-history-timestamp text-[10px] text-gray-400">
+                Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
               </span>
             </div>
-
-            <p class="requests-history-reason">"{{ req.reason }}"</p>
-            <span class="requests-history-timestamp">
-              Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
-            </span>
-          </div>
-        } @empty {
-          <div class="requests-history-empty">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span>Chưa có yêu cầu nào.</span>
-          </div>
+          } @empty {
+            <div class="requests-history-empty py-10 text-center text-gray-500">Chưa có đề xuất nghỉ nào.</div>
+          }
         }
+
+        <!-- Shift Swaps History -->
+        @if (activeTab() === 'swap') {
+          @for (req of mySwaps(); track req.id) {
+            <div class="requests-history-item p-4 bg-gray-50 border border-gray-150 rounded-xl hover:border-blue-200 transition">
+              <div class="requests-history-item-top flex justify-between items-start mb-2">
+                <div class="requests-history-item-meta flex flex-col">
+                  <strong class="text-sm font-semibold text-gray-800">{{ req.type === 'SWAP' ? 'Đổi ca' : 'Nhờ trực thay' }}</strong>
+                  <span class="text-xs text-gray-500">{{ formatSwapSubtitle(req) }}</span>
+                </div>
+                <span class="requests-status-badge text-xs px-2.5 py-1 rounded-full font-bold"
+                      [class.requests-status-badge--approved]="req.status === 'APPROVED'"
+                      [class.requests-status-badge--pending]="req.status === 'PENDING'"
+                      [class.requests-status-badge--rejected]="req.status === 'REJECTED'">
+                  {{ getStatusLabel(req.status) }}
+                </span>
+              </div>
+              <p class="requests-history-reason text-xs italic text-gray-600 mb-2">"{{ req.reason }}"</p>
+              <span class="requests-history-timestamp text-[10px] text-gray-400">
+                Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
+              </span>
+            </div>
+          } @empty {
+            <div class="requests-history-empty py-10 text-center text-gray-500">Chưa có yêu cầu đổi ca nào.</div>
+          }
+        }
+
+        <!-- Attendance Adjustments History -->
+        @if (activeTab() === 'adjust') {
+          @for (req of myAdjustments(); track req.id) {
+            <div class="requests-history-item p-4 bg-gray-50 border border-gray-150 rounded-xl hover:border-blue-200 transition">
+              <div class="requests-history-item-top flex justify-between items-start mb-2">
+                <div class="requests-history-item-meta flex flex-col">
+                  <strong class="text-sm font-semibold text-gray-800">Chỉnh sửa chấm công</strong>
+                  <span class="text-xs text-gray-500">{{ formatAdjustSubtitle(req) }}</span>
+                </div>
+                <span class="requests-status-badge text-xs px-2.5 py-1 rounded-full font-bold"
+                      [class.requests-status-badge--approved]="req.status === 'APPROVED'"
+                      [class.requests-status-badge--pending]="req.status === 'PENDING'"
+                      [class.requests-status-badge--rejected]="req.status === 'REJECTED'">
+                  {{ getStatusLabel(req.status) }}
+                </span>
+              </div>
+              <p class="requests-history-reason text-xs italic text-gray-600 mb-2">"{{ req.reason }}"</p>
+              <span class="requests-history-timestamp text-[10px] text-gray-400">
+                Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
+              </span>
+            </div>
+          } @empty {
+            <div class="requests-history-empty py-10 text-center text-gray-500">Chưa có yêu cầu điều chỉnh công nào.</div>
+          }
+        }
+
       </div>
     </div>
   </div>

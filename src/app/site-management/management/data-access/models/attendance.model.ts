@@ -46,6 +46,10 @@ export interface AttendanceShiftBreakdownResponse {
   earlyMinutes: number;
   status: string;
   isProvisional: boolean;
+  isLeave?: boolean;
+  isWfh?: boolean;
+  isAfk?: boolean;
+  afkHours?: number;
   events: AttendanceEventTimelineResponse[];
 }
 

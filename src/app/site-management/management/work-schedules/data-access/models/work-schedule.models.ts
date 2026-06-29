@@ -46,6 +46,10 @@ export interface DailyShift {
   onTimeCheckInEndMinutes: number;
   onTimeCheckOutStartMinutes: number;
   onTimeCheckOutEndMinutes: number;
+  isLeave?: boolean;
+  isWfh?: boolean;
+  isSwap?: boolean;
+  statusLabel?: string;
 }
 
 export interface EmployeeWeeklySchedule {

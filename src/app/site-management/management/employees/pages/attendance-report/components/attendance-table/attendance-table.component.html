@@ -42,159 +42,142 @@
             </td>
             <td class="att-cell-penalty">
               @if (record.lateMinutes > 0) {
-                <span class="att-penalty-late">Trễ: {{ record.lateMinutes }}m</span>
+                <span class="att-penalty-late">Trễ: {{ formatPenaltyMinutes(record.lateMinutes) }}</span>
               }
               @if (record.earlyMinutes > 0) {
-                <span class="att-penalty-early">Sớm: {{ record.earlyMinutes }}m</span>
+                <span class="att-penalty-early">Sớm: {{ formatPenaltyMinutes(record.earlyMinutes) }}</span>
               }
               @if (record.lateMinutes === 0 && record.earlyMinutes === 0) {
                 <span class="att-penalty-none">--</span>
               }
             </td>
             <td>
-              <span class="att-status-badge"
-                    [class.att-status--on-time]="getDisplayStatus(record) === 'ON_TIME'"
-                    [class.att-status--late]="getDisplayStatus(record) === 'LATE'"
-                    [class.att-status--early]="getDisplayStatus(record) === 'EARLY_CHECKOUT'"
-                    [class.att-status--late-early]="getDisplayStatus(record) === 'LATE_AND_EARLY'"
-                    [class.att-status--miss-in]="getDisplayStatus(record) === 'MISSING_CHECK_IN'"
-                    [class.att-status--miss-out]="getDisplayStatus(record) === 'MISSING_CHECK_OUT'"
-                    [class.att-status--not-started]="getDisplayStatus(record) === 'NOT_STARTED'"
-                    [class.att-status--absent]="getDisplayStatus(record) === 'ABSENT_UNEXCUSED'"
-                    [class.att-status--excused]="getDisplayStatus(record) === 'ABSENT_EXCUSED'"
-                    [class.att-status--off]="getDisplayStatus(record) === 'OFF'">
+              <span class="att-status-badge px-2.5 py-1 text-xs font-bold rounded-full"
+                    [ngClass]="getStatusBadgeClass(getDisplayStatus(record))">
                 {{ getStatusLabel(getDisplayStatus(record)) }}
               </span>
             </td>
           </tr>
-
           @if (isExpanded(record.id)) {
             <tr class="att-detail-row">
               <td colspan="7">
-                <div class="att-breakdown">
-                  <h4 class="att-timeline-title">Chi tiết theo ca trong ngày</h4>
+                <div class="att-timeline">
+                  <h4 class="att-timeline-title">Dòng thời gian sự kiện trong ngày</h4>
 
                   @if (record.shiftBreakdowns && record.shiftBreakdowns.length > 0) {
-                    <div class="att-breakdown-grid">
+                    <div class="att-timeline-track">
                       @for (shift of record.shiftBreakdowns; track shift.employeeShiftId || shift.shiftId || shift.shiftName) {
-                        <section class="att-shift-detail">
-                          <div class="att-shift-detail__header">
-                            <div>
-                              <span class="att-timeline-label">Ca làm việc</span>
-                              <strong>{{ shift.shiftName }}</strong>
+                        <!-- 1. Node biểu diễn ca làm việc -->
+                        <div class="att-timeline-event">
+                          <div class="att-timeline-dot att-timeline-dot--indigo"></div>
+                          <div class="att-timeline-content w-full">
+                            <div class="flex items-center gap-2 flex-wrap">
+                              <span class="text-base font-bold text-gray-900">Ca {{ shift.shiftName }}</span>
+                              <span class="att-status-badge att-status-badge--sm px-2 py-0.5 text-[11px] font-bold rounded-full"
+                                    [ngClass]="getStatusBadgeClass(shift.status)">
+                                {{ getStatusLabel(shift.status) }}
+                              </span>
+                              <div class="flex gap-1.5 flex-wrap">
+                                <span *ngIf="shift.isLeave" class="px-1.5 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded leading-none">Nghỉ phép</span>
+                                <span *ngIf="shift.isWfh" class="px-1.5 py-0.5 text-[10px] font-bold bg-green-50 text-green-700 border border-green-200 rounded leading-none">WFH</span>
+                                <span *ngIf="shift.isAfk" class="px-1.5 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 rounded leading-none">AFK (-{{ shift.afkHours | number:'1.1-2' }}h)</span>
+                              </div>
                             </div>
-                            <span class="att-status-badge att-status-badge--sm"
-                                  [class.att-status--on-time]="shift.status === 'ON_TIME'"
-                                  [class.att-status--late]="shift.status === 'LATE'"
-                                  [class.att-status--early]="shift.status === 'EARLY_CHECKOUT'"
-                                  [class.att-status--late-early]="shift.status === 'LATE_AND_EARLY'"
-                                  [class.att-status--miss-in]="shift.status === 'MISSING_CHECK_IN'"
-                                  [class.att-status--miss-out]="shift.status === 'MISSING_CHECK_OUT'"
-                                  [class.att-status--not-started]="shift.status === 'NOT_STARTED'"
-                                  [class.att-status--absent]="shift.status === 'ABSENT_UNEXCUSED'"
-                                  [class.att-status--excused]="shift.status === 'ABSENT_EXCUSED'"
-                                  [class.att-status--off]="shift.status === 'OFF'">
-                              {{ getStatusLabel(shift.status) }}
+                            <span class="att-timeline-label">
+                              Thời gian theo lịch: {{ formatScheduleTime(shift.scheduledStartTime) }} - {{ formatScheduleTime(shift.scheduledEndTime) }}
+                              | Giờ làm: <strong class="text-gray-800">{{ getDisplayShiftWorkingHours(shift, record.workDate) | number:'1.1-2' }}h</strong>
+                              @if (isLiveShift(shift, record.workDate)) {
+                                <em class="text-blue-600 font-bold ml-1">Tạm tính</em>
+                              }
+                              @if (shift.lateMinutes > 0) {
+                                | <span class="att-summary-late">Trễ {{ formatPenaltyMinutes(shift.lateMinutes) }}</span>
+                              }
+                              @if (shift.earlyMinutes > 0) {
+                                | <span class="att-summary-early">Sớm {{ formatPenaltyMinutes(shift.earlyMinutes) }}</span>
+                              }
                             </span>
                           </div>
+                        </div>
 
-                          <div class="att-shift-detail__metrics">
-                            <div>
-                              <span>Lịch</span>
-                              <strong>{{ formatScheduleTime(shift.scheduledStartTime) }} - {{ formatScheduleTime(shift.scheduledEndTime) }}</strong>
-                            </div>
-                            <div>
-                              <span>Vào</span>
-                              <strong>{{ shift.checkInTime ? (shift.checkInTime | date:'HH:mm:ss') : '--:--:--' }}</strong>
-                            </div>
-                            <div>
-                              <span>Ra</span>
-                              <strong>{{ shift.checkOutTime ? (shift.checkOutTime | date:'HH:mm:ss') : '--:--:--' }}</strong>
-                            </div>
-                            <div>
-                              <span>Giờ làm</span>
-                              <strong>
-                                {{ getDisplayShiftWorkingHours(shift, record.workDate) | number:'1.1-2' }}h
-                                @if (isLiveShift(shift, record.workDate)) {
-                                  <em>Tạm tính</em>
+                        <!-- 2. Node biểu diễn các event check-in / check-out của ca đó -->
+                        @if (shift.events && shift.events.length > 0) {
+                          @for (event of shift.events; track event.timestamp + event.type) {
+                            <div class="att-timeline-event ml-6">
+                              <div class="att-timeline-dot" 
+                                   [ngClass]="event.type === 'CHECK_IN' ? 'att-timeline-dot--green' : 'att-timeline-dot--amber'"></div>
+                              <div class="att-timeline-content">
+                                <span class="att-timeline-label">
+                                  {{ getEventLabel(event.type) }}
+                                </span>
+                                <strong class="text-sm font-bold text-gray-900">{{ event.timestamp | date:'HH:mm:ss' }}</strong>
+                                @if (event.source) {
+                                  <span class="text-xs text-gray-500">Nguồn: {{ event.source }}</span>
                                 }
-                              </strong>
+                              </div>
                             </div>
-                            <div>
-                              <span>Trễ/Sớm</span>
-                              <strong>
-                                @if (shift.lateMinutes > 0) {
-                                  <span class="att-summary-late">Trễ {{ shift.lateMinutes }}m</span>
-                                }
-                                @if (shift.earlyMinutes > 0) {
-                                  <span class="att-summary-early">Sớm {{ shift.earlyMinutes }}m</span>
-                                }
-                                @if (shift.lateMinutes === 0 && shift.earlyMinutes === 0) {
-                                  --
-                                }
-                              </strong>
-                            </div>
-                          </div>
-
-                          <div class="att-event-list">
-                            @if (shift.events && shift.events.length > 0) {
-                              @for (event of shift.events; track event.timestamp + event.type) {
-                                <div class="att-event-chip">
-                                  <span>{{ getEventLabel(event.type) }}</span>
-                                  <strong>{{ event.timestamp | date:'HH:mm:ss' }}</strong>
+                          }
+                        } @else {
+                          <!-- Nếu không có event (ví dụ được duyệt nghỉ phép) -->
+                          @if (shift.isLeave) {
+                            <div class="att-timeline-event ml-6">
+                              <div class="att-timeline-dot att-timeline-dot--green"></div>
+                              <div class="att-timeline-content bg-emerald-50/65 border border-emerald-100 rounded-lg p-3 w-full flex items-center gap-3 mt-1 shadow-sm max-w-lg">
+                                <div class="w-8 h-8 rounded-full bg-emerald-100/80 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                  </svg>
                                 </div>
-                              }
-                            } @else {
-                              <span class="att-event-empty">Chưa có event chấm công cho ca này.</span>
-                            }
-                          </div>
-                        </section>
+                                <div>
+                                  <h5 class="text-xs font-semibold text-emerald-800 m-0">Nghỉ phép có lý do</h5>
+                                  <p class="text-[11px] text-emerald-700 m-0 leading-tight">Đã được phê duyệt nghỉ phép cho ca này. Không yêu cầu chấm công.</p>
+                                </div>
+                              </div>
+                            </div>
+                          } @else {
+                            <div class="att-timeline-event ml-6">
+                              <div class="att-timeline-dot att-timeline-dot--red"></div>
+                              <div class="att-timeline-content">
+                                <span class="text-gray-400 text-xs italic">
+                                  Chưa có sự kiện chấm công nào được ghi nhận cho ca này.
+                                </span>
+                              </div>
+                            </div>
+                          }
+                        }
                       }
                     </div>
                   } @else {
-                    <div class="att-event-empty">
-                      Chưa có breakdown theo ca từ backend.
-                      @if (isLiveRecord(record)) {
-                        Đang tạm tính giờ làm từ lần check-in gần nhất.
-                      }
+                    <div class="text-gray-400 text-sm italic pl-8">
+                      Không có thông tin ca làm việc nào cho ngày này.
                     </div>
                   }
 
-                  <section class="att-day-summary">
+                  <!-- Tổng hợp ngày -->
+                  <section class="att-day-summary mt-6 border-t pt-4 flex gap-6 items-center flex-wrap">
                     <div>
-                      <span>Tổng ngày</span>
-                      <strong>{{ getDisplayWorkingHours(record) | number:'1.1-2' }}h</strong>
+                      <span>Tổng ngày:</span>
+                      <strong class="text-base font-bold text-gray-900 ml-1">{{ getDisplayWorkingHours(record) | number:'1.1-2' }}h</strong>
                       @if (isLiveRecord(record)) {
-                        <em>Tạm tính</em>
+                        <em class="text-blue-600 font-bold ml-1">Tạm tính</em>
                       }
                     </div>
                     <div>
-                      <span>Giờ vào/ra</span>
-                      <strong>
+                      <span>Thời gian:</span>
+                      <strong class="text-sm text-gray-800 ml-1">
                         {{ record.checkInTime ? (record.checkInTime | date:'HH:mm:ss') : '--:--:--' }}
                         -
                         {{ record.checkOutTime ? (record.checkOutTime | date:'HH:mm:ss') : '--:--:--' }}
                       </strong>
                     </div>
-                    <span class="att-status-badge att-status-badge--sm"
-                          [class.att-status--on-time]="getDisplayStatus(record) === 'ON_TIME'"
-                          [class.att-status--late]="getDisplayStatus(record) === 'LATE'"
-                          [class.att-status--early]="getDisplayStatus(record) === 'EARLY_CHECKOUT'"
-                          [class.att-status--late-early]="getDisplayStatus(record) === 'LATE_AND_EARLY'"
-                          [class.att-status--miss-in]="getDisplayStatus(record) === 'MISSING_CHECK_IN'"
-                          [class.att-status--miss-out]="getDisplayStatus(record) === 'MISSING_CHECK_OUT'"
-                          [class.att-status--not-started]="getDisplayStatus(record) === 'NOT_STARTED'"
-                          [class.att-status--absent]="getDisplayStatus(record) === 'ABSENT_UNEXCUSED'"
-                          [class.att-status--excused]="getDisplayStatus(record) === 'ABSENT_EXCUSED'"
-                          [class.att-status--off]="getDisplayStatus(record) === 'OFF'">
+                    <span class="att-status-badge px-2.5 py-1 text-xs font-bold rounded-full animate-fade-in"
+                          [ngClass]="getStatusBadgeClass(getDisplayStatus(record))">
                       {{ getStatusLabel(getDisplayStatus(record)) }}
                     </span>
                   </section>
                 </div>
               </td>
             </tr>
-          }
-        }
+          }        }
       } @empty {
         <tr>
           <td colspan="7" class="att-empty">Không có dữ liệu chấm công.</td>
