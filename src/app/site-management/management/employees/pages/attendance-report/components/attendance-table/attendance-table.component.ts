@@ -1,6 +1,9 @@
 import { Component, ChangeDetectionStrategy, computed, input, output, signal } from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
-import { AttendanceRecordResponse } from '../../../../../data-access/models/attendance.model';
+import {
+  AttendanceRecordResponse,
+  AttendanceShiftBreakdownResponse,
+} from '../../../../../data-access/models/attendance.model';
 import { LucideChevronLeft, LucideChevronRight, LucideChevronDown, LucideChevronUp } from '@lucide/angular';
 
 interface GroupedDateRecord {
@@ -13,12 +16,12 @@ interface GroupedDateRecord {
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
-    CommonModule, 
-    DatePipe, 
-    DecimalPipe, 
-    LucideChevronLeft, 
-    LucideChevronRight, 
-    LucideChevronDown, 
+    CommonModule,
+    DatePipe,
+    DecimalPipe,
+    LucideChevronLeft,
+    LucideChevronRight,
+    LucideChevronDown,
     LucideChevronUp
   ],
   templateUrl: './attendance-table.component.html',
@@ -34,7 +37,6 @@ export class AttendanceTableComponent {
 
   expandedRows = signal<Set<string>>(new Set());
 
-  // Group records by Date
   groupedRecords = computed<GroupedDateRecord[]>(() => {
     const groups: { [key: string]: AttendanceRecordResponse[] } = {};
     for (const r of this.records()) {
@@ -44,7 +46,6 @@ export class AttendanceTableComponent {
       }
       groups[dateKey].push(r);
     }
-    // Sort dates descending
     return Object.keys(groups)
       .sort((a, b) => b.localeCompare(a))
       .map(dateKey => ({
@@ -65,10 +66,6 @@ export class AttendanceTableComponent {
 
   isExpanded(id: string): boolean {
     return this.expandedRows().has(id);
-  }
-
-  getPairIndex(index: number): number {
-    return Math.floor(index / 2) + 1;
   }
 
   pageStart = computed(() => {
@@ -93,6 +90,7 @@ export class AttendanceTableComponent {
       case 'LATE_AND_EARLY': return 'bg-orange-100 text-orange-700';
       case 'MISSING_CHECK_IN': return 'bg-purple-100 text-purple-700';
       case 'MISSING_CHECK_OUT': return 'bg-blue-100 text-blue-700';
+      case 'NOT_STARTED': return 'bg-slate-100 text-slate-700';
       case 'ABSENT_UNEXCUSED': return 'bg-rose-100 text-rose-700';
       case 'ABSENT_EXCUSED': return 'bg-teal-100 text-teal-700';
       case 'OFF': return 'bg-gray-100 text-gray-700';
@@ -108,10 +106,104 @@ export class AttendanceTableComponent {
       case 'LATE_AND_EARLY': return 'Trễ & Sớm';
       case 'MISSING_CHECK_IN': return 'Thiếu Check-in';
       case 'MISSING_CHECK_OUT': return 'Thiếu Check-out';
+      case 'NOT_STARTED': return 'Chưa tới ca';
       case 'ABSENT_UNEXCUSED': return 'Vắng không phép';
       case 'ABSENT_EXCUSED': return 'Nghỉ có phép';
       case 'OFF': return 'Ngày nghỉ';
       default: return status;
     }
+  }
+
+  getDisplayStatus(record: AttendanceRecordResponse): string {
+    if (
+      record.status === 'ABSENT_UNEXCUSED' &&
+      (record.checkInTime || record.checkOutTime)
+    ) {
+      if (record.checkInTime && !record.checkOutTime && this.isToday(record.workDate)) {
+        return 'MISSING_CHECK_OUT';
+      }
+      if (record.lateMinutes > 0 && record.earlyMinutes > 0) {
+        return 'LATE_AND_EARLY';
+      }
+      if (record.lateMinutes > 0) {
+        return 'LATE';
+      }
+      if (record.earlyMinutes > 0) {
+        return 'EARLY_CHECKOUT';
+      }
+      return 'ON_TIME';
+    }
+
+    return record.status;
+  }
+
+  getEventLabel(type: string): string {
+    switch (type) {
+      case 'CHECK_IN': return 'Vào (Check-in)';
+      case 'CHECK_OUT': return 'Ra (Check-out)';
+      case 'ADJUSTMENT': return 'Chỉnh công';
+      case 'MANUAL': return 'Ghi nhận thủ công';
+      case 'IMPORT': return 'Import dữ liệu';
+      case 'FACE': return 'Xác thực khuôn mặt';
+      default: return type;
+    }
+  }
+
+  formatScheduleTime(time: string | null): string {
+    return time ? time.slice(0, 5) : '--:--';
+  }
+
+  isLiveRecord(record: AttendanceRecordResponse): boolean {
+    return !!(
+      record.isProvisional ||
+      (
+        record.status === 'MISSING_CHECK_OUT' &&
+        record.checkInTime &&
+        !record.checkOutTime &&
+        this.isToday(record.workDate)
+      )
+    );
+  }
+
+  getDisplayWorkingHours(record: AttendanceRecordResponse): number {
+    if (this.isLiveRecord(record) && record.checkInTime) {
+      return this.hoursBetweenNow(record.checkInTime);
+    }
+    return record.workingHours ?? 0;
+  }
+
+  isLiveShift(shift: AttendanceShiftBreakdownResponse, workDate: string): boolean {
+    return !!(
+      shift.isProvisional ||
+      (
+        shift.status === 'MISSING_CHECK_OUT' &&
+        shift.checkInTime &&
+        !shift.checkOutTime &&
+        this.isToday(workDate)
+      )
+    );
+  }
+
+  getDisplayShiftWorkingHours(shift: AttendanceShiftBreakdownResponse, workDate: string): number {
+    if (this.isLiveShift(shift, workDate) && shift.checkInTime) {
+      return this.hoursBetweenNow(shift.checkInTime);
+    }
+    return shift.workingHours ?? 0;
+  }
+
+  private hoursBetweenNow(startTime: string): number {
+    const start = new Date(startTime).getTime();
+    const now = Date.now();
+    if (!Number.isFinite(start) || now <= start) {
+      return 0;
+    }
+    return (now - start) / 1000 / 60 / 60;
+  }
+
+  private isToday(date: string): boolean {
+    const today = new Date();
+    const month = `${today.getMonth() + 1}`.padStart(2, '0');
+    const day = `${today.getDate()}`.padStart(2, '0');
+    return date === `${today.getFullYear()}-${month}-${day}`;
   }
 }

@@ -29,6 +29,30 @@ export interface AttendanceRecordResponse {
   earlyMinutes: number;
   status: string;
   detailTimes?: string[];
+  isProvisional?: boolean;
+  shiftBreakdowns?: AttendanceShiftBreakdownResponse[];
+}
+
+export interface AttendanceShiftBreakdownResponse {
+  shiftId: string | null;
+  employeeShiftId: string | null;
+  shiftName: string;
+  scheduledStartTime: string | null;
+  scheduledEndTime: string | null;
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  workingHours: number;
+  lateMinutes: number;
+  earlyMinutes: number;
+  status: string;
+  isProvisional: boolean;
+  events: AttendanceEventTimelineResponse[];
+}
+
+export interface AttendanceEventTimelineResponse {
+  type: string;
+  timestamp: string;
+  source: string | null;
 }
 
 export interface AttendanceStatisticsResponse {
