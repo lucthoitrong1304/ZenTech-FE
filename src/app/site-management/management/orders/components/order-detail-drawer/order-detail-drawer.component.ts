@@ -44,9 +44,9 @@ export class OrderDetailDrawerComponent {
   protected getStatusLabel(status: ManagementOrderStatus): string {
     switch (status) {
       case 'CREATED':
-        return 'Chờ thanh toán';
+        return 'Chờ xác nhận COD';
       case 'CONFIRMED':
-        return 'Đang xử lý';
+        return 'Đã xác nhận';
       case 'SHIPPED':
         return 'Đang giao';
       case 'COMPLETED':
@@ -105,9 +105,9 @@ export class OrderDetailDrawerComponent {
       case 'CONFIRMED':
         return new Date(baseDate.getTime() + 15 * 60 * 1000);
       case 'SHIPPED':
-        return new Date(baseDate.getTime() + 150 * 60 * 1000); // 2 hours 30 mins
+        return new Date(baseDate.getTime() + 150 * 60 * 1000);
       case 'COMPLETED':
-        return new Date(baseDate.getTime() + 1680 * 60 * 1000); // 28 hours
+        return new Date(baseDate.getTime() + 1680 * 60 * 1000);
       default:
         return null;
     }
@@ -129,7 +129,6 @@ export class OrderDetailDrawerComponent {
         return '0%';
     }
   }
-
 
   protected getInitials(name: string): string {
     if (!name) return '?';

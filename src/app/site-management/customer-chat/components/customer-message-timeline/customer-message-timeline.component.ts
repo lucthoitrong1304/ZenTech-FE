@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, output } from '@angular/core';
 import { LucideBot, LucideFileText, LucideImage, LucideUserRound } from '@lucide/angular';
 import { MarkdownComponent } from 'ngx-markdown';
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
@@ -29,64 +29,6 @@ import {
       background: #ffc700;
     }
 
-    :host ::ng-deep .customer-ai-markdown {
-      color: #1f2937;
-      font-size: 0.925rem;
-      line-height: 1.65;
-    }
-
-    :host ::ng-deep .customer-ai-markdown p {
-      margin: 0 0 0.625rem;
-    }
-
-    :host ::ng-deep .customer-ai-markdown p:last-child {
-      margin-bottom: 0;
-    }
-
-    :host ::ng-deep .customer-ai-markdown ul,
-    :host ::ng-deep .customer-ai-markdown ol {
-      margin: 0.35rem 0 0.85rem;
-      padding-left: 1.15rem;
-    }
-
-    :host ::ng-deep .customer-ai-markdown ul {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    :host ::ng-deep .customer-ai-markdown ul li {
-      position: relative;
-      padding-left: 1.1rem;
-    }
-
-    :host ::ng-deep .customer-ai-markdown ul li::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0.72em;
-      width: 0.35rem;
-      height: 0.35rem;
-      border-radius: 999px;
-      background: #ffc700;
-      box-shadow: 0 0 0 2px rgba(255, 199, 0, 0.2);
-    }
-
-    :host ::ng-deep .customer-ai-markdown li + li {
-      margin-top: 0.38rem;
-    }
-
-    :host ::ng-deep .customer-ai-markdown strong {
-      color: #111827;
-      font-weight: 750;
-    }
-
-    :host ::ng-deep .customer-ai-markdown code {
-      border-radius: 0.25rem;
-      background: rgba(255, 199, 0, 0.16);
-      padding: 0.1rem 0.3rem;
-      color: #6b4d00;
-      font-size: 0.92em;
-    }
   `],
   host: {
     class: 'flex min-h-0 flex-1 flex-col',
@@ -98,9 +40,13 @@ export class CustomerMessageTimelineComponent {
   readonly customer = input<CustomerChatParticipant | null>(null);
   readonly staff = input<CustomerChatParticipant | null>(null);
   readonly compact = input(false);
+  readonly aiResponding = input(false);
   readonly highlightedMessageId = input<string | null>(null);
   readonly previewRequested = output<MediaPreviewItem>();
   readonly highlightCleared = output<void>();
+  protected readonly showAiTyping = computed(
+    () => this.aiResponding() && !this.messages().some((message) => message.id === 'ai-streaming')
+  );
 
   constructor() {
     effect(() => {

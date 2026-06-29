@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePaperclip, LucideSendHorizontal } from '@lucide/angular';
+import { getImageFilesFromClipboard } from '../../../../shared/utils/clipboard-image-files.util';
 
 @Component({
   selector: 'app-customer-chat-composer',
@@ -72,5 +73,20 @@ export class CustomerChatComposerComponent {
     }
 
     input.value = '';
+  }
+
+  protected onPaste(event: ClipboardEvent): void {
+    if (this.disabled()) {
+      return;
+    }
+
+    const imageFiles = getImageFilesFromClipboard(event);
+
+    if (imageFiles.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+    this.filesSelected.emit(imageFiles);
   }
 }

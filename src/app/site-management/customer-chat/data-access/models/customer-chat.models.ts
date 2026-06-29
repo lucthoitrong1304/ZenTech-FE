@@ -101,6 +101,27 @@ export interface CustomerChatUploadResult {
   type: CustomerChatSharedItemType;
 }
 
+export interface CustomerChatPageContext {
+  route?: string;
+  currentProductId?: string;
+  productName?: string;
+  productSlug?: string;
+  selectedVariantId?: string;
+}
+
+export interface ChatMessageRequestPayload {
+  messageType: ChatMessageType;
+  content: string;
+  attachments: {
+    fileKey: string;
+    fileName: string;
+    contentType: string;
+    fileSize: number;
+    attachmentType: ChatAttachmentType;
+  }[];
+  pageContext?: CustomerChatPageContext;
+}
+
 // ==========================================
 // BACKEND DTO MODELS & ENUMS
 // ==========================================

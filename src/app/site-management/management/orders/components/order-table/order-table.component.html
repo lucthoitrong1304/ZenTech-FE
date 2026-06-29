@@ -51,7 +51,7 @@
               <td>{{ getPaymentMethodLabel(order.paymentMethod) }}</td>
               <td>
                 <span class="orders-status" [class]="'orders-status orders-status--' + order.orderStatus.toLowerCase()">
-                  {{ getStatusLabel(order.orderStatus) }}
+                  {{ getStatusLabel(order) }}
                 </span>
               </td>
               <td>
