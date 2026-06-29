@@ -11,7 +11,7 @@
   <div class="requests-tabs flex border-b border-gray-200 mb-6 bg-white p-2 rounded-lg shadow-sm">
     <button (click)="switchTab('leave')" [class.active]="activeTab() === 'leave'" class="tab-btn">
       <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-      Nghỉ phép / WFH / AFK
+      Nghỉ phép & Vắng mặt
     </button>
     <button (click)="switchTab('swap')" [class.active]="activeTab() === 'swap'" class="tab-btn">
       <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 11l-4-4-4 4M21 12H3M7 13l4 4 4-4"/></svg>
@@ -28,11 +28,11 @@
       
       <!-- TAB 1: LEAVE / WFH / AFK FORM -->
       <div *ngIf="activeTab() === 'leave'" class="requests-form animate-fade-in">
-        <h2 class="requests-form-title text-xl font-bold mb-4 text-gray-800">Đăng ký Nghỉ, WFH, AFK</h2>
+        <h2 class="requests-form-title text-xl font-bold mb-4 text-gray-800">Đăng ký Nghỉ phép & Vắng mặt</h2>
 
         <div class="requests-form-group mb-4">
           <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Loại phép</label>
-          <select [(ngModel)]="leaveData.leaveTypeId" class="requests-form-select w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
+          <select [ngModel]="leaveTypeId()" (ngModelChange)="leaveTypeId.set($event)" class="requests-form-select w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500">
             @for (type of leaveTypes(); track type.id) {
               <option [value]="type.id">{{ type.name }} ({{ unitLabel(type.unit) }})</option>
             }
@@ -63,11 +63,11 @@
         <div class="requests-form-grid grid grid-cols-2 gap-4 mb-4">
           <div class="requests-form-group">
             <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Từ ngày</label>
-            <input type="date" [(ngModel)]="leaveData.startDate" (change)="onLeaveDateChange()" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
+            <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event); onLeaveDateChange()" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
           </div>
           <div class="requests-form-group">
             <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Đến ngày</label>
-            <input type="date" [(ngModel)]="leaveData.endDate" (change)="onLeaveDateChange()" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
+            <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event); onLeaveDateChange()" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
           </div>
         </div>
 
@@ -89,18 +89,18 @@
           <div class="requests-form-grid grid grid-cols-2 gap-4 mb-4">
             <div class="requests-form-group">
               <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Giờ bắt đầu</label>
-              <input type="time" [(ngModel)]="leaveData.startTime" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
+              <input type="time" [ngModel]="startTime()" (ngModelChange)="startTime.set($event)" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
             </div>
             <div class="requests-form-group">
               <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Giờ kết thúc</label>
-              <input type="time" [(ngModel)]="leaveData.endTime" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
+              <input type="time" [ngModel]="endTime()" (ngModelChange)="endTime.set($event)" class="requests-form-input w-full p-2 border border-gray-300 rounded-md" />
             </div>
           </div>
         }
 
         <div class="requests-form-group mb-4">
           <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Lý do</label>
-          <textarea [(ngModel)]="leaveData.reason" rows="3"
+          <textarea [ngModel]="reason()" (ngModelChange)="reason.set($event)" rows="3"
                     placeholder="Nhập lý do chi tiết..."
                     class="requests-form-textarea w-full p-2 border border-gray-300 rounded-md"></textarea>
         </div>
@@ -119,8 +119,8 @@
           <label class="requests-form-label text-sm font-semibold text-gray-600 block mb-1">Đồng nghiệp muốn đổi/trực cùng</label>
           <select [(ngModel)]="swapData.colleagueId" (change)="loadColleagueShifts()" class="requests-form-select w-full p-2 border border-gray-300 rounded-md">
             <option value="">-- Chọn đồng nghiệp --</option>
-            @for (c of colleagues(); track c.id) {
-              <option [value]="c.id">{{ c.fullName }} ({{ c.email }})</option>
+            @for (c of colleagues(); track c.employeeId) {
+              <option [value]="c.employeeId">{{ c.fullName }} ({{ c.email }})</option>
             }
           </select>
         </div>
@@ -232,7 +232,7 @@
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
         <h3 class="text-lg font-bold text-gray-800">
-          @if (activeTab() === 'leave') { Lịch sử nghỉ / WFH / AFK }
+          @if (activeTab() === 'leave') { Lịch sử nghỉ phép & Vắng mặt }
           @else if (activeTab() === 'swap') { Lịch sử đổi ca của bạn }
           @else if (activeTab() === 'adjust') { Lịch sử yêu cầu chỉnh công }
         </h3>
@@ -252,14 +252,23 @@
                 <span class="requests-status-badge text-xs px-2.5 py-1 rounded-full font-bold"
                       [class.requests-status-badge--approved]="req.status === 'APPROVED'"
                       [class.requests-status-badge--pending]="req.status === 'PENDING'"
-                      [class.requests-status-badge--rejected]="req.status === 'REJECTED'">
+                      [class.requests-status-badge--rejected]="req.status === 'REJECTED'"
+                      [class.requests-status-badge--cancelled]="req.status === 'CANCELLED'"
+                      [class.requests-status-badge--cancel-pending]="req.status === 'CANCEL_PENDING'">
                   {{ getStatusLabel(req.status) }}
                 </span>
               </div>
               <p class="requests-history-reason text-xs italic text-gray-600 mb-2">"{{ req.reason }}"</p>
-              <span class="requests-history-timestamp text-[10px] text-gray-400">
-                Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
-              </span>
+              <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                <span class="requests-history-timestamp text-[10px] text-gray-400">
+                  Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+                <button *ngIf="req.status === 'PENDING' || req.status === 'APPROVED'"
+                        (click)="cancelLeave(req.id)"
+                        class="text-xs font-semibold px-2 py-0.5 text-red-600 hover:bg-red-50 rounded border border-red-200 transition cursor-pointer">
+                  {{ req.status === 'PENDING' ? 'Hủy đơn' : 'Yêu cầu Hủy' }}
+                </button>
+              </div>
             </div>
           } @empty {
             <div class="requests-history-empty py-10 text-center text-gray-500">Chưa có đề xuất nghỉ nào.</div>
@@ -278,14 +287,23 @@
                 <span class="requests-status-badge text-xs px-2.5 py-1 rounded-full font-bold"
                       [class.requests-status-badge--approved]="req.status === 'APPROVED'"
                       [class.requests-status-badge--pending]="req.status === 'PENDING'"
-                      [class.requests-status-badge--rejected]="req.status === 'REJECTED'">
+                      [class.requests-status-badge--rejected]="req.status === 'REJECTED'"
+                      [class.requests-status-badge--cancelled]="req.status === 'CANCELLED'"
+                      [class.requests-status-badge--cancel-pending]="req.status === 'CANCEL_PENDING'">
                   {{ getStatusLabel(req.status) }}
                 </span>
               </div>
               <p class="requests-history-reason text-xs italic text-gray-600 mb-2">"{{ req.reason }}"</p>
-              <span class="requests-history-timestamp text-[10px] text-gray-400">
-                Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
-              </span>
+              <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                <span class="requests-history-timestamp text-[10px] text-gray-400">
+                  Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+                <button *ngIf="req.status === 'PENDING' || req.status === 'APPROVED'"
+                        (click)="cancelSwap(req.id)"
+                        class="text-xs font-semibold px-2 py-0.5 text-red-600 hover:bg-red-50 rounded border border-red-200 transition cursor-pointer">
+                  {{ req.status === 'PENDING' ? 'Hủy đơn' : 'Yêu cầu Hủy' }}
+                </button>
+              </div>
             </div>
           } @empty {
             <div class="requests-history-empty py-10 text-center text-gray-500">Chưa có yêu cầu đổi ca nào.</div>
@@ -304,14 +322,23 @@
                 <span class="requests-status-badge text-xs px-2.5 py-1 rounded-full font-bold"
                       [class.requests-status-badge--approved]="req.status === 'APPROVED'"
                       [class.requests-status-badge--pending]="req.status === 'PENDING'"
-                      [class.requests-status-badge--rejected]="req.status === 'REJECTED'">
+                      [class.requests-status-badge--rejected]="req.status === 'REJECTED'"
+                      [class.requests-status-badge--cancelled]="req.status === 'CANCELLED'"
+                      [class.requests-status-badge--cancel-pending]="req.status === 'CANCEL_PENDING'">
                   {{ getStatusLabel(req.status) }}
                 </span>
               </div>
               <p class="requests-history-reason text-xs italic text-gray-600 mb-2">"{{ req.reason }}"</p>
-              <span class="requests-history-timestamp text-[10px] text-gray-400">
-                Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
-              </span>
+              <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                <span class="requests-history-timestamp text-[10px] text-gray-400">
+                  Gửi lúc: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+                <button *ngIf="req.status === 'PENDING' || req.status === 'APPROVED'"
+                        (click)="cancelAdjustment(req.id)"
+                        class="text-xs font-semibold px-2 py-0.5 text-red-600 hover:bg-red-50 rounded border border-red-200 transition cursor-pointer">
+                  {{ req.status === 'PENDING' ? 'Hủy đơn' : 'Yêu cầu Hủy' }}
+                </button>
+              </div>
             </div>
           } @empty {
             <div class="requests-history-empty py-10 text-center text-gray-500">Chưa có yêu cầu điều chỉnh công nào.</div>

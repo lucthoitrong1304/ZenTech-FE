@@ -223,7 +223,7 @@ export const WorkScheduleStore = signalStore(
                   locationPolicyDraft: cloneLocationPolicy(result.locationPolicy),
                 });
               },
-              error: () =>
+              error: (err: any) =>
                 patchState(store, {
                   employees: [],
                   shifts: [],
@@ -231,7 +231,7 @@ export const WorkScheduleStore = signalStore(
                   totalPages: 0,
                   last: true,
                   loading: false,
-                  errorMessage: 'Không thể tải lịch làm việc.',
+                  errorMessage: err.error?.message || 'Không thể tải lịch làm việc.',
                 }),
             }),
             catchError(() => EMPTY),
@@ -247,10 +247,10 @@ export const WorkScheduleStore = signalStore(
         .pipe(
           tap({
             next: (page) => applyPage(page),
-            error: () =>
+            error: (err: any) =>
               patchState(store, {
                 loading: false,
-                errorMessage: 'Không thể tải lại lịch làm việc.',
+                errorMessage: err.error?.message || 'Không thể tải lại lịch làm việc.',
               }),
           }),
           catchError(() => EMPTY),
@@ -288,10 +288,10 @@ export const WorkScheduleStore = signalStore(
                   });
                   reloadSchedules();
                 },
-                error: () =>
+                 error: (err: any) =>
                   patchState(store, {
                     saving: false,
-                    errorMessage: 'Không thể cập nhật ca làm việc.',
+                    errorMessage: err.error?.message || 'Không thể cập nhật ca làm việc.',
                   }),
               }),
               catchError(() => EMPTY),
@@ -321,10 +321,10 @@ export const WorkScheduleStore = signalStore(
                 });
                 reloadSchedules();
               },
-              error: () =>
+              error: (err: any) =>
                 patchState(store, {
                   saving: false,
-                  errorMessage: 'Không thể xóa ca khỏi ngày làm việc.',
+                  errorMessage: err.error?.message || 'Không thể xóa ca khỏi ngày làm việc.',
                 }),
             }),
             catchError(() => EMPTY),
@@ -376,10 +376,10 @@ export const WorkScheduleStore = signalStore(
                   });
                   reloadSchedules();
                 },
-                error: () =>
+                 error: (err: any) =>
                   patchState(store, {
                     saving: false,
-                    errorMessage: 'Không thể gán ca hàng loạt.',
+                    errorMessage: err.error?.message || 'Không thể gán ca hàng loạt.',
                   }),
               }),
               catchError(() => EMPTY),
@@ -420,10 +420,10 @@ export const WorkScheduleStore = signalStore(
                   });
                   reloadSchedules();
                 },
-                error: () =>
+                 error: (err: any) =>
                   patchState(store, {
                     saving: false,
-                    errorMessage: 'Không thể sao chép lịch tuần.',
+                    errorMessage: err.error?.message || 'Không thể sao chép lịch tuần.',
                   }),
               }),
               catchError(() => EMPTY),
@@ -451,10 +451,10 @@ export const WorkScheduleStore = signalStore(
                 });
                 reloadSchedules();
               },
-              error: () =>
+               error: (err: any) =>
                 patchState(store, {
                   saving: false,
-                  errorMessage: 'Không thể cập nhật cấu hình ca.',
+                  errorMessage: err.error?.message || 'Không thể cập nhật cấu hình ca.',
                 }),
             }),
             catchError(() => EMPTY),
@@ -480,10 +480,10 @@ export const WorkScheduleStore = signalStore(
                   successMessage: 'Đã cập nhật phạm vi check-in.',
                 });
               },
-              error: () =>
+               error: (err: any) =>
                 patchState(store, {
                   saving: false,
-                  errorMessage: 'Không thể cập nhật phạm vi check-in.',
+                  errorMessage: err.error?.message || 'Không thể cập nhật phạm vi check-in.',
                 }),
             }),
             catchError(() => EMPTY),
@@ -516,10 +516,10 @@ export const WorkScheduleStore = signalStore(
                 });
                 reloadSchedules();
               },
-              error: () =>
+               error: (err: any) =>
                 patchState(store, {
                   saving: false,
-                  errorMessage: 'Không thể tạo ca làm việc.',
+                  errorMessage: err.error?.message || 'Không thể tạo ca làm việc.',
                 }),
             }),
             catchError(() => EMPTY),

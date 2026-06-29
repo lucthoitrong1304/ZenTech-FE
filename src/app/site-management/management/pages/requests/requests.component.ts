@@ -5,9 +5,10 @@ import { ApiService } from '../../../../core/api/api.service';
 import { environment } from '../../../../../environments/environment';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucideLoader2 } from '@lucide/angular';
+import { ConfirmService } from '../../../../shared/components/confirm/confirm.service';
 
 type LeaveTypeUnit = 'DAY' | 'HOUR';
-type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCEL_PENDING' | 'CANCELLED';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -98,6 +99,7 @@ interface AttendanceAdjustment {
 export class RequestsComponent implements OnInit {
   private readonly apiService = inject(ApiService);
   private readonly toastService = inject(ToastService);
+  private readonly confirmService = inject(ConfirmService);
 
   // activeTab state
   activeTab = signal<'leave' | 'swap' | 'adjust'>('leave');
@@ -109,17 +111,15 @@ export class RequestsComponent implements OnInit {
   myDailyShifts = signal<ShiftDto[]>([]);
   selectedShiftIds = signal<string[]>([]);
 
-  leaveData = {
-    leaveTypeId: '',
-    startDate: '',
-    endDate: '',
-    startTime: '',
-    endTime: '',
-    reason: ''
-  };
+  leaveTypeId = signal('');
+  startDate = signal('');
+  endDate = signal('');
+  startTime = signal('');
+  endTime = signal('');
+  reason = signal('');
 
-  selectedType = computed(() => this.leaveTypes().find(type => type.id === this.leaveData.leaveTypeId) ?? null);
-  selectedQuota = computed(() => this.quotas().find(quota => quota.leaveTypeId === this.leaveData.leaveTypeId) ?? null);
+  selectedType = computed(() => this.leaveTypes().find(type => type.id === this.leaveTypeId()) ?? null);
+  selectedQuota = computed(() => this.quotas().find(quota => quota.leaveTypeId === this.leaveTypeId()) ?? null);
   isHourType = computed(() => this.selectedType()?.unit === 'HOUR');
 
   // Shift Swap Form state
@@ -169,8 +169,8 @@ export class RequestsComponent implements OnInit {
       next: response => {
         if (!response.success) return;
         this.leaveTypes.set(response.data);
-        if (!this.leaveData.leaveTypeId && response.data.length > 0) {
-          this.leaveData.leaveTypeId = response.data[0].id;
+        if (!this.leaveTypeId() && response.data.length > 0) {
+          this.leaveTypeId.set(response.data[0].id);
         }
       },
       error: () => this.toastService.error('Không tải được danh sách loại phép.')
@@ -194,8 +194,8 @@ export class RequestsComponent implements OnInit {
   }
 
   onLeaveDateChange(): void {
-    if (this.leaveData.startDate && this.leaveData.startDate === this.leaveData.endDate) {
-      this.loadMyDailyShifts(this.leaveData.startDate);
+    if (this.startDate() && this.startDate() === this.endDate()) {
+      this.loadMyDailyShifts(this.startDate());
     } else {
       this.myDailyShifts.set([]);
       this.selectedShiftIds.set([]);
@@ -229,23 +229,23 @@ export class RequestsComponent implements OnInit {
       this.toastService.error('Vui lòng chọn loại phép.');
       return;
     }
-    if (!this.leaveData.startDate || !this.leaveData.endDate || !this.leaveData.reason.trim()) {
+    if (!this.startDate() || !this.endDate() || !this.reason().trim()) {
       this.toastService.error('Vui lòng điền đầy đủ ngày và lý do.');
       return;
     }
-    if (selectedType.unit === 'HOUR' && (!this.leaveData.startTime || !this.leaveData.endTime)) {
+    if (selectedType.unit === 'HOUR' && (!this.startTime() || !this.endTime())) {
       this.toastService.error('Vui lòng nhập giờ bắt đầu và kết thúc.');
       return;
     }
 
     const payload = {
-      leaveTypeId: this.leaveData.leaveTypeId,
-      startDate: this.leaveData.startDate,
-      endDate: this.leaveData.endDate,
-      startTime: selectedType.unit === 'HOUR' ? `${this.leaveData.startTime}:00` : null,
-      endTime: selectedType.unit === 'HOUR' ? `${this.leaveData.endTime}:00` : null,
+      leaveTypeId: this.leaveTypeId(),
+      startDate: this.startDate(),
+      endDate: this.endDate(),
+      startTime: selectedType.unit === 'HOUR' ? `${this.startTime()}:00` : null,
+      endTime: selectedType.unit === 'HOUR' ? `${this.endTime()}:00` : null,
       shiftIds: this.selectedShiftIds(),
-      reason: this.leaveData.reason.trim()
+      reason: this.reason().trim()
     };
 
     this.submitting.set(true);
@@ -253,9 +253,9 @@ export class RequestsComponent implements OnInit {
       next: response => {
         if (response.success) {
           this.toastService.success('Đã gửi yêu cầu nghỉ.');
-          this.leaveData.reason = '';
-          this.leaveData.startTime = '';
-          this.leaveData.endTime = '';
+          this.reason.set('');
+          this.startTime.set('');
+          this.endTime.set('');
           this.selectedShiftIds.set([]);
           this.myDailyShifts.set([]);
           this.loadMyLeaves();
@@ -303,20 +303,20 @@ export class RequestsComponent implements OnInit {
     if (!this.swapData.colleagueId || !this.swapData.colleagueWorkDate) return;
     const date = this.swapData.colleagueWorkDate;
 
-    // To load colleague shifts, we query the weekly schedule with colleague's name keyword
-    const selectedColleague = this.colleagues().find(c => c.id === this.swapData.colleagueId);
+    // To load colleague shifts, we query the weekly schedule with colleague's employeeId
+    const selectedColleague = this.colleagues().find(c => c.employeeId === this.swapData.colleagueId);
     if (!selectedColleague) return;
 
     this.apiService.get<ApiResponse<{ employees: { content: any[] } }>>(`${environment.apiBaseUrl}/shifts/schedules`, {
       params: {
         startDate: date,
         endDate: date,
-        keyword: selectedColleague.fullName
+        employeeId: selectedColleague.employeeId
       }
     }).subscribe({
       next: response => {
         if (response.success) {
-          const emp = response.data.employees?.content?.find((e: any) => e.employeeId === selectedColleague.id);
+          const emp = response.data.employees?.content?.find((e: any) => e.employeeId === selectedColleague.employeeId);
           if (emp && emp.shifts) {
             const mappedShifts: ShiftDto[] = emp.shifts.map((s: any) => ({
               employeeShiftId: s.employeeShiftId,
@@ -451,8 +451,68 @@ export class RequestsComponent implements OnInit {
       case 'APPROVED': return 'Đã duyệt';
       case 'PENDING': return 'Đang chờ';
       case 'REJECTED': return 'Từ chối';
+      case 'CANCELLED': return 'Đã hủy';
+      case 'CANCEL_PENDING': return 'Chờ duyệt hủy';
       default: return status;
     }
+  }
+
+  cancelLeave(id: string): void {
+    this.confirmService.open({
+      title: 'Xác nhận hủy yêu cầu',
+      content: 'Bạn có chắc chắn muốn hủy yêu cầu nghỉ này?'
+    }).subscribe(accept => {
+      if (accept) {
+        this.apiService.post<null, ApiResponse<any>>(`${environment.apiBaseUrl}/leaves/${id}/cancel`, null).subscribe({
+          next: response => {
+            if (response.success) {
+              this.toastService.success('Đã gửi yêu cầu hủy.');
+              this.loadMyLeaves();
+              this.loadMyQuotas();
+            }
+          },
+          error: error => this.toastService.error(error.error?.message || 'Hủy yêu cầu thất bại.')
+        });
+      }
+    });
+  }
+
+  cancelSwap(id: string): void {
+    this.confirmService.open({
+      title: 'Xác nhận hủy yêu cầu',
+      content: 'Bạn có chắc chắn muốn hủy yêu cầu đổi ca này?'
+    }).subscribe(accept => {
+      if (accept) {
+        this.apiService.post<null, ApiResponse<any>>(`${environment.apiBaseUrl}/schedules/swaps/${id}/cancel`, null).subscribe({
+          next: response => {
+            if (response.success) {
+              this.toastService.success('Đã gửi yêu cầu hủy.');
+              this.loadMySwaps();
+            }
+          },
+          error: error => this.toastService.error(error.error?.message || 'Hủy yêu cầu thất bại.')
+        });
+      }
+    });
+  }
+
+  cancelAdjustment(id: string): void {
+    this.confirmService.open({
+      title: 'Xác nhận hủy yêu cầu',
+      content: 'Bạn có chắc chắn muốn hủy yêu cầu chỉnh công này?'
+    }).subscribe(accept => {
+      if (accept) {
+        this.apiService.post<null, ApiResponse<any>>(`${environment.apiBaseUrl}/attendance/adjustments/${id}/cancel`, null).subscribe({
+          next: response => {
+            if (response.success) {
+              this.toastService.success('Đã gửi yêu cầu hủy.');
+              this.loadMyAdjustments();
+            }
+          },
+          error: error => this.toastService.error(error.error?.message || 'Hủy yêu cầu thất bại.')
+        });
+      }
+    });
   }
 
   getAdjustmentTypeLabel(type: string): string {

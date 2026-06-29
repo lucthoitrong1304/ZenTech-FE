@@ -626,33 +626,40 @@
                       {{ getShiftTimeRange(shift) }}
                     </span>
                   </div>
-                  <div
-                    class="work-schedules-settings-switch"
-                    role="group"
-                    aria-label="Chọn nhóm cấu hình ca"
-                  >
-                    <button
-                      type="button"
-                      [class.work-schedules-settings-switch__item--active]="
-                        getShiftSettingsPanel(shift.id) === 'time'
-                      "
-                      (click)="setShiftSettingsPanel(shift.id, 'time')"
+                  @if (shift.type !== 'OFF') {
+                    <div
+                      class="work-schedules-settings-switch"
+                      role="group"
+                      aria-label="Chọn nhóm cấu hình ca"
                     >
-                      Giờ
-                    </button>
-                    <button
-                      type="button"
-                      [class.work-schedules-settings-switch__item--active]="
-                        getShiftSettingsPanel(shift.id) === 'rules'
-                      "
-                      (click)="setShiftSettingsPanel(shift.id, 'rules')"
-                    >
-                      Cấu hình
-                    </button>
-                  </div>
+                      <button
+                        type="button"
+                        [class.work-schedules-settings-switch__item--active]="
+                          getShiftSettingsPanel(shift.id) === 'time'
+                        "
+                        (click)="setShiftSettingsPanel(shift.id, 'time')"
+                      >
+                        Giờ
+                      </button>
+                      <button
+                        type="button"
+                        [class.work-schedules-settings-switch__item--active]="
+                          getShiftSettingsPanel(shift.id) === 'rules'
+                        "
+                        (click)="setShiftSettingsPanel(shift.id, 'rules')"
+                      >
+                        Cấu hình
+                      </button>
+                    </div>
+                  }
                 </div>
                 <div class="work-schedules-settings-row__fields">
-                  @if (getShiftSettingsPanel(shift.id) === 'time') {
+                  @if (shift.type === 'OFF') {
+                    <div style="padding: 14px 20px; font-size: 13px; color: #64748b; font-style: italic; display: flex; align-items: center; gap: 8px;">
+                      <svg lucideInfo class="w-4 h-4"></svg>
+                      Ca nghỉ không cần cấu hình giờ làm việc và quy tắc chấm công.
+                    </div>
+                  } @else if (getShiftSettingsPanel(shift.id) === 'time') {
                     <fieldset
                       class="work-schedules-settings-group work-schedules-settings-group--time"
                     >
@@ -777,35 +784,41 @@
                   </select>
                 </label>
                 <div class="work-schedules-settings-row__fields">
-                  <div
-                    class="work-schedules-settings-switch"
-                    role="group"
-                    aria-label="Chọn nhóm cấu hình ca mới"
-                  >
-                    <button
-                      type="button"
-                      [class.work-schedules-settings-switch__item--active]="
-                        getShiftSettingsPanel('new-shift') === 'time'
-                      "
-                      (click)="setShiftSettingsPanel('new-shift', 'time')"
+                  @if (newShift.type === 'OFF') {
+                    <div style="padding: 14px 20px; font-size: 13px; color: #64748b; font-style: italic; display: flex; align-items: center; gap: 8px;">
+                      <svg lucideInfo class="w-4 h-4"></svg>
+                      Ca nghỉ không cần cấu hình giờ làm việc và quy tắc chấm công.
+                    </div>
+                  } @else {
+                    <div
+                      class="work-schedules-settings-switch"
+                      role="group"
+                      aria-label="Chọn nhóm cấu hình ca mới"
                     >
-                      Giờ
-                    </button>
-                    <button
-                      type="button"
-                      [class.work-schedules-settings-switch__item--active]="
-                        getShiftSettingsPanel('new-shift') === 'rules'
-                      "
-                      (click)="setShiftSettingsPanel('new-shift', 'rules')"
-                    >
-                      Cấu hình
-                    </button>
-                  </div>
+                      <button
+                        type="button"
+                        [class.work-schedules-settings-switch__item--active]="
+                          getShiftSettingsPanel('new-shift') === 'time'
+                        "
+                        (click)="setShiftSettingsPanel('new-shift', 'time')"
+                      >
+                        Giờ
+                      </button>
+                      <button
+                        type="button"
+                        [class.work-schedules-settings-switch__item--active]="
+                          getShiftSettingsPanel('new-shift') === 'rules'
+                        "
+                        (click)="setShiftSettingsPanel('new-shift', 'rules')"
+                      >
+                        Cấu hình
+                      </button>
+                    </div>
 
-                  @if (getShiftSettingsPanel('new-shift') === 'time') {
-                    <fieldset
-                      class="work-schedules-settings-group work-schedules-settings-group--time"
-                    >
+                    @if (getShiftSettingsPanel('new-shift') === 'time') {
+                      <fieldset
+                        class="work-schedules-settings-group work-schedules-settings-group--time"
+                      >
                       <legend>Giờ làm việc</legend>
                       <label>
                         <span>Bắt đầu</span>
@@ -896,6 +909,7 @@
                       </fieldset>
                     </div>
                   }
+                }
                 </div>
                 <div class="work-schedules-settings-row__actions">
                   <button
@@ -985,8 +999,8 @@
               }
             </div>
 
-            <div class="work-schedules-field-grid">
-              <label class="work-schedules-field">
+            <div class="work-schedules-coordinates-row" style="display: flex; gap: 12px; align-items: flex-end;">
+              <label class="work-schedules-field" style="flex: 1;">
                 <span>Lat</span>
                 <input
                   type="number"

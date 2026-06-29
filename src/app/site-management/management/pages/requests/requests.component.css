@@ -366,6 +366,18 @@
   color: #be123c;
 }
 
+.requests-status-badge--cancelled {
+  border-color: rgba(148, 163, 184, 0.28);
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.requests-status-badge--cancel-pending {
+  border-color: rgba(249, 115, 22, 0.34);
+  background: #ffedd5;
+  color: #c2410c;
+}
+
 .requests-history-reason {
   margin: 0;
   border-radius: 10px;

@@ -8,7 +8,7 @@ import { PermissionService } from '../../../../core/permissions/permission.servi
 import { PermissionCode } from '../../../../core/permissions/permission.models';
 
 type LeaveTypeUnit = 'DAY' | 'HOUR';
-type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCEL_PENDING' | 'CANCELLED';
 
 interface ApiResponse<T> {
   success: boolean;

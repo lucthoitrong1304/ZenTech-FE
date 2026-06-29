@@ -286,11 +286,23 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     if (tab === 'location') {
       window.setTimeout(() => {
         this.ensureLocationMap();
-        this.requestCurrentLocationCenter();
+        
+        const policy = this.store.locationPolicyDraft();
+        const hasValidCoords = (policy.shapeType === 'CIRCLE' && isValidLatitude(policy.centerLatitude) && isValidLongitude(policy.centerLongitude)) || 
+                               (policy.shapeType === 'POLYGON' && policy.polygonPoints && policy.polygonPoints.length > 0);
+
+        if (!hasValidCoords) {
+          this.requestCurrentLocationCenter();
+        }
       }, 0);
     } else {
       this.destroyLocationMap();
     }
+  }
+
+  protected onGetGPSClick(): void {
+    this.currentLocationRequested = false;
+    this.requestCurrentLocationCenter();
   }
 
   protected closeSettingsModal(): void {
