@@ -10,7 +10,6 @@ import {
 } from '@lucide/angular';
 import {
   ManagementOrder,
-  ManagementOrderStatus,
   ManagementPaymentMethod,
 } from '../../data-access/models/management-order.models';
 
@@ -49,12 +48,18 @@ export class OrderTableComponent {
   protected readonly skeletonRows = Array.from({ length: 4 });
   protected readonly pageSlots = Array.from({ length: 5 }, (_, index) => index);
 
-  protected getStatusLabel(status: ManagementOrderStatus): string {
-    switch (status) {
-      case 'CREATED':
-        return 'Chờ thanh toán';
+  protected getStatusLabel(order: ManagementOrder): string {
+    if (order.orderStatus === 'CREATED') {
+      if (order.paymentMethod === 'CASH') {
+        return 'Chờ xác nhận COD';
+      }
+
+      return order.paymentStatus === 'SUCCESS' ? 'Chờ xác nhận' : 'Chờ thanh toán';
+    }
+
+    switch (order.orderStatus) {
       case 'CONFIRMED':
-        return 'Đang xử lý';
+        return 'Đã xác nhận';
       case 'SHIPPED':
         return 'Đang giao';
       case 'COMPLETED':
@@ -66,7 +71,7 @@ export class OrderTableComponent {
       case 'RETURNED':
         return 'Đã trả hàng';
       default:
-        return status;
+        return order.orderStatus;
     }
   }
 
