@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideFileUp, LucidePlus, LucideSend, LucideX } from '@lucide/angular';
+import { getImageFilesFromClipboard } from '../../../../../shared/utils/clipboard-image-files.util';
 import { ManagementChatUpload } from '../../data-access/models/management-chat.models';
 
 @Component({
@@ -74,5 +75,20 @@ export class ChatComposerComponent {
     }
 
     inputElement.value = '';
+  }
+
+  protected onPaste(event: ClipboardEvent): void {
+    if (this.disabled()) {
+      return;
+    }
+
+    const imageFiles = getImageFilesFromClipboard(event);
+
+    if (imageFiles.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+    this.filesSelected.emit(imageFiles);
   }
 }

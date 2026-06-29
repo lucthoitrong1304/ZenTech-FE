@@ -39,6 +39,7 @@
         [ngModel]="draft()"
         (ngModelChange)="draft.set($event)"
         (keydown.enter)="onEnter($event)"
+        (paste)="onPaste($event)"
       ></textarea>
 
       <button
