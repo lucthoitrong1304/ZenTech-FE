@@ -169,7 +169,7 @@
                 @if (getAvatarUrl(account); as avatarUrl) {
                   <img class="account-avatar" [src]="avatarUrl" [alt]="account.displayName" />
                 } @else {
-                  <span class="account-avatar account-avatar--fallback" [style.background]="getAvatarGradient(account.email)">{{ getAccountInitials(account) }}</span>
+                  <span class="account-avatar account-avatar--fallback" [style.background]="getRoleAvatarBg(account.role)">{{ getAccountInitials(account) }}</span>
                 }
                 <div class="account-copy">
                   <strong>{{ account.displayName || 'Chưa cập nhật tên' }}</strong>
@@ -252,7 +252,7 @@
           <div class="accounts-card-grid">
             @for (account of store.accounts(); track account.id) {
               <article class="account-profile-card" [class.account-profile-card--inactive]="!account.isActive">
-                <div class="profile-card-header" [style.background]="getAvatarGradient(account.email)">
+                <div class="profile-card-header" [style.background]="getRoleHeaderBg(account.role)">
                   <p-tag
                     [value]="account.role"
                     [severity]="getRoleSeverity(account.role)"
@@ -265,7 +265,7 @@
                   @if (getAvatarUrl(account); as avatarUrl) {
                     <img class="profile-card-avatar" [src]="avatarUrl" [alt]="account.displayName" />
                   } @else {
-                    <div class="profile-card-avatar profile-card-avatar--fallback" [style.background]="getAvatarGradient(account.email)">
+                    <div class="profile-card-avatar profile-card-avatar--fallback" [style.background]="getRoleAvatarBg(account.role)">
                       <span>{{ getAccountInitials(account) }}</span>
                     </div>
                   }
@@ -417,7 +417,7 @@
       
       <div class="preview-card-wrapper">
         <article class="account-profile-card account-profile-card--preview">
-          <div class="profile-card-header" [style.background]="getAvatarGradient(createForm.controls.email.value)">
+          <div class="profile-card-header" [style.background]="getRoleHeaderBg(createForm.controls.role.value)">
             <p-tag
               [value]="createForm.controls.role.value"
               [severity]="getRoleSeverity(createForm.controls.role.value)"
@@ -427,7 +427,7 @@
           </div>
           
           <div class="profile-card-avatar-wrap">
-            <div class="profile-card-avatar profile-card-avatar--fallback" [style.background]="getAvatarGradient(createForm.controls.email.value)">
+            <div class="profile-card-avatar profile-card-avatar--fallback" [style.background]="getRoleAvatarBg(createForm.controls.role.value)">
               <span>
                 {{ getInitials(createForm.controls.fullName.value) }}
               </span>
@@ -468,7 +468,7 @@
         @if (getAvatarUrl(selectedAccount); as avatarUrl) {
           <img class="account-avatar" [src]="avatarUrl" [alt]="selectedAccount.displayName" />
         } @else {
-          <span class="account-avatar account-avatar--fallback" [style.background]="getAvatarGradient(selectedAccount.email)">{{ getAccountInitials(selectedAccount) }}</span>
+          <span class="account-avatar account-avatar--fallback" [style.background]="getRoleAvatarBg(selectedAccount.role)">{{ getAccountInitials(selectedAccount) }}</span>
         }
         <div class="account-copy">
           <strong>{{ selectedAccount.displayName || 'Chưa cập nhật tên' }}</strong>
