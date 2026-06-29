@@ -158,20 +158,37 @@
                 </div>
               </td>
               @for (date of store.weekDates(); track date) {
-                @let shift = getShiftForDate(employee, date);
+                @let shifts = getShiftsForDate(employee, date);
                 <td>
                   <button
                     type="button"
                     class="work-schedules-cell"
-                    [class.work-schedules-cell--empty]="!shift"
-                    [style.border-left-color]="shift?.colorCode || null"
-                    [style.background-color]="shift ? shift.colorCode + '13' : null"
+                    [class.work-schedules-cell--empty]="shifts.length === 0"
+                    [style.border-left-color]="shifts[0]?.colorCode || null"
+                    [style.background-color]="
+                      shifts.length > 0 ? (shifts[0].colorCode || '#4f46e5') + '13' : null
+                    "
                     [disabled]="!canUpdateSchedule()"
-                    (click)="canUpdateSchedule() && store.openAssignModal(employee, date, shift)"
+                    (click)="canUpdateSchedule() && store.openAssignModal(employee, date, shifts)"
                   >
-                    @if (shift) {
-                      <strong [style.color]="shift.colorCode">{{ shift.shiftName }}</strong>
-                      <small>{{ getShiftTimeRange(shift) }}</small>
+                    @if (shifts.length > 0) {
+                      <span class="work-schedules-cell__summary">
+                        <strong>{{ shifts.length }} ca</strong>
+                        <small>{{ getDayCoverageLabel(shifts) }}</small>
+                      </span>
+                      <span class="work-schedules-cell__stack">
+                        @for (shift of shifts; track shift.employeeShiftId) {
+                          <span
+                            class="work-schedules-cell__shift"
+                            [style.border-left-color]="shift.colorCode || '#4f46e5'"
+                          >
+                            <span [style.color]="shift.colorCode || '#4f46e5'">{{
+                              shift.shiftName
+                            }}</span>
+                            <small>{{ getShiftTimeRange(shift) }}</small>
+                          </span>
+                        }
+                      </span>
                     } @else {
                       <strong>
                         <svg
@@ -257,7 +274,10 @@
 @if (store.assignModalOpen()) {
   @if (store.selectedCell(); as cell) {
     <div class="work-schedules-modal-backdrop" role="presentation">
-      <form class="work-schedules-modal" (submit)="$event.preventDefault(); canUpdateSchedule() && store.assignShift()">
+      <form
+        class="work-schedules-modal"
+        (submit)="$event.preventDefault(); canUpdateSchedule() && store.assignShift()"
+      >
         <header class="work-schedules-modal__header">
           <div>
             <p>Assign Shift</p>
@@ -278,26 +298,46 @@
             <span>Ngày</span>
             <strong>{{ cell.workDate | date: 'dd/MM/yyyy' }}</strong>
           </div>
-          @if (cell.shift) {
-            <div class="work-schedules-summary-line">
-              <span>Ca hiện tại</span>
-              <strong>{{ cell.shift.shiftName }} · {{ getShiftTimeRange(cell.shift) }}</strong>
-            </div>
-          }
+          <div class="work-schedules-current-shifts">
+            <span>Ca hiện tại</span>
+            @for (shift of cell.shifts; track shift.employeeShiftId) {
+              <div class="work-schedules-current-shift">
+                <span
+                  class="work-schedules-shift-card__swatch"
+                  [style.background]="shift.colorCode || '#4f46e5'"
+                ></span>
+                <strong>{{ shift.shiftName }} · {{ getShiftTimeRange(shift) }}</strong>
+                <button
+                  type="button"
+                  class="work-schedules-icon-action"
+                  [disabled]="store.saving()"
+                  [attr.aria-label]="'Xóa ' + shift.shiftName"
+                  (click)="store.deleteScheduleAssignment(shift.employeeShiftId)"
+                >
+                  <svg lucideTrash2 [attr.stroke-width]="2"></svg>
+                </button>
+              </div>
+            } @empty {
+              <small>Chưa xếp ca trong ngày này.</small>
+            }
+          </div>
 
           <label class="work-schedules-field">
-            <span>Chọn ca</span>
+            <span>Thêm ca</span>
             <select [value]="store.assignShiftId()" (change)="onAssignShiftChange($event)">
               @for (shift of store.shifts(); track shift.id) {
-                <option [value]="shift.id">
+                <option [value]="shift.id" [disabled]="isShiftAssigned(cell.shifts, shift.id)">
                   {{ shift.name }} · {{ getShiftTimeRange(shift) }}
                 </option>
               }
             </select>
+            @if (!store.assignShiftId()) {
+              <small>Toàn bộ ca hiện có đã được thêm cho ngày này.</small>
+            }
           </label>
 
           <label class="work-schedules-field">
-            <span>Lý do điều chỉnh (Bắt buộc nếu sửa ngày hôm nay/quá khứ)</span>
+            <span>Lý do điều chỉnh/xóa ca (Bắt buộc nếu sửa ngày hôm nay/quá khứ)</span>
             <input
               type="text"
               placeholder="Nhập lý do..."
@@ -325,7 +365,7 @@
             } @else {
               <svg lucideCheck [attr.stroke-width]="2"></svg>
             }
-            <span>Lưu ca</span>
+            <span>Thêm ca</span>
           </button>
         </footer>
       </form>
@@ -335,7 +375,10 @@
 
 @if (store.bulkModalOpen()) {
   <div class="work-schedules-modal-backdrop" role="presentation">
-    <form class="work-schedules-modal" (submit)="$event.preventDefault(); canUpdateSchedule() && store.bulkAssign()">
+    <form
+      class="work-schedules-modal"
+      (submit)="$event.preventDefault(); canUpdateSchedule() && store.bulkAssign()"
+    >
       <header class="work-schedules-modal__header">
         <div>
           <p>Bulk Assign</p>
@@ -433,7 +476,10 @@
 
 @if (store.copyModalOpen()) {
   <div class="work-schedules-modal-backdrop" role="presentation">
-    <form class="work-schedules-modal" (submit)="$event.preventDefault(); canUpdateSchedule() && store.copyWeek()">
+    <form
+      class="work-schedules-modal"
+      (submit)="$event.preventDefault(); canUpdateSchedule() && store.copyWeek()"
+    >
       <header class="work-schedules-modal__header">
         <div>
           <p>Copy Week</p>
@@ -518,7 +564,10 @@
       class="work-schedules-modal work-schedules-modal--wide"
       (submit)="
         $event.preventDefault();
-        canUpdateSchedule() && (store.settingsTab() === 'location' ? store.saveLocationPolicy() : store.saveShiftSettings())
+        canUpdateSchedule() &&
+          (store.settingsTab() === 'location'
+            ? store.saveLocationPolicy()
+            : store.saveShiftSettings())
       "
     >
       <header class="work-schedules-modal__header">
@@ -560,30 +609,137 @@
           <div class="work-schedules-settings-list">
             @for (shift of store.settingsDraft().shifts; track shift.id) {
               <article class="work-schedules-settings-row">
-                <span
-                  class="work-schedules-shift-card__swatch"
-                  [style.background]="shift.colorCode || '#4f46e5'"
-                ></span>
-                <div class="work-schedules-settings-row__name">
-                  <strong>{{ shift.name }}</strong>
-                  <small>{{ getShiftTypeLabel(shift.type) }}</small>
+                <div
+                  class="work-schedules-settings-shift-panel"
+                  [style.--shift-color]="shift.colorCode || '#4f46e5'"
+                >
+                  <div class="work-schedules-settings-shift-panel__content">
+                    <strong>{{ shift.name }}</strong>
+                    <span class="work-schedules-settings-shift-panel__time">
+                      {{ getShiftTimeRange(shift) }}
+                    </span>
+                  </div>
+                  <div
+                    class="work-schedules-settings-switch"
+                    role="group"
+                    aria-label="Chọn nhóm cấu hình ca"
+                  >
+                    <button
+                      type="button"
+                      [class.work-schedules-settings-switch__item--active]="
+                        getShiftSettingsPanel(shift.id) === 'time'
+                      "
+                      (click)="setShiftSettingsPanel(shift.id, 'time')"
+                    >
+                      Giờ
+                    </button>
+                    <button
+                      type="button"
+                      [class.work-schedules-settings-switch__item--active]="
+                        getShiftSettingsPanel(shift.id) === 'rules'
+                      "
+                      (click)="setShiftSettingsPanel(shift.id, 'rules')"
+                    >
+                      Cấu hình
+                    </button>
+                  </div>
                 </div>
-                <label>
-                  <span>Bắt đầu</span>
-                  <input
-                    type="time"
-                    [value]="shift.startTime?.slice(0, 5) || ''"
-                    (input)="onShiftTimeInput(shift.id, 'startTime', $event)"
-                  />
-                </label>
-                <label>
-                  <span>Kết thúc</span>
-                  <input
-                    type="time"
-                    [value]="shift.endTime?.slice(0, 5) || ''"
-                    (input)="onShiftTimeInput(shift.id, 'endTime', $event)"
-                  />
-                </label>
+                <div class="work-schedules-settings-row__fields">
+                  @if (getShiftSettingsPanel(shift.id) === 'time') {
+                    <fieldset
+                      class="work-schedules-settings-group work-schedules-settings-group--time"
+                    >
+                      <legend>Giờ làm việc</legend>
+                      <label>
+                        <span>Bắt đầu</span>
+                        <input
+                          type="time"
+                          [value]="shift.startTime?.slice(0, 5) || ''"
+                          (input)="onShiftTimeInput(shift.id, 'startTime', $event)"
+                        />
+                      </label>
+                      <label>
+                        <span>Kết thúc</span>
+                        <input
+                          type="time"
+                          [value]="shift.endTime?.slice(0, 5) || ''"
+                          (input)="onShiftTimeInput(shift.id, 'endTime', $event)"
+                        />
+                      </label>
+                    </fieldset>
+                  } @else {
+                    <div class="work-schedules-settings-rule-grid">
+                      <fieldset class="work-schedules-settings-group">
+                        <legend>Cấu hình chặn early Checkin và Late Checkout</legend>
+                        <label
+                          title="Số phút nhân viên được phép check-in trước giờ bắt đầu ca. Đơn vị: phút."
+                        >
+                          <span>Chặn vào sớm</span>
+                          <div class="work-schedules-settings-number">
+                            <input
+                              type="number"
+                              min="0"
+                              [value]="shift.earlyCheckInMinutes"
+                              title="Số phút được phép check-in trước giờ bắt đầu ca."
+                              (input)="onShiftNumberInput(shift.id, 'earlyCheckInMinutes', $event)"
+                            />
+                            <span>phút</span>
+                          </div>
+                        </label>
+                        <label
+                          title="Số phút nhân viên được phép check-out sau giờ kết thúc ca. Đơn vị: phút."
+                        >
+                          <span>Chặn ra muộn</span>
+                          <div class="work-schedules-settings-number">
+                            <input
+                              type="number"
+                              min="0"
+                              [value]="shift.lateCheckOutMinutes"
+                              title="Số phút được phép check-out sau giờ kết thúc ca."
+                              (input)="onShiftNumberInput(shift.id, 'lateCheckOutMinutes', $event)"
+                            />
+                            <span>phút</span>
+                          </div>
+                        </label>
+                      </fieldset>
+                      <fieldset
+                        class="work-schedules-settings-group work-schedules-settings-group--wide"
+                      >
+                        <legend>Phạm vi action ontime</legend>
+                        <label
+                          title="Số phút trước và sau giờ bắt đầu ca vẫn được tính là check-in đúng giờ. Đơn vị: phút."
+                        >
+                          <span>Range ontime CI</span>
+                          <div class="work-schedules-settings-number">
+                            <input
+                              type="number"
+                              min="0"
+                              [value]="getOnTimeCheckInRange(shift)"
+                              title="Áp dụng cùng số phút cho cả trước và sau giờ bắt đầu ca."
+                              (input)="onShiftOnTimeRangeInput(shift.id, 'checkIn', $event)"
+                            />
+                            <span>phút</span>
+                          </div>
+                        </label>
+                        <label
+                          title="Số phút trước và sau giờ kết thúc ca vẫn được tính là check-out đúng giờ. Đơn vị: phút."
+                        >
+                          <span>Range ontime CO</span>
+                          <div class="work-schedules-settings-number">
+                            <input
+                              type="number"
+                              min="0"
+                              [value]="getOnTimeCheckOutRange(shift)"
+                              title="Áp dụng cùng số phút cho cả trước và sau giờ kết thúc ca."
+                              (input)="onShiftOnTimeRangeInput(shift.id, 'checkOut', $event)"
+                            />
+                            <span>phút</span>
+                          </div>
+                        </label>
+                      </fieldset>
+                    </div>
+                  }
+                </div>
               </article>
             }
 
@@ -613,22 +769,127 @@
                     <option value="OFF">Nghỉ</option>
                   </select>
                 </label>
-                <label>
-                  <span>Bắt đầu</span>
-                  <input
-                    type="time"
-                    [value]="newShift.startTime?.slice(0, 5) || ''"
-                    (input)="onNewShiftTimeInput('startTime', $event)"
-                  />
-                </label>
-                <label>
-                  <span>Kết thúc</span>
-                  <input
-                    type="time"
-                    [value]="newShift.endTime?.slice(0, 5) || ''"
-                    (input)="onNewShiftTimeInput('endTime', $event)"
-                  />
-                </label>
+                <div class="work-schedules-settings-row__fields">
+                  <div
+                    class="work-schedules-settings-switch"
+                    role="group"
+                    aria-label="Chọn nhóm cấu hình ca mới"
+                  >
+                    <button
+                      type="button"
+                      [class.work-schedules-settings-switch__item--active]="
+                        getShiftSettingsPanel('new-shift') === 'time'
+                      "
+                      (click)="setShiftSettingsPanel('new-shift', 'time')"
+                    >
+                      Giờ
+                    </button>
+                    <button
+                      type="button"
+                      [class.work-schedules-settings-switch__item--active]="
+                        getShiftSettingsPanel('new-shift') === 'rules'
+                      "
+                      (click)="setShiftSettingsPanel('new-shift', 'rules')"
+                    >
+                      Cấu hình
+                    </button>
+                  </div>
+
+                  @if (getShiftSettingsPanel('new-shift') === 'time') {
+                    <fieldset
+                      class="work-schedules-settings-group work-schedules-settings-group--time"
+                    >
+                      <legend>Giờ làm việc</legend>
+                      <label>
+                        <span>Bắt đầu</span>
+                        <input
+                          type="time"
+                          [value]="newShift.startTime?.slice(0, 5) || ''"
+                          (input)="onNewShiftTimeInput('startTime', $event)"
+                        />
+                      </label>
+                      <label>
+                        <span>Kết thúc</span>
+                        <input
+                          type="time"
+                          [value]="newShift.endTime?.slice(0, 5) || ''"
+                          (input)="onNewShiftTimeInput('endTime', $event)"
+                        />
+                      </label>
+                    </fieldset>
+                  } @else {
+                    <div class="work-schedules-settings-rule-grid">
+                      <fieldset class="work-schedules-settings-group">
+                        <legend>Cấu hình chặn early Checkin và Late Checkout</legend>
+                        <label
+                          title="Số phút nhân viên được phép check-in trước giờ bắt đầu ca. Đơn vị: phút."
+                        >
+                          <span>Chặn vào sớm</span>
+                          <div class="work-schedules-settings-number">
+                            <input
+                              type="number"
+                              min="0"
+                              [value]="newShift.earlyCheckInMinutes"
+                              title="Số phút được phép check-in trước giờ bắt đầu ca."
+                              (input)="onNewShiftNumberInput('earlyCheckInMinutes', $event)"
+                            />
+                            <span>phút</span>
+                          </div>
+                        </label>
+                        <label
+                          title="Số phút nhân viên được phép check-out sau giờ kết thúc ca. Đơn vị: phút."
+                        >
+                          <span>Chặn ra muộn</span>
+                          <div class="work-schedules-settings-number">
+                            <input
+                              type="number"
+                              min="0"
+                              [value]="newShift.lateCheckOutMinutes"
+                              title="Số phút được phép check-out sau giờ kết thúc ca."
+                              (input)="onNewShiftNumberInput('lateCheckOutMinutes', $event)"
+                            />
+                            <span>phút</span>
+                          </div>
+                        </label>
+                      </fieldset>
+                      <fieldset
+                        class="work-schedules-settings-group work-schedules-settings-group--wide"
+                      >
+                        <legend>Phạm vi action ontime</legend>
+                        <label
+                          title="Số phút trước và sau giờ bắt đầu ca vẫn được tính là check-in đúng giờ. Đơn vị: phút."
+                        >
+                          <span>Range ontime CI</span>
+                          <div class="work-schedules-settings-number">
+                            <input
+                              type="number"
+                              min="0"
+                              [value]="getOnTimeCheckInRange(newShift)"
+                              title="Áp dụng cùng số phút cho cả trước và sau giờ bắt đầu ca."
+                              (input)="onNewShiftOnTimeRangeInput('checkIn', $event)"
+                            />
+                            <span>phút</span>
+                          </div>
+                        </label>
+                        <label
+                          title="Số phút trước và sau giờ kết thúc ca vẫn được tính là check-out đúng giờ. Đơn vị: phút."
+                        >
+                          <span>Range ontime CO</span>
+                          <div class="work-schedules-settings-number">
+                            <input
+                              type="number"
+                              min="0"
+                              [value]="getOnTimeCheckOutRange(newShift)"
+                              title="Áp dụng cùng số phút cho cả trước và sau giờ kết thúc ca."
+                              (input)="onNewShiftOnTimeRangeInput('checkOut', $event)"
+                            />
+                            <span>phút</span>
+                          </div>
+                        </label>
+                      </fieldset>
+                    </div>
+                  }
+                </div>
                 <div class="work-schedules-settings-row__actions">
                   <button
                     type="button"
@@ -789,7 +1050,8 @@
           type="submit"
           class="work-schedules-primary-action"
           [disabled]="
-            !canUpdateSchedule() || (store.settingsTab() === 'location' ? !store.canSaveLocationPolicy() : store.saving())
+            !canUpdateSchedule() ||
+            (store.settingsTab() === 'location' ? !store.canSaveLocationPolicy() : store.saving())
           "
         >
           @if (store.saving()) {

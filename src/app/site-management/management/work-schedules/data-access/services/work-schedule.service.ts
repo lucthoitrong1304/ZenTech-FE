@@ -82,6 +82,14 @@ export class WorkScheduleService {
       .pipe(map(response => unwrapApiResponse(response)));
   }
 
+  deleteScheduleAssignment(employeeShiftId: string, reason = ''): Observable<void> {
+    const options = reason ? { params: { reason } } : undefined;
+
+    return this.apiService
+      .delete<ApiResponseDto<void>>(`${this.shiftsBaseUrl}/schedules/${employeeShiftId}`, options)
+      .pipe(map(response => unwrapApiResponse(response)));
+  }
+
   bulkAssignShifts(payload: BulkShiftUpdateRequest): Observable<void> {
     return this.apiService
       .post<BulkShiftUpdateRequest, ApiResponseDto<void>>(

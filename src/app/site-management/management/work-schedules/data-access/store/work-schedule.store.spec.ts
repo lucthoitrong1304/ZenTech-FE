@@ -63,7 +63,7 @@ describe('WorkScheduleStore', () => {
     expect(store.weekDates()).toHaveLength(7);
   });
 
-  it('opens a cell with the current shift preselected and assigns a replacement', () => {
+  it('opens a cell and adds a shift assignment', () => {
     const shift = createShift();
     const employee = createEmployee();
     const assignShift = vi.fn(() => of(undefined));
@@ -76,7 +76,7 @@ describe('WorkScheduleStore', () => {
     });
 
     store.loadWorkspace();
-    store.openAssignModal(employee, '2026-05-25', employee.shifts[0]);
+    store.openAssignModal(employee, '2026-05-25', employee.shifts);
     store.assignShift();
 
     expect(assignShift).toHaveBeenCalledWith({
@@ -86,7 +86,7 @@ describe('WorkScheduleStore', () => {
       reason: '',
     });
     expect(store.assignModalOpen()).toBe(false);
-    expect(store.successMessage()).toBe('Đã cập nhật ca làm việc.');
+    expect(store.successMessage()).toBe('Đã thêm ca làm việc.');
   });
 
   it('sends selectAll for bulk assignment without employee ids', () => {
@@ -141,6 +141,12 @@ function createShift(): Shift {
     colorCode: '#4f46e5',
     isDefault: true,
     type: 'NORMAL',
+    earlyCheckInMinutes: 30,
+    lateCheckOutMinutes: 60,
+    onTimeCheckInStartMinutes: 15,
+    onTimeCheckInEndMinutes: 5,
+    onTimeCheckOutStartMinutes: 5,
+    onTimeCheckOutEndMinutes: 15,
   };
 }
 
@@ -150,6 +156,7 @@ function createEmployee(): EmployeeWeeklySchedule {
     employeeName: 'Nguyen Van A',
     shifts: [
       {
+        employeeShiftId: 'employee-shift-1',
         shiftId: 'shift-1',
         shiftName: 'Ca sang',
         colorCode: '#4f46e5',
@@ -157,6 +164,12 @@ function createEmployee(): EmployeeWeeklySchedule {
         startTime: '08:00:00',
         endTime: '12:00:00',
         shiftType: 'NORMAL',
+        earlyCheckInMinutes: 30,
+        lateCheckOutMinutes: 60,
+        onTimeCheckInStartMinutes: 15,
+        onTimeCheckInEndMinutes: 5,
+        onTimeCheckOutStartMinutes: 5,
+        onTimeCheckOutEndMinutes: 15,
       },
     ],
   };
