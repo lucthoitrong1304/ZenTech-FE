@@ -758,7 +758,7 @@ button:disabled {
 .work-schedules-settings-row {
   display: grid;
   grid-template-columns: auto minmax(140px, 1fr) minmax(120px, 150px) minmax(120px, 150px);
-  align-items: end;
+  align-items: stretch;
   gap: 12px;
   border: 1px solid #edf0f4;
   border-radius: 10px;
@@ -784,6 +784,20 @@ button:disabled {
   min-width: 0;
   flex-direction: column;
   gap: 6px;
+}
+
+.work-schedules-settings-row label {
+  justify-content: flex-end;
+}
+
+.work-schedules-settings-row__name {
+  justify-content: center;
+}
+
+.work-schedules-settings-row > .work-schedules-shift-card__swatch {
+  align-self: stretch;
+  height: auto;
+  min-height: 42px;
 }
 
 .work-schedules-settings-row label span {
@@ -1055,6 +1069,12 @@ button:disabled {
   .work-schedules-settings-row__actions {
     justify-content: flex-end;
     margin-bottom: 0;
+  }
+
+  .work-schedules-settings-row > .work-schedules-shift-card__swatch {
+    align-self: flex-start;
+    height: 24px;
+    min-height: 0;
   }
 
   .work-schedules-check {

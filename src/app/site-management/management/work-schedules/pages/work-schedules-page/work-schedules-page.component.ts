@@ -182,7 +182,7 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     this.renderLocationOverlay();
   }
 
-  protected onCircleCoordinateInput(
+  protected onCenterCoordinateInput(
     field: 'centerLatitude' | 'centerLongitude',
     event: Event,
   ): void {
@@ -304,24 +304,19 @@ export class WorkSchedulesPageComponent implements OnDestroy {
         }).addTo(this.locationMap);
       }
 
-      if (this.locationCircleCenterLayer) {
-        this.locationCircleCenterLayer.setLatLng(center);
-      } else {
-        this.locationCircleCenterLayer = L.circleMarker(center, {
-          radius: 6,
-          color: '#ffffff',
-          fillColor: '#4f46e5',
-          fillOpacity: 1,
-          weight: 2,
-          interactive: false,
-        }).addTo(this.locationMap);
-      }
+      this.renderLocationCenterMarker(center);
       return;
     }
 
-    this.clearCircleOverlay();
+    this.clearCircleRadiusOverlay();
     this.clearPolygonOverlay();
     this.locationPointLayer?.clearLayers();
+
+    if (isValidLatitude(policy.centerLatitude) && isValidLongitude(policy.centerLongitude)) {
+      this.renderLocationCenterMarker([policy.centerLatitude, policy.centerLongitude]);
+    } else {
+      this.clearLocationCenterMarker();
+    }
 
     const polygonPoints = policy.polygonPoints.map(
       (point) => [point.lat, point.lng] as L.LatLngExpression,
@@ -361,9 +356,36 @@ export class WorkSchedulesPageComponent implements OnDestroy {
   }
 
   private clearCircleOverlay(): void {
+    this.clearCircleRadiusOverlay();
+    this.clearLocationCenterMarker();
+  }
+
+  private clearCircleRadiusOverlay(): void {
     this.locationCircleLayer?.remove();
-    this.locationCircleCenterLayer?.remove();
     this.locationCircleLayer = undefined;
+  }
+
+  private renderLocationCenterMarker(center: L.LatLngExpression): void {
+    if (!this.locationMap) {
+      return;
+    }
+
+    if (this.locationCircleCenterLayer) {
+      this.locationCircleCenterLayer.setLatLng(center);
+    } else {
+      this.locationCircleCenterLayer = L.circleMarker(center, {
+        radius: 6,
+        color: '#ffffff',
+        fillColor: '#4f46e5',
+        fillOpacity: 1,
+        weight: 2,
+        interactive: false,
+      }).addTo(this.locationMap);
+    }
+  }
+
+  private clearLocationCenterMarker(): void {
+    this.locationCircleCenterLayer?.remove();
     this.locationCircleCenterLayer = undefined;
   }
 
