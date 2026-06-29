@@ -100,15 +100,10 @@
           [messages]="store.messages()"
           [customer]="store.customer()"
           [staff]="store.staff()"
+          [aiResponding]="store.aiResponding()"
           [compact]="true"
           (previewRequested)="openPreview($event)"
         />
-
-        @if (store.aiResponding()) {
-          <div class="border-t border-[#d2c5ab]/25 bg-white px-4 py-2.5 text-xs font-semibold text-[#4f4632]">
-            ZenTech AI đang trả lời..
-          </div>
-        }
 
         <app-customer-upload-queue
           [uploads]="store.uploads()"

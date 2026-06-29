@@ -18,9 +18,11 @@ import { hasRole } from '../../../auth/data-access/utils/auth-role.utils';
 import { CustomerChatEvent, CustomerChatEventType } from '../models/customer-chat.event';
 import {
   ChatAttachmentType,
+  ChatMessageRequestPayload,
   ChatMessageResponse,
   ChatMessageType,
   ConversationResponse,
+  CustomerChatPageContext,
   ConversationStatus,
   CustomerChatFullSidebarMode,
   CustomerChatMessage,
@@ -61,6 +63,7 @@ interface CustomerChatUiState {
   isSearching: boolean;
   highlightedMessageId: string | null;
   customerTicketStatus: CustomerTicketStatus | null;
+  pageContext: CustomerChatPageContext | null;
 }
 
 const MESSAGE_ENTITY_CONFIG = {
@@ -98,6 +101,7 @@ const INITIAL_STATE: CustomerChatUiState = {
   isSearching: false,
   highlightedMessageId: null,
   customerTicketStatus: null,
+  pageContext: null,
 };
 
 export const CustomerChatStore = signalStore(
@@ -123,6 +127,7 @@ export const CustomerChatStore = signalStore(
       uploadEntities,
       activeConversationId,
       activeSharedTab,
+      pageContext,
     }) => ({
       messages: computed(() => messageEntities()),
       sharedItems: computed(() => sharedItemEntities()),
@@ -421,6 +426,13 @@ export const CustomerChatStore = signalStore(
         }
       };
 
+      const withPageContext = (
+        payload: Omit<ChatMessageRequestPayload, 'pageContext'>
+      ): ChatMessageRequestPayload => {
+        const context = store.pageContext();
+        return context ? { ...payload, pageContext: context } : payload;
+      };
+
       const switchConversation = rxMethod<string>(
         pipe(
           tap((id) => {
@@ -716,11 +728,11 @@ export const CustomerChatStore = signalStore(
             }
 
             if (pendingUploads.length === 0) {
-              const messageRequest = {
+              const messageRequest = withPageContext({
                 messageType: ChatMessageType.TEXT,
                 content: body,
                 attachments: [],
-              };
+              });
               patchState(store, {
                 aiResponding: store.session()?.status === 'BOT_CONSULTING',
                 errorMessage: null,
@@ -764,11 +776,11 @@ export const CustomerChatStore = signalStore(
                   const firstAttachmentType = attachments[0]?.attachmentType ?? null;
                   const content =
                     body || attachments.map((attachment) => attachment.fileName).join(', ');
-                  const messageRequest = {
+                  const messageRequest = withPageContext({
                     messageType: mapMessageType(firstAttachmentType, attachments.length),
                     content,
                     attachments,
-                  };
+                  });
 
                   patchState(store, {
                     aiResponding: store.session()?.status === 'BOT_CONSULTING',
@@ -1064,6 +1076,9 @@ export const CustomerChatStore = signalStore(
         },
         closeSharedSidebar(): void {
           handleEvent({ type: CustomerChatEventType.SharedSidebarClosed });
+        },
+        setPageContext(pageContext: CustomerChatPageContext | null): void {
+          patchState(store, { pageContext });
         },
       };
     }
