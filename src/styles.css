@@ -478,6 +478,165 @@ app-site-header {
   display: block;
 }
 
+.zt-chat-ai-markdown {
+  color: #1f2937;
+  font-size: 0.925rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.zt-chat-ai-markdown :is(h1, h2, h3) {
+  margin: 0.25rem 0 0.55rem;
+  color: #111827;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.zt-chat-ai-markdown h1 {
+  font-size: 1.15rem;
+}
+
+.zt-chat-ai-markdown h2 {
+  font-size: 1.05rem;
+}
+
+.zt-chat-ai-markdown h3 {
+  font-size: 0.98rem;
+}
+
+.zt-chat-ai-markdown p {
+  margin: 0 0 0.625rem;
+}
+
+.zt-chat-ai-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.zt-chat-ai-markdown :is(ul, ol) {
+  margin: 0.35rem 0 0.85rem;
+  padding-left: 1.15rem;
+}
+
+.zt-chat-ai-markdown ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.zt-chat-ai-markdown ul li {
+  position: relative;
+  padding-left: 1.1rem;
+}
+
+.zt-chat-ai-markdown ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: #ffc700;
+  box-shadow: 0 0 0 2px rgba(255, 199, 0, 0.2);
+}
+
+.zt-chat-ai-markdown li + li {
+  margin-top: 0.38rem;
+}
+
+.zt-chat-ai-markdown strong {
+  color: #111827;
+  font-weight: 750;
+}
+
+.zt-chat-ai-markdown code {
+  border-radius: 0.25rem;
+  background: rgba(255, 199, 0, 0.16);
+  padding: 0.1rem 0.3rem;
+  color: #6b4d00;
+  font-size: 0.92em;
+}
+
+.zt-chat-ai-markdown pre {
+  margin: 0.35rem 0 0.85rem;
+  overflow-x: auto;
+  border-radius: 0.45rem;
+  background: #111827;
+  padding: 0.75rem;
+  color: #f9fafb;
+}
+
+.zt-chat-ai-markdown pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.zt-chat-ai-markdown blockquote {
+  margin: 0.45rem 0 0.85rem;
+  border-left: 3px solid #ffc700;
+  padding-left: 0.8rem;
+  color: #4f4632;
+}
+
+.zt-chat-ai-markdown table {
+  display: block;
+  max-width: 100%;
+  margin: 0.45rem 0 0.85rem;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.zt-chat-ai-markdown th,
+.zt-chat-ai-markdown td {
+  border: 1px solid #efe7cf;
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.zt-chat-ai-markdown th {
+  background: rgba(255, 199, 0, 0.12);
+  color: #111827;
+  font-weight: 800;
+}
+
+.zt-chat-typing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  min-height: 1.2rem;
+}
+
+.zt-chat-typing span {
+  width: 0.38rem;
+  height: 0.38rem;
+  border-radius: 999px;
+  background: #ffc700;
+  animation: zt-chat-typing-bounce 1s ease-in-out infinite;
+}
+
+.zt-chat-typing span:nth-child(2) {
+  animation-delay: 0.14s;
+}
+
+.zt-chat-typing span:nth-child(3) {
+  animation-delay: 0.28s;
+}
+
+@keyframes zt-chat-typing-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+
+  40% {
+    transform: translateY(-0.22rem);
+    opacity: 1;
+  }
+}
+
 /* ==========================================================================
    GLOBAL PRIMENG CONFIRM DIALOG CUSTOM CUSTOMIZATION
    ========================================================================== */

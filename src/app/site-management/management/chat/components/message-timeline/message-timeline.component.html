@@ -75,8 +75,12 @@
               [class.bg-[#ffdf94]/45]="message.sender === 'STAFF'"
             >
               @if (message.body) {
+                @if (message.sender === 'AI') {
+                  <markdown class="zt-chat-ai-markdown" [data]="message.body"></markdown>
+                } @else {
                   <p>{{ message.body }}</p>
                 }
+              }
 
                 @if (message.recommendedProducts; as products) {
                   @if (products.length > 0) {

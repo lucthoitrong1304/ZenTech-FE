@@ -73,6 +73,7 @@
       [ngModel]="draft()"
       (ngModelChange)="draft.set($event)"
       (keydown.enter)="onEnter($event)"
+      (paste)="onPaste($event)"
       [disabled]="disabled()"
     ></textarea>
 

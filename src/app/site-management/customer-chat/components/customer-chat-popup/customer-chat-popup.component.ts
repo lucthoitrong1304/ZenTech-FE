@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LucideLogIn, LucideMessageCircle } from '@lucide/angular';
+import { filter } from 'rxjs';
 import { MediaPreviewDialogComponent } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
 import { CustomerChatComposerComponent } from '../customer-chat-composer/customer-chat-composer.component';
@@ -35,6 +37,7 @@ import { CustomerTicketStatus } from '../../data-access/models/customer-chat.mod
 })
 export class CustomerChatPopupComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly store = inject(CustomerChatStore);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
   protected readonly loginQueryParams = computed(() => ({ returnUrl: this.router.url || '/' }));
@@ -43,6 +46,14 @@ export class CustomerChatPopupComponent implements OnInit {
     if (!this.store.session()) {
       this.store.loadSession();
     }
+
+    this.updateRouteContext(this.router.url);
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((event) => this.updateRouteContext(event.urlAfterRedirects));
   }
 
   protected openPreview(item: MediaPreviewItem): void {
@@ -67,5 +78,13 @@ export class CustomerChatPopupComponent implements OnInit {
     return this.isTicketResolved(ticketStatus)
       ? 'Bạn có thể thử lại. Nếu vẫn chưa ổn, hãy nhắn nhân viên hỗ trợ.'
       : 'Tụi mình đang kiểm tra. Bạn có thể nhắn thêm thông tin nếu cần.';
+  }
+
+  private updateRouteContext(route: string): void {
+    if (route.includes('/products/')) {
+      return;
+    }
+
+    this.store.setPageContext({ route });
   }
 }

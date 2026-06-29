@@ -15,6 +15,7 @@ import {
 } from '../../../product-catalog/data-access/models/product-catalog.models';
 import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
 import { SiteHeaderComponent } from '../../../shared/site-header/site-header.component';
+import { CustomerChatStore } from '../../../customer-chat/data-access/store/customer-chat.store';
 import { ProductCardComponent } from '../../../product-listing/components/product-card/product-card.component';
 import { ProductDetailStore } from '../../data-access/store/product-detail.store';
 import { ProductReviewDraft } from '../../data-access/models/product-detail-view.model';
@@ -54,6 +55,7 @@ export class ProductDetailPageComponent {
   private readonly toastService = inject(ToastService);
   protected readonly cartStore = inject(CartStore);
   private readonly clientLogService = inject(ClientLogService);
+  private readonly customerChatStore = inject(CustomerChatStore);
 
   readonly navItems = this.categoryNavigationStore.navItems;
   readonly currentUser = this.authSessionStore.currentUser;
@@ -112,9 +114,18 @@ export class ProductDetailPageComponent {
 
     effect(() => {
       const product = this.productDetailStore.product();
+      const selectedVariant = this.productDetailStore.selectedVariant();
 
       if (product) {
         untracked(() => {
+          this.customerChatStore.setPageContext({
+            route: this.router.url,
+            currentProductId: product.id,
+            productName: product.name,
+            productSlug: product.slug,
+            selectedVariantId: selectedVariant?.id,
+          });
+
           this.clientLogService.info(
             ClientLogEventType.ProductViewed,
             `Người dùng xem chi tiết sản phẩm ${product.name}.`,
