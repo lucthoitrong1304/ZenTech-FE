@@ -320,7 +320,7 @@ const initialState: AdminState = {
   activitySeverity: 'ALL',
   activityModule: 'ALL',
   activityAction: 'ALL',
-  activityTimeRange: '7D',
+  activityTimeRange: 'TODAY',
   activityFrom: '',
   activityTo: '',
   activityModulesList: [],

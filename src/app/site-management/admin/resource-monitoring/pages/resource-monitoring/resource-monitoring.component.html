@@ -49,10 +49,26 @@
       }
     </div>
     <div class="runtime-strip">
-      <span><svg lucideClock3></svg>Thời gian hoạt động <b>{{ uptimeLabel(data()?.health?.processUptimeSeconds) }}</b><svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('uptime')" tooltipPosition="top"></svg></span>
-      <span><svg lucideCpu></svg>CPU của backend <b>{{ formatMetric(data()?.health?.processCpuUsagePercent ?? null, '%') }}</b><svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('processCpu')" tooltipPosition="top"></svg></span>
-      <span><svg lucideActivity></svg>Luồng xử lý <b>{{ data()?.health?.liveThreads ?? 'N/A' }} đang chạy / {{ data()?.health?.peakThreads ?? 'N/A' }} cao nhất</b><svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('threads')" tooltipPosition="top"></svg></span>
-      <span><svg lucideDatabase></svg>Bộ nhớ Java <b>{{ formatBytes(data()?.health?.jvmHeapUsedBytes) }} / {{ formatBytes(data()?.health?.jvmHeapMaxBytes) }}</b><svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('heap')" tooltipPosition="top"></svg></span>
+      <span>
+        <svg lucideClock3></svg>
+        <div class="runtime-text">Thời gian hoạt động <b>{{ uptimeLabel(data()?.health?.processUptimeSeconds) }}</b></div>
+        <svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('uptime')" tooltipPosition="top"></svg>
+      </span>
+      <span>
+        <svg lucideCpu></svg>
+        <div class="runtime-text">CPU của backend <b>{{ formatMetric(data()?.health?.processCpuUsagePercent ?? null, '%') }}</b></div>
+        <svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('processCpu')" tooltipPosition="top"></svg>
+      </span>
+      <span>
+        <svg lucideActivity></svg>
+        <div class="runtime-text">Luồng xử lý <b>{{ data()?.health?.liveThreads ?? 'N/A' }} đang chạy / {{ data()?.health?.peakThreads ?? 'N/A' }} cao nhất</b></div>
+        <svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('threads')" tooltipPosition="top"></svg>
+      </span>
+      <span>
+        <svg lucideDatabase></svg>
+        <div class="runtime-text">Bộ nhớ Java <b>{{ formatBytes(data()?.health?.jvmHeapUsedBytes) }} / {{ formatBytes(data()?.health?.jvmHeapMaxBytes) }}</b></div>
+        <svg lucideCircleHelp class="help-icon" [pTooltip]="runtimeHelp('heap')" tooltipPosition="top"></svg>
+      </span>
     </div>
   </section>
 
@@ -106,6 +122,176 @@
     </div>
   </section>
 
+  <section class="topology-section">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">SƠ ĐỒ HỆ THỐNG</span>
+        <h2>Trạng thái kết nối</h2>
+        <p>Kiến trúc liên kết giữa Client, Backend điều hướng và các dịch vụ cơ sở dữ liệu, giám sát.</p>
+      </div>
+    </div>
+
+    <div class="topology-wrapper">
+      <div class="topology-canvas">
+        <!-- Column Role Headers -->
+        <div class="topology-header topo-hdr-1">Client & Telemetry</div>
+        <div class="topology-header topo-hdr-2">Core Services</div>
+        <div class="topology-header topo-hdr-3">Data & Observability</div>
+
+        <!-- SVG Connections behind the cards -->
+        <svg class="topology-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="1.6" markerHeight="1.6" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+              <path d="M 0 2 L 6 5 L 0 8 L 2 5 z" fill="rgba(255, 255, 255, 0.15)" />
+            </marker>
+            <marker id="arrow-down" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="1.6" markerHeight="1.6" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+              <path d="M 0 2 L 6 5 L 0 8 L 2 5 z" fill="#ef4444" />
+            </marker>
+            <marker id="arrow-active" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="1.8" markerHeight="1.8" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+              <path d="M 0 2 L 6 5 L 0 8 L 2 5 z" fill="#818cf8" />
+            </marker>
+          </defs>
+
+          <!-- Connection lines -->
+          <!-- 1. ZenTech FE to ZenTech Java BE -->
+          <path class="topology-line" d="M 23 50 L 37 50" [class.line-down]="getCenterNodeStatus() === 'DOWN'" [attr.marker-end]="getCenterNodeStatus() === 'DOWN' ? 'url(#arrow-down)' : 'url(#arrow-active)'" />
+          <path class="topology-pulse" d="M 23 50 L 37 50" [class.pulse-down]="getCenterNodeStatus() === 'DOWN'" />
+
+          <!-- 2. ZenTech Java BE to ZenTech AI BE -->
+          <path class="topology-line" d="M 53 50 L 68 50" [class.line-down]="getDependency('ZenTech AI')?.status === 'DOWN'" [attr.marker-end]="getDependency('ZenTech AI')?.status === 'DOWN' ? 'url(#arrow-down)' : 'url(#arrow-active)'" />
+          <path class="topology-pulse" d="M 53 50 L 68 50" [class.pulse-down]="getDependency('ZenTech AI')?.status === 'DOWN'" />
+
+          <!-- 3. ZenTech Java BE to MySQL -->
+          <path class="topology-line" d="M 45 48 L 45 22" [class.line-down]="getDependency('MySQL')?.status === 'DOWN'" [attr.marker-end]="getDependency('MySQL')?.status === 'DOWN' ? 'url(#arrow-down)' : 'url(#arrow)'" />
+          <path class="topology-pulse" d="M 45 48 L 45 22" [class.pulse-down]="getDependency('MySQL')?.status === 'DOWN'" />
+
+          <!-- 4. ZenTech Java BE to RabbitMQ -->
+          <path class="topology-line" d="M 45 52 L 45 78" [class.line-down]="getDependency('RabbitMQ')?.status === 'DOWN'" [attr.marker-end]="getDependency('RabbitMQ')?.status === 'DOWN' ? 'url(#arrow-down)' : 'url(#arrow)'" />
+          <path class="topology-pulse" d="M 45 52 L 45 78" [class.pulse-down]="getDependency('RabbitMQ')?.status === 'DOWN'" />
+
+          <!-- 5. ZenTech AI BE to Qdrant -->
+          <path class="topology-line" d="M 75 52 L 75 78" [class.line-down]="getDependency('Qdrant')?.status === 'DOWN'" [attr.marker-end]="getDependency('Qdrant')?.status === 'DOWN' ? 'url(#arrow-down)' : 'url(#arrow)'" />
+          <path class="topology-pulse" d="M 75 52 L 75 78" [class.pulse-down]="getDependency('Qdrant')?.status === 'DOWN'" />
+
+          <!-- 6. ZenTech Java BE to Prometheus -->
+          <path class="topology-line" d="M 41 47 C 32 47, 26 35, 19 23" [class.line-down]="getDependency('Prometheus')?.status === 'DOWN'" [attr.marker-end]="getDependency('Prometheus')?.status === 'DOWN' ? 'url(#arrow-down)' : 'url(#arrow)'" />
+          <path class="topology-pulse" d="M 41 47 C 32 47, 26 35, 19 23" [class.pulse-down]="getDependency('Prometheus')?.status === 'DOWN'" />
+
+          <!-- 7. ZenTech Java BE to Loki -->
+          <path class="topology-line" d="M 49 47 C 58 47, 64 35, 71 23" [class.line-down]="getDependency('Loki')?.status === 'DOWN'" [attr.marker-end]="getDependency('Loki')?.status === 'DOWN' ? 'url(#arrow-down)' : 'url(#arrow)'" />
+          <path class="topology-pulse" d="M 49 47 C 58 47, 64 35, 71 23" [class.pulse-down]="getDependency('Loki')?.status === 'DOWN'" />
+
+          <!-- 8. ZenTech Java BE to Alloy -->
+          <path class="topology-line" d="M 41 53 C 32 53, 26 65, 19 77" [class.line-down]="getDependency('Alloy')?.status === 'DOWN'" [attr.marker-end]="getDependency('Alloy')?.status === 'DOWN' ? 'url(#arrow-down)' : 'url(#arrow)'" />
+          <path class="topology-pulse" d="M 41 53 C 32 53, 26 65, 19 77" [class.pulse-down]="getDependency('Alloy')?.status === 'DOWN'" />
+        </svg>
+
+        <!-- Node Elements positioned absolutely using classes -->
+        
+        <!-- Column 1 (X = 15%) -->
+        <!-- Prometheus Node -->
+        @if (getDependency('Prometheus'); as dep) {
+          <button type="button" [class]="'topo-node topo-node--prometheus ' + dependencyClass(dep.status)" (click)="openDependencyDetail(dep)" [pTooltip]="'Xem chi tiết Prometheus'" tooltipPosition="top">
+            <span class="node-icon"><svg lucideServer></svg></span>
+            <div class="node-info">
+              <span class="node-badge node-badge--metric">METRICS</span>
+              <strong>Prometheus</strong>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+            </div>
+          </button>
+        }
+        <!-- ZenTech FE Node -->
+        <button type="button" [class]="'topo-node topo-node--fe ' + dependencyClass('UP')" (click)="openDependencyDetail(getFeDependency())" [pTooltip]="'Xem chi tiết ZenTech FE'" tooltipPosition="top">
+          <span class="node-icon"><svg lucideMonitor></svg></span>
+          <div class="node-info">
+            <span class="node-badge node-badge--fe">CLIENT APP</span>
+            <strong>ZenTech FE</strong>
+            <small>Đang truy cập</small>
+          </div>
+        </button>
+        <!-- Alloy Node -->
+        @if (getDependency('Alloy'); as dep) {
+          <button type="button" [class]="'topo-node topo-node--alloy ' + dependencyClass(dep.status)" (click)="openDependencyDetail(dep)" [pTooltip]="'Xem chi tiết Alloy'" tooltipPosition="top">
+            <span class="node-icon"><svg lucideServer></svg></span>
+            <div class="node-info">
+              <span class="node-badge node-badge--collector">TELEMETRY</span>
+              <strong>Alloy</strong>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+            </div>
+          </button>
+        }
+
+        <!-- Column 2 (X = 45%) -->
+        <!-- MySQL Node -->
+        @if (getDependency('MySQL'); as dep) {
+          <button type="button" [class]="'topo-node topo-node--mysql ' + dependencyClass(dep.status)" (click)="openDependencyDetail(dep)" [pTooltip]="'Xem chi tiết MySQL'" tooltipPosition="top">
+            <span class="node-icon"><svg lucideDatabase></svg></span>
+            <div class="node-info">
+              <span class="node-badge node-badge--db">DATABASE</span>
+              <strong>MySQL</strong>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+            </div>
+          </button>
+        }
+        <!-- ZenTech Java BE Node (Center of the world) -->
+        <button type="button" [class]="'topo-node topo-node--be ' + dependencyClass(getCenterNodeStatus())" (click)="openDependencyDetail(getBeDependency())" [pTooltip]="'Xem chi tiết ZenTech Java BE'" tooltipPosition="top">
+          <span class="node-icon node-icon--be"><svg lucideCpu></svg></span>
+          <div class="node-info">
+            <span class="node-badge node-badge--be">CORE API</span>
+            <strong>ZenTech Java BE</strong>
+            <small>{{ getCenterNodeStatus() === 'UP' ? 'Hoạt động tốt' : 'Không hoạt động' }}</small>
+          </div>
+        </button>
+        <!-- RabbitMQ Node -->
+        @if (getDependency('RabbitMQ'); as dep) {
+          <button type="button" [class]="'topo-node topo-node--rabbitmq ' + dependencyClass(dep.status)" (click)="openDependencyDetail(dep)" [pTooltip]="'Xem chi tiết RabbitMQ'" tooltipPosition="top">
+            <span class="node-icon"><svg lucideNetwork></svg></span>
+            <div class="node-info">
+              <span class="node-badge node-badge--queue">BROKER</span>
+              <strong>RabbitMQ</strong>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+            </div>
+          </button>
+        }
+
+        <!-- Column 3 (X = 75%) -->
+        <!-- Loki Node -->
+        @if (getDependency('Loki'); as dep) {
+          <button type="button" [class]="'topo-node topo-node--loki ' + dependencyClass(dep.status)" (click)="openDependencyDetail(dep)" [pTooltip]="'Xem chi tiết Loki'" tooltipPosition="top">
+            <span class="node-icon"><svg lucideServer></svg></span>
+            <div class="node-info">
+              <span class="node-badge node-badge--log">LOGS STORE</span>
+              <strong>Loki</strong>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+            </div>
+          </button>
+        }
+        <!-- ZenTech AI BE Node -->
+        @if (getDependency('ZenTech AI'); as dep) {
+          <button type="button" [class]="'topo-node topo-node--ai ' + dependencyClass(dep.status)" (click)="openDependencyDetail(dep)" [pTooltip]="'Xem chi tiết ZenTech AI'" tooltipPosition="top">
+            <span class="node-icon node-icon--ai"><svg lucideZap></svg></span>
+            <div class="node-info">
+              <span class="node-badge node-badge--ai">AI ENGINE</span>
+              <strong>ZenTech AI</strong>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+            </div>
+          </button>
+        }
+        <!-- Qdrant Node -->
+        @if (getDependency('Qdrant'); as dep) {
+          <button type="button" [class]="'topo-node topo-node--qdrant ' + dependencyClass(dep.status)" (click)="openDependencyDetail(dep)" [pTooltip]="'Xem chi tiết Qdrant'" tooltipPosition="top">
+            <span class="node-icon"><svg lucideDatabase></svg></span>
+            <div class="node-info">
+              <span class="node-badge node-badge--vector">VECTOR DB</span>
+              <strong>Qdrant</strong>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+            </div>
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+
   <section class="dependencies-section">
     <div class="section-heading"><div><span class="eyebrow">HẠ TẦNG HỆ THỐNG</span><h2>Trạng thái dịch vụ</h2><p>Phân biệt dịch vụ vận hành nghiệp vụ và hạ tầng phục vụ giám sát.</p></div></div>
 
@@ -117,6 +303,7 @@
             <span class="dependency-icon">
               @if (dependency.name === 'MySQL' || dependency.name === 'Qdrant') { <svg lucideDatabase></svg> }
               @else if (dependency.name === 'RabbitMQ') { <svg lucideNetwork></svg> }
+              @else if (dependency.name === 'ZenTech AI') { <svg lucideZap></svg> }
               @else { <svg lucideServer></svg> }
             </span>
             <div><small>{{ dependency.name }}</small><strong>{{ dependencyStatusLabel(dependency.status) }}</strong><p>{{ dependency.detail }}</p></div>

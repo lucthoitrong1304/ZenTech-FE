@@ -15,7 +15,7 @@ interface StatisticsState {
 }
 
 const initialState: StatisticsState = {
-  period: '7D',
+  period: 'TODAY',
   customFrom: null,
   customTo: null,
   data: null,

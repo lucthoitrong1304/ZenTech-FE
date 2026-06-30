@@ -300,6 +300,36 @@ export class AccountsComponent implements OnInit {
     return gradients[index];
   }
 
+  protected getRoleHeaderBg(role: AdminAccountRole): string {
+    switch (role) {
+      case AdminAccountRole.OWNER:
+        return '#FFF1F2'; // rose-50
+      case AdminAccountRole.ADMIN:
+        return '#F3E8FF'; // purple-50
+      case AdminAccountRole.MANAGER:
+        return '#FFFBEB'; // amber-50
+      case AdminAccountRole.EMPLOYEE:
+        return '#EFF6FF'; // blue-50
+      default:
+        return '#F9FAFB'; // slate-50
+    }
+  }
+
+  protected getRoleAvatarBg(role: AdminAccountRole): string {
+    switch (role) {
+      case AdminAccountRole.OWNER:
+        return '#E11D48'; // rose-600
+      case AdminAccountRole.ADMIN:
+        return '#7C3AED'; // purple-600
+      case AdminAccountRole.MANAGER:
+        return '#D97706'; // amber-600
+      case AdminAccountRole.EMPLOYEE:
+        return '#2563EB'; // blue-600
+      default:
+        return '#475569'; // slate-600
+    }
+  }
+
   protected getActivePercentage(): number {
     const total = this.store.accounts().length;
     if (total === 0) return 0;

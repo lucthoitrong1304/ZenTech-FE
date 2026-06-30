@@ -332,8 +332,8 @@
 .runtime-strip span {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 6px 8px;
+  flex-wrap: nowrap;
+  gap: 8px;
   min-width: 0;
   padding: 11px 12px;
   border-radius: 13px;
@@ -344,6 +344,12 @@
   box-shadow: inset 0 0 0 1px #edf2f7;
 }
 .runtime-strip svg { width: 14px; height: 14px; flex: 0 0 auto; }
+.runtime-text {
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  overflow: hidden;
+}
 .runtime-strip b { min-width: 0; color: var(--ink); font-size: 13px; white-space: normal; overflow-wrap: anywhere; }
 
 .api-grid {
@@ -1044,5 +1050,375 @@
   }
   .ping-result-badge {
     justify-content: center;
+  }
+}
+
+/* ==================== TOPOLOGY DESIGN ==================== */
+.topology-section {
+  display: block;
+}
+
+/* Hide mobile list by default on desktop */
+.dependencies-section {
+  display: none !important;
+}
+
+.topology-wrapper {
+  overflow: hidden;
+  border-radius: 20px;
+  background: #0f131e;
+  border: 1px solid #1e293b;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  margin-top: 14px;
+}
+
+.topology-canvas {
+  position: relative;
+  width: 100%;
+  height: 580px;
+  background-color: #07090e;
+  background-image: 
+    linear-gradient(to right, rgba(99, 102, 241, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
+  background-size: 20px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+/* Column Header Labels (Sci-Fi Terminal Badges) */
+.topology-header {
+  position: absolute;
+  top: 18px;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #818cf8; /* glow indigo */
+  letter-spacing: 0.15em;
+  background: rgba(15, 23, 42, 0.8);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  pointer-events: none;
+  z-index: 2;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
+  backdrop-filter: blur(4px);
+}
+.topo-hdr-1 { left: 15%; }
+.topo-hdr-2 { left: 45%; }
+.topo-hdr-3 { left: 75%; }
+
+/* SVG Connection Lines */
+.topology-svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.topology-line {
+  stroke: rgba(255, 255, 255, 0.05); /* Sleek subtle fiber-optic background line */
+  stroke-width: 1px;
+  fill: none;
+  stroke-linecap: round;
+  transition: all 0.3s ease;
+}
+
+.topology-line:not(.line-down) {
+  stroke: rgba(99, 102, 241, 0.15);
+  filter: drop-shadow(0 0 1px rgba(99, 102, 241, 0.25));
+}
+
+.topology-line.line-down {
+  stroke: rgba(239, 68, 68, 0.2) !important;
+  stroke-dasharray: 3 3;
+}
+
+.topology-pulse {
+  stroke: #a5b4fc; /* Light glowing indigo pulse */
+  stroke-width: 1.2px;
+  stroke-dasharray: 2 16; /* Short glowing dot pulses */
+  fill: none;
+  stroke-linecap: round;
+  animation: topo-dash-flow 1.5s linear infinite; /* Twice as fast for data-packet effect */
+  filter: drop-shadow(0 0 3px #6366f1) drop-shadow(0 0 1px #818cf8);
+  transition: stroke 0.3s ease;
+}
+
+.topology-pulse.pulse-down {
+  stroke: transparent !important;
+  animation: none !important;
+}
+
+@keyframes topo-dash-flow {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+
+/* Node Elements Positioning (Sci-Fi Glassmorphism) */
+.topo-node {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px; /* Smooth rounded corners instead of pills for a more techy feel */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  max-width: 195px;
+  width: 175px;
+  text-align: left;
+}
+
+button.topo-node {
+  outline: none;
+  font-family: inherit;
+}
+
+.topo-node:hover {
+  transform: translate(-50%, -53%) scale(1.03);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+}
+
+.topo-node:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+}
+
+.node-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px; /* Square rounded corners */
+  background: rgba(255, 255, 255, 0.03);
+  color: #94a3b8;
+  flex: 0 0 auto;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: all 0.25s ease;
+}
+
+.node-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.node-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.node-info strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f8fafc;
+  line-height: 1.25;
+}
+
+.node-info small {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+/* Node Role Badges */
+.node-badge {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-bottom: 3px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.node-badge--fe { background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.3); color: #38bdf8; }
+.node-badge--be { background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #818cf8; }
+.node-badge--ai { background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; }
+.node-badge--db { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; }
+.node-badge--queue { background: rgba(249, 115, 22, 0.15); border: 1px solid rgba(249, 115, 22, 0.3); color: #fb923c; }
+.node-badge--vector { background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #fb7185; }
+.node-badge--metric { background: rgba(148, 163, 184, 0.15); border: 1px solid rgba(148, 163, 184, 0.25); color: #cbd5e1; }
+.node-badge--log { background: rgba(148, 163, 184, 0.15); border: 1px solid rgba(148, 163, 184, 0.25); color: #cbd5e1; }
+.node-badge--collector { background: rgba(148, 163, 184, 0.15); border: 1px solid rgba(148, 163, 184, 0.25); color: #cbd5e1; }
+
+/* Status UP and DOWN Classes */
+.topo-node.dependency-card--up {
+  border-color: rgba(16, 185, 129, 0.15);
+}
+.topo-node.dependency-card--up:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.topo-node.dependency-card--down {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+.topo-node.dependency-card--down:hover {
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+.topo-node.dependency-card--down .node-icon {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.2);
+}
+
+/* Specific Node Styling Overrides (When UP) */
+/* Frontend Client Node */
+.topo-node--fe.dependency-card--up {
+  border-color: rgba(14, 165, 233, 0.15);
+}
+.topo-node--fe.dependency-card--up:hover {
+  border-color: rgba(14, 165, 233, 0.5);
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.15);
+}
+.topo-node--fe.dependency-card--up .node-icon {
+  background: rgba(14, 165, 233, 0.08);
+  color: #38bdf8;
+  box-shadow: inset 0 0 0 1px rgba(14, 165, 233, 0.2);
+}
+
+/* Core Java Backend Node (Deep Glowing Purple-Indigo) */
+.topo-node--be {
+  width: 195px;
+  max-width: 210px;
+  background: rgba(79, 70, 229, 0.85);
+  border: 1px solid rgba(129, 140, 248, 0.4);
+  box-shadow: 0 8px 32px rgba(79, 70, 229, 0.15);
+}
+.topo-node--be:hover {
+  transform: translate(-50%, -53%) scale(1.03);
+  border-color: rgba(129, 140, 248, 0.8);
+  box-shadow: 0 0 25px rgba(79, 70, 229, 0.4);
+}
+.topo-node--be .node-icon--be {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+.topo-node--be .node-info strong {
+  color: #ffffff;
+}
+.topo-node--be .node-info small {
+  color: #c7d2fe;
+}
+
+/* AI Engine Node */
+.topo-node--ai.dependency-card--up {
+  border-color: rgba(168, 85, 247, 0.15);
+}
+.topo-node--ai.dependency-card--up:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+}
+.topo-node--ai.dependency-card--up .node-icon {
+  background: rgba(168, 85, 247, 0.08);
+  color: #c084fc;
+  box-shadow: inset 0 0 0 1px rgba(168, 85, 247, 0.2);
+}
+
+/* MySQL Node */
+.topo-node--mysql.dependency-card--up {
+  border-color: rgba(16, 185, 129, 0.15);
+}
+.topo-node--mysql.dependency-card--up:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+}
+.topo-node--mysql.dependency-card--up .node-icon {
+  background: rgba(16, 185, 129, 0.08);
+  color: #34d399;
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.2);
+}
+
+/* RabbitMQ Node */
+.topo-node--rabbitmq.dependency-card--up {
+  border-color: rgba(249, 115, 22, 0.15);
+}
+.topo-node--rabbitmq.dependency-card--up:hover {
+  border-color: rgba(249, 115, 22, 0.5);
+  box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
+}
+.topo-node--rabbitmq.dependency-card--up .node-icon {
+  background: rgba(249, 115, 22, 0.08);
+  color: #fb923c;
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.2);
+}
+
+/* Qdrant Vector Node */
+.topo-node--qdrant.dependency-card--up {
+  border-color: rgba(244, 63, 94, 0.15);
+}
+.topo-node--qdrant.dependency-card--up:hover {
+  border-color: rgba(244, 63, 94, 0.5);
+  box-shadow: 0 0 20px rgba(244, 63, 94, 0.15);
+}
+.topo-node--qdrant.dependency-card--up .node-icon {
+  background: rgba(244, 63, 94, 0.08);
+  color: #fb7185;
+  box-shadow: inset 0 0 0 1px rgba(244, 63, 94, 0.2);
+}
+
+/* Observability Nodes (Prometheus, Loki, Alloy) */
+.topo-node--prometheus.dependency-card--up,
+.topo-node--loki.dependency-card--up,
+.topo-node--alloy.dependency-card--up {
+  border-color: rgba(148, 163, 184, 0.15);
+}
+.topo-node--prometheus.dependency-card--up:hover,
+.topo-node--loki.dependency-card--up:hover,
+.topo-node--alloy.dependency-card--up:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  box-shadow: 0 0 15px rgba(148, 163, 184, 0.08);
+}
+.topo-node--prometheus.dependency-card--up .node-icon,
+.topo-node--loki.dependency-card--up .node-icon,
+.topo-node--alloy.dependency-card--up .node-icon {
+  background: rgba(255, 255, 255, 0.02);
+  color: #cbd5e1;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Coordinate mapping offsets (viewBox 100 100) */
+/* Column 1: X = 15% */
+.topo-node--prometheus { left: 15%; top: 20%; }
+.topo-node--fe         { left: 15%; top: 50%; }
+.topo-node--alloy      { left: 15%; top: 80%; }
+
+/* Column 2: X = 45% */
+.topo-node--mysql      { left: 45%; top: 20%; }
+.topo-node--be         { left: 45%; top: 50%; }
+.topo-node--rabbitmq   { left: 45%; top: 80%; }
+
+/* Column 3: X = 75% */
+.topo-node--loki       { left: 75%; top: 20%; }
+.topo-node--ai         { left: 75%; top: 50%; }
+.topo-node--qdrant     { left: 75%; top: 80%; }
+
+/* ==================== RESPONSIVE FALLBACK MEDIA QUERIES ==================== */
+@media (max-width: 992px) {
+  .topology-section {
+    display: none !important;
+  }
+  
+  .dependencies-section {
+    display: block !important;
   }
 }

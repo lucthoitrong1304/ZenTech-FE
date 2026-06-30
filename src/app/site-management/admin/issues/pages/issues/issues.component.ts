@@ -24,6 +24,7 @@ interface LogMetadataItem {
 }
 
 enum LogTimeRange {
+  TODAY = 'TODAY',
   MINUTES_15 = 'MINUTES_15',
   HOUR_1 = 'HOUR_1',
   HOURS_6 = 'HOURS_6',
@@ -117,7 +118,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
   protected readonly showCreateIncidentDialog = signal(false);
   protected readonly incidentSeverity = signal<IncidentSeverity>(IncidentSeverity.MEDIUM);
   protected readonly isCreatingIncident = signal(false);
-  protected readonly activeTimeRange = signal<LogTimeRange>(LogTimeRange.HOUR_1);
+  protected readonly activeTimeRange = signal<LogTimeRange>(LogTimeRange.TODAY);
   protected readonly autoRefreshEnabled = signal(true);
   protected readonly visibleIssueCount = signal(20);
   protected readonly issuePageSize = 20;
@@ -322,6 +323,8 @@ export class IssuesComponent implements OnInit, OnDestroy {
 
   protected getTimeRangeLabel(range: LogTimeRange): string {
     switch (range) {
+      case LogTimeRange.TODAY:
+        return 'Hôm nay';
       case LogTimeRange.MINUTES_15:
         return '15m';
       case LogTimeRange.HOUR_1:
@@ -347,14 +350,15 @@ export class IssuesComponent implements OnInit, OnDestroy {
       });
     }
 
-    const now = Date.now();
-    const cutoffTime = now - this.getTimeRangeMs(this.activeTimeRange());
+    const cutoffTime = this.getRangeStartTime(this.activeTimeRange());
 
     return logs.filter(log => new Date(log.timestamp).getTime() >= cutoffTime);
   }
 
   private getTimeRangeMs(range: LogTimeRange): number {
     switch (range) {
+      case LogTimeRange.TODAY:
+        return this.startOfToday().getTime();
       case LogTimeRange.MINUTES_15:
         return 15 * 60 * 1000;
       case LogTimeRange.HOUR_1:
@@ -366,6 +370,20 @@ export class IssuesComponent implements OnInit, OnDestroy {
       default:
         return 60 * 60 * 1000;
     }
+  }
+
+  private getRangeStartTime(range: LogTimeRange): number {
+    if (range === LogTimeRange.TODAY) {
+      return this.startOfToday().getTime();
+    }
+
+    return Date.now() - this.getTimeRangeMs(range);
+  }
+
+  private startOfToday(): Date {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
   }
 
   protected handleCustomStartTimeChange(value: string): void {
@@ -412,9 +430,8 @@ export class IssuesComponent implements OnInit, OnDestroy {
         return;
       }
     } else {
-      const now = Date.now();
-      startTime = now - this.getTimeRangeMs(range);
-      endTime = now;
+      startTime = this.getRangeStartTime(range);
+      endTime = Date.now();
     }
 
     const search = this.searchText().trim();
@@ -1112,7 +1129,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
     this.store.recordActivityLog({
       action: 'VIEW_LOG_DETAIL',
       area: ActivityArea.ADMIN,
-      severity: ActivitySeverity.SECURITY,
+      severity: ActivitySeverity.INFO,
       module: 'LOG',
       targetType: 'LOG',
       targetId: log.id,

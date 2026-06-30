@@ -16,6 +16,7 @@ import {
   LucideCpu,
   LucideDatabase,
   LucideGauge,
+  LucideMonitor,
   LucideNetwork,
   LucideRefreshCw,
   LucideServer,
@@ -50,7 +51,7 @@ interface MetricDefinition {
   standalone: true,
   imports: [CommonModule, FormsModule, ChartModule, DatePicker, DialogModule, TooltipModule, LucideActivity, LucideAlertTriangle,
     LucideCalendarDays, LucideCheckCircle2, LucideCircleHelp, LucideClock3, LucideCpu, LucideDatabase, LucideGauge,
-    LucideNetwork, LucideRefreshCw, LucideServer, LucideZap],
+    LucideNetwork, LucideMonitor, LucideRefreshCw, LucideServer, LucideZap],
   templateUrl: './resource-monitoring.component.html',
   styleUrl: './resource-monitoring.component.css',
 })
@@ -58,7 +59,7 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
   private readonly service = inject(AdminObservabilityService);
   private readonly route = inject(ActivatedRoute);
 
-  protected readonly period = signal<DashboardPeriod>('7D');
+  protected readonly period = signal<DashboardPeriod>('TODAY');
   protected readonly data = signal<AdminObservabilityData | null>(null);
   protected readonly isLoading = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -319,13 +320,46 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
   }
 
   protected businessDependencies() {
-    const names = new Set(['MySQL', 'RabbitMQ', 'Qdrant']);
+    const names = new Set(['MySQL', 'RabbitMQ', 'Qdrant', 'ZenTech AI']);
     return (this.data()?.dependencies ?? []).filter((dependency) => names.has(dependency.name));
   }
 
   protected observabilityDependencies() {
     const names = new Set(['Prometheus', 'Loki', 'Alloy']);
     return (this.data()?.dependencies ?? []).filter((dependency) => names.has(dependency.name));
+  }
+
+  protected getDependency(name: string): ObservabilityDependency | undefined {
+    return (this.data()?.dependencies ?? []).find((d) => d.name === name);
+  }
+
+  protected getCenterNodeStatus(): string {
+    return this.data() ? 'UP' : 'DOWN';
+  }
+
+  protected getFeDependency(): ObservabilityDependency {
+    return {
+      name: 'ZenTech FE',
+      status: 'UP',
+      detail: 'Giao diện web Angular đang hoạt động',
+      primaryValue: null,
+      primaryUnit: null,
+      secondaryValue: null,
+      secondaryUnit: null
+    };
+  }
+
+  protected getBeDependency(): ObservabilityDependency {
+    const status = this.getCenterNodeStatus() as 'UP' | 'DOWN';
+    return {
+      name: 'ZenTech Java BE',
+      status,
+      detail: status === 'UP' ? 'Hoạt động tốt' : 'Không hoạt động',
+      primaryValue: null,
+      primaryUnit: null,
+      secondaryValue: null,
+      secondaryUnit: null
+    };
   }
 
   protected dependencyClass(status: string): string { return `dependency-card dependency-card--${status.toLowerCase()}`; }

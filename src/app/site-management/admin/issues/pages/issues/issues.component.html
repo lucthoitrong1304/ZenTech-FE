@@ -126,6 +126,7 @@
 
       <div class="logs-time-range-group" aria-label="Khoảng thời gian logs">
         <span class="logs-time-range-label">Logs phát sinh trong vòng:</span>
+        <button type="button" class="logs-time-range-btn" [class.logs-time-range-btn--active]="activeTimeRange() === LogTimeRange.TODAY" (click)="handleTimeRangeChange(LogTimeRange.TODAY)">Hôm nay</button>
         <button type="button" class="logs-time-range-btn" [class.logs-time-range-btn--active]="activeTimeRange() === LogTimeRange.MINUTES_15" (click)="handleTimeRangeChange(LogTimeRange.MINUTES_15)">15m</button>
         <button type="button" class="logs-time-range-btn" [class.logs-time-range-btn--active]="activeTimeRange() === LogTimeRange.HOUR_1" (click)="handleTimeRangeChange(LogTimeRange.HOUR_1)">1h</button>
         <button type="button" class="logs-time-range-btn" [class.logs-time-range-btn--active]="activeTimeRange() === LogTimeRange.HOURS_6" (click)="handleTimeRangeChange(LogTimeRange.HOURS_6)">6h</button>

@@ -22,7 +22,7 @@ interface DashboardState {
 }
 
 const initialState: DashboardState = {
-  period: '7D',
+  period: 'TODAY',
   customFrom: null,
   customTo: null,
   data: null,

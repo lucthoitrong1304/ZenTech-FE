@@ -98,6 +98,7 @@ export interface AdminResourceMetrics {
   source: ResourceMetricSource;
   historyAvailable: boolean;
   cpuUsagePercent: number | null;
+  cpuCoreCount: number | null;
   ramUsagePercent: number | null;
   diskUsagePercent: number | null;
   ramUsedBytes: number | null;
