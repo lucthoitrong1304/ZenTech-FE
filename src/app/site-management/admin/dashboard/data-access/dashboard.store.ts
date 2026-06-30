@@ -67,7 +67,7 @@ export const AdminDashboardStore = signalStore(
             console.error('[Admin Dashboard] Failed to load overview', error);
             patchState(store, {
               isLoading: false,
-              error: 'Kh?ng th? t?i d? li?u b?ng ?i?u khi?n. Vui l?ng th? l?i.',
+              error: 'Không thể tải dữ liệu bảng điều khiển. Vui lòng thử lại.',
             });
             return EMPTY;
           }),
@@ -87,14 +87,14 @@ export const AdminDashboardStore = signalStore(
             resources: response.data,
             isRefreshingResources: false,
             resourceError: response.data.status === 'UNAVAILABLE'
-              ? response.data.message || 'Kh?ng th? ??c t?i nguy?n m?y ch?.'
+              ? response.data.message || 'Không thể đọc tài nguyên máy chủ.'
               : null,
           })),
           catchError((error) => {
             console.error('[Admin Dashboard] Failed to load resources', error);
             patchState(store, {
               isRefreshingResources: false,
-              resourceError: 'Kh?ng th? k?t n?i d?ch v? ?o t?i nguy?n.',
+              resourceError: 'Không thể kết nối dịch vụ đo tài nguyên.',
             });
             return EMPTY;
           }),
