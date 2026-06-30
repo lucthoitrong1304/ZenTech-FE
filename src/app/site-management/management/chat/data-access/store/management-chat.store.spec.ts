@@ -349,7 +349,8 @@ describe('ManagementChatStore', () => {
     store.leaveConversation();
 
     expect(managementChatService.leaveConversation).toHaveBeenCalledWith('conv-1');
-    expect(store.selectedConversation()).toBeNull();
+    expect(store.selectedConversation()?.id).toBe('conv-1');
+    expect(store.canReplyToSelectedConversation()).toBe(false);
     expect(store.conversations().find((conversation) => conversation.id === 'conv-1')).toMatchObject({
       status: 'WAITING_STAFF',
       currentStaffActive: false,

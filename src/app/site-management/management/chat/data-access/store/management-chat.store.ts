@@ -702,7 +702,7 @@ export const ManagementChatStore = signalStore(
           const conversationId = store.selectedConversationId();
           if (!conversationId) return EMPTY;
 
-          patchState(store, { loading: true, errorMessage: null });
+          patchState(store, { errorMessage: null });
 
           return managementChatService.leaveConversation(conversationId).pipe(
             tap((updatedConv) => {
@@ -714,18 +714,12 @@ export const ManagementChatStore = signalStore(
                   CONVERSATION_ENTITY_CONFIG
                 ),
                 {
-                  loading: false,
-                  selectedConversationId: null,
-                  mediaDrawerOpen: false,
-                  searchSidebarOpen: false,
-                  activeMediaTab: 'ALL',
                   messagesLoading: false,
                 }
               );
             }),
             catchError(() => {
               patchState(store, {
-                loading: false,
                 errorMessage: 'Không thể rời hội thoại. Vui lòng thử lại.',
               });
               return EMPTY;
