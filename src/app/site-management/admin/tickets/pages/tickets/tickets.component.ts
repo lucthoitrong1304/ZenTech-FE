@@ -17,6 +17,7 @@ import { TicketStatus, SupportTicket, TicketPriority, AdminAccountRole } from '.
 import { AccountService } from '../../../accounts/data-access/services/account.service';
 import { AccountSortField, SortDirection } from '../../../accounts/data-access/models/account.model';
 import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
+import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
 
 export enum TicketDateFilterOption {
   ALL = 'ALL',
@@ -41,7 +42,8 @@ export enum TicketDateFilterOption {
     LucideChevronRight,
     LucideX,
     LucideEye,
-    SelectModule
+    SelectModule,
+    AdminRecordingEvidenceComponent
   ],
   templateUrl: './tickets.component.html',
   styleUrl: './tickets.component.css'
@@ -340,6 +342,14 @@ export class TicketsComponent implements OnInit {
     const id = this.selectedTicketId();
     if (!id) return null;
     return this.store.tickets().find(t => t.id === id) || null;
+  }
+
+  protected ticketRecordingEmail(ticket: SupportTicket): string {
+    return (ticket.affectedUserEmails?.find(email => !!email?.trim()) || ticket.createdByEmail || '').trim();
+  }
+
+  protected ticketRecordingContext(ticket: SupportTicket): string {
+    return ticket.incidentCode ? `Ticket evidence / ${ticket.incidentCode}` : 'Ticket evidence';
   }
 
   protected handleStatusChange(event: Event): void {

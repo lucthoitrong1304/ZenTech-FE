@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed } 
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { MarkdownComponent } from 'ngx-markdown';
 import {
   LucideArrowLeft,
   LucideActivity,
@@ -17,7 +18,8 @@ import {
   LucideSparkles,
   LucideUpload,
   LucideUser,
-  LucideEye
+  LucideEye,
+  LucideSend
 } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
 import { EditorModule } from 'primeng/editor';
@@ -29,6 +31,7 @@ import { AccountSortField, SortDirection, AccountSummary, AdminAccountRole } fro
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { AdminProfileService } from '../../../data-access/services/admin-profile.service';
 import { AdminUploadPresignResponseDto } from '../../../data-access/models/admin-profile.model';
+import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
 import {
   IncidentStatus,
   IncidentSeverity,
@@ -113,8 +116,11 @@ interface BrowserInfo {
     LucideUpload,
     LucideUser,
     LucideEye,
+    LucideSend,
     SelectModule,
-    EditorModule
+    EditorModule,
+    MarkdownComponent,
+    AdminRecordingEvidenceComponent
   ],
   templateUrl: './incident-detail.component.html',
   styleUrl: './incident-detail.component.css'
@@ -193,6 +199,9 @@ export class IncidentDetailComponent implements OnInit {
 
   // AI Analysis local states
   protected readonly isAnalyzing = signal(false);
+  protected readonly chatHistory = signal<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+  protected readonly chatInput = signal<string>('');
+  protected readonly isSendingChat = signal(false);
 
   // Create ticket form states
   protected readonly showTicketForm = signal(false);
@@ -364,6 +373,29 @@ export class IncidentDetailComponent implements OnInit {
         this.store.loadLogs({ level: 'ALL', search: '', traceId: occ.traceId });
       }
     }
+  }
+
+  protected selectedOccurrenceForEvidence(): { traceId?: string; userEmail?: string | null; occurredAt?: Date | string | number } | null {
+    const inc = this.incident();
+    if (!inc) return null;
+
+    const occurrences = Array.isArray(inc.occurrences) ? inc.occurrences : [];
+    const selectedTraceId = this.selectedTraceId();
+    const selectedEmail = this.selectedTimelineUserEmail();
+
+    const selectedOccurrence = occurrences.find((occ: any) => selectedTraceId && occ.traceId === selectedTraceId)
+      || occurrences.find((occ: any) => selectedEmail && occ.userEmail === selectedEmail)
+      || occurrences.find((occ: any) => !!occ.userEmail && !!occ.occurredAt);
+
+    if (selectedOccurrence) {
+      return selectedOccurrence;
+    }
+
+    return {
+      traceId: inc.traceId || selectedTraceId || undefined,
+      userEmail: inc.userEmail || selectedEmail || null,
+      occurredAt: inc.occurredAt || inc.firstOccurredAt || inc.createdAt
+    };
   }
 
   private loadUserActivities(email: string): void {
@@ -654,6 +686,38 @@ export class IncidentDetailComponent implements OnInit {
       },
       () => {
         this.isAnalyzing.set(false);
+      }
+    );
+  }
+
+  protected sendFollowUpChat(): void {
+    const inc = this.incident();
+    if (!inc) return;
+
+    const userMsg = this.chatInput().trim();
+    if (!userMsg || this.isSendingChat()) return;
+
+    this.isSendingChat.set(true);
+    const currentHistory = this.chatHistory();
+    const updatedHistory = [...currentHistory, { role: 'user' as const, content: userMsg }];
+    this.chatHistory.set(updatedHistory);
+    this.chatInput.set('');
+
+    const service = inc.serviceName || 'BACKEND';
+    const logDetails = inc.stackTrace || inc.message;
+
+    this.store.chatFollowUp(
+      service,
+      logDetails,
+      userMsg,
+      currentHistory,
+      (aiContent) => {
+        const newHistory = [...updatedHistory, { role: 'assistant' as const, content: aiContent }];
+        this.chatHistory.set(newHistory);
+        this.isSendingChat.set(false);
+      },
+      () => {
+        this.isSendingChat.set(false);
       }
     );
   }

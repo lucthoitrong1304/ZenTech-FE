@@ -350,13 +350,14 @@
             @if (hasRecording() && sessions().length >= 1) {
               <div class="flex items-center gap-2">
                 <span class="text-xs font-semibold text-gray-500">Phiên:</span>
-                <select [value]="selectedSessionId()" (change)="onSessionChange($event)" class="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                <select [ngModel]="displayedSessionId()" (ngModelChange)="onSessionChange($event)" class="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
                   @for (s of sessions(); track s.sessionId) {
                     <option [value]="s.sessionId">
                       {{ s.timestamp | date:'dd/MM/yyyy HH:mm:ss' }}
                     </option>
                   }
-                </select>                <button
+                </select>
+                <button
                   type="button"
                   class="rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
                   [disabled]="isDeletingRecordingSession() || !selectedSessionId()"
@@ -633,31 +634,13 @@
           </div>
         </section>
 
-        @if (recordingContextForLog(log); as recordContext) {
-          <section class="modal-recording-card modal-recording-card--player">
-            <div class="modal-recording-header">
-              <div>
-                <span class="modal-label">Record liên quan</span>
-                <div class="modal-recording-title">Phiên {{ recordContext.sessionLabel }}</div>
-                <div class="modal-recording-meta">
-                  Offset {{ recordContext.offsetLabel }} - đoạn gợi ý {{ recordContext.clipLabel }}
-                </div>
-              </div>
-              <button type="button" class="modal-recording-action" (click)="openRecordingContextForLog(log)">
-                Tải lại
-              </button>
-            </div>
-
-            <div class="modal-recording-player-shell">
-              <div id="detail-rrweb-player-container" class="modal-recording-player"></div>
-              @if (isLoadingDetailRecording() || detailRecordingStatus()) {
-                <div class="modal-recording-state" [class.modal-recording-state--error]="!isLoadingDetailRecording() && !hasDetailRecording()">
-                  {{ detailRecordingStatus() || 'Đang tải đoạn record liên quan...' }}
-                </div>
-              }
-            </div>
-          </section>
-        }
+        <app-admin-recording-evidence
+          [email]="timelineEmail().trim() || log.operatorEmail"
+          [timestamp]="log.timestamp"
+          [traceId]="log.traceId || ''"
+          [title]="'Record liên quan'"
+          [contextLabel]="actionLabel(log)"
+        />
         <div class="modal-row">
           <span class="modal-label">Metadata đã ẩn dữ liệu nhạy cảm</span>
           <pre class="modal-value--mono modal-value--metadata">{{ prettyMetadata(log.metadata) }}</pre>

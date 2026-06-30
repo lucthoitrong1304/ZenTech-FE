@@ -551,7 +551,14 @@
             </div>
           </div>
         }
-      </div>
+
+        <app-admin-recording-evidence
+          [email]="ticketRecordingEmail(activeTck)"
+          [timestamp]="activeTck.createdAt"
+          [traceId]="activeTck.incidentCode || activeTck.code || activeTck.id"
+          title="Record liên quan"
+          [contextLabel]="ticketRecordingContext(activeTck)"
+        />      </div>
     </div>
   </div>
 }

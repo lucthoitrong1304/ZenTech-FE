@@ -1,0 +1,33 @@
+<section class="recording-evidence">
+  <div class="recording-evidence__header">
+    <div>
+      <span class="recording-evidence__eyebrow">{{ contextLabel() || 'Record evidence' }}</span>
+      <h4 class="recording-evidence__title">{{ title() }}</h4>
+    </div>
+    <button type="button" class="recording-evidence__reload" (click)="reload()" [disabled]="state() === 'loading'">
+      {{ state() === 'loading' ? 'Đang tải' : 'Tải lại' }}
+    </button>
+  </div>
+
+  <div class="recording-evidence__meta">
+    <span>Email: <strong>{{ email() || 'N/A' }}</strong></span>
+    @if (traceId()) {
+      <span>Trace: <strong>{{ traceId() }}</strong></span>
+    }
+    @if (evidence(); as data) {
+      <span>Phiên: <strong>{{ formatDate(data.sessionStartMs) }}</strong></span>
+      <span>Đoạn: <strong>{{ formatDuration(data.clipStartMs) }} - {{ formatDuration(data.clipEndMs) }}</strong></span>
+    } @else {
+      <span>Mốc: <strong>{{ formatDate(timestamp() || null) }}</strong></span>
+    }
+  </div>
+
+  <div class="recording-evidence__player-shell">
+    <div #playerContainer class="recording-evidence__player"></div>
+    @if (state() !== 'ready') {
+      <div class="recording-evidence__state" [class.recording-evidence__state--error]="state() === 'error'">
+        {{ message() }}
+      </div>
+    }
+  </div>
+</section>

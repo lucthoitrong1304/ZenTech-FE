@@ -16,6 +16,7 @@ import {
 import { Subscription } from 'rxjs';
 import { AdminStore } from '../../../data-access/store/admin.store';
 import { ActivityArea, ActivityLog, ActivitySeverity } from '../../../data-access/models/admin.models';
+import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
 import { AdminLogsService } from '../../../data-access/services/admin-logs.service';
 import { WebsocketService } from '../../../../../core/services/websocket.service';
 import { AccountService } from '../../../accounts/data-access/services/account.service';
@@ -97,7 +98,8 @@ interface RecordingLogContext {
     LucideKeyRound,
     LucideUserCheck,
     LucideTerminal,
-    LucideInfo
+    LucideInfo,
+    AdminRecordingEvidenceComponent
   ],
   templateUrl: './activity-logs.component.html',
   styleUrl: './activity-logs.component.css'
@@ -1123,6 +1125,23 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     return Number(session?.timestamp || 0);
   }
 
+  private sessionForTimestamp(timestamp: number): any | null {
+    if (!Number.isFinite(timestamp) || timestamp <= 0) return null;
+
+    for (const session of this.sessions()) {
+      const bounds = this.sessionBounds(session.sessionId);
+      if (!bounds) continue;
+
+      const from = new Date(bounds.from).getTime();
+      const to = new Date(bounds.to).getTime();
+      if (Number.isFinite(from) && Number.isFinite(to) && timestamp >= from && timestamp < to) {
+        return session;
+      }
+    }
+
+    return null;
+  }
+
   private applySelectedSessionRange(sessionId: string): void {
     const bounds = this.sessionBounds(sessionId);
     this.selectedSessionFrom.set(bounds?.from ?? '');
@@ -1489,6 +1508,16 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
       year: 'numeric'
     }).format(date);
   });
+  protected readonly displayedSessionId = computed(() => {
+    const playbackTime = this.recordingStartTimestamp() + this.currentReplayOffset();
+    if (playbackTime > 0) {
+      const session = this.sessionForTimestamp(playbackTime);
+      if (session?.sessionId) {
+        return session.sessionId;
+      }
+    }
+    return this.selectedSessionId();
+  });
   private readonly recordingStartTimestamp = signal<number>(0);
   protected readonly syncedReplayLogId = computed(() => {
     const start = this.recordingStartTimestamp();
@@ -1778,8 +1807,9 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     }
   }
 
-  protected onSessionChange(event: Event): void {
-    const sessionId = (event.target as HTMLSelectElement).value;
+  protected onSessionChange(sessionId: string): void {
+    if (!sessionId || sessionId === this.selectedSessionId()) return;
+
     this.selectedSessionId.set(sessionId);
     this.applySelectedSessionRange(sessionId);
     this.loadTimelineForSelectedSession();

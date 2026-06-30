@@ -244,6 +244,14 @@
           }
         </div>
 
+        <app-admin-recording-evidence
+          [email]="recordingEmailForLog(log)"
+          [timestamp]="log.timestamp"
+          [traceId]="recordingTraceIdForLog(log)"
+          title="Record liên quan"
+          contextLabel="Log evidence"
+        />
+
         <div class="logs-details-card logs-details-card--modal">
           <div class="logs-details-header">
             <h4 class="logs-details-title">Chẩn đoán log</h4>
@@ -351,11 +359,14 @@
             @if (log.level === 'ERROR' || log.level === 'WARN' || log.message.toLowerCase().includes('exception')) {
               <div class="logs-ai-explain-panel">
                 @if (!explanations()[log.id] && !explainingIds()[log.id]) {
-                  <div class="flex flex-col items-start gap-2">
-                    <span class="text-xs text-gray-500">Phát hiện log lỗi/cảnh báo. Bạn có muốn AI giải thích và gợi ý fix?</span>
+                  <div class="logs-ai-prompt-card">
+                    <div class="logs-ai-prompt-content">
+                      <svg lucideSparkles class="logs-ai-prompt-icon"></svg>
+                      <span class="logs-ai-prompt-text">Phát hiện log lỗi/cảnh báo. Bạn có muốn AI phân tích nguyên nhân và gợi ý code sửa lỗi ngay lập tức?</span>
+                    </div>
                     <button type="button" (click)="handleExplainLog(log)" class="logs-ai-explain-btn">
-                      <svg lucideSparkles class="w-4 h-4 text-amber-500"></svg>
-                      <span>AI Giải Thích Nhanh</span>
+                      <svg lucideBot class="w-4 h-4"></svg>
+                      <span>AI Chẩn Đoán Ngay</span>
                     </button>
                   </div>
                 }
@@ -371,7 +382,53 @@
                       <svg lucideSparkles class="w-4 h-4 text-indigo-500"></svg>
                       <strong>AI Chẩn Đoán Log:</strong>
                     </div>
-                    <p class="logs-ai-result-text">{{ explanations()[log.id] }}</p>
+                    <markdown class="logs-ai-result-text ai-markdown" [data]="explanations()[log.id]"></markdown>
+
+                    <!-- Follow-up Chat Section -->
+                    <div class="logs-ai-chat-section">
+                      @if (chatHistories()[log.id] && chatHistories()[log.id].length > 0) {
+                        <div class="logs-ai-chat-history">
+                          @for (msg of chatHistories()[log.id]; track $index) {
+                            <div class="logs-ai-chat-msg" [class.user-msg]="msg.role === 'user'" [class.assistant-msg]="msg.role === 'assistant'">
+                              <div class="chat-msg-avatar">
+                                @if (msg.role === 'user') {
+                                  <svg lucideUser class="w-3.5 h-3.5 text-gray-500"></svg>
+                                } @else {
+                                  <svg lucideBot class="w-3.5 h-3.5 text-indigo-500"></svg>
+                                }
+                              </div>
+                              <div class="chat-msg-content">
+                                <markdown class="ai-markdown" [data]="msg.content"></markdown>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                      
+                      <div class="logs-ai-chat-input-wrapper">
+                        <input 
+                          type="text" 
+                          placeholder="Hỏi AI thêm về lỗi này..." 
+                          [ngModel]="chatInputs()[log.id] || ''" 
+                          (ngModelChange)="updateChatInput(log.id, $event)"
+                          (keyup.enter)="sendFollowUpChat(log)"
+                          [disabled]="sendingChatIds()[log.id]"
+                          class="logs-ai-chat-input"
+                        />
+                        <button 
+                          type="button" 
+                          (click)="sendFollowUpChat(log)" 
+                          [disabled]="!(chatInputs()[log.id] || '').trim() || sendingChatIds()[log.id]"
+                          class="logs-ai-chat-send-btn"
+                        >
+                          @if (sendingChatIds()[log.id]) {
+                            <svg lucideRefreshCw class="w-3.5 h-3.5 animate-spin text-indigo-500"></svg>
+                          } @else {
+                            <svg lucideSend class="w-3.5 h-3.5"></svg>
+                          }
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 }
               </div>

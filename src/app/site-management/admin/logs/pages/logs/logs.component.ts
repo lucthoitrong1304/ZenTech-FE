@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { MarkdownComponent } from 'ngx-markdown';
 import {
   LucideSearch,
   LucideTrash2,
@@ -12,12 +13,16 @@ import {
   LucideRefreshCw,
   LucideGlobe,
   LucideTerminal,
-  LucideSparkles
+  LucideSparkles,
+  LucideUser,
+  LucideSend
 } from '@lucide/angular';
 import { AdminStore } from '../../../data-access/store/admin.store';
 import { ActivityArea, ActivitySeverity, LogLevel, LogServiceCategory, SystemLog } from '../../../data-access/models/admin.models';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { WebsocketService } from '../../../../../core/services/websocket.service';
+import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
+import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
 
 interface LogMetadataItem {
   label: string;
@@ -79,7 +84,11 @@ interface ClientLogStackContext {
     LucideRefreshCw,
     LucideGlobe,
     LucideTerminal,
-    LucideSparkles
+    LucideSparkles,
+    LucideUser,
+    LucideSend,
+    MarkdownComponent,
+    AdminRecordingEvidenceComponent
   ],
   templateUrl: './logs.component.html',
   styleUrl: './logs.component.css'
@@ -87,6 +96,7 @@ interface ClientLogStackContext {
 export class LogsComponent implements OnInit, OnDestroy {
   protected readonly store = inject(AdminStore);
   protected readonly toastService = inject(ToastService);
+  private readonly authStorageService = inject(AuthStorageService);
   protected readonly LogLevel = LogLevel;
   protected readonly LogServiceCategory = LogServiceCategory;
 
@@ -104,6 +114,10 @@ export class LogsComponent implements OnInit, OnDestroy {
   private readonly ngZone = inject(NgZone);
   private readonly route = inject(ActivatedRoute);
   private wsSubscription: Subscription | null = null;
+
+  protected readonly chatHistories = signal<Record<string, Array<{ role: 'user' | 'assistant'; content: string }>>>({});
+  protected readonly chatInputs = signal<Record<string, string>>({});
+  protected readonly sendingChatIds = signal<Record<string, boolean>>({});
 
   // Lọc khoảng thời gian tùy chọn
   protected readonly customStartTime = signal<Date | null>(null);
@@ -346,7 +360,6 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   protected openLogDetails(log: SystemLog): void {
     this.selectedLog.set(log);
-    this.auditLogDetailView(log);
   }
 
   protected closeLogDetails(): void {
@@ -387,6 +400,37 @@ export class LogsComponent implements OnInit, OnDestroy {
         this.explainingIds.update(map => ({ ...map, [logId]: false }));
       }
     );
+  }
+
+  protected sendFollowUpChat(logItem: SystemLog): void {
+    const logId = logItem.id;
+    const userMsg = (this.chatInputs()[logId] || '').trim();
+    if (!userMsg || this.sendingChatIds()[logId]) return;
+
+    this.sendingChatIds.update(map => ({ ...map, [logId]: true }));
+    const currentHistory = this.chatHistories()[logId] || [];
+    const updatedHistory = [...currentHistory, { role: 'user' as const, content: userMsg }];
+    this.chatHistories.update(map => ({ ...map, [logId]: updatedHistory }));
+    this.chatInputs.update(map => ({ ...map, [logId]: '' }));
+
+    this.store.chatFollowUp(
+      logItem.category || LogServiceCategory.BACKEND,
+      logItem.details || logItem.message,
+      userMsg,
+      currentHistory,
+      (aiContent) => {
+        const newHistory = [...updatedHistory, { role: 'assistant' as const, content: aiContent }];
+        this.chatHistories.update(map => ({ ...map, [logId]: newHistory }));
+        this.sendingChatIds.update(map => ({ ...map, [logId]: false }));
+      },
+      () => {
+        this.sendingChatIds.update(map => ({ ...map, [logId]: false }));
+      }
+    );
+  }
+
+  protected updateChatInput(logId: string, value: string): void {
+    this.chatInputs.update(map => ({ ...map, [logId]: value }));
   }
 
   protected filterByTraceId(traceId: string, event: Event): void {
@@ -612,6 +656,66 @@ export class LogsComponent implements OnInit, OnDestroy {
     }
   }
 
+  protected recordingEmailForLog(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    return this.resolveRecordingEmail(stackContext?.userEmail || (log as any).userEmail || '')
+      || this.findCorrelatedRecordingEmail(log);
+  }
+
+  protected recordingTraceIdForLog(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    return (stackContext?.traceId || log.traceId || '').trim();
+  }
+
+  private findCorrelatedRecordingEmail(log: SystemLog): string {
+    const traceId = this.recordingTraceIdForLog(log);
+    if (!traceId) return '';
+
+    const logTime = new Date(log.timestamp).getTime();
+    if (!Number.isFinite(logTime)) return '';
+
+    const correlationWindowMs = 10 * 60 * 1000;
+    return this.store.logs()
+      .map(candidate => {
+        const candidateTraceId = this.recordingTraceIdForLog(candidate);
+        if (candidate.id === log.id || candidateTraceId !== traceId) return null;
+
+        const candidateEmail = this.resolveRecordingEmail(this.rawRecordingEmail(candidate));
+        if (!candidateEmail) return null;
+
+        const candidateTime = new Date(candidate.timestamp).getTime();
+        if (!Number.isFinite(candidateTime)) return null;
+
+        const distanceMs = Math.abs(candidateTime - logTime);
+        if (distanceMs > correlationWindowMs) return null;
+
+        return { email: candidateEmail, distanceMs };
+      })
+      .filter((item): item is { email: string; distanceMs: number } => !!item)
+      .sort((a, b) => a.distanceMs - b.distanceMs)[0]?.email || '';
+  }
+
+  private rawRecordingEmail(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    return stackContext?.userEmail || (log as any).userEmail || '';
+  }
+  private resolveRecordingEmail(email: string): string {
+    const candidate = (email || '').trim();
+    if (!candidate.includes('*')) return candidate;
+
+    const currentEmail = this.authStorageService.getSession()?.email || '';
+    return currentEmail && this.maskEmailForComparison(currentEmail).toLowerCase() === candidate.toLowerCase()
+      ? currentEmail
+      : '';
+  }
+
+  private maskEmailForComparison(email: string): string {
+    const [localPart, domain] = email.split('@');
+    if (!localPart || !domain) return email;
+    if (localPart.length <= 2) return localPart.charAt(0) + '*@' + domain;
+    return localPart.charAt(0) + '*'.repeat(localPart.length - 2) + localPart.charAt(localPart.length - 1) + '@' + domain;
+  }
+
   protected copyToClipboard(text: string, event: Event): void {
     event.stopPropagation();
     navigator.clipboard.writeText(text).then(() => {
@@ -680,23 +784,5 @@ export class LogsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private auditLogDetailView(log: SystemLog): void {
-    this.store.recordActivityLog({
-      action: 'VIEW_LOG_DETAIL',
-      area: ActivityArea.ADMIN,
-      severity: ActivitySeverity.INFO,
-      module: 'LOG',
-      targetType: 'LOG',
-      targetId: log.id,
-      targetLabel: log.traceId || log.id,
-      summary: `Admin xem chi tiết log ${log.level} của ${log.category}`,
-      metadata: JSON.stringify({
-        level: log.level,
-        category: log.category,
-        traceId: log.traceId,
-        message: log.message
-      })
-    });
-  }
 }
 

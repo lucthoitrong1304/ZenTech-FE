@@ -747,6 +747,24 @@ export const AdminStore = signalStore(
         });
       },
 
+      chatFollowUp(
+        service: string,
+        logDetails: string,
+        userMessage: string,
+        history: Array<{ role: string; content: string }>,
+        onSuccess: (content: string) => void,
+        onError: () => void
+      ) {
+        adminLogsService.chatFollowUp(service, logDetails, userMessage, history).subscribe({
+          next: (res) => onSuccess(res.content),
+          error: (err) => {
+            console.error(err);
+            toastService.error('Không thể gửi tin nhắn cho AI');
+            onError();
+          }
+        });
+      },
+
       recordActivityLog(payload: ActivityLogRecordPayload) {
         adminLogsService.recordActivityLog(payload).subscribe({
           error: (err) => console.error(err)

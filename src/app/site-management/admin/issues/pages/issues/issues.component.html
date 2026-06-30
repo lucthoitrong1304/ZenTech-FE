@@ -261,6 +261,16 @@
         </div>
       </div>
 
+      @if (getLatestRecordingLog(issue); as evidenceLog) {
+        <app-admin-recording-evidence
+          [email]="recordingEmailForLog(evidenceLog)"
+          [timestamp]="evidenceLog.timestamp"
+          [traceId]="recordingTraceIdForLog(evidenceLog)"
+          title="Record cấp issue"
+          contextLabel="Issue evidence"
+        />
+      }
+
       <div class="logs-inspector-section">
         <button type="button" class="logs-inspector-section-title">
           <span>⌄</span>
@@ -384,6 +394,14 @@
           </div>
         </div>
 
+        <app-admin-recording-evidence
+          [email]="recordingEmailForLog(log)"
+          [timestamp]="log.timestamp"
+          [traceId]="recordingTraceIdForLog(log)"
+          title="Record liên quan"
+          contextLabel="Related log evidence"
+        />
+
         @if (getLogViewMode(log.id) === 'structured') {
           <div class="logs-trace-graph-panel">
             <span class="logs-graph-title">Vị trí phát sinh trong chuỗi Request (Distributed Tracing):</span>
@@ -441,17 +459,70 @@
                   <svg lucideBot class="size-4"></svg>
                   <strong>PHÂN TÍCH VÀ ĐỀ XUẤT TỪ AI AGENT:</strong>
                 </div>
-                <p class="logs-ai-result-text whitespace-pre-wrap">{{ explanations()[log.id] }}</p>
-                <button type="button" (click)="triggerAiExplanation(log)" class="logs-ai-explain-btn mt-2">
+                <markdown class="logs-ai-result-text ai-markdown" [data]="explanations()[log.id]"></markdown>
+
+                <!-- Follow-up Chat Section -->
+                <div class="logs-ai-chat-section">
+                  @if (chatHistories()[log.id] && chatHistories()[log.id].length > 0) {
+                    <div class="logs-ai-chat-history">
+                      @for (msg of chatHistories()[log.id]; track $index) {
+                        <div class="logs-ai-chat-msg" [class.user-msg]="msg.role === 'user'" [class.assistant-msg]="msg.role === 'assistant'">
+                          <div class="chat-msg-avatar">
+                            @if (msg.role === 'user') {
+                              <svg lucideUser class="w-3.5 h-3.5 text-gray-500"></svg>
+                            } @else {
+                              <svg lucideBot class="w-3.5 h-3.5 text-indigo-500"></svg>
+                            }
+                          </div>
+                          <div class="chat-msg-content">
+                            <markdown class="ai-markdown" [data]="msg.content"></markdown>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                  
+                  <div class="logs-ai-chat-input-wrapper">
+                    <input 
+                      type="text" 
+                      placeholder="Hỏi AI thêm về lỗi này..." 
+                      [ngModel]="chatInputs()[log.id] || ''" 
+                      (ngModelChange)="updateChatInput(log.id, $event)"
+                      (keyup.enter)="sendFollowUpChat(log)"
+                      [disabled]="sendingChatIds()[log.id]"
+                      class="logs-ai-chat-input"
+                    />
+                    <button 
+                      type="button" 
+                      (click)="sendFollowUpChat(log)" 
+                      [disabled]="!(chatInputs()[log.id] || '').trim() || sendingChatIds()[log.id]"
+                      class="logs-ai-chat-send-btn"
+                    >
+                      @if (sendingChatIds()[log.id]) {
+                        <svg lucideRefreshCw class="w-3.5 h-3.5 animate-spin text-indigo-500"></svg>
+                      } @else {
+                        <svg lucideSend class="w-3.5 h-3.5"></svg>
+                      }
+                    </button>
+                  </div>
+                </div>
+
+                <button type="button" (click)="triggerAiExplanation(log)" class="logs-ai-explain-btn mt-4">
                   <svg lucideSparkles class="size-3.5"></svg>
                   Yêu cầu phân tích lại
                 </button>
               </div>
             } @else {
-              <button type="button" (click)="triggerAiExplanation(log)" class="logs-ai-explain-btn">
-                <svg lucideBot class="size-3.5"></svg>
-                Chẩn đoán nguyên nhân lỗi với AI
-              </button>
+              <div class="logs-ai-prompt-card">
+                <div class="logs-ai-prompt-content">
+                  <svg lucideSparkles class="logs-ai-prompt-icon"></svg>
+                  <span class="logs-ai-prompt-text">Phát hiện log lỗi/cảnh báo. Bạn có muốn AI phân tích nguyên nhân và gợi ý code sửa lỗi ngay lập tức?</span>
+                </div>
+                <button type="button" (click)="triggerAiExplanation(log)" class="logs-ai-explain-btn">
+                  <svg lucideBot class="w-4 h-4"></svg>
+                  <span>AI Chẩn Đoán Ngay</span>
+                </button>
+              </div>
             }
           </div>
         } @else {

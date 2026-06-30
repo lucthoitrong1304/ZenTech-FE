@@ -174,6 +174,7 @@ export interface ObservabilityDependency {
   primaryUnit: string | null;
   secondaryValue: number | null;
   secondaryUnit: string | null;
+  latencyMs: number | null;
 }
 
 export interface ObservabilityDependencyConfigItem {
