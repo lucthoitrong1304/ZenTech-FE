@@ -115,7 +115,7 @@
   <!-- 4 KPI Cards Grid -->
   <div *ngIf="store.summary()" class="metric-grid">
     <!-- Card 1: Revenue & Loss -->
-    <article class="metric-card metric-card--light">
+    <article *ngIf="canViewRevenue()" class="metric-card metric-card--light">
       <div class="flex flex-col justify-between w-full">
         <div>
           <p>Doanh thu tổng</p>
@@ -151,7 +151,7 @@
           <h2>{{ store.summary()?.totalOrders }} đơn</h2>
         </div>
         <div class="flex flex-col gap-1 mt-2 border-t border-gray-100 pt-2 text-[11px]">
-          <span class="text-gray-600">AOV: {{ formatCurrency(store.summary()?.averageOrderValue) }}</span>
+          <span *ngIf="canViewRevenue()" class="text-gray-600">AOV: {{ formatCurrency(store.summary()?.averageOrderValue) }}</span>
           <span
             *ngIf="(store.impactStats()?.totalLostOrders ?? 0) > 0"
             class="text-rose-600 font-medium"
@@ -251,7 +251,7 @@
   </div>
 
   <!-- Live Realtime Revenue & Incident Milestones Panel -->
-  <section class="panel live-ops-panel">
+  <section *ngIf="canViewRevenue()" class="panel live-ops-panel">
     <div class="live-ops-header">
       <div class="live-ops-title-group">
         <span
@@ -342,9 +342,9 @@
     </div>
   </section>
   <!-- Mid-Section Grid (Revenue Chart & AI Sales Console) -->
-  <div class="dashboard-grid">
+  <div class="dashboard-grid" [class.dashboard-grid--single]="!canViewRevenue()">
     <!-- Chart Panel -->
-    <article class="panel panel--chart relative">
+    <article *ngIf="canViewRevenue()" class="panel panel--chart relative">
       <div *ngIf="store.loading()" class="absolute inset-0 bg-white/60 z-10 flex items-center justify-center">
         <svg lucideRefreshCw class="animate-spin w-8 h-8 text-indigo-600" [attr.stroke-width]="2"></svg>
       </div>
@@ -386,7 +386,7 @@
               </div>
             </div>
             <div class="flex flex-col items-end shrink-0">
-              <span class="font-semibold text-gray-900">{{ formatCurrency(product.revenue) }}</span>
+              <span *ngIf="canViewRevenue()" class="font-semibold text-gray-900">{{ formatCurrency(product.revenue) }}</span>
               <span class="text-[10px]" [class.text-rose-600]="product.stockRemaining < 5" [class.text-gray-400]="product.stockRemaining >= 5">
                 Kho: {{ product.stockRemaining }}
               </span>
@@ -572,7 +572,7 @@
             <th>Mã lỗi</th>
             <th>Dịch vụ lỗi</th>
             <th>Ngày xảy ra</th>
-            <th>Thất thoát ước tính</th>
+            <th *ngIf="canViewRevenue()">Thất thoát ước tính</th>
             <th>Khách ảnh hưởng</th>
             <th>Trạng thái sửa</th>
           </tr>
@@ -593,7 +593,7 @@
                 <span class="font-medium text-gray-900">{{ getFriendlyServiceName(inc) }}</span>
               </td>
               <td>{{ (inc.firstOccurredAt || inc.occurredAt) | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>
+              <td *ngIf="canViewRevenue()">
                 <strong class="text-rose-600 font-semibold">{{ formatCurrency(inc.revenueLoss) }}</strong>
               </td>
               <td>
@@ -670,7 +670,7 @@
           }
           @empty {
             <tr>
-              <td colspan="6" class="text-center py-8 text-gray-500">
+              <td [attr.colspan]="canViewRevenue() ? 6 : 5" class="text-center py-8 text-gray-500">
                 Không phát hiện sự cố hệ thống nào xảy ra trong kỳ báo cáo này.
               </td>
             </tr>
@@ -917,7 +917,7 @@
           <span class="text-gray-400 block mb-0.5">Thời điểm xảy ra</span>
           <span class="font-semibold text-gray-900">{{ store.selectedIncident()?.firstOccurredAt | date:'dd/MM/yyyy HH:mm' }}</span>
         </div>
-        <div>
+        <div *ngIf="canViewRevenue()">
           <span class="text-gray-400 block mb-0.5">Ước tính thiệt hại</span>
           <span class="font-bold text-rose-600">{{ formatCurrency(store.selectedIncident()?.revenueLoss) }} ({{ store.selectedIncident()?.lostOrders }} đơn hàng)</span>
         </div>

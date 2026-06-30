@@ -26,6 +26,9 @@ import { ReportsService } from '../../../reports/data-access/services/reports.se
 import { ManagementBusinessImpactService } from '../../../business-impact/data-access/services/management-business-impact.service';
 import { ManagementOrder } from '../../../orders/data-access/models/management-order.models';
 import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
+import { AuthSessionStore } from '../../../../auth/data-access/store/auth-session.store';
+import { Role } from '../../../../auth/data-access/models/auth.enums';
+import { hasRole } from '../../../../auth/data-access/utils/auth-role.utils';
 
 type LiveEventType = 'incident' | 'ticket' | 'resolved' | 'system';
 type LiveChartMarker = 'normal' | 'incident' | 'ticket' | 'resolved';
@@ -99,8 +102,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private readonly websocketService = inject(WebsocketService);
   private readonly reportsService = inject(ReportsService);
   private readonly impactService = inject(ManagementBusinessImpactService);
+  private readonly authSessionStore = inject(AuthSessionStore);
 
   private readonly subscriptions: Subscription[] = [];
+  protected readonly canViewRevenue = computed(() => {
+    const roles = this.authSessionStore.currentUser()?.roles ?? [];
+    const hasManagementLeadRole = hasRole(roles, Role.OWNER) || hasRole(roles, Role.MANAGER);
+
+    return hasManagementLeadRole || !hasRole(roles, Role.EMPLOYEE);
+  });
 
   // Live Operations Monitor State
   protected readonly liveLogs = signal<LiveLogItem[]>([]);
@@ -322,13 +332,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.store.loadDashboardData({ period: this.store.period() });
 
     this.websocketService.connect();
-    this.initLiveChart();
-    this.refreshLiveRevenueBaseline();
-    this.liveTimerId = setInterval(() => this.tickLiveChart(), LIVE_CHART_TICK_MS);
-    this.liveRefreshTimerId = setInterval(() => {
-      this.reloadDashboardSilently();
+
+    if (this.canViewRevenue()) {
+      this.initLiveChart();
       this.refreshLiveRevenueBaseline();
-    }, LIVE_DATA_REFRESH_MS);
+      this.liveTimerId = setInterval(() => this.tickLiveChart(), LIVE_CHART_TICK_MS);
+      this.liveRefreshTimerId = setInterval(() => {
+        this.reloadDashboardSilently();
+        this.refreshLiveRevenueBaseline();
+      }, LIVE_DATA_REFRESH_MS);
+    } else {
+      this.liveRefreshTimerId = setInterval(() => this.reloadDashboardSilently(), LIVE_DATA_REFRESH_MS);
+    }
 
     this.subscriptions.push(
       this.websocketService.subscribe<any>('/topic/admin.incidents').subscribe((payload) => {
