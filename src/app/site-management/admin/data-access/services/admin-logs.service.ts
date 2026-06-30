@@ -208,4 +208,21 @@ export class AdminLogsService {
       }
     );
   }
+
+  /**
+   * Gọi AI chẩn đoán lỗi chat tiếp nối (Follow-up Chat)
+   */
+  chatFollowUp(
+    service: string,
+    logDetails: string,
+    userMessage: string,
+    history: Array<{ role: string; content: string }>
+  ): Observable<{ content: string }> {
+    const payload = { service, logDetails, userMessage, history };
+    return this.apiService.post<typeof payload, { content: string }>(
+      `${environment.apiBaseUrl}/admin/chat/follow-up`,
+      payload,
+      { context: new HttpContext().set(SKIP_CLIENT_LOG, true) }
+    );
+  }
 }

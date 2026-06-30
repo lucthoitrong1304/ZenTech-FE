@@ -566,6 +566,57 @@
                   </div>
                 </div>
 
+                <!-- Follow-up Chat Section -->
+                <div class="logs-ai-chat-section">
+                  <div class="section-title-wrapper border-b border-gray-100 pb-2 mb-2">
+                    <svg lucideBot class="w-4 h-4 text-indigo-500"></svg>
+                    <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Hỏi đáp với AI Agent</span>
+                  </div>
+
+                  @if (chatHistory() && chatHistory().length > 0) {
+                    <div class="logs-ai-chat-history">
+                      @for (msg of chatHistory(); track $index) {
+                        <div class="logs-ai-chat-msg" [class.user-msg]="msg.role === 'user'" [class.assistant-msg]="msg.role === 'assistant'">
+                          <div class="chat-msg-avatar">
+                            @if (msg.role === 'user') {
+                              <svg lucideUser class="w-3.5 h-3.5 text-gray-500"></svg>
+                            } @else {
+                              <svg lucideBot class="w-3.5 h-3.5 text-indigo-500"></svg>
+                            }
+                          </div>
+                          <div class="chat-msg-content">
+                            <markdown class="ai-markdown" [data]="msg.content"></markdown>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                  
+                  <div class="logs-ai-chat-input-wrapper">
+                    <input 
+                      type="text" 
+                      placeholder="Hỏi AI thêm về sự cố này..." 
+                      [ngModel]="chatInput()" 
+                      (ngModelChange)="chatInput.set($event)"
+                      (keyup.enter)="sendFollowUpChat()"
+                      [disabled]="isSendingChat()"
+                      class="logs-ai-chat-input"
+                    />
+                    <button 
+                      type="button" 
+                      (click)="sendFollowUpChat()" 
+                      [disabled]="!chatInput().trim() || isSendingChat()"
+                      class="logs-ai-chat-send-btn"
+                    >
+                      @if (isSendingChat()) {
+                        <svg lucideRefreshCw class="w-3.5 h-3.5 animate-spin text-indigo-500"></svg>
+                      } @else {
+                        <svg lucideSend class="w-3.5 h-3.5"></svg>
+                      }
+                    </button>
+                  </div>
+                </div>
+
                 <!-- Re-run Button -->
                 <button type="button" (click)="handleRunAiAnalysis()" class="btn-ai-run mt-4">
                   <svg lucideCpu [attr.stroke-width]="2"></svg>

@@ -13,7 +13,9 @@ import {
   LucideRefreshCw,
   LucideGlobe,
   LucideTerminal,
-  LucideSparkles
+  LucideSparkles,
+  LucideUser,
+  LucideSend
 } from '@lucide/angular';
 import { AdminStore } from '../../../data-access/store/admin.store';
 import { ActivityArea, ActivitySeverity, LogLevel, LogServiceCategory, SystemLog } from '../../../data-access/models/admin.models';
@@ -83,6 +85,8 @@ interface ClientLogStackContext {
     LucideGlobe,
     LucideTerminal,
     LucideSparkles,
+    LucideUser,
+    LucideSend,
     MarkdownComponent,
     AdminRecordingEvidenceComponent
   ],
@@ -110,6 +114,10 @@ export class LogsComponent implements OnInit, OnDestroy {
   private readonly ngZone = inject(NgZone);
   private readonly route = inject(ActivatedRoute);
   private wsSubscription: Subscription | null = null;
+
+  protected readonly chatHistories = signal<Record<string, Array<{ role: 'user' | 'assistant'; content: string }>>>({});
+  protected readonly chatInputs = signal<Record<string, string>>({});
+  protected readonly sendingChatIds = signal<Record<string, boolean>>({});
 
   // Lọc khoảng thời gian tùy chọn
   protected readonly customStartTime = signal<Date | null>(null);
@@ -392,6 +400,37 @@ export class LogsComponent implements OnInit, OnDestroy {
         this.explainingIds.update(map => ({ ...map, [logId]: false }));
       }
     );
+  }
+
+  protected sendFollowUpChat(logItem: SystemLog): void {
+    const logId = logItem.id;
+    const userMsg = (this.chatInputs()[logId] || '').trim();
+    if (!userMsg || this.sendingChatIds()[logId]) return;
+
+    this.sendingChatIds.update(map => ({ ...map, [logId]: true }));
+    const currentHistory = this.chatHistories()[logId] || [];
+    const updatedHistory = [...currentHistory, { role: 'user' as const, content: userMsg }];
+    this.chatHistories.update(map => ({ ...map, [logId]: updatedHistory }));
+    this.chatInputs.update(map => ({ ...map, [logId]: '' }));
+
+    this.store.chatFollowUp(
+      logItem.category || LogServiceCategory.BACKEND,
+      logItem.details || logItem.message,
+      userMsg,
+      currentHistory,
+      (aiContent) => {
+        const newHistory = [...updatedHistory, { role: 'assistant' as const, content: aiContent }];
+        this.chatHistories.update(map => ({ ...map, [logId]: newHistory }));
+        this.sendingChatIds.update(map => ({ ...map, [logId]: false }));
+      },
+      () => {
+        this.sendingChatIds.update(map => ({ ...map, [logId]: false }));
+      }
+    );
+  }
+
+  protected updateChatInput(logId: string, value: string): void {
+    this.chatInputs.update(map => ({ ...map, [logId]: value }));
   }
 
   protected filterByTraceId(traceId: string, event: Event): void {

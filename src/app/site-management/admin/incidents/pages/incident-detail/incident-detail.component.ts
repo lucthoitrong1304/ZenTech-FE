@@ -18,7 +18,8 @@ import {
   LucideSparkles,
   LucideUpload,
   LucideUser,
-  LucideEye
+  LucideEye,
+  LucideSend
 } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
 import { EditorModule } from 'primeng/editor';
@@ -115,6 +116,7 @@ interface BrowserInfo {
     LucideUpload,
     LucideUser,
     LucideEye,
+    LucideSend,
     SelectModule,
     EditorModule,
     MarkdownComponent,
@@ -197,6 +199,9 @@ export class IncidentDetailComponent implements OnInit {
 
   // AI Analysis local states
   protected readonly isAnalyzing = signal(false);
+  protected readonly chatHistory = signal<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+  protected readonly chatInput = signal<string>('');
+  protected readonly isSendingChat = signal(false);
 
   // Create ticket form states
   protected readonly showTicketForm = signal(false);
@@ -681,6 +686,38 @@ export class IncidentDetailComponent implements OnInit {
       },
       () => {
         this.isAnalyzing.set(false);
+      }
+    );
+  }
+
+  protected sendFollowUpChat(): void {
+    const inc = this.incident();
+    if (!inc) return;
+
+    const userMsg = this.chatInput().trim();
+    if (!userMsg || this.isSendingChat()) return;
+
+    this.isSendingChat.set(true);
+    const currentHistory = this.chatHistory();
+    const updatedHistory = [...currentHistory, { role: 'user' as const, content: userMsg }];
+    this.chatHistory.set(updatedHistory);
+    this.chatInput.set('');
+
+    const service = inc.serviceName || 'BACKEND';
+    const logDetails = inc.stackTrace || inc.message;
+
+    this.store.chatFollowUp(
+      service,
+      logDetails,
+      userMsg,
+      currentHistory,
+      (aiContent) => {
+        const newHistory = [...updatedHistory, { role: 'assistant' as const, content: aiContent }];
+        this.chatHistory.set(newHistory);
+        this.isSendingChat.set(false);
+      },
+      () => {
+        this.isSendingChat.set(false);
       }
     );
   }

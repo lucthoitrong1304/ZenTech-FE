@@ -126,7 +126,11 @@
 }
 
 .detail-right-col {
-  @apply lg:col-span-5;
+  @apply lg:col-span-5 flex flex-col;
+}
+
+.detail-right-col > .tech-section {
+  @apply flex-grow;
 }
 
 /* Sections */
@@ -1307,10 +1311,10 @@
   }
 }
 
-/* AI Section Body - Remove max-height and scrolling */
+/* AI Section Body - Stretches and scrollable to match left column */
 .ai-section-body {
+  @apply flex-grow overflow-y-auto min-h-0;
   max-height: none !important;
-  overflow-y: visible !important;
 }
 
 /* AI Markdown Styles */
@@ -1362,4 +1366,45 @@
 
 :host ::ng-deep .ai-markdown blockquote {
   @apply border-l-4 border-indigo-400 pl-3 py-1 my-3 bg-indigo-50/80 rounded-r-md text-[11px] italic text-[#475569];
+}
+
+/* Follow-up Chat Section */
+.logs-ai-chat-section {
+  @apply flex flex-col gap-3.5 border-t border-gray-200 pt-4 mt-3 text-gray-800;
+}
+
+.logs-ai-chat-history {
+  @apply flex flex-col gap-3 max-h-72 overflow-y-auto pr-1;
+}
+
+.logs-ai-chat-msg {
+  @apply flex items-start gap-2.5 max-w-[85%] rounded-xl p-2.5 text-xs leading-normal;
+}
+
+.logs-ai-chat-msg.user-msg {
+  @apply bg-gray-100 text-gray-800 self-end rounded-tr-none flex-row-reverse;
+}
+
+.logs-ai-chat-msg.assistant-msg {
+  @apply bg-indigo-50/70 text-indigo-900 border border-indigo-100/50 self-start rounded-tl-none;
+}
+
+.chat-msg-avatar {
+  @apply flex items-center justify-center w-5 h-5 rounded-full bg-white shadow-xs border border-gray-100 shrink-0 mt-0.5;
+}
+
+.chat-msg-content {
+  @apply flex-1 min-w-0;
+}
+
+.logs-ai-chat-input-wrapper {
+  @apply flex items-center gap-2 bg-white border border-gray-200/80 rounded-full px-3.5 py-1.5 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition shadow-xs;
+}
+
+.logs-ai-chat-input {
+  @apply flex-1 bg-transparent text-xs text-gray-800 placeholder-gray-400 outline-none border-none p-0;
+}
+
+.logs-ai-chat-send-btn {
+  @apply flex items-center justify-center p-1 text-gray-400 hover:text-indigo-600 disabled:text-gray-200 transition outline-none border-none bg-transparent cursor-pointer;
 }

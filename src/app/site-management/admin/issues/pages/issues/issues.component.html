@@ -460,7 +460,54 @@
                   <strong>PHÂN TÍCH VÀ ĐỀ XUẤT TỪ AI AGENT:</strong>
                 </div>
                 <markdown class="logs-ai-result-text ai-markdown" [data]="explanations()[log.id]"></markdown>
-                <button type="button" (click)="triggerAiExplanation(log)" class="logs-ai-explain-btn mt-2">
+
+                <!-- Follow-up Chat Section -->
+                <div class="logs-ai-chat-section">
+                  @if (chatHistories()[log.id] && chatHistories()[log.id].length > 0) {
+                    <div class="logs-ai-chat-history">
+                      @for (msg of chatHistories()[log.id]; track $index) {
+                        <div class="logs-ai-chat-msg" [class.user-msg]="msg.role === 'user'" [class.assistant-msg]="msg.role === 'assistant'">
+                          <div class="chat-msg-avatar">
+                            @if (msg.role === 'user') {
+                              <svg lucideUser class="w-3.5 h-3.5 text-gray-500"></svg>
+                            } @else {
+                              <svg lucideBot class="w-3.5 h-3.5 text-indigo-500"></svg>
+                            }
+                          </div>
+                          <div class="chat-msg-content">
+                            <markdown class="ai-markdown" [data]="msg.content"></markdown>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                  
+                  <div class="logs-ai-chat-input-wrapper">
+                    <input 
+                      type="text" 
+                      placeholder="Hỏi AI thêm về lỗi này..." 
+                      [ngModel]="chatInputs()[log.id] || ''" 
+                      (ngModelChange)="updateChatInput(log.id, $event)"
+                      (keyup.enter)="sendFollowUpChat(log)"
+                      [disabled]="sendingChatIds()[log.id]"
+                      class="logs-ai-chat-input"
+                    />
+                    <button 
+                      type="button" 
+                      (click)="sendFollowUpChat(log)" 
+                      [disabled]="!(chatInputs()[log.id] || '').trim() || sendingChatIds()[log.id]"
+                      class="logs-ai-chat-send-btn"
+                    >
+                      @if (sendingChatIds()[log.id]) {
+                        <svg lucideRefreshCw class="w-3.5 h-3.5 animate-spin text-indigo-500"></svg>
+                      } @else {
+                        <svg lucideSend class="w-3.5 h-3.5"></svg>
+                      }
+                    </button>
+                  </div>
+                </div>
+
+                <button type="button" (click)="triggerAiExplanation(log)" class="logs-ai-explain-btn mt-4">
                   <svg lucideSparkles class="size-3.5"></svg>
                   Yêu cầu phân tích lại
                 </button>
