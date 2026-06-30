@@ -671,11 +671,16 @@ function readNumberValue(event: Event): number {
 }
 
 function readOptionalNumberValue(event: Event): number | null {
-  if (!(event.target instanceof HTMLInputElement) || event.target.value === '') {
+  if (!(event.target instanceof HTMLInputElement)) {
     return null;
   }
 
-  const value = Number(event.target.value);
+  const rawValue = event.target.value.trim();
+  if (!rawValue) {
+    return null;
+  }
+
+  const value = Number(rawValue.replace(',', '.'));
 
   return Number.isFinite(value) ? value : null;
 }

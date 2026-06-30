@@ -1253,6 +1253,14 @@ button:disabled:not(.work-schedules-cell) {
   flex: 1 1 auto;
 }
 
+.work-schedules-coordinates-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 12px;
+  min-width: 0;
+}
+
 .work-schedules-map-empty {
   display: grid;
   min-height: 240px;
@@ -1385,6 +1393,7 @@ button:disabled:not(.work-schedules-cell) {
 
   .work-schedules-settings-tabs,
   .work-schedules-field-grid,
+  .work-schedules-coordinates-row,
   .work-schedules-settings-row,
   .work-schedules-settings-row--new,
   .work-schedules-settings-row__fields,
