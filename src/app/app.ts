@@ -36,6 +36,11 @@ export class App {
   private static readonly RECORDING_MAX_RETRY_ATTEMPTS = 3;
   private static readonly RECORDING_RETRY_DELAY_MS = 5_000;
   private static readonly RECORDING_MAX_ANONYMOUS_EVENTS = 1_000;
+  private static readonly RECORDING_EXCLUDED_ROUTE_PREFIXES = [
+    '/admin/logs',
+    '/admin/activity-logs',
+    '/admin/resource-monitoring'
+  ];
 
   private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly router = inject(Router);
@@ -43,6 +48,8 @@ export class App {
   private readonly routeClientLogService = inject(RouteClientLogService);
   private readonly adminLogsService = inject(AdminLogsService);
   private readonly recordingUploadQueue: RecordingUploadBatch[] = [];
+  private recordingEvents: any[] = [];
+  private stopScreenRecording: (() => void) | null = null;
   private recordingUploadInFlight = false;
   private recordingRetryTimer: ReturnType<typeof setTimeout> | null = null;
   protected readonly title = signal('ZenTech-FE');
@@ -92,51 +99,86 @@ export class App {
         return;
       }
 
-      let events: any[] = [];
-      win.rrweb.record({
-        emit: (event: any) => {
-          events.push(event);
-        },
-        maskAllInputs: true,
-        maskInputOptions: {
-          password: true,
-          email: true,
-          tel: true,
-          text: true,
-          textarea: true,
-          number: true,
-          search: true
-        },
-        blockClass: 'rr-block',
-        ignoreClass: 'rr-ignore',
-        sampling: {
-          mousemove: 50,
-          scroll: 150,
-          input: 'last'
+      const startRecording = () => {
+        if (this.stopScreenRecording || this.shouldSkipScreenRecording(this.router.url)) {
+          this.recordingEvents = [];
+          return;
+        }
+
+        this.stopScreenRecording = win.rrweb.record({
+          emit: (event: any) => {
+            if (!this.shouldSkipScreenRecording(this.router.url)) {
+              this.recordingEvents.push(event);
+            }
+          },
+          maskAllInputs: true,
+          maskInputOptions: {
+            password: true,
+            email: true,
+            tel: true,
+            text: true,
+            textarea: true,
+            number: true,
+            search: true
+          },
+          blockClass: 'rr-block',
+          ignoreClass: 'rr-ignore',
+          sampling: {
+            mousemove: 50,
+            scroll: 150,
+            input: 'last'
+          }
+        });
+      };
+
+      const stopRecording = () => {
+        if (this.stopScreenRecording) {
+          this.stopScreenRecording();
+          this.stopScreenRecording = null;
+        }
+        this.recordingEvents = [];
+      };
+
+      startRecording();
+      this.router.events.pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd)).subscribe(() => {
+        if (this.shouldSkipScreenRecording(this.router.url)) {
+          stopRecording();
+        } else if (!this.stopScreenRecording) {
+          startRecording();
         }
       });
 
       setInterval(() => {
+        if (this.shouldSkipScreenRecording(this.router.url)) {
+          stopRecording();
+          this.flushRecordingQueue();
+          return;
+        }
+
         const isAuthenticated = this.authStorageService.isAuthenticated();
         const email = this.authStorageService.getSession()?.email;
-        if (isAuthenticated && email && events.length > 0) {
-          const batch = [...events];
-          events = [];
+        if (isAuthenticated && email && this.recordingEvents.length > 0) {
+          const batch = [...this.recordingEvents];
+          this.recordingEvents = [];
           this.uploadRecording(email, batch);
         } else if (!isAuthenticated || !email) {
-          if (events.length > App.RECORDING_MAX_ANONYMOUS_EVENTS) {
-            events = events.slice(-App.RECORDING_MAX_ANONYMOUS_EVENTS);
+          if (this.recordingEvents.length > App.RECORDING_MAX_ANONYMOUS_EVENTS) {
+            this.recordingEvents = this.recordingEvents.slice(-App.RECORDING_MAX_ANONYMOUS_EVENTS);
           }
         }
         this.flushRecordingQueue();
       }, App.RECORDING_FLUSH_INTERVAL_MS);
 
       win.addEventListener('beforeunload', () => {
+        if (this.shouldSkipScreenRecording(this.router.url)) {
+          return;
+        }
+
         const isAuthenticated = this.authStorageService.isAuthenticated();
         const email = this.authStorageService.getSession()?.email;
-        if (isAuthenticated && email && events.length > 0) {
-          const batch = [...events];
-          events = [];
+        if (isAuthenticated && email && this.recordingEvents.length > 0) {
+          const batch = [...this.recordingEvents];
+          this.recordingEvents = [];
           this.uploadRecordingBeacon(email, batch);
         }
 
@@ -147,6 +189,11 @@ export class App {
     }).catch((err: any) => {
       console.error('Failed to load rrweb screen recorder:', err);
     });
+  }
+
+  private shouldSkipScreenRecording(url: string): boolean {
+    const path = (url || '').split('?')[0].split('#')[0];
+    return App.RECORDING_EXCLUDED_ROUTE_PREFIXES.some(prefix => path === prefix || path.startsWith(prefix + '/'));
   }
 
   private loadScript(url: string): Promise<void> {

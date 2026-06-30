@@ -17,6 +17,7 @@ export class RecordingEvidenceService {
   private readonly adminLogsService = inject(AdminLogsService);
   private readonly sessionCache = new Map<string, CachedSessions>();
   private readonly sessionCacheTtlMs = 5 * 60 * 1000;
+  private readonly maxOpenSessionDurationMs = 30 * 60 * 1000;
 
   resolveEvidence(request: RecordingEvidenceRequest): Observable<RecordingEvidenceResult> {
     const email = this.normalizeEmail(request.email);
@@ -113,15 +114,14 @@ export class RecordingEvidenceService {
       const current = sessions[i];
       const next = sessions[i + 1];
       const start = Number(current.timestamp);
-      const end = next ? Number(next.timestamp) : Number.POSITIVE_INFINITY;
+      const nextStart = next ? Number(next.timestamp) : Number.POSITIVE_INFINITY;
+      const end = Math.min(nextStart, start + this.maxOpenSessionDurationMs);
       if (timestampMs >= start && timestampMs < end) {
         return current;
       }
     }
 
-    return sessions
-      .filter(session => session.timestamp <= timestampMs)
-      .sort((a, b) => b.timestamp - a.timestamp)[0] || null;
+    return null;
   }
 
   private buildRecordingClip(
