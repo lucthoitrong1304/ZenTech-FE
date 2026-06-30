@@ -1306,3 +1306,60 @@
     max-height: 100dvh !important;
   }
 }
+
+/* AI Section Body - Remove max-height and scrolling */
+.ai-section-body {
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+
+/* AI Markdown Styles */
+:host ::ng-deep .ai-markdown {
+  @apply text-xs leading-relaxed block;
+  color: inherit;
+}
+
+:host ::ng-deep .ai-markdown p {
+  @apply mb-3;
+  color: inherit;
+}
+
+:host ::ng-deep .ai-markdown p:last-child {
+  @apply mb-0;
+}
+
+:host ::ng-deep .ai-markdown strong {
+  @apply font-semibold;
+  color: inherit;
+}
+
+:host ::ng-deep .ai-markdown ul {
+  @apply list-disc pl-5 mb-3 space-y-2;
+  color: inherit;
+}
+
+:host ::ng-deep .ai-markdown ol {
+  @apply list-decimal pl-5 mb-3 space-y-2;
+  color: inherit;
+}
+
+:host ::ng-deep .ai-markdown li {
+  @apply pl-1;
+  color: inherit;
+}
+
+:host ::ng-deep .ai-markdown code {
+  @apply bg-gray-100/80 text-[#E11D48] px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold;
+}
+
+:host ::ng-deep .ai-markdown pre {
+  @apply bg-gray-900 text-gray-100 p-3.5 rounded-lg my-3 overflow-x-auto text-[11px] font-mono leading-relaxed border border-gray-800 shadow;
+}
+
+:host ::ng-deep .ai-markdown pre code {
+  @apply bg-transparent text-gray-100 p-0 rounded-none text-[11px] font-normal;
+}
+
+:host ::ng-deep .ai-markdown blockquote {
+  @apply border-l-4 border-indigo-400 pl-3 py-1 my-3 bg-indigo-50/80 rounded-r-md text-[11px] italic text-[#475569];
+}

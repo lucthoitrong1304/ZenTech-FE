@@ -359,11 +359,14 @@
             @if (log.level === 'ERROR' || log.level === 'WARN' || log.message.toLowerCase().includes('exception')) {
               <div class="logs-ai-explain-panel">
                 @if (!explanations()[log.id] && !explainingIds()[log.id]) {
-                  <div class="flex flex-col items-start gap-2">
-                    <span class="text-xs text-gray-500">Phát hiện log lỗi/cảnh báo. Bạn có muốn AI giải thích và gợi ý fix?</span>
+                  <div class="logs-ai-prompt-card">
+                    <div class="logs-ai-prompt-content">
+                      <svg lucideSparkles class="logs-ai-prompt-icon"></svg>
+                      <span class="logs-ai-prompt-text">Phát hiện log lỗi/cảnh báo. Bạn có muốn AI phân tích nguyên nhân và gợi ý code sửa lỗi ngay lập tức?</span>
+                    </div>
                     <button type="button" (click)="handleExplainLog(log)" class="logs-ai-explain-btn">
-                      <svg lucideSparkles class="w-4 h-4 text-amber-500"></svg>
-                      <span>AI Giải Thích Nhanh</span>
+                      <svg lucideBot class="w-4 h-4"></svg>
+                      <span>AI Chẩn Đoán Ngay</span>
                     </button>
                   </div>
                 }
@@ -379,7 +382,7 @@
                       <svg lucideSparkles class="w-4 h-4 text-indigo-500"></svg>
                       <strong>AI Chẩn Đoán Log:</strong>
                     </div>
-                    <p class="logs-ai-result-text">{{ explanations()[log.id] }}</p>
+                    <markdown class="logs-ai-result-text ai-markdown" [data]="explanations()[log.id]"></markdown>
                   </div>
                 }
               </div>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { MarkdownComponent } from 'ngx-markdown';
 import {
   LucideSearch,
   LucideTrash2,
@@ -82,6 +83,7 @@ interface ClientLogStackContext {
     LucideGlobe,
     LucideTerminal,
     LucideSparkles,
+    MarkdownComponent,
     AdminRecordingEvidenceComponent
   ],
   templateUrl: './logs.component.html',

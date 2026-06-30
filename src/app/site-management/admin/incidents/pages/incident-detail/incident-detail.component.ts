@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, OnInit, inject, signal, computed } 
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { MarkdownComponent } from 'ngx-markdown';
 import {
   LucideArrowLeft,
   LucideActivity,
@@ -116,6 +117,7 @@ interface BrowserInfo {
     LucideEye,
     SelectModule,
     EditorModule,
+    MarkdownComponent,
     AdminRecordingEvidenceComponent
   ],
   templateUrl: './incident-detail.component.html',

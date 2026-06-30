@@ -539,8 +539,24 @@
   @apply border-t border-dashed border-[#E5E7EB] pt-4 mt-2;
 }
 
+.logs-ai-prompt-card {
+  @apply flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-indigo-50/25 border border-indigo-100/60 rounded-xl mt-2 transition-all duration-300;
+}
+
+.logs-ai-prompt-content {
+  @apply flex items-center gap-2.5;
+}
+
+.logs-ai-prompt-icon {
+  @apply w-4.5 h-4.5 text-indigo-500 flex-shrink-0;
+}
+
+.logs-ai-prompt-text {
+  @apply text-xs font-semibold text-indigo-900/80 leading-normal;
+}
+
 .logs-ai-explain-btn {
-  @apply flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-full text-xs font-bold transition shadow-sm hover:shadow cursor-pointer outline-none border-none;
+  @apply flex items-center justify-center gap-1.5 px-4.5 py-2.5 bg-[#FFC700] hover:bg-[#FFD633] text-[#111827] rounded-full text-xs font-bold transition-all duration-200 shadow-sm hover:shadow cursor-pointer outline-none border-none whitespace-nowrap;
 }
 
 .logs-ai-loading {
@@ -881,4 +897,45 @@
     max-height: 100vh !important;
     max-height: 100dvh !important;
   }
+}
+
+/* AI Markdown Styles */
+:host ::ng-deep .ai-markdown {
+  @apply text-xs text-gray-800 leading-relaxed block font-medium;
+}
+
+:host ::ng-deep .ai-markdown p {
+  @apply mb-3;
+}
+
+:host ::ng-deep .ai-markdown p:last-child {
+  @apply mb-0;
+}
+
+:host ::ng-deep .ai-markdown strong {
+  @apply font-semibold text-gray-900;
+}
+
+:host ::ng-deep .ai-markdown ul {
+  @apply list-disc pl-5 mb-3 space-y-1;
+}
+
+:host ::ng-deep .ai-markdown ol {
+  @apply list-decimal pl-5 mb-3 space-y-1;
+}
+
+:host ::ng-deep .ai-markdown code {
+  @apply bg-gray-100 text-[#E11D48] px-1 py-0.5 rounded text-[10px] font-mono font-semibold;
+}
+
+:host ::ng-deep .ai-markdown pre {
+  @apply bg-gray-900 text-gray-100 p-3.5 rounded-lg my-3 overflow-x-auto text-[11px] font-mono leading-relaxed border border-gray-800 shadow;
+}
+
+:host ::ng-deep .ai-markdown pre code {
+  @apply bg-transparent text-gray-100 p-0 rounded-none text-[11px] font-normal;
+}
+
+:host ::ng-deep .ai-markdown blockquote {
+  @apply border-l-4 border-indigo-400 pl-3 py-1 my-3 bg-indigo-50/80 rounded-r-md text-[11px] italic text-[#475569];
 }

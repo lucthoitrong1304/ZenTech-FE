@@ -459,17 +459,23 @@
                   <svg lucideBot class="size-4"></svg>
                   <strong>PHÂN TÍCH VÀ ĐỀ XUẤT TỪ AI AGENT:</strong>
                 </div>
-                <p class="logs-ai-result-text whitespace-pre-wrap">{{ explanations()[log.id] }}</p>
+                <markdown class="logs-ai-result-text ai-markdown" [data]="explanations()[log.id]"></markdown>
                 <button type="button" (click)="triggerAiExplanation(log)" class="logs-ai-explain-btn mt-2">
                   <svg lucideSparkles class="size-3.5"></svg>
                   Yêu cầu phân tích lại
                 </button>
               </div>
             } @else {
-              <button type="button" (click)="triggerAiExplanation(log)" class="logs-ai-explain-btn">
-                <svg lucideBot class="size-3.5"></svg>
-                Chẩn đoán nguyên nhân lỗi với AI
-              </button>
+              <div class="logs-ai-prompt-card">
+                <div class="logs-ai-prompt-content">
+                  <svg lucideSparkles class="logs-ai-prompt-icon"></svg>
+                  <span class="logs-ai-prompt-text">Phát hiện log lỗi/cảnh báo. Bạn có muốn AI phân tích nguyên nhân và gợi ý code sửa lỗi ngay lập tức?</span>
+                </div>
+                <button type="button" (click)="triggerAiExplanation(log)" class="logs-ai-explain-btn">
+                  <svg lucideBot class="w-4 h-4"></svg>
+                  <span>AI Chẩn Đoán Ngay</span>
+                </button>
+              </div>
             }
           </div>
         } @else {

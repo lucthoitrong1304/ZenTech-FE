@@ -521,7 +521,7 @@
             </div>
           </div>
 
-          <div class="section-body">
+          <div class="section-body ai-section-body">
             @if (isAnalyzing()) {
               <div class="ai-analyzing-state">
                 <div class="ai-spinner"></div>
@@ -534,19 +534,19 @@
                 <!-- Summary Card -->
                 <div class="ai-result-card">
                   <h4 class="ai-card-title">TÓM TẮT SỰ CỐ</h4>
-                  <p class="ai-card-text">{{ ai.summary }}</p>
+                  <markdown class="ai-card-text ai-markdown inline-markdown text-slate-700 bg-slate-50/60 p-3.5 rounded-lg border border-slate-200 block" [data]="ai.summary"></markdown>
                 </div>
 
                 <!-- Root Cause -->
                 <div class="ai-result-card">
                   <h4 class="ai-card-title">NGUYÊN NHÂN GỐC DỰ ĐOÁN</h4>
-                  <p class="ai-card-text font-semibold text-rose-700 bg-rose-50/50 p-3 rounded-lg border border-rose-100">{{ ai.rootCause }}</p>
+                  <markdown class="ai-card-text ai-markdown inline-markdown text-rose-700 bg-rose-50/50 p-3 rounded-lg border border-rose-100 block" [data]="ai.rootCause"></markdown>
                 </div>
 
                 <!-- Suggestion / Solution -->
                 <div class="ai-result-card">
                   <h4 class="ai-card-title">GIẢI PHÁP ĐỀ XUẤT KHẮC PHỤC</h4>
-                  <p class="ai-card-text whitespace-pre-line leading-relaxed text-emerald-800 bg-emerald-50/40 p-3.5 rounded-lg border border-emerald-100">{{ ai.solutionSuggestion }}</p>
+                  <markdown class="ai-card-text ai-markdown text-emerald-800 bg-emerald-50/40 p-3.5 rounded-lg border border-emerald-100 block" [data]="ai.solutionSuggestion"></markdown>
                 </div>
 
                 <!-- Footer Metadata -->
