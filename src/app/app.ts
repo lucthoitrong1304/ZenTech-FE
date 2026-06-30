@@ -13,6 +13,13 @@ import { hasRole } from './site-management/auth/data-access/utils/auth-role.util
 import { AdminLogsService } from './site-management/admin/data-access/services/admin-logs.service';
 import { environment } from '../environments/environment';
 
+interface RecordingUploadBatch {
+  email: string;
+  sessionId: string;
+  events: any[];
+  attempts: number;
+}
+
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,12 +30,21 @@ import { environment } from '../environments/environment';
 export class App {
   private static readonly RECORDING_SESSION_MAX_AGE_MS = 30 * 60 * 1000;
   private static readonly RECORDING_IDLE_BREAK_MS = 10 * 60 * 1000;
+  private static readonly RECORDING_FLUSH_INTERVAL_MS = 10_000;
+  private static readonly RECORDING_MAX_EVENTS_PER_BATCH = 1_500;
+  private static readonly RECORDING_MAX_PENDING_BATCHES = 12;
+  private static readonly RECORDING_MAX_RETRY_ATTEMPTS = 3;
+  private static readonly RECORDING_RETRY_DELAY_MS = 5_000;
+  private static readonly RECORDING_MAX_ANONYMOUS_EVENTS = 1_000;
 
   private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly router = inject(Router);
   private readonly authStorageService = inject(AuthStorageService);
   private readonly routeClientLogService = inject(RouteClientLogService);
   private readonly adminLogsService = inject(AdminLogsService);
+  private readonly recordingUploadQueue: RecordingUploadBatch[] = [];
+  private recordingUploadInFlight = false;
+  private recordingRetryTimer: ReturnType<typeof setTimeout> | null = null;
   protected readonly title = signal('ZenTech-FE');
   protected readonly currentUrl = toSignal(
     this.router.events.pipe(
@@ -81,12 +97,23 @@ export class App {
         emit: (event: any) => {
           events.push(event);
         },
-        maskAllInputs: false,
+        maskAllInputs: true,
         maskInputOptions: {
-          password: true
+          password: true,
+          email: true,
+          tel: true,
+          text: true,
+          textarea: true,
+          number: true,
+          search: true
         },
         blockClass: 'rr-block',
-        ignoreClass: 'rr-ignore'
+        ignoreClass: 'rr-ignore',
+        sampling: {
+          mousemove: 50,
+          scroll: 150,
+          input: 'last'
+        }
       });
 
       setInterval(() => {
@@ -97,11 +124,12 @@ export class App {
           events = [];
           this.uploadRecording(email, batch);
         } else if (!isAuthenticated || !email) {
-          if (events.length > 5000) {
-            events = events.slice(-1000);
+          if (events.length > App.RECORDING_MAX_ANONYMOUS_EVENTS) {
+            events = events.slice(-App.RECORDING_MAX_ANONYMOUS_EVENTS);
           }
         }
-      }, 10000);
+        this.flushRecordingQueue();
+      }, App.RECORDING_FLUSH_INTERVAL_MS);
 
       win.addEventListener('beforeunload', () => {
         const isAuthenticated = this.authStorageService.isAuthenticated();
@@ -110,6 +138,10 @@ export class App {
           const batch = [...events];
           events = [];
           this.uploadRecordingBeacon(email, batch);
+        }
+
+        for (const queuedBatch of this.recordingUploadQueue.slice(0, 3)) {
+          this.uploadRecordingBeacon(queuedBatch.email, queuedBatch.events, queuedBatch.sessionId);
         }
       });
     }).catch((err: any) => {
@@ -176,12 +208,66 @@ export class App {
 
   private uploadRecording(email: string, events: any[]): void {
     const sessionId = this.getRecordingSessionId(email, events);
-    this.adminLogsService.uploadRecording(email, sessionId, events).subscribe({
-      error: (err) => console.error('Failed to upload screen recording chunk:', err)
+    this.enqueueRecordingUpload(email, sessionId, events);
+  }
+
+  private enqueueRecordingUpload(email: string, sessionId: string, events: any[]): void {
+    for (let index = 0; index < events.length; index += App.RECORDING_MAX_EVENTS_PER_BATCH) {
+      this.recordingUploadQueue.push({
+        email,
+        sessionId,
+        events: events.slice(index, index + App.RECORDING_MAX_EVENTS_PER_BATCH),
+        attempts: 0
+      });
+    }
+
+    while (this.recordingUploadQueue.length > App.RECORDING_MAX_PENDING_BATCHES) {
+      const dropped = this.recordingUploadQueue.shift();
+      console.warn('Dropped old screen recording batch after queue limit was reached:', dropped?.events.length ?? 0);
+    }
+
+    this.flushRecordingQueue();
+  }
+
+  private flushRecordingQueue(): void {
+    if (this.recordingUploadInFlight || this.recordingUploadQueue.length === 0) {
+      return;
+    }
+
+    if (!this.authStorageService.isAuthenticated()) {
+      return;
+    }
+
+    const batch = this.recordingUploadQueue[0];
+    this.recordingUploadInFlight = true;
+    this.adminLogsService.uploadRecording(batch.email, batch.sessionId, batch.events).subscribe({
+      next: () => {
+        this.recordingUploadQueue.shift();
+        this.recordingUploadInFlight = false;
+        this.flushRecordingQueue();
+      },
+      error: (err) => {
+        batch.attempts += 1;
+        this.recordingUploadInFlight = false;
+        if (batch.attempts >= App.RECORDING_MAX_RETRY_ATTEMPTS) {
+          this.recordingUploadQueue.shift();
+          console.error('Dropped screen recording batch after retry limit:', err);
+          this.flushRecordingQueue();
+          return;
+        }
+
+        if (this.recordingRetryTimer) {
+          clearTimeout(this.recordingRetryTimer);
+        }
+        this.recordingRetryTimer = setTimeout(() => {
+          this.recordingRetryTimer = null;
+          this.flushRecordingQueue();
+        }, App.RECORDING_RETRY_DELAY_MS);
+      }
     });
   }
 
-  private uploadRecordingBeacon(email: string, events: any[]): void {
+  private uploadRecordingBeacon(email: string, events: any[], existingSessionId?: string): void {
     const token = this.authStorageService.getAccessToken();
     const headers: HeadersInit = {
       'Content-Type': 'application/json'
@@ -189,13 +275,16 @@ export class App {
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
-    const sessionId = this.getRecordingSessionId(email, events);
+    const sessionId = existingSessionId || this.getRecordingSessionId(email, events);
     const url = `${environment.apiBaseUrl}/admin/activity-logs/recordings?email=${encodeURIComponent(email)}&sessionId=${encodeURIComponent(sessionId)}`;
-    fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(events),
-      keepalive: true
-    }).catch(err => console.error('Beacon upload failed:', err));
+    for (let index = 0; index < events.length; index += App.RECORDING_MAX_EVENTS_PER_BATCH) {
+      const chunk = events.slice(index, index + App.RECORDING_MAX_EVENTS_PER_BATCH);
+      fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(chunk),
+        keepalive: true
+      }).catch(err => console.error('Beacon upload failed:', err));
+    }
   }
 }
