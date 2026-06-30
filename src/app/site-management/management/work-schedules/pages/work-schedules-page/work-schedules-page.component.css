@@ -102,8 +102,8 @@
   color: #344054;
 }
 
-.work-schedules-secondary-action:hover,
-.work-schedules-filter-action:hover {
+.work-schedules-secondary-action:hover:not(:disabled),
+.work-schedules-filter-action:hover:not(:disabled) {
   border-color: #c7d2fe;
   background: #f5f7ff;
   color: #4f46e5;
@@ -117,7 +117,7 @@
   height: 16px;
 }
 
-button:disabled {
+button:disabled:not(.work-schedules-cell) {
   cursor: not-allowed;
   opacity: 0.48;
 }
@@ -221,7 +221,7 @@ button:disabled {
     color 160ms ease;
 }
 
-.work-schedules-icon-action:hover {
+.work-schedules-icon-action:hover:not(:disabled) {
   border-color: #c7d2fe;
   background: #f5f7ff;
   color: #4f46e5;
@@ -352,8 +352,32 @@ button:disabled {
   width: 200px;
 }
 
-.work-schedules-grid th.work-schedules-grid__select {
-  width: 48px;
+.work-schedules-grid th.work-schedules-grid__select,
+.work-schedules-grid td.work-schedules-grid__select {
+  width: 44px;
+  min-width: 44px;
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+  text-align: center;
+}
+
+.work-schedules-grid__day span,
+.work-schedules-grid__day small {
+  display: block;
+  line-height: 1.15;
+}
+
+.work-schedules-grid__day span {
+  color: #475467;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.work-schedules-grid__day small {
+  margin-top: 3px;
+  color: #8a94a6;
+  font-size: 10.5px;
+  font-weight: 700;
 }
 
 .work-schedules-grid th:not(.work-schedules-grid__select):not(.work-schedules-grid__employee),
@@ -368,6 +392,19 @@ button:disabled {
   color: #101828 !important;
   font-size: 13.5px;
   vertical-align: middle;
+}
+
+.work-schedules-grid input[type='checkbox']:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.work-schedules-select-checkbox {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 0 auto;
+  accent-color: #4f46e5;
 }
 
 .work-schedules-grid tbody tr:hover td {
@@ -484,6 +521,19 @@ button:disabled {
   transform: translateY(-1px);
 }
 
+.work-schedules-cell:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.work-schedules-cell--readonly {
+  box-shadow: none;
+}
+
+.work-schedules-cell--readonly:hover {
+  transform: none;
+}
+
 .work-schedules-cell--empty {
   border-style: dashed;
   border-left-width: 1px;
@@ -491,6 +541,16 @@ button:disabled {
   color: #98a2b3;
   justify-content: center;
   align-items: center;
+}
+
+.work-schedules-cell--empty.work-schedules-cell--readonly {
+  border-color: #e9edf3;
+  background: #ffffff;
+  color: #a4acb9;
+}
+
+.work-schedules-cell--empty.work-schedules-cell--readonly strong {
+  color: #a4acb9;
 }
 
 .work-schedules-cell--empty strong {
