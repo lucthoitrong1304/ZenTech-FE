@@ -28,10 +28,24 @@ export interface ManagementEmployeeCreateDraft {
   role: ManagementEmployeeRole | '';
 }
 
+export interface ManagementEmployeeUpdateDraft {
+  fullName: string;
+  email: string;
+  role: ManagementEmployeeRole | '';
+  active: boolean;
+}
+
 export interface ManagementEmployeeCreateRequest {
   fullName: string;
   email: string;
   role: ManagementEmployeeRole;
+}
+
+export interface ManagementEmployeeUpdateRequest {
+  fullName: string;
+  email: string;
+  role: ManagementEmployeeRole;
+  active: boolean;
 }
 
 export interface ManagementEmployeePage {
