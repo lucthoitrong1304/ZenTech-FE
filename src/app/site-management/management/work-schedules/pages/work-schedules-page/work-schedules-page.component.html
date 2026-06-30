@@ -7,19 +7,30 @@
     </div>
 
     <div class="work-schedules-command__actions">
-      <button type="button" class="work-schedules-secondary-action" (click)="store.openCopyModal()">
+      <button
+        type="button"
+        class="work-schedules-secondary-action"
+        [disabled]="!canUpdateSchedule()"
+        (click)="store.openCopyModal()"
+      >
         <svg lucideCopy [attr.stroke-width]="2"></svg>
         <span>Sao chép tuần</span>
       </button>
       <button
         type="button"
         class="work-schedules-secondary-action"
+        [disabled]="!canUpdateSchedule()"
         (click)="store.openSettingsModal()"
       >
         <svg lucideSettings [attr.stroke-width]="2"></svg>
         <span>Cấu hình ca</span>
       </button>
-      <button type="button" class="work-schedules-primary-action" (click)="store.openBulkModal()">
+      <button
+        type="button"
+        class="work-schedules-primary-action"
+        [disabled]="!canUpdateSchedule()"
+        (click)="store.openBulkModal()"
+      >
         <svg lucideUsers [attr.stroke-width]="2"></svg>
         <span>Gán hàng loạt</span>
       </button>
@@ -124,16 +135,17 @@
           <tr>
             <th class="work-schedules-grid__select">
               <input
+                class="work-schedules-select-checkbox"
                 type="checkbox"
                 [checked]="store.allVisibleSelected()"
-                [disabled]="!store.hasEmployees()"
+                [disabled]="!canUpdateSchedule() || !store.hasEmployees()"
                 (change)="store.toggleAllVisible()"
                 aria-label="Chọn tất cả nhân viên hiển thị"
               />
             </th>
             <th class="work-schedules-grid__employee">Nhân viên</th>
             @for (date of store.weekDates(); track date) {
-              <th>
+              <th class="work-schedules-grid__day">
                 <span>{{ getDayLabel(date) }}</span>
                 <small>{{ date | date: 'dd/MM' }}</small>
               </th>
@@ -145,8 +157,10 @@
             <tr>
               <td class="work-schedules-grid__select">
                 <input
+                  class="work-schedules-select-checkbox"
                   type="checkbox"
                   [checked]="isEmployeeSelected(employee.employeeId)"
+                  [disabled]="!canUpdateSchedule()"
                   (change)="store.toggleEmployee(employee.employeeId)"
                   [attr.aria-label]="'Chọn ' + employee.employeeName"
                 />
@@ -164,6 +178,7 @@
                     type="button"
                     class="work-schedules-cell"
                     [class.work-schedules-cell--empty]="shifts.length === 0"
+                    [class.work-schedules-cell--readonly]="!canUpdateSchedule()"
                     [style.border-left-color]="shifts[0]?.colorCode || null"
                     [style.background-color]="
                       shifts.length > 0 ? (shifts[0].colorCode || '#4f46e5') + '13' : null

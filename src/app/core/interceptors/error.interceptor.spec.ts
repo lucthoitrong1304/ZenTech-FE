@@ -4,7 +4,7 @@ import { HttpErrorResponse, HttpRequest } from '@angular/common/http';
 import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { Router } from '@angular/router';
-import { firstValueFrom, throwError } from 'rxjs';
+import { firstValueFrom, of, throwError } from 'rxjs';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ErrorStateService } from '../errors/error-state.service';
 import { ClientLogEventType } from '../logging/client-log.model';
@@ -92,6 +92,57 @@ describe('errorInterceptor', () => {
       expect.any(Object),
     );
     expect(clientLogService.error).not.toHaveBeenCalled();
+  });
+
+  it('does not expire the session when refresh succeeds but the retried request is still 401', async () => {
+    const navigate = vi.fn();
+    const clear = vi.fn();
+    const setSession = vi.fn();
+    const refreshResponse = {
+      accessToken: 'fresh-access-token',
+      refreshToken: 'fresh-refresh-token',
+      accountId: 'account-1',
+      profileId: 'profile-1',
+      email: 'manager@zentech.vn',
+      fullName: 'Manager',
+      roles: ['ROLE_MANAGER'],
+    };
+    const refresh = vi.fn(() => of(refreshResponse));
+    const clientLogService = { warn: vi.fn(), error: vi.fn(), info: vi.fn() };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: Router, useValue: { url: '/management/dashboard', navigate } },
+        { provide: ErrorStateService, useValue: { setError: vi.fn() } },
+        { provide: AuthRefreshService, useValue: { refresh } },
+        {
+          provide: AuthStorageService,
+          useValue: {
+            clear,
+            setSession,
+            getRefreshToken: vi.fn(() => 'valid-refresh-token'),
+          },
+        },
+        { provide: ClientLogService, useValue: clientLogService },
+      ],
+    });
+    const request = new HttpRequest('GET', '/api/management/dashboard');
+    const initialUnauthorized = new HttpErrorResponse({ status: 401, statusText: 'Unauthorized' });
+    const retryUnauthorized = new HttpErrorResponse({ status: 401, statusText: 'Unauthorized' });
+    const next = vi
+      .fn()
+      .mockReturnValueOnce(throwError(() => initialUnauthorized))
+      .mockReturnValueOnce(throwError(() => retryUnauthorized));
+
+    const result = TestBed.runInInjectionContext(() =>
+      firstValueFrom(errorInterceptor(request, next)),
+    );
+
+    await expect(result).rejects.toBe(retryUnauthorized);
+    expect(refresh).toHaveBeenCalledWith('valid-refresh-token');
+    expect(setSession).toHaveBeenCalledWith(refreshResponse);
+    expect(next).toHaveBeenCalledTimes(2);
+    expect(clear).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('uses response body message before statusText for HTTP failure reason', async () => {

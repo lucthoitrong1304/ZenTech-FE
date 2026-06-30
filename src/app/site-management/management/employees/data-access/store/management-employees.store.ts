@@ -10,6 +10,7 @@ import {
   ManagementEmployeeQuery,
   ManagementEmployeeRole,
   ManagementEmployeeSort,
+  ManagementEmployeeUpdateDraft,
 } from '../models/management-employee.models';
 import { ManagementEmployeeEvent, ManagementEmployeeEventType } from '../models/management-employee.event';
 import { ManagementEmployeeService } from '../services/management-employee.service';
@@ -29,6 +30,13 @@ const EMPTY_CREATE_DRAFT: ManagementEmployeeCreateDraft = {
   role: '',
 };
 
+const EMPTY_UPDATE_DRAFT: ManagementEmployeeUpdateDraft = {
+  fullName: '',
+  email: '',
+  role: '',
+  active: false,
+};
+
 const EMPLOYEE_ENTITY_CONFIG = {
   collection: 'employee',
   selectId: (employee: ManagementEmployee) => employee.employeeId,
@@ -41,9 +49,13 @@ interface ManagementEmployeesUiState {
   last: boolean;
   loading: boolean;
   creating: boolean;
+  updating: boolean;
   createModalOpen: boolean;
   createDraft: ManagementEmployeeCreateDraft;
   createErrors: ManagementEmployeeFormErrors;
+  editMode: boolean;
+  updateDraft: ManagementEmployeeUpdateDraft;
+  updateErrors: ManagementEmployeeFormErrors;
   selectedEmployee: ManagementEmployee | null;
   detailModalOpen: boolean;
   errorMessage: string | null;
@@ -57,9 +69,13 @@ const INITIAL_STATE: ManagementEmployeesUiState = {
   last: true,
   loading: false,
   creating: false,
+  updating: false,
   createModalOpen: false,
   createDraft: EMPTY_CREATE_DRAFT,
   createErrors: {},
+  editMode: false,
+  updateDraft: EMPTY_UPDATE_DRAFT,
+  updateErrors: {},
   selectedEmployee: null,
   detailModalOpen: false,
   errorMessage: null,
@@ -72,7 +88,7 @@ export const ManagementEmployeesStore = signalStore(
     entity: {} as ManagementEmployee,
     collection: 'employee',
   }),
-  withComputed(({ employeeEntities, query, totalElements, totalPages, createDraft, creating }) => ({
+  withComputed(({ employeeEntities, query, totalElements, totalPages, createDraft, creating, updateDraft, updating }) => ({
     employees: computed(() => employeeEntities()),
     pageStart: computed(() => {
       const total = totalElements();
@@ -95,6 +111,16 @@ export const ManagementEmployeesStore = signalStore(
         isValidEmail(draft.email) &&
         isEmployeeRole(draft.role) &&
         !creating()
+      );
+    }),
+    updatePayloadReady: computed(() => {
+      const draft = updateDraft();
+
+      return (
+        !!draft.fullName.trim() &&
+        isValidEmail(draft.email) &&
+        isEmployeeRole(draft.role) &&
+        !updating()
       );
     }),
   })),
@@ -279,6 +305,9 @@ export const ManagementEmployeesStore = signalStore(
           patchState(store, {
             selectedEmployee: event.employee,
             detailModalOpen: true,
+            editMode: false,
+            updateDraft: toUpdateDraft(event.employee),
+            updateErrors: {},
           });
           break;
 
@@ -286,6 +315,10 @@ export const ManagementEmployeesStore = signalStore(
           patchState(store, {
             selectedEmployee: null,
             detailModalOpen: false,
+            editMode: false,
+            updating: false,
+            updateDraft: { ...EMPTY_UPDATE_DRAFT },
+            updateErrors: {},
           });
           break;
 
@@ -356,10 +389,70 @@ export const ManagementEmployeesStore = signalStore(
       )
     );
 
+    const updateEmployee = rxMethod<void>(
+      pipe(
+        switchMap(() => {
+          const selectedEmployee = store.selectedEmployee();
+          const draft = store.updateDraft();
+          const errors = validateUpdateDraft(draft);
+
+          if (!selectedEmployee) {
+            return EMPTY;
+          }
+
+          if (Object.keys(errors).length > 0 || !isEmployeeRole(draft.role)) {
+            patchState(store, { updateErrors: errors });
+            return EMPTY;
+          }
+
+          patchState(store, {
+            updating: true,
+            updateErrors: {},
+            errorMessage: null,
+            successMessage: null,
+          });
+
+          return managementEmployeeService.updateEmployee(selectedEmployee.employeeId, {
+            fullName: draft.fullName.trim(),
+            email: draft.email.trim().toLowerCase(),
+            role: draft.role,
+            active: draft.active,
+          }).pipe(
+            switchMap(updatedEmployee =>
+              managementEmployeeService.getEmployees(store.query()).pipe(
+                tap(page => {
+                  applyEmployeesPage(page);
+                  patchState(store, {
+                    updating: false,
+                    editMode: false,
+                    selectedEmployee: updatedEmployee,
+                    updateDraft: toUpdateDraft(updatedEmployee),
+                    updateErrors: {},
+                    successMessage: 'Đã cập nhật thông tin nhân viên.',
+                  });
+                })
+              )
+            ),
+            catchError(() => {
+              patchState(store, {
+                updating: false,
+                updateErrors: {
+                  submit: 'Không thể cập nhật nhân viên. Vui lòng kiểm tra thông tin hoặc thử lại.',
+                },
+                errorMessage: 'Không thể cập nhật nhân viên. Vui lòng thử lại.',
+              });
+              return EMPTY;
+            })
+          );
+        })
+      )
+    );
+
     return {
       dispatch: handleEvent,
       loadEmployees,
       createEmployee,
+      updateEmployee,
       setKeyword(keyword: string): void {
         handleEvent({ type: ManagementEmployeeEventType.SearchKeywordChanged, keyword });
       },
@@ -408,7 +501,46 @@ export const ManagementEmployeesStore = signalStore(
       openEmployeeDetail(employee: ManagementEmployee): void {
         handleEvent({ type: ManagementEmployeeEventType.EmployeeSelected, employee });
       },
+      openEmployeeEditor(employee: ManagementEmployee): void {
+        handleEvent({ type: ManagementEmployeeEventType.EmployeeSelected, employee });
+        patchState(store, { editMode: true });
+      },
+      startEditingSelectedEmployee(): void {
+        const selectedEmployee = store.selectedEmployee();
+
+        if (!selectedEmployee) {
+          return;
+        }
+
+        patchState(store, {
+          editMode: true,
+          updateDraft: toUpdateDraft(selectedEmployee),
+          updateErrors: {},
+        });
+      },
+      cancelEmployeeEdit(): void {
+        const selectedEmployee = store.selectedEmployee();
+
+        patchState(store, {
+          editMode: false,
+          updateDraft: selectedEmployee ? toUpdateDraft(selectedEmployee) : { ...EMPTY_UPDATE_DRAFT },
+          updateErrors: {},
+        });
+      },
+      updateEmployeeDraft(patch: Partial<ManagementEmployeeUpdateDraft>): void {
+        patchState(store, {
+          updateDraft: {
+            ...store.updateDraft(),
+            ...patch,
+          },
+          updateErrors: {},
+        });
+      },
       closeEmployeeDetail(): void {
+        if (store.updating()) {
+          return;
+        }
+
         handleEvent({ type: ManagementEmployeeEventType.EmployeeDetailClosed });
       },
       clearMessages(): void {
@@ -436,6 +568,25 @@ function validateCreateDraft(draft: ManagementEmployeeCreateDraft): ManagementEm
   }
 
   return errors;
+}
+
+function validateUpdateDraft(draft: ManagementEmployeeUpdateDraft): ManagementEmployeeFormErrors {
+  const errors = validateCreateDraft({
+    fullName: draft.fullName,
+    email: draft.email,
+    role: draft.role,
+  });
+
+  return errors;
+}
+
+function toUpdateDraft(employee: ManagementEmployee): ManagementEmployeeUpdateDraft {
+  return {
+    fullName: employee.fullName,
+    email: employee.email,
+    role: employee.role,
+    active: employee.active,
+  };
 }
 
 function isValidEmail(value: string): boolean {

@@ -139,7 +139,7 @@
                     class="employees-row-action employees-row-action--muted"
                     aria-label="Chỉnh sửa nhân viên"
                     [disabled]="!canUpdateEmployee()"
-                    (click)="store.openEmployeeDetail(employee)"
+                    (click)="canUpdateEmployee() && store.openEmployeeEditor(employee)"
                   >
                     <svg lucidePencil [attr.stroke-width]="2"></svg>
                   </button>
@@ -292,11 +292,11 @@
 @if (store.detailModalOpen()) {
   @if (store.selectedEmployee(); as employee) {
     <div class="employees-modal-backdrop" role="presentation">
-      <article class="employees-modal employees-modal--detail">
+      <form class="employees-modal employees-modal--detail" (submit)="submitUpdateEmployee($event)">
         <header class="employees-modal__header">
           <div>
-            <p>Employee Snapshot</p>
-            <h2>Thông tin nhân viên</h2>
+            <p>{{ store.editMode() ? 'Employee Editor' : 'Employee Snapshot' }}</p>
+            <h2>{{ store.editMode() ? 'Chỉnh sửa nhân viên' : 'Thông tin nhân viên' }}</h2>
           </div>
           <button type="button" class="employees-modal__close" aria-label="Đóng thông tin" (click)="store.closeEmployeeDetail()">
             <svg lucideX [attr.stroke-width]="2"></svg>
@@ -314,26 +314,109 @@
           <h3>{{ employee.fullName }}</h3>
           <p>{{ employee.email }}</p>
 
-          <dl>
-            <div>
-              <dt>Vai trò</dt>
-              <dd>{{ getRoleLabel(employee.role) }}</dd>
-            </div>
-            <div>
-              <dt>Trạng thái</dt>
-              <dd>{{ getStatusLabel(employee.active) }}</dd>
-            </div>
-            <div>
-              <dt>Ngày tạo</dt>
-              <dd>{{ employee.createdAt ? (employee.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Chưa có' }}</dd>
-            </div>
-          </dl>
+          @if (store.editMode()) {
+            <div class="employees-edit-form">
+              <label class="employees-field">
+                <span>Họ và tên</span>
+                <div class="employees-input-shell">
+                  <svg lucideUserRound [attr.stroke-width]="1.8"></svg>
+                  <input
+                    type="text"
+                    [value]="store.updateDraft().fullName"
+                    (input)="onUpdateDraftInput('fullName', $event)"
+                    autocomplete="name"
+                  />
+                </div>
+                @if (store.updateErrors().fullName) {
+                  <small>{{ store.updateErrors().fullName }}</small>
+                }
+              </label>
 
-          <p class="employees-detail__notice">
-            Chức năng chỉnh sửa sẽ được mở khi backend bổ sung endpoint cập nhật nhân viên.
-          </p>
+              <label class="employees-field">
+                <span>Email</span>
+                <div class="employees-input-shell">
+                  <svg lucideMail [attr.stroke-width]="1.8"></svg>
+                  <input
+                    type="email"
+                    [value]="store.updateDraft().email"
+                    (input)="onUpdateDraftInput('email', $event)"
+                    autocomplete="email"
+                  />
+                </div>
+                @if (store.updateErrors().email) {
+                  <small>{{ store.updateErrors().email }}</small>
+                }
+              </label>
+
+              <label class="employees-field">
+                <span>Vai trò</span>
+                <select [value]="store.updateDraft().role" (change)="onUpdateRoleChange($event)">
+                  @for (role of employeeRoles; track role) {
+                    <option [value]="role">{{ getRoleLabel(role) }}</option>
+                  }
+                </select>
+                @if (store.updateErrors().role) {
+                  <small>{{ store.updateErrors().role }}</small>
+                }
+              </label>
+
+              <label class="employees-toggle-field">
+                <input
+                  type="checkbox"
+                  [checked]="store.updateDraft().active"
+                  (change)="onUpdateActiveChange($event)"
+                />
+                <span>Đang hoạt động</span>
+              </label>
+
+              @if (store.updateErrors().submit) {
+                <p class="employees-submit-error">{{ store.updateErrors().submit }}</p>
+              }
+            </div>
+          } @else {
+            <dl>
+              <div>
+                <dt>Vai trò</dt>
+                <dd>{{ getRoleLabel(employee.role) }}</dd>
+              </div>
+              <div>
+                <dt>Trạng thái</dt>
+                <dd>{{ getStatusLabel(employee.active) }}</dd>
+              </div>
+              <div>
+                <dt>Ngày tạo</dt>
+                <dd>{{ employee.createdAt ? (employee.createdAt | date: 'dd/MM/yyyy HH:mm') : 'Chưa có' }}</dd>
+              </div>
+            </dl>
+          }
         </div>
-      </article>
+
+        <footer class="employees-modal__footer">
+          @if (store.editMode()) {
+            <button type="button" class="employees-secondary-action" (click)="store.cancelEmployeeEdit()">
+              Hủy
+            </button>
+            <button type="submit" class="employees-primary-action" [disabled]="!store.updatePayloadReady()">
+              @if (store.updating()) {
+                <svg lucideLoader2 class="employees-spin" [attr.stroke-width]="2"></svg>
+              } @else {
+                <svg lucidePencil [attr.stroke-width]="2"></svg>
+              }
+              <span>{{ store.updating() ? 'Đang lưu...' : 'Lưu thay đổi' }}</span>
+            </button>
+          } @else {
+            <button type="button" class="employees-secondary-action" (click)="store.closeEmployeeDetail()">
+              Đóng
+            </button>
+            @if (canUpdateEmployee()) {
+              <button type="button" class="employees-primary-action" (click)="store.startEditingSelectedEmployee()">
+                <svg lucidePencil [attr.stroke-width]="2"></svg>
+                <span>Chỉnh sửa</span>
+              </button>
+            }
+          }
+        </footer>
+      </form>
     </div>
   }
 }

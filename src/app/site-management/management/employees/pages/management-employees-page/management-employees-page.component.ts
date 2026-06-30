@@ -125,6 +125,21 @@ export class ManagementEmployeesPageComponent {
     this.store.updateCreateDraft({ role });
   }
 
+  protected onUpdateDraftInput(field: 'fullName' | 'email', event: Event): void {
+    this.store.updateEmployeeDraft({ [field]: readInputValue(event) });
+  }
+
+  protected onUpdateRoleChange(event: Event): void {
+    const value = readSelectValue(event);
+    const role = value === 'MANAGER' || value === 'EMPLOYEE' ? value : '';
+
+    this.store.updateEmployeeDraft({ role });
+  }
+
+  protected onUpdateActiveChange(event: Event): void {
+    this.store.updateEmployeeDraft({ active: readCheckboxValue(event) });
+  }
+
   protected submitCreateEmployee(event: Event): void {
     if (!this.canCreateEmployee()) {
       event.preventDefault();
@@ -134,6 +149,17 @@ export class ManagementEmployeesPageComponent {
 
     event.preventDefault();
     this.store.createEmployee();
+  }
+
+  protected submitUpdateEmployee(event: Event): void {
+    if (!this.canUpdateEmployee()) {
+      event.preventDefault();
+      this.toastService.error('Không có quyền thực hiện thao tác này.');
+      return;
+    }
+
+    event.preventDefault();
+    this.store.updateEmployee();
   }
 
   protected getRoleLabel(role: ManagementEmployeeRole): string {
@@ -190,4 +216,8 @@ function readInputValue(event: Event): string {
 
 function readSelectValue(event: Event): string {
   return event.target instanceof HTMLSelectElement ? event.target.value : '';
+}
+
+function readCheckboxValue(event: Event): boolean {
+  return event.target instanceof HTMLInputElement ? event.target.checked : false;
 }

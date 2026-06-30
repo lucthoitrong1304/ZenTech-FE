@@ -221,19 +221,19 @@ function handle401Error(
 
     if (refreshToken) {
       return authRefreshService.refresh(refreshToken).pipe(
-        switchMap((response) => {
-          isRefreshing = false;
-          authStorageService.setSession(response);
-          refreshTokenSubject.next({ status: 'success', accessToken: response.accessToken });
-
-          return next(addAuthorizationHeader(req, response.accessToken));
-        }),
         catchError((error) => {
           isRefreshing = false;
           expireSession(injector, authStorageService);
           refreshTokenSubject.next({ status: 'failure', error });
           navigateToLogin(router);
           return throwError(() => error);
+        }),
+        switchMap((response) => {
+          isRefreshing = false;
+          authStorageService.setSession(response);
+          refreshTokenSubject.next({ status: 'success', accessToken: response.accessToken });
+
+          return next(addAuthorizationHeader(req, response.accessToken));
         }),
       );
     } else {

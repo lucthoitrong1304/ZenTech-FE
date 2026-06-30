@@ -9,6 +9,7 @@ import {
   ManagementEmployeeCreateRequest,
   ManagementEmployeePage,
   ManagementEmployeeQuery,
+  ManagementEmployeeUpdateRequest,
   PageResponseDto,
 } from '../models/management-employee.models';
 
@@ -50,6 +51,15 @@ export class ManagementEmployeeService {
     return this.apiService
       .post<ManagementEmployeeCreateRequest, ApiResponseDto<EmployeeSummaryResponseDto>>(
         this.employeesBaseUrl,
+        payload
+      )
+      .pipe(map(response => toManagementEmployee(unwrapApiResponse(response))));
+  }
+
+  updateEmployee(employeeId: string, payload: ManagementEmployeeUpdateRequest): Observable<ManagementEmployee> {
+    return this.apiService
+      .patch<ManagementEmployeeUpdateRequest, ApiResponseDto<EmployeeSummaryResponseDto>>(
+        `${this.employeesBaseUrl}/${employeeId}`,
         payload
       )
       .pipe(map(response => toManagementEmployee(unwrapApiResponse(response))));
