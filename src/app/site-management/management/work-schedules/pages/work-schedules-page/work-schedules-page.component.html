@@ -1014,14 +1014,13 @@
               }
             </div>
 
-            <div class="work-schedules-coordinates-row" style="display: flex; gap: 12px; align-items: flex-end;">
-              <label class="work-schedules-field" style="flex: 1;">
+            <div class="work-schedules-coordinates-row">
+              <label class="work-schedules-field">
                 <span>Lat</span>
                 <input
-                  type="number"
-                  min="-90"
-                  max="90"
-                  step="0.000001"
+                  type="text"
+                  inputmode="decimal"
+                  autocomplete="off"
                   [value]="store.locationPolicyDraft().centerLatitude ?? ''"
                   (input)="onCenterCoordinateInput('centerLatitude', $event)"
                 />
@@ -1029,10 +1028,9 @@
               <label class="work-schedules-field">
                 <span>Lon</span>
                 <input
-                  type="number"
-                  min="-180"
-                  max="180"
-                  step="0.000001"
+                  type="text"
+                  inputmode="decimal"
+                  autocomplete="off"
                   [value]="store.locationPolicyDraft().centerLongitude ?? ''"
                   (input)="onCenterCoordinateInput('centerLongitude', $event)"
                 />
