@@ -1,6 +1,7 @@
+import '@angular/compiler';
 import { managementRoutes } from './management.routes';
-import { permissionGuard } from '../../core/guards/permission.guard';
 import { PermissionCode } from '../../core/permissions/permission.models';
+import { describe, expect, it } from 'vitest';
 
 describe('managementRoutes', () => {
   it('registers the category management page inside the management shell', () => {
@@ -10,6 +11,7 @@ describe('managementRoutes', () => {
     expect(categoryRoute).toBeTruthy();
     expect(categoryRoute?.data?.['title']).toBe('Danh mục sản phẩm');
     expect(categoryRoute?.data?.['permission']).toBe(PermissionCode.PRODUCT_VIEW);
-    expect(categoryRoute?.canActivate).toContain(permissionGuard);
+    expect(categoryRoute?.canActivate).toBeUndefined();
+    expect(categoryRoute?.loadComponent).toBeTypeOf('function');
   });
 });
