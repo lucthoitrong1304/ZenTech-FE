@@ -24,7 +24,7 @@
 
   <section class="overview-section">
     <div class="section-heading">
-      <div><span class="eyebrow">SỨC KHỎE HỆ THỐNG</span><h2>Tổng quan sức khỏe</h2><p>Host và tiến trình Java đang vận hành ZenTech.</p></div>
+          <span class="eyebrow">LỊCH SỬ TRẠNG THÁI</span>
       <div class="live-badge" [class.offline]="!data()?.prometheusAvailable"><span></span>{{ data()?.prometheusAvailable ? 'Dữ liệu đang cập nhật' : 'Mất kết nối Prometheus' }}</div>
     </div>
     <div class="health-grid">
@@ -44,7 +44,7 @@
             <em [class]="metricStatusClass(metric, current(metric.key))">{{ metricStatusLabel(metric, current(metric.key)) }}</em>
           </span>
           <span class="tone-dot" [class.warning]="resourceTone(current(metric.key)) === 'warning'" [class.critical]="resourceTone(current(metric.key)) === 'critical'"></span>
-          <span class="health-stats"><span>Trung bình <b>{{ formatMetric(average(metric.key), metric.unit) }}</b></span><span>Cao nhất <b>{{ formatMetric(maximum(metric.key), metric.unit) }}</b></span></span>
+          <span class="health-stats"><span>Độ trễ</span><span>Cao nhất <b>{{ formatMetric(maximum(metric.key), metric.unit) }}</b></span></span>
         </button>
       }
     </div>
@@ -196,7 +196,7 @@
             <div class="node-info">
               <span class="node-badge node-badge--metric">METRICS</span>
               <strong>Prometheus</strong>
-              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small><em class="node-meta">{{ dependencyMetaLabel(dep.name, dep.status) }}</em>
             </div>
           </button>
         }
@@ -206,7 +206,7 @@
           <div class="node-info">
             <span class="node-badge node-badge--fe">CLIENT APP</span>
             <strong>ZenTech FE</strong>
-            <small>Đang truy cập</small>
+            <small>Đang truy cập</small><em class="node-meta">{{ dependencyMetaLabel('ZenTech FE', 'UP') }}</em>
           </div>
         </button>
         <!-- Alloy Node -->
@@ -216,7 +216,7 @@
             <div class="node-info">
               <span class="node-badge node-badge--collector">TELEMETRY</span>
               <strong>Alloy</strong>
-              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small><em class="node-meta">{{ dependencyMetaLabel(dep.name, dep.status) }}</em>
             </div>
           </button>
         }
@@ -229,7 +229,7 @@
             <div class="node-info">
               <span class="node-badge node-badge--db">DATABASE</span>
               <strong>MySQL</strong>
-              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small><em class="node-meta">{{ dependencyMetaLabel(dep.name, dep.status) }}</em>
             </div>
           </button>
         }
@@ -239,7 +239,7 @@
           <div class="node-info">
             <span class="node-badge node-badge--be">CORE API</span>
             <strong>ZenTech Java BE</strong>
-            <small>{{ getCenterNodeStatus() === 'UP' ? 'Hoạt động tốt' : 'Không hoạt động' }}</small>
+            <small>{{ getCenterNodeStatus() === 'UP' ? 'Hoạt động tốt' : 'Không hoạt động' }}</small><em class="node-meta">{{ dependencyMetaLabel('ZenTech Java BE', getCenterNodeStatus()) }}</em>
           </div>
         </button>
         <!-- RabbitMQ Node -->
@@ -249,7 +249,7 @@
             <div class="node-info">
               <span class="node-badge node-badge--queue">BROKER</span>
               <strong>RabbitMQ</strong>
-              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small><em class="node-meta">{{ dependencyMetaLabel(dep.name, dep.status) }}</em>
             </div>
           </button>
         }
@@ -262,7 +262,7 @@
             <div class="node-info">
               <span class="node-badge node-badge--log">LOGS STORE</span>
               <strong>Loki</strong>
-              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small><em class="node-meta">{{ dependencyMetaLabel(dep.name, dep.status) }}</em>
             </div>
           </button>
         }
@@ -273,7 +273,7 @@
             <div class="node-info">
               <span class="node-badge node-badge--ai">AI ENGINE</span>
               <strong>ZenTech AI</strong>
-              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small><em class="node-meta">{{ dependencyMetaLabel(dep.name, dep.status) }}</em>
             </div>
           </button>
         }
@@ -284,11 +284,52 @@
             <div class="node-info">
               <span class="node-badge node-badge--vector">VECTOR DB</span>
               <strong>Qdrant</strong>
-              <small>{{ dependencyStatusLabel(dep.status) }}</small>
+              <small>{{ dependencyStatusLabel(dep.status) }}</small><em class="node-meta">{{ dependencyMetaLabel(dep.name, dep.status) }}</em>
             </div>
           </button>
         }
       </div>
+    </div>
+      <div class="status-history-panel">
+      <div class="status-history-heading">
+        <div>
+          <span class="eyebrow">LỊCH SỬ TRẠNG THÁI</span>
+          <h3>Thay đổi trạng thái kết nối</h3>
+          <p>Ghi lại khi service đổi trạng thái trong các lần refresh hoặc ping, vẫn giữ sơ đồ hiện tại ở phía trên.</p>
+        </div>
+        <div class="status-history-actions">
+          @for (filter of statusHistoryFilters; track filter.value) {
+            <button type="button" [class.active]="statusHistoryFilter() === filter.value" (click)="setStatusHistoryFilter(filter.value)">{{ filter.label }}</button>
+          }
+          <button type="button" class="clear-history-btn" (click)="clearStatusHistory()" [disabled]="statusHistoryEvents().length === 0">Xóa</button>
+        </div>
+      </div>
+
+      @if (filteredStatusHistory().length) {
+        <div class="status-history-table">
+          <div class="status-history-row status-history-row--head">
+            <span>Thời gian</span>
+            <span>Dịch vụ</span>
+            <span>Chuyển trạng thái</span>
+            <span>Độ trễ</span>
+            <span>Lý do</span>
+          </div>
+          @for (event of filteredStatusHistory(); track event.id) {
+            <div [class]="statusEventClass(event)">
+              <span>{{ event.timestamp | date:'HH:mm:ss dd/MM' }}</span>
+              <strong>{{ event.service }}</strong>
+              <span><i [class]="statusEventPillClass(event)">{{ statusEventKind(event) }}</i> {{ transitionLabel(event) }}</span>
+              <span>{{ latencyLabel(event.latencyMs) }}</span>
+              <span>{{ event.reason }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="status-history-empty">
+          <strong>Chưa có thay đổi trạng thái</strong>
+          <p>History sẽ xuất hiện khi service chuyển UP, DEGRADED hoặc DOWN trong các lần refresh/ping.</p>
+        </div>
+      }
     </div>
   </section>
 
@@ -356,6 +397,21 @@
           <div><small>Trạng thái</small><strong [class]="dependencyDetailStatusClass(detail.status)">{{ dependencyStatusLabel(detail.status) }}</strong></div>
           <div><small>Kiểm tra lúc</small><strong>{{ detail.lastCheckedAt | date:'HH:mm:ss dd/MM/yyyy' }}</strong></div>
         </section>
+
+        @if (detailHistoryFor(detail.name).length) {
+          <section class="dependency-detail-panel detail-history-panel">
+            <h3>Lịch sử gần đây</h3>
+            <div class="detail-history-list">
+              @for (event of detailHistoryFor(detail.name); track event.id) {
+                <div [class]="statusEventClass(event)">
+                  <span>{{ event.timestamp | date:'HH:mm:ss dd/MM' }}</span>
+                  <strong>{{ transitionLabel(event) }}</strong>
+                  <em [class]="statusEventPillClass(event)">{{ statusEventKind(event) }}</em>
+                </div>
+              }
+            </div>
+          </section>
+        }
 
         <section class="dependency-detail-panel connection-topology-panel">
           <h3>Mô hình kết nối & Kiểm tra phản hồi</h3>

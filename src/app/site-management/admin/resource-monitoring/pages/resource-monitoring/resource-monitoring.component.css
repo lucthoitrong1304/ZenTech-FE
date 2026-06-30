@@ -1422,3 +1422,177 @@ button.topo-node {
     display: block !important;
   }
 }
+/* Status history timeline */
+.node-meta {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.topo-node.dependency-card--down .node-meta { color: #fca5a5; }
+.topo-node.dependency-card--degraded .node-meta { color: #fcd34d; }
+
+.status-history-panel {
+  margin-top: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  background: #0b0f18;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+.status-history-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.72));
+}
+.status-history-heading h3 {
+  margin: 5px 0 0;
+  color: #f8fafc;
+  font-size: 18px;
+  line-height: 1.2;
+}
+.status-history-heading p {
+  margin: 6px 0 0;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.status-history-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.status-history-actions button {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 160ms ease;
+}
+.status-history-actions button:hover,
+.status-history-actions button.active {
+  border-color: rgba(129, 140, 248, 0.55);
+  background: rgba(79, 70, 229, 0.18);
+  color: #fff;
+}
+.status-history-actions .clear-history-btn {
+  border-color: rgba(248, 113, 113, 0.25);
+  color: #fca5a5;
+}
+.status-history-actions .clear-history-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.status-history-table {
+  display: flex;
+  flex-direction: column;
+}
+.status-history-row {
+  display: grid;
+  grid-template-columns: 126px minmax(120px, 0.8fr) minmax(190px, 1fr) 90px minmax(180px, 1.25fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.11);
+  color: #cbd5e1;
+  font-size: 12px;
+}
+.status-history-row:last-child { border-bottom: 0; }
+.status-history-row--head {
+  min-height: 40px;
+  background: rgba(15, 23, 42, 0.62);
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.status-history-row strong {
+  color: #f8fafc;
+  font-size: 12px;
+}
+.status-history-row > span:last-child {
+  overflow: hidden;
+  color: #94a3b8;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.status-history-row--down { box-shadow: inset 3px 0 0 rgba(239, 68, 68, 0.9); }
+.status-history-row--degraded { box-shadow: inset 3px 0 0 rgba(245, 158, 11, 0.9); }
+.status-history-row--up { box-shadow: inset 3px 0 0 rgba(16, 185, 129, 0.9); }
+.status-history-row--baseline { box-shadow: inset 3px 0 0 rgba(148, 163, 184, 0.7); }
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-right: 7px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+  line-height: 1;
+}
+.status-pill--up { background: rgba(16, 185, 129, 0.14); color: #34d399; }
+.status-pill--degraded { background: rgba(245, 158, 11, 0.14); color: #fbbf24; }
+.status-pill--down { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.status-pill--unknown { background: rgba(148, 163, 184, 0.14); color: #cbd5e1; }
+.status-pill--baseline { background: rgba(148, 163, 184, 0.14); color: #cbd5e1; }
+.status-history-empty {
+  display: flex;
+  min-height: 136px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 22px;
+  color: #94a3b8;
+  text-align: center;
+}
+.status-history-empty strong {
+  color: #f8fafc;
+  font-size: 14px;
+}
+.status-history-empty p {
+  margin: 7px 0 0;
+  max-width: 520px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.detail-history-panel .detail-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.detail-history-list .status-history-row {
+  grid-template-columns: 110px minmax(0, 1fr) auto;
+  min-height: 42px;
+  padding: 9px 11px;
+  border: 1px solid #edf2f7;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #475569;
+  box-shadow: none;
+}
+.detail-history-list .status-history-row strong { color: #0f172a; }
+
+@media (max-width: 900px) {
+  .status-history-heading { flex-direction: column; }
+  .status-history-actions { justify-content: flex-start; }
+  .status-history-table { overflow-x: auto; }
+  .status-history-row { min-width: 820px; }
+}

@@ -45,6 +45,27 @@ interface MetricDefinition {
   description: string;
 }
 
+type DependencyStatus = 'UP' | 'DEGRADED' | 'DOWN' | 'UNKNOWN';
+type StatusHistoryFilter = 'ALL' | 'ISSUES' | 'RECOVERED' | 'DEGRADED';
+
+interface DependencyStatusSnapshot {
+  name: string;
+  status: DependencyStatus;
+  checkedAt: string;
+  latencyMs: number | null;
+  reason: string;
+}
+
+interface DependencyStatusEvent {
+  id: string;
+  service: string;
+  fromStatus: DependencyStatus;
+  toStatus: DependencyStatus;
+  timestamp: string;
+  latencyMs: number | null;
+  reason: string;
+}
+
 @Component({
   selector: 'app-resource-monitoring',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,6 +77,8 @@ interface MetricDefinition {
   styleUrl: './resource-monitoring.component.css',
 })
 export class ResourceMonitoringComponent implements OnInit, OnDestroy {
+  private static readonly STATUS_HISTORY_STORAGE_KEY = 'zentech.observability.statusHistory.v1';
+  private static readonly STATUS_HISTORY_LIMIT = 20;
   private readonly service = inject(AdminObservabilityService);
   private readonly route = inject(ActivatedRoute);
 
@@ -71,12 +94,21 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
   protected readonly selectedDependencyDetail = signal<ObservabilityDependencyDetail | null>(null);
   protected readonly pingLoading = signal(false);
   protected readonly pingResult = signal<{ status: 'UP' | 'DEGRADED' | 'DOWN'; latencyMs: number } | null>(null);
+  protected readonly statusHistoryFilter = signal<StatusHistoryFilter>('ALL');
+  protected readonly statusHistoryEvents = signal<DependencyStatusEvent[]>(this.readStatusHistory());
+  protected readonly statusHistoryFilters: { value: StatusHistoryFilter; label: string }[] = [
+    { value: 'ALL', label: 'Tất cả' },
+    { value: 'ISSUES', label: 'Sự cố' },
+    { value: 'RECOVERED', label: 'Hồi phục' },
+    { value: 'DEGRADED', label: 'Chậm' },
+  ];
 
   protected dateRange: Date[] | null = null;
   protected readonly maxDate = new Date();
   private customFrom?: string;
   private customTo?: string;
   private tickTimer: ReturnType<typeof setInterval> | null = null;
+  private readonly dependencySnapshots = new Map<string, DependencyStatusSnapshot>();
 
   protected readonly metrics: MetricDefinition[] = [
     { key: 'cpuUsagePercent', name: 'CPU toàn máy', color: '#eab308', unit: '%', threshold: 75, description: 'Mức xử lý mà toàn bộ máy chủ đang sử dụng.' },
@@ -90,6 +122,15 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
 
   protected readonly selectedDefinition = computed(() =>
     this.metrics.find((metric) => metric.key === this.selectedMetric()) ?? this.metrics[0]);
+
+  protected readonly filteredStatusHistory = computed(() => {
+    const filter = this.statusHistoryFilter();
+    const events = this.statusHistoryEvents();
+    if (filter === 'ISSUES') return events.filter((event) => event.fromStatus !== 'UNKNOWN' && (event.toStatus === 'DOWN' || event.toStatus === 'DEGRADED'));
+    if (filter === 'RECOVERED') return events.filter((event) => event.toStatus === 'UP' && event.fromStatus !== 'UP' && event.fromStatus !== 'UNKNOWN');
+    if (filter === 'DEGRADED') return events.filter((event) => event.fromStatus !== 'UNKNOWN' && (event.toStatus === 'DEGRADED' || event.fromStatus === 'DEGRADED'));
+    return events;
+  });
 
   private readonly chronologicalHistory = computed(() =>
     [...(this.data()?.history ?? [])].sort(
@@ -345,7 +386,8 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
       primaryValue: null,
       primaryUnit: null,
       secondaryValue: null,
-      secondaryUnit: null
+      secondaryUnit: null,
+      latencyMs: null
     };
   }
 
@@ -358,7 +400,8 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
       primaryValue: null,
       primaryUnit: null,
       secondaryValue: null,
-      secondaryUnit: null
+      secondaryUnit: null,
+      latencyMs: null
     };
   }
 
@@ -399,6 +442,7 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
         next: (response) => {
           this.pingResult.set(response.data);
           if (response.data) {
+            this.recordDependencyStatus(detail.name, response.data.status, response.data.latencyMs, 'Ping thủ công');
             this.selectedDependencyDetail.update((current) => {
               if (!current) return null;
               return {
@@ -424,12 +468,77 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
     return `detail-status detail-status--${(status ?? 'DOWN').toLowerCase()}`;
   }
 
+
+  protected setStatusHistoryFilter(filter: StatusHistoryFilter): void {
+    this.statusHistoryFilter.set(filter);
+  }
+
+  protected clearStatusHistory(): void {
+    this.statusHistoryEvents.set([]);
+    this.persistStatusHistory([]);
+  }
+
+  protected statusLabel(status: DependencyStatus | string | null | undefined): string {
+    if (status === 'UP') return 'Hoạt động tốt';
+    if (status === 'DEGRADED') return 'Chậm / cần chú ý';
+    if (status === 'DOWN') return 'Mất kết nối';
+    return 'Chưa rõ';
+  }
+
+  protected statusPillClass(status: DependencyStatus | string | null | undefined): string {
+    return `status-pill status-pill--${(status || 'UNKNOWN').toString().toLowerCase()}`;
+  }
+
+  protected statusEventPillClass(event: DependencyStatusEvent): string {
+    if (event.fromStatus === 'UNKNOWN') return 'status-pill status-pill--baseline';
+    return this.statusPillClass(event.toStatus);
+  }
+
+  protected transitionLabel(event: DependencyStatusEvent): string {
+    return `${this.shortStatusLabel(event.fromStatus)} -> ${this.shortStatusLabel(event.toStatus)}`;
+  }
+
+  protected statusEventKind(event: DependencyStatusEvent): string {
+    if (event.fromStatus === 'UNKNOWN') return 'Theo dõi';
+    if (event.toStatus === 'UP' && event.fromStatus !== 'UP') return 'Hồi phục';
+    if (event.toStatus === 'DOWN') return 'Sự cố';
+    if (event.toStatus === 'DEGRADED') return 'Chậm';
+    return 'Thay đổi';
+  }
+
+  protected statusEventClass(event: DependencyStatusEvent): string {
+    if (event.fromStatus === 'UNKNOWN') return 'status-history-row status-history-row--baseline';
+    return `status-history-row status-history-row--${event.toStatus.toLowerCase()}`;
+  }
+
+  protected latencyLabel(latencyMs: number | null): string {
+    return latencyMs == null ? 'N/A' : `${latencyMs.toFixed(latencyMs >= 100 ? 0 : 1)} ms`;
+  }
+
+  protected dependencyMetaLabel(name: string, status?: string): string {
+    const snapshot = this.dependencySnapshots.get(name);
+    const currentStatus = this.normalizeStatus(status ?? snapshot?.status);
+    if (!snapshot) return 'Chưa kiểm tra';
+    if (currentStatus === 'DOWN') return `Mất kết nối ${this.elapsedLabel(snapshot.checkedAt)}`;
+    if (currentStatus === 'DEGRADED') return `Chậm ${this.elapsedLabel(snapshot.checkedAt)}`;
+    return `Kiểm tra ${this.formatTime(snapshot.checkedAt)}`;
+  }
+
+  protected detailHistoryFor(name: string): DependencyStatusEvent[] {
+    return this.statusHistoryEvents().filter((event) => event.service === name).slice(0, 5);
+  }
   private load(silent = false): void {
     if (!silent) this.isLoading.set(true);
     this.error.set(null);
     this.service.getObservability(this.period(), this.customFrom, this.customTo)
       .pipe(finalize(() => { this.isLoading.set(false); this.refreshIn.set(15); }))
-      .subscribe({ next: (response) => this.data.set(response.data), error: () => this.error.set('Không thể tải dữ liệu observability. Vui lòng thử lại.') });
+      .subscribe({
+        next: (response) => {
+          this.recordDependencyStatusChanges(response.data);
+          this.data.set(response.data);
+        },
+        error: () => this.error.set('Không thể tải dữ liệu observability. Vui lòng thử lại.')
+      });
   }
 
   private formatChartTime(timestamp: string): string {
@@ -437,5 +546,144 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
     return this.period() === 'TODAY'
       ? date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
       : date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+  }
+
+  private recordDependencyStatusChanges(data: AdminObservabilityData | null): void {
+    if (!data) return;
+    const checkedAt = data.generatedAt || new Date().toISOString();
+    const snapshots = this.buildDependencySnapshots(data, checkedAt);
+    if (this.dependencySnapshots.size === 0) {
+      snapshots.forEach((snapshot) => this.dependencySnapshots.set(snapshot.name, snapshot));
+      if (this.statusHistoryEvents().length === 0) {
+        const baselineEvents = snapshots
+          .map((snapshot) => this.createStatusEvent({ ...snapshot, status: 'UNKNOWN', reason: 'Chưa có trạng thái trước đó' }, snapshot))
+          .slice(0, ResourceMonitoringComponent.STATUS_HISTORY_LIMIT);
+        this.statusHistoryEvents.set(baselineEvents);
+        this.persistStatusHistory(baselineEvents);
+      }
+      return;
+    }
+
+    const newEvents: DependencyStatusEvent[] = [];
+    snapshots.forEach((snapshot) => {
+      const previous = this.dependencySnapshots.get(snapshot.name);
+      if (previous && previous.status !== snapshot.status) {
+        newEvents.push(this.createStatusEvent(previous, snapshot));
+      }
+      this.dependencySnapshots.set(snapshot.name, previous && previous.status === snapshot.status
+        ? { ...snapshot, checkedAt: previous.checkedAt }
+        : snapshot);
+    });
+
+    if (newEvents.length > 0) {
+      const next = [...newEvents.reverse(), ...this.statusHistoryEvents()].slice(0, ResourceMonitoringComponent.STATUS_HISTORY_LIMIT);
+      this.statusHistoryEvents.set(next);
+      this.persistStatusHistory(next);
+    }
+  }
+
+  private recordDependencyStatus(name: string, status: DependencyStatus | string, latencyMs: number | null, reason: string): void {
+    const snapshot: DependencyStatusSnapshot = {
+      name,
+      status: this.normalizeStatus(status),
+      checkedAt: new Date().toISOString(),
+      latencyMs,
+      reason,
+    };
+    const previous = this.dependencySnapshots.get(name);
+    if (previous && previous.status !== snapshot.status) {
+      const event = this.createStatusEvent(previous, snapshot);
+      const next = [event, ...this.statusHistoryEvents()].slice(0, ResourceMonitoringComponent.STATUS_HISTORY_LIMIT);
+      this.statusHistoryEvents.set(next);
+      this.persistStatusHistory(next);
+    }
+    this.dependencySnapshots.set(name, previous && previous.status === snapshot.status
+      ? { ...snapshot, checkedAt: previous.checkedAt }
+      : snapshot);
+  }
+
+  private buildDependencySnapshots(data: AdminObservabilityData, checkedAt: string): DependencyStatusSnapshot[] {
+    return [
+      {
+        name: 'ZenTech FE',
+        status: 'UP',
+        checkedAt,
+        latencyMs: null,
+        reason: 'Client FE đang hoạt động trong trình duyệt',
+      },
+      {
+        name: 'ZenTech Java BE',
+        status: this.normalizeStatus(data ? 'UP' : 'DOWN'),
+        checkedAt,
+        latencyMs: data.api.averageLatencyMs,
+        reason: data ? 'API giám sát phản hồi' : 'API giám sát không phản hồi',
+      },
+      ...data.dependencies.map((dependency) => ({
+        name: dependency.name,
+        status: this.normalizeStatus(dependency.status),
+        checkedAt,
+        latencyMs: dependency.latencyMs,
+        reason: dependency.detail || this.statusLabel(dependency.status),
+      })),
+    ];
+  }
+
+  private createStatusEvent(previous: DependencyStatusSnapshot, current: DependencyStatusSnapshot): DependencyStatusEvent {
+    return {
+      id: `${current.name}-${current.checkedAt}-${previous.status}-${current.status}`,
+      service: current.name,
+      fromStatus: previous.status,
+      toStatus: current.status,
+      timestamp: current.checkedAt,
+      latencyMs: current.latencyMs,
+      reason: current.reason,
+    };
+  }
+
+  private normalizeStatus(status: DependencyStatus | string | null | undefined): DependencyStatus {
+    if (status === 'UP' || status === 'DEGRADED' || status === 'DOWN') return status;
+    return 'UNKNOWN';
+  }
+
+  private shortStatusLabel(status: DependencyStatus): string {
+    if (status === 'UP') return 'Hoạt động';
+    if (status === 'DEGRADED') return 'Chậm';
+    if (status === 'DOWN') return 'Mất kết nối';
+    return 'Bắt đầu theo dõi';
+  }
+
+  private formatTime(timestamp: string): string {
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return 'N/A';
+    return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  private elapsedLabel(timestamp: string): string {
+    const start = new Date(timestamp).getTime();
+    if (!Number.isFinite(start)) return '';
+    const totalSeconds = Math.max(0, Math.floor((Date.now() - start) / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    if (minutes >= 60) return `${Math.floor(minutes / 60)} giờ ${minutes % 60} phút`;
+    if (minutes > 0) return `${minutes} phút ${seconds} giây`;
+    return `${seconds} giây`;
+  }
+
+  private readStatusHistory(): DependencyStatusEvent[] {
+    try {
+      const raw = localStorage.getItem(ResourceMonitoringComponent.STATUS_HISTORY_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.slice(0, ResourceMonitoringComponent.STATUS_HISTORY_LIMIT) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private persistStatusHistory(events: DependencyStatusEvent[]): void {
+    try {
+      localStorage.setItem(ResourceMonitoringComponent.STATUS_HISTORY_STORAGE_KEY, JSON.stringify(events.slice(0, ResourceMonitoringComponent.STATUS_HISTORY_LIMIT)));
+    } catch {
+      // Ignore storage failures; live monitoring should keep running.
+    }
   }
 }
