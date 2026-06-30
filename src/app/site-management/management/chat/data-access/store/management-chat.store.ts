@@ -255,9 +255,12 @@ export const ManagementChatStore = signalStore(
           null
       ),
       canReplyToSelectedConversation: computed(
-        () =>
-          conversationEntities().find(conversation => conversation.id === selectedConversationId())
-            ?.status === 'STAFF_HANDLING'
+        () => {
+          const conversation = conversationEntities().find(
+            item => item.id === selectedConversationId()
+          );
+          return conversation?.status === 'STAFF_HANDLING' && conversation.currentStaffActive;
+        }
       ),
       selectedMessages: computed(() =>
         messageEntities().filter(message => message.conversationId === selectedConversationId())
@@ -693,6 +696,45 @@ export const ManagementChatStore = signalStore(
       )
     );
 
+    const leaveConversation = rxMethod<void>(
+      pipe(
+        switchMap(() => {
+          const conversationId = store.selectedConversationId();
+          if (!conversationId) return EMPTY;
+
+          patchState(store, { loading: true, errorMessage: null });
+
+          return managementChatService.leaveConversation(conversationId).pipe(
+            tap((updatedConv) => {
+              const mapped = managementChatService.mapToManagementChatConversation(updatedConv);
+              patchState(
+                store,
+                updateEntity(
+                  { id: conversationId, changes: mapped },
+                  CONVERSATION_ENTITY_CONFIG
+                ),
+                {
+                  loading: false,
+                  selectedConversationId: null,
+                  mediaDrawerOpen: false,
+                  searchSidebarOpen: false,
+                  activeMediaTab: 'ALL',
+                  messagesLoading: false,
+                }
+              );
+            }),
+            catchError(() => {
+              patchState(store, {
+                loading: false,
+                errorMessage: 'Không thể rời hội thoại. Vui lòng thử lại.',
+              });
+              return EMPTY;
+            })
+          );
+        })
+      )
+    );
+
     const loadActiveStaffList = rxMethod<void>(
       pipe(
         switchMap(() =>
@@ -987,6 +1029,7 @@ export const ManagementChatStore = signalStore(
       },
       acceptConversation,
       closeConversation,
+      leaveConversation,
       loadActiveStaffList,
       transferConversation,
       sendStaffMessage,
