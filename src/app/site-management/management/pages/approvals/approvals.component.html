@@ -1,54 +1,191 @@
-<div class="approvals-page">
-  <div class="approvals-command">
-    <div class="approvals-command__copy">
-      <span class="approvals-kicker">Điều hành nhân sự</span>
-      <h1>Duyệt yêu cầu</h1>
-      <p>Phê duyệt các yêu cầu Nghỉ, WFH, AFK và loại phép do owner cấu hình.</p>
+<div class="approvals-page max-w-6xl mx-auto p-6">
+  <div class="approvals-header flex justify-between items-center border-b pb-4 mb-6">
+    <div>
+      <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 block">Dành cho quản lý</span>
+      <h1 class="text-2xl font-extrabold text-gray-800">Duyệt yêu cầu</h1>
+      <p class="text-sm text-gray-500">Phê duyệt hoặc từ chối các yêu cầu Nghỉ phép, Đổi ca, và Chỉnh sửa công của nhân viên.</p>
     </div>
-    <button (click)="loadPendingLeaves()" class="approvals-refresh-btn" title="Tải lại dữ liệu">
-      <svg lucideRefreshCw class="w-4 h-4"></svg>
+    <button (click)="loadAllPending()" class="p-2 text-gray-500 hover:text-blue-600 transition rounded-lg hover:bg-gray-100 flex items-center gap-1.5 text-sm font-semibold">
+      <svg lucideRefreshCw class="w-4 h-4" [class.animate-spin]="loading()"></svg>
+      Làm mới
     </button>
   </div>
 
-  <div class="approvals-table-panel">
-    <div class="approvals-table-wrap">
-      <table class="approvals-table">
-        <thead>
-          <tr>
-            <th scope="col">Nhân viên</th>
-            <th scope="col">Thời gian</th>
-            <th scope="col">Loại phép</th>
-            <th scope="col">Lý do</th>
-            <th scope="col" class="text-right">Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (req of leaves(); track req.id) {
+  <!-- Tab Buttons -->
+  <div class="approvals-tabs flex border-b border-gray-200 mb-6 bg-white p-2 rounded-lg shadow-sm">
+    <button (click)="switchTab('leave')" [class.active]="activeTab() === 'leave'" class="tab-btn">
+      Yêu cầu nghỉ / WFH / AFK ({{ leaves().length }})
+    </button>
+    <button (click)="switchTab('swap')" [class.active]="activeTab() === 'swap'" class="tab-btn">
+      Yêu cầu đổi ca ({{ swaps().length }})
+    </button>
+    <button (click)="switchTab('adjust')" [class.active]="activeTab() === 'adjust'" class="tab-btn">
+      Yêu cầu chỉnh công ({{ adjustments().length }})
+    </button>
+  </div>
+
+  <!-- Content panels -->
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    
+    <!-- TAB 1: PENDING LEAVE REQUESTS -->
+    <div *ngIf="activeTab() === 'leave'" class="animate-fade-in">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50 text-left">
             <tr>
-              <td><strong>{{ req.employee.fullName }}</strong></td>
-              <td>{{ requestTimeLabel(req) }}</td>
-              <td>
-                <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-md">
-                  {{ req.leaveType?.name || 'Yêu cầu' }}
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Nhân viên</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Loại đề xuất</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Thời gian</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Lý do</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-right" *ngIf="canApprove()">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-150 bg-white">
+            <tr *ngFor="let req of leaves()" class="hover:bg-gray-50 transition">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-gray-900">{{ req.employee.fullName }}</div>
+                <div class="text-xs text-gray-500">{{ req.employee.email }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-blue-50 text-blue-800 border border-blue-100">
+                  {{ req.leaveType?.name ?? 'Chưa phân loại' }}
+                </span>
+                <span *ngIf="req.status === 'CANCEL_PENDING'" class="ml-2 px-2.5 py-1 text-xs font-bold rounded-full bg-orange-50 text-orange-800 border border-orange-100">
+                  Yêu cầu Hủy
                 </span>
               </td>
-              <td>{{ req.reason }}</td>
-              <td>
-                <div class="flex justify-end gap-2">
-                  <button [disabled]="!canApprove()" (click)="approveLeave(req.id, 'APPROVED')" class="approvals-action-btn approvals-action-btn--approve" title="Phê duyệt">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold">
+                {{ requestTimeLabel(req) }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" [title]="req.reason">
+                "{{ req.reason }}"
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" *ngIf="canApprove()">
+                <div class="inline-flex gap-2">
+                  <button (click)="approveLeave(req.id, 'APPROVED')" class="btn-approve flex items-center justify-center p-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition" [title]="req.status === 'CANCEL_PENDING' ? 'Duyệt Hủy' : 'Duyệt'">
                     <svg lucideCheck class="w-4 h-4"></svg>
                   </button>
-                  <button [disabled]="!canApprove()" (click)="approveLeave(req.id, 'REJECTED')" class="approvals-action-btn approvals-action-btn--reject" title="Từ chối">
+                  <button (click)="approveLeave(req.id, 'REJECTED')" class="btn-reject flex items-center justify-center p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" [title]="req.status === 'CANCEL_PENDING' ? 'Từ chối Hủy' : 'Từ chối'">
                     <svg lucideX class="w-4 h-4"></svg>
                   </button>
                 </div>
               </td>
             </tr>
-          } @empty {
-            <tr><td colspan="5" class="text-center py-8 text-gray-500">Không có yêu cầu nào cần duyệt.</td></tr>
-          }
-        </tbody>
-      </table>
+            <tr *ngIf="leaves().length === 0">
+              <td colspan="5" class="px-6 py-10 text-center text-gray-500">Chưa có yêu cầu nghỉ nào cần duyệt.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+
+    <!-- TAB 2: PENDING SWAP REQUESTS -->
+    <div *ngIf="activeTab() === 'swap'" class="animate-fade-in">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50 text-left">
+            <tr>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Người gửi</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Đồng nghiệp liên quan</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Nội dung đổi ca</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Lý do</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-right" *ngIf="canApprove()">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-150 bg-white">
+            <tr *ngFor="let req of swaps()" class="hover:bg-gray-50 transition">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-gray-900">{{ req.requester.fullName }}</div>
+                <div class="text-xs text-gray-500">{{ req.requester.email }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-gray-900">{{ req.targetEmployee.fullName }}</div>
+                <div class="text-xs text-gray-500">{{ req.targetEmployee.email }}</div>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-700">
+                <div class="font-semibold text-blue-900">{{ req.type === 'SWAP' ? 'Đổi ca trực chéo' : 'Nhờ trực thay' }}</div>
+                <div class="text-xs text-gray-500 mt-0.5">{{ formatSwapSubtitle(req) }}</div>
+                <span *ngIf="req.status === 'CANCEL_PENDING'" class="inline-block mt-1 px-2.5 py-0.5 text-xs font-bold rounded-full bg-orange-50 text-orange-800 border border-orange-100">
+                  Yêu cầu Hủy
+                </span>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" [title]="req.reason">
+                "{{ req.reason }}"
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" *ngIf="canApprove()">
+                <div class="inline-flex gap-2">
+                  <button (click)="approveSwap(req.id, 'APPROVED')" class="btn-approve flex items-center justify-center p-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition" [title]="req.status === 'CANCEL_PENDING' ? 'Duyệt Hủy' : 'Duyệt'">
+                    <svg lucideCheck class="w-4 h-4"></svg>
+                  </button>
+                  <button (click)="approveSwap(req.id, 'REJECTED')" class="btn-reject flex items-center justify-center p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" [title]="req.status === 'CANCEL_PENDING' ? 'Từ chối Hủy' : 'Từ chối'">
+                    <svg lucideX class="w-4 h-4"></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="swaps().length === 0">
+              <td colspan="5" class="px-6 py-10 text-center text-gray-500">Chưa có yêu cầu đổi ca nào cần duyệt.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: PENDING ATTENDANCE ADJUSTMENT REQUESTS -->
+    <div *ngIf="activeTab() === 'adjust'" class="animate-fade-in">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50 text-left">
+            <tr>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Nhân viên</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Loại điều chỉnh</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Ngày cần sửa</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Giờ đề xuất</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Lý do</th>
+              <th class="px-6 py-3 text-xs font-bold text-gray-500 uppercase text-right" *ngIf="canApprove()">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-150 bg-white">
+            <tr *ngFor="let req of adjustments()" class="hover:bg-gray-50 transition">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-gray-900">{{ req.employee.fullName }}</div>
+                <div class="text-xs text-gray-500">{{ req.employee.email }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-purple-50 text-purple-800 border border-purple-100">
+                  {{ getAdjustmentTypeLabel(req.type) }}
+                </span>
+                <span *ngIf="req.status === 'CANCEL_PENDING'" class="ml-2 px-2.5 py-1 text-xs font-bold rounded-full bg-orange-50 text-orange-800 border border-orange-100">
+                  Yêu cầu Hủy
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold">
+                {{ req.workDate }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">
+                {{ shortTime(req.proposedTime) }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" [title]="req.reason">
+                "{{ req.reason }}"
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" *ngIf="canApprove()">
+                <div class="inline-flex gap-2">
+                  <button (click)="approveAdjustment(req.id, 'APPROVED')" class="btn-approve flex items-center justify-center p-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition" [title]="req.status === 'CANCEL_PENDING' ? 'Duyệt Hủy' : 'Duyệt'">
+                    <svg lucideCheck class="w-4 h-4"></svg>
+                  </button>
+                  <button (click)="approveAdjustment(req.id, 'REJECTED')" class="btn-reject flex items-center justify-center p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" [title]="req.status === 'CANCEL_PENDING' ? 'Từ chối Hủy' : 'Từ chối'">
+                    <svg lucideX class="w-4 h-4"></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="adjustments().length === 0">
+              <td colspan="6" class="px-6 py-10 text-center text-gray-500">Chưa có yêu cầu chỉnh công nào cần duyệt.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>

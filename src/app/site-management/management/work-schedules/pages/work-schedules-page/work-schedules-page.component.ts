@@ -43,6 +43,8 @@ import { WorkScheduleStore } from '../../data-access/store/work-schedule.store';
 import { PermissionService } from '../../../../../core/permissions/permission.service';
 import { PermissionCode } from '../../../../../core/permissions/permission.models';
 
+type ShiftSettingsPanel = 'time' | 'rules';
+
 @Component({
   selector: 'app-work-schedules-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -76,11 +78,14 @@ export class WorkSchedulesPageComponent implements OnDestroy {
 
   protected readonly store = inject(WorkScheduleStore);
   private readonly permissionService = inject(PermissionService);
-  protected readonly canUpdateSchedule = computed(() => this.permissionService.has(PermissionCode.SCHEDULE_UPDATE));
+  protected readonly canUpdateSchedule = computed(() =>
+    this.permissionService.has(PermissionCode.SCHEDULE_UPDATE),
+  );
   private readonly toastService = inject(ToastService);
   protected readonly pageSlots = Array.from({ length: 5 }, (_, index) => index);
   protected readonly hasMapTilerApiKey = !!environment.mapTilerApiKey;
   protected readonly locatingCurrentPosition = signal(false);
+  protected readonly shiftSettingsPanels = signal<Record<string, ShiftSettingsPanel>>({});
   private locationMap?: L.Map;
   private locationTileLayer?: L.TileLayer;
   private locationCircleLayer?: L.Circle;
@@ -159,6 +164,61 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     this.store.updateShiftDraft(shiftId, { [field]: normalizeTime(readInputValue(event)) });
   }
 
+  protected getShiftSettingsPanel(shiftId: string): ShiftSettingsPanel {
+    return this.shiftSettingsPanels()[shiftId] ?? 'rules';
+  }
+
+  protected setShiftSettingsPanel(shiftId: string, panel: ShiftSettingsPanel): void {
+    this.shiftSettingsPanels.update((panels) => ({ ...panels, [shiftId]: panel }));
+  }
+
+  protected onShiftNumberInput(
+    shiftId: string,
+    field:
+      | 'earlyCheckInMinutes'
+      | 'lateCheckOutMinutes'
+      | 'onTimeCheckInStartMinutes'
+      | 'onTimeCheckInEndMinutes'
+      | 'onTimeCheckOutStartMinutes'
+      | 'onTimeCheckOutEndMinutes',
+    event: Event,
+  ): void {
+    this.store.updateShiftDraft(shiftId, { [field]: readNumberValue(event) });
+  }
+
+  protected getOnTimeCheckInRange(
+    shift: Pick<Shift, 'onTimeCheckInStartMinutes' | 'onTimeCheckInEndMinutes'>,
+  ): number {
+    return Math.max(shift.onTimeCheckInStartMinutes, shift.onTimeCheckInEndMinutes);
+  }
+
+  protected getOnTimeCheckOutRange(
+    shift: Pick<Shift, 'onTimeCheckOutStartMinutes' | 'onTimeCheckOutEndMinutes'>,
+  ): number {
+    return Math.max(shift.onTimeCheckOutStartMinutes, shift.onTimeCheckOutEndMinutes);
+  }
+
+  protected onShiftOnTimeRangeInput(
+    shiftId: string,
+    action: 'checkIn' | 'checkOut',
+    event: Event,
+  ): void {
+    const value = readNumberValue(event);
+
+    this.store.updateShiftDraft(
+      shiftId,
+      action === 'checkIn'
+        ? {
+            onTimeCheckInStartMinutes: value,
+            onTimeCheckInEndMinutes: value,
+          }
+        : {
+            onTimeCheckOutStartMinutes: value,
+            onTimeCheckOutEndMinutes: value,
+          },
+    );
+  }
+
   protected onNewShiftInput(field: 'name' | 'colorCode' | 'type', event: Event): void {
     const value = field === 'type' ? readSelectValue(event) : readInputValue(event);
     this.store.updateNewShiftDraft({ [field]: value });
@@ -166,6 +226,35 @@ export class WorkSchedulesPageComponent implements OnDestroy {
 
   protected onNewShiftTimeInput(field: 'startTime' | 'endTime', event: Event): void {
     this.store.updateNewShiftDraft({ [field]: normalizeTime(readInputValue(event)) });
+  }
+
+  protected onNewShiftNumberInput(
+    field:
+      | 'earlyCheckInMinutes'
+      | 'lateCheckOutMinutes'
+      | 'onTimeCheckInStartMinutes'
+      | 'onTimeCheckInEndMinutes'
+      | 'onTimeCheckOutStartMinutes'
+      | 'onTimeCheckOutEndMinutes',
+    event: Event,
+  ): void {
+    this.store.updateNewShiftDraft({ [field]: readNumberValue(event) });
+  }
+
+  protected onNewShiftOnTimeRangeInput(action: 'checkIn' | 'checkOut', event: Event): void {
+    const value = readNumberValue(event);
+
+    this.store.updateNewShiftDraft(
+      action === 'checkIn'
+        ? {
+            onTimeCheckInStartMinutes: value,
+            onTimeCheckInEndMinutes: value,
+          }
+        : {
+            onTimeCheckOutStartMinutes: value,
+            onTimeCheckOutEndMinutes: value,
+          },
+    );
   }
 
   protected onPolicyEnabledChange(event: Event): void {
@@ -182,7 +271,7 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     this.renderLocationOverlay();
   }
 
-  protected onCircleCoordinateInput(
+  protected onCenterCoordinateInput(
     field: 'centerLatitude' | 'centerLongitude',
     event: Event,
   ): void {
@@ -197,11 +286,23 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     if (tab === 'location') {
       window.setTimeout(() => {
         this.ensureLocationMap();
-        this.requestCurrentLocationCenter();
+        
+        const policy = this.store.locationPolicyDraft();
+        const hasValidCoords = (policy.shapeType === 'CIRCLE' && isValidLatitude(policy.centerLatitude) && isValidLongitude(policy.centerLongitude)) || 
+                               (policy.shapeType === 'POLYGON' && policy.polygonPoints && policy.polygonPoints.length > 0);
+
+        if (!hasValidCoords) {
+          this.requestCurrentLocationCenter();
+        }
       }, 0);
     } else {
       this.destroyLocationMap();
     }
+  }
+
+  protected onGetGPSClick(): void {
+    this.currentLocationRequested = false;
+    this.requestCurrentLocationCenter();
   }
 
   protected closeSettingsModal(): void {
@@ -304,24 +405,19 @@ export class WorkSchedulesPageComponent implements OnDestroy {
         }).addTo(this.locationMap);
       }
 
-      if (this.locationCircleCenterLayer) {
-        this.locationCircleCenterLayer.setLatLng(center);
-      } else {
-        this.locationCircleCenterLayer = L.circleMarker(center, {
-          radius: 6,
-          color: '#ffffff',
-          fillColor: '#4f46e5',
-          fillOpacity: 1,
-          weight: 2,
-          interactive: false,
-        }).addTo(this.locationMap);
-      }
+      this.renderLocationCenterMarker(center);
       return;
     }
 
-    this.clearCircleOverlay();
+    this.clearCircleRadiusOverlay();
     this.clearPolygonOverlay();
     this.locationPointLayer?.clearLayers();
+
+    if (isValidLatitude(policy.centerLatitude) && isValidLongitude(policy.centerLongitude)) {
+      this.renderLocationCenterMarker([policy.centerLatitude, policy.centerLongitude]);
+    } else {
+      this.clearLocationCenterMarker();
+    }
 
     const polygonPoints = policy.polygonPoints.map(
       (point) => [point.lat, point.lng] as L.LatLngExpression,
@@ -361,9 +457,36 @@ export class WorkSchedulesPageComponent implements OnDestroy {
   }
 
   private clearCircleOverlay(): void {
+    this.clearCircleRadiusOverlay();
+    this.clearLocationCenterMarker();
+  }
+
+  private clearCircleRadiusOverlay(): void {
     this.locationCircleLayer?.remove();
-    this.locationCircleCenterLayer?.remove();
     this.locationCircleLayer = undefined;
+  }
+
+  private renderLocationCenterMarker(center: L.LatLngExpression): void {
+    if (!this.locationMap) {
+      return;
+    }
+
+    if (this.locationCircleCenterLayer) {
+      this.locationCircleCenterLayer.setLatLng(center);
+    } else {
+      this.locationCircleCenterLayer = L.circleMarker(center, {
+        radius: 6,
+        color: '#ffffff',
+        fillColor: '#4f46e5',
+        fillOpacity: 1,
+        weight: 2,
+        interactive: false,
+      }).addTo(this.locationMap);
+    }
+  }
+
+  private clearLocationCenterMarker(): void {
+    this.locationCircleCenterLayer?.remove();
     this.locationCircleCenterLayer = undefined;
   }
 
@@ -449,8 +572,10 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     );
   }
 
-  protected getShiftForDate(employee: EmployeeWeeklySchedule, workDate: string): DailyShift | null {
-    return employee.shifts.find((shift) => shift.workDate === workDate) ?? null;
+  protected getShiftsForDate(employee: EmployeeWeeklySchedule, workDate: string): DailyShift[] {
+    return employee.shifts
+      .filter((shift) => shift.workDate === workDate)
+      .sort((first, second) => (first.startTime ?? '').localeCompare(second.startTime ?? ''));
   }
 
   protected getDayLabel(workDate: string): string {
@@ -477,6 +602,22 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     }
 
     return `${formatTime(shift.startTime)} - ${formatTime(shift.endTime)}`;
+  }
+
+  protected getDayCoverageLabel(shifts: DailyShift[]): string {
+    if (shifts.length === 0) {
+      return 'Chưa xếp lịch';
+    }
+
+    const sortedShifts = [...shifts].sort((first, second) =>
+      (first.startTime ?? '').localeCompare(second.startTime ?? ''),
+    );
+
+    return `${formatTime(sortedShifts[0].startTime)} - ${formatTime(sortedShifts[sortedShifts.length - 1].endTime)}`;
+  }
+
+  protected isShiftAssigned(shifts: DailyShift[], shiftId: string): boolean {
+    return shifts.some((shift) => shift.shiftId === shiftId);
   }
 
   protected getEmployeeInitials(employeeName: string): string {

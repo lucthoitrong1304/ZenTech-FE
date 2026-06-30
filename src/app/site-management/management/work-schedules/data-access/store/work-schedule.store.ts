@@ -183,11 +183,18 @@ export const WorkScheduleStore = signalStore(
       totalPages: number;
       last: boolean;
     }): void => {
+      const selectedCell = store.selectedCell();
+      const refreshedCell = selectedCell ? refreshSelectedCell(selectedCell, page.employees) : null;
+
       patchState(store, {
         employees: page.employees,
         totalElements: page.totalElements,
         totalPages: page.totalPages,
         last: page.last,
+        selectedCell: refreshedCell,
+        assignShiftId: refreshedCell
+          ? getFirstAssignableShiftId(store.shifts(), refreshedCell.shifts)
+          : store.assignShiftId(),
         query: {
           ...store.query(),
           page: page.page,
@@ -216,7 +223,7 @@ export const WorkScheduleStore = signalStore(
                   locationPolicyDraft: cloneLocationPolicy(result.locationPolicy),
                 });
               },
-              error: () =>
+              error: (err: any) =>
                 patchState(store, {
                   employees: [],
                   shifts: [],
@@ -224,7 +231,7 @@ export const WorkScheduleStore = signalStore(
                   totalPages: 0,
                   last: true,
                   loading: false,
-                  errorMessage: 'Không thể tải lịch làm việc.',
+                  errorMessage: err.error?.message || 'Không thể tải lịch làm việc.',
                 }),
             }),
             catchError(() => EMPTY),
@@ -240,10 +247,10 @@ export const WorkScheduleStore = signalStore(
         .pipe(
           tap({
             next: (page) => applyPage(page),
-            error: () =>
+            error: (err: any) =>
               patchState(store, {
                 loading: false,
-                errorMessage: 'Không thể tải lại lịch làm việc.',
+                errorMessage: err.error?.message || 'Không thể tải lại lịch làm việc.',
               }),
           }),
           catchError(() => EMPTY),
@@ -276,21 +283,52 @@ export const WorkScheduleStore = signalStore(
                 next: () => {
                   patchState(store, {
                     saving: false,
-                    assignModalOpen: false,
-                    selectedCell: null,
                     assignShiftId: '',
-                    successMessage: 'Đã cập nhật ca làm việc.',
+                    successMessage: 'Đã thêm ca làm việc.',
                   });
                   reloadSchedules();
                 },
-                error: () =>
+                 error: (err: any) =>
                   patchState(store, {
                     saving: false,
-                    errorMessage: 'Không thể cập nhật ca làm việc.',
+                    errorMessage: err.error?.message || 'Không thể cập nhật ca làm việc.',
                   }),
               }),
               catchError(() => EMPTY),
             );
+        }),
+      ),
+    );
+
+    const deleteScheduleAssignment = rxMethod<string>(
+      pipe(
+        switchMap((employeeShiftId) => {
+          if (!employeeShiftId) {
+            return EMPTY;
+          }
+
+          patchState(store, { saving: true, errorMessage: null, successMessage: null });
+
+          return workScheduleService.deleteScheduleAssignment(employeeShiftId, store.reason()).pipe(
+            tap({
+              next: () => {
+                patchState(store, {
+                  saving: false,
+                  assignModalOpen: false,
+                  selectedCell: null,
+                  assignShiftId: '',
+                  successMessage: 'Đã xóa ca khỏi ngày làm việc.',
+                });
+                reloadSchedules();
+              },
+              error: (err: any) =>
+                patchState(store, {
+                  saving: false,
+                  errorMessage: err.error?.message || 'Không thể xóa ca khỏi ngày làm việc.',
+                }),
+            }),
+            catchError(() => EMPTY),
+          );
         }),
       ),
     );
@@ -338,10 +376,10 @@ export const WorkScheduleStore = signalStore(
                   });
                   reloadSchedules();
                 },
-                error: () =>
+                 error: (err: any) =>
                   patchState(store, {
                     saving: false,
-                    errorMessage: 'Không thể gán ca hàng loạt.',
+                    errorMessage: err.error?.message || 'Không thể gán ca hàng loạt.',
                   }),
               }),
               catchError(() => EMPTY),
@@ -382,10 +420,10 @@ export const WorkScheduleStore = signalStore(
                   });
                   reloadSchedules();
                 },
-                error: () =>
+                 error: (err: any) =>
                   patchState(store, {
                     saving: false,
-                    errorMessage: 'Không thể sao chép lịch tuần.',
+                    errorMessage: err.error?.message || 'Không thể sao chép lịch tuần.',
                   }),
               }),
               catchError(() => EMPTY),
@@ -413,10 +451,10 @@ export const WorkScheduleStore = signalStore(
                 });
                 reloadSchedules();
               },
-              error: () =>
+               error: (err: any) =>
                 patchState(store, {
                   saving: false,
-                  errorMessage: 'Không thể cập nhật cấu hình ca.',
+                  errorMessage: err.error?.message || 'Không thể cập nhật cấu hình ca.',
                 }),
             }),
             catchError(() => EMPTY),
@@ -442,10 +480,10 @@ export const WorkScheduleStore = signalStore(
                   successMessage: 'Đã cập nhật phạm vi check-in.',
                 });
               },
-              error: () =>
+               error: (err: any) =>
                 patchState(store, {
                   saving: false,
-                  errorMessage: 'Không thể cập nhật phạm vi check-in.',
+                  errorMessage: err.error?.message || 'Không thể cập nhật phạm vi check-in.',
                 }),
             }),
             catchError(() => EMPTY),
@@ -478,10 +516,10 @@ export const WorkScheduleStore = signalStore(
                 });
                 reloadSchedules();
               },
-              error: () =>
+               error: (err: any) =>
                 patchState(store, {
                   saving: false,
-                  errorMessage: 'Không thể tạo ca làm việc.',
+                  errorMessage: err.error?.message || 'Không thể tạo ca làm việc.',
                 }),
             }),
             catchError(() => EMPTY),
@@ -493,6 +531,7 @@ export const WorkScheduleStore = signalStore(
     return {
       loadWorkspace,
       assignShift,
+      deleteScheduleAssignment,
       bulkAssign,
       copyWeek,
       saveShiftSettings,
@@ -586,20 +625,16 @@ export const WorkScheduleStore = signalStore(
       openAssignModal(
         employee: EmployeeWeeklySchedule,
         workDate: string,
-        shift: DailyShift | null,
+        shifts: DailyShift[],
       ): void {
         patchState(store, {
           selectedCell: {
             employeeId: employee.employeeId,
             employeeName: employee.employeeName,
             workDate,
-            shift,
+            shifts,
           },
-          assignShiftId:
-            shift?.shiftId ??
-            store.shifts().find((item) => item.isDefault)?.id ??
-            store.shifts()[0]?.id ??
-            '',
+          assignShiftId: getFirstAssignableShiftId(store.shifts(), shifts),
           assignModalOpen: true,
         });
       },
@@ -715,7 +750,16 @@ export const WorkScheduleStore = signalStore(
       },
       updateShiftDraft(
         shiftId: string,
-        patch: Partial<Pick<Shift, 'startTime' | 'endTime'>>,
+        patch: Partial<Pick<Shift,
+          | 'startTime'
+          | 'endTime'
+          | 'earlyCheckInMinutes'
+          | 'lateCheckOutMinutes'
+          | 'onTimeCheckInStartMinutes'
+          | 'onTimeCheckInEndMinutes'
+          | 'onTimeCheckOutStartMinutes'
+          | 'onTimeCheckOutEndMinutes'
+        >>,
       ): void {
         patchState(store, {
           settingsDraft: {
@@ -739,10 +783,16 @@ export const WorkScheduleStore = signalStore(
               name: '',
               startTime: null,
               endTime: null,
-              colorCode: '#4f46e5',
-              isDefault: false,
-              type: 'NORMAL',
-            },
+                colorCode: '#4f46e5',
+                isDefault: false,
+                type: 'NORMAL',
+                earlyCheckInMinutes: 30,
+                lateCheckOutMinutes: 60,
+                onTimeCheckInStartMinutes: 15,
+                onTimeCheckInEndMinutes: 5,
+                onTimeCheckOutStartMinutes: 5,
+                onTimeCheckOutEndMinutes: 15,
+              },
           },
         });
       },
@@ -860,6 +910,36 @@ function normalizeLocationPolicyDraft(policy: AttendanceLocationPolicy): Attenda
   }
 
   return normalized;
+}
+
+function getFirstAssignableShiftId(shifts: Shift[], assignedShifts: DailyShift[]): string {
+  const assignedShiftIds = new Set(assignedShifts.map((shift) => shift.shiftId));
+  const availableShifts = shifts.filter((shift) => !assignedShiftIds.has(shift.id));
+
+  return (
+    availableShifts.find((shift) => shift.isDefault)?.id ??
+    availableShifts[0]?.id ??
+    ''
+  );
+}
+
+function refreshSelectedCell(
+  selectedCell: SelectedScheduleCell,
+  employees: EmployeeWeeklySchedule[],
+): SelectedScheduleCell | null {
+  const employee = employees.find((item) => item.employeeId === selectedCell.employeeId);
+  if (!employee) {
+    return selectedCell;
+  }
+
+  const dayShifts = employee.shifts
+    .filter((shift) => shift.workDate === selectedCell.workDate)
+    .sort((first, second) => (first.startTime ?? '').localeCompare(second.startTime ?? ''));
+
+  return {
+    ...selectedCell,
+    shifts: dayShifts,
+  };
 }
 
 function isValidLatitude(value: number | null): value is number {

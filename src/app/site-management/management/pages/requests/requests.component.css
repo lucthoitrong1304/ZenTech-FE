@@ -366,6 +366,18 @@
   color: #be123c;
 }
 
+.requests-status-badge--cancelled {
+  border-color: rgba(148, 163, 184, 0.28);
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.requests-status-badge--cancel-pending {
+  border-color: rgba(249, 115, 22, 0.34);
+  background: #ffedd5;
+  color: #c2410c;
+}
+
 .requests-history-reason {
   margin: 0;
   border-radius: 10px;
@@ -480,4 +492,35 @@
   .requests-submit-btn {
     width: 100%;
   }
+}
+
+.requests-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 8px;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748b;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: #4f46e5;
+  background: #f8fafc;
+}
+
+.tab-btn.active {
+  color: #4f46e5;
+  background: #eef2ff;
 }

@@ -52,10 +52,17 @@
 
 /* Name cell */
 .att-cell-name {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.att-cell-name .att-expand-btn {
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.att-cell-name span {
+  vertical-align: middle;
 }
 
 .att-expand-btn {
@@ -103,18 +110,30 @@
 .att-cell-hours {
   font-weight: 700;
   color: #111827;
+  white-space: nowrap;
+}
+
+.att-live-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* Late/early penalty */
 .att-cell-penalty {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  white-space: nowrap;
 }
 
-.att-penalty-late  { font-size: 11px; font-weight: 700; color: #dc2626; }
-.att-penalty-early { font-size: 11px; font-weight: 700; color: #d97706; }
-.att-penalty-none  { font-size: 12px; color: #9ca3af; }
+.att-penalty-late  { display: block; font-size: 11px; font-weight: 700; color: #dc2626; }
+.att-penalty-early { display: block; font-size: 11px; font-weight: 700; color: #d97706; }
+.att-penalty-none  { display: block; font-size: 12px; color: #9ca3af; }
 
 /* ===== STATUS BADGES ===== */
 .att-status-badge {
@@ -140,6 +159,7 @@
 .att-status--late-early{ background: rgba(234, 88, 12, 0.1);  color: #c2410c; }
 .att-status--miss-in   { background: rgba(124, 58, 237, 0.1); color: #7c3aed; }
 .att-status--miss-out  { background: rgba(37, 99, 235, 0.1);  color: #1d4ed8; }
+.att-status--not-started { background: rgba(100, 116, 139, 0.1); color: #475569; }
 .att-status--absent    { background: rgba(244, 63, 94, 0.1);  color: #be123c; }
 .att-status--excused   { background: rgba(20, 184, 166, 0.1); color: #0f766e; }
 .att-status--off       { background: rgba(107, 114, 128, 0.1);color: #4b5563; }
@@ -252,6 +272,142 @@
 
 .att-summary-late  { font-weight: 700; color: #dc2626; }
 .att-summary-early { font-weight: 700; color: #d97706; }
+
+.att-breakdown {
+  padding: 20px 24px 22px 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.att-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.att-shift-detail {
+  border: 1px solid rgba(229, 231, 235, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.att-shift-detail__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.att-shift-detail__header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.att-shift-detail__header strong {
+  font-size: 15px;
+  color: #111827;
+}
+
+.att-shift-detail__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.att-shift-detail__metrics div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.att-shift-detail__metrics span {
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.att-shift-detail__metrics strong {
+  color: #111827;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.att-shift-detail__metrics em,
+.att-day-summary em {
+  margin-left: 6px;
+  font-style: normal;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.att-event-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.att-event-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: rgba(249, 250, 251, 0.95);
+  border: 1px solid rgba(229, 231, 235, 0.9);
+}
+
+.att-event-chip span {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.att-event-chip strong {
+  font-size: 12px;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
+
+.att-event-empty {
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.att-day-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid rgba(79, 70, 229, 0.12);
+  padding-top: 14px;
+}
+
+.att-day-summary div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.att-day-summary span {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.att-day-summary strong {
+  color: #111827;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
 
 /* ===== PAGINATION ===== */
 .att-pagination {

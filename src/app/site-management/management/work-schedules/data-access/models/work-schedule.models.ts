@@ -23,9 +23,16 @@ export interface Shift {
   colorCode: string | null;
   isDefault: boolean;
   type: ShiftType;
+  earlyCheckInMinutes: number;
+  lateCheckOutMinutes: number;
+  onTimeCheckInStartMinutes: number;
+  onTimeCheckInEndMinutes: number;
+  onTimeCheckOutStartMinutes: number;
+  onTimeCheckOutEndMinutes: number;
 }
 
 export interface DailyShift {
+  employeeShiftId: string;
   shiftId: string;
   shiftName: string;
   colorCode: string | null;
@@ -33,6 +40,16 @@ export interface DailyShift {
   startTime: string | null;
   endTime: string | null;
   shiftType: ShiftType;
+  earlyCheckInMinutes: number;
+  lateCheckOutMinutes: number;
+  onTimeCheckInStartMinutes: number;
+  onTimeCheckInEndMinutes: number;
+  onTimeCheckOutStartMinutes: number;
+  onTimeCheckOutEndMinutes: number;
+  isLeave?: boolean;
+  isWfh?: boolean;
+  isSwap?: boolean;
+  statusLabel?: string;
 }
 
 export interface EmployeeWeeklySchedule {
@@ -91,7 +108,7 @@ export interface SelectedScheduleCell {
   employeeId: string;
   employeeName: string;
   workDate: string;
-  shift: DailyShift | null;
+  shifts: DailyShift[];
 }
 
 export interface BulkAssignDraft {
@@ -120,6 +137,12 @@ export interface CreateShiftRequest {
   colorCode: string;
   isDefault: boolean;
   type: ShiftType;
+  earlyCheckInMinutes: number;
+  lateCheckOutMinutes: number;
+  onTimeCheckInStartMinutes: number;
+  onTimeCheckInEndMinutes: number;
+  onTimeCheckOutStartMinutes: number;
+  onTimeCheckOutEndMinutes: number;
 }
 
 export type AttendanceLocationShapeType = 'CIRCLE' | 'POLYGON';

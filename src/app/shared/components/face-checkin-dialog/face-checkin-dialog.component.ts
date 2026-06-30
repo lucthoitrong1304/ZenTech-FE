@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 
 export interface FaceCheckinData {
   descriptor: Float32Array;
+  faceImage?: string;
 }
 
 @Component({
@@ -128,7 +129,23 @@ export class FaceCheckinDialogComponent implements OnInit, OnDestroy {
 
   private captureDescriptor(descriptor: Float32Array) {
     this.stopProcess();
-    this.onSuccess.emit({ descriptor });
+    let faceImage: string | undefined = undefined;
+    try {
+      const video = this.videoElement?.nativeElement;
+      if (video) {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          faceImage = canvas.toDataURL('image/jpeg', 0.8);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to capture face image frame:', err);
+    }
+    this.onSuccess.emit({ descriptor, faceImage });
   }
 
   handleHide() {
