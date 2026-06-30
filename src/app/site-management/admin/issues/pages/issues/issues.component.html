@@ -261,6 +261,16 @@
         </div>
       </div>
 
+      @if (getLatestRecordingLog(issue); as evidenceLog) {
+        <app-admin-recording-evidence
+          [email]="recordingEmailForLog(evidenceLog)"
+          [timestamp]="evidenceLog.timestamp"
+          [traceId]="recordingTraceIdForLog(evidenceLog)"
+          title="Record cấp issue"
+          contextLabel="Issue evidence"
+        />
+      }
+
       <div class="logs-inspector-section">
         <button type="button" class="logs-inspector-section-title">
           <span>⌄</span>
@@ -383,6 +393,14 @@
             <button type="button" (click)="setLogViewMode(log.id, 'raw')" class="logs-tab-btn" [class.logs-tab-btn--active]="getLogViewMode(log.id) === 'raw'">Raw JSON</button>
           </div>
         </div>
+
+        <app-admin-recording-evidence
+          [email]="recordingEmailForLog(log)"
+          [timestamp]="log.timestamp"
+          [traceId]="recordingTraceIdForLog(log)"
+          title="Record liên quan"
+          contextLabel="Related log evidence"
+        />
 
         @if (getLogViewMode(log.id) === 'structured') {
           <div class="logs-trace-graph-panel">

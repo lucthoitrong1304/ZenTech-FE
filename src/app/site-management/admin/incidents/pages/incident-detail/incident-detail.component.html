@@ -460,6 +460,16 @@
           </div>
           
           <div class="section-body">
+            @if (selectedOccurrenceForEvidence(); as evidenceOcc) {
+              <app-admin-recording-evidence
+                [email]="evidenceOcc.userEmail || ''"
+                [timestamp]="evidenceOcc.occurredAt || inc.occurredAt || inc.createdAt"
+                [traceId]="evidenceOcc.traceId || selectedTraceId() || inc.traceId || ''"
+                title="Record theo occurrence"
+                contextLabel="Incident evidence"
+              />
+            }
+
             @if (store.isLoadingLogs()) {
               <div class="logs-loading">Đang truy vấn logs từ Loki...</div>
             } @else if (store.filteredLogs().length === 0) {

@@ -16,6 +16,7 @@ import {
 import { Subscription } from 'rxjs';
 import { AdminStore } from '../../../data-access/store/admin.store';
 import { ActivityArea, ActivityLog, ActivitySeverity } from '../../../data-access/models/admin.models';
+import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
 import { AdminLogsService } from '../../../data-access/services/admin-logs.service';
 import { WebsocketService } from '../../../../../core/services/websocket.service';
 import { AccountService } from '../../../accounts/data-access/services/account.service';
@@ -97,7 +98,8 @@ interface RecordingLogContext {
     LucideKeyRound,
     LucideUserCheck,
     LucideTerminal,
-    LucideInfo
+    LucideInfo,
+    AdminRecordingEvidenceComponent
   ],
   templateUrl: './activity-logs.component.html',
   styleUrl: './activity-logs.component.css'

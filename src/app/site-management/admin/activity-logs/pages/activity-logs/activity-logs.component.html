@@ -634,31 +634,13 @@
           </div>
         </section>
 
-        @if (recordingContextForLog(log); as recordContext) {
-          <section class="modal-recording-card modal-recording-card--player">
-            <div class="modal-recording-header">
-              <div>
-                <span class="modal-label">Record liên quan</span>
-                <div class="modal-recording-title">Phiên {{ recordContext.sessionLabel }}</div>
-                <div class="modal-recording-meta">
-                  Offset {{ recordContext.offsetLabel }} - đoạn gợi ý {{ recordContext.clipLabel }}
-                </div>
-              </div>
-              <button type="button" class="modal-recording-action" (click)="openRecordingContextForLog(log)">
-                Tải lại
-              </button>
-            </div>
-
-            <div class="modal-recording-player-shell">
-              <div id="detail-rrweb-player-container" class="modal-recording-player"></div>
-              @if (isLoadingDetailRecording() || detailRecordingStatus()) {
-                <div class="modal-recording-state" [class.modal-recording-state--error]="!isLoadingDetailRecording() && !hasDetailRecording()">
-                  {{ detailRecordingStatus() || 'Đang tải đoạn record liên quan...' }}
-                </div>
-              }
-            </div>
-          </section>
-        }
+        <app-admin-recording-evidence
+          [email]="timelineEmail().trim() || log.operatorEmail"
+          [timestamp]="log.timestamp"
+          [traceId]="log.traceId || ''"
+          [title]="'Record liên quan'"
+          [contextLabel]="actionLabel(log)"
+        />
         <div class="modal-row">
           <span class="modal-label">Metadata đã ẩn dữ liệu nhạy cảm</span>
           <pre class="modal-value--mono modal-value--metadata">{{ prettyMetadata(log.metadata) }}</pre>

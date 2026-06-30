@@ -16,7 +16,9 @@ import { AdminStore } from '../../../data-access/store/admin.store';
 import { ActivityArea, ActivitySeverity, IncidentCreationSource, IncidentSeverity, IssueIncidentLink, LogLevel, LogServiceCategory, SystemIncident, SystemLog } from '../../../data-access/models/admin.models';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { WebsocketService } from '../../../../../core/services/websocket.service';
+import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
 import { AdminIncidentsService } from '../../../incidents/data-access/services/admin-incidents.service';
+import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
 
 interface LogMetadataItem {
   label: string;
@@ -88,7 +90,8 @@ interface ClientLogStackContext {
     LucideCopy,
     LucideGlobe,
     LucideTerminal,
-    LucideSparkles
+    LucideSparkles,
+    AdminRecordingEvidenceComponent
   ],
   templateUrl: './issues.component.html',
   styleUrl: './issues.component.css'
@@ -96,6 +99,7 @@ interface ClientLogStackContext {
 export class IssuesComponent implements OnInit, OnDestroy {
   protected readonly store = inject(AdminStore);
   protected readonly toastService = inject(ToastService);
+  private readonly authStorageService = inject(AuthStorageService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly adminIncidentsService = inject(AdminIncidentsService);
@@ -645,6 +649,12 @@ export class IssuesComponent implements OnInit, OnDestroy {
     return [...issue.logs].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
   }
 
+  protected getLatestRecordingLog(issue: LogIssue): SystemLog | null {
+    return [...issue.logs]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .find(log => !!this.recordingEmailForLog(log)) || null;
+  }
+
   protected getRelatedLogs(issue: LogIssue): SystemLog[] {
     const sortedLogs = [...issue.logs]
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
@@ -831,6 +841,66 @@ export class IssuesComponent implements OnInit, OnDestroy {
     }
 
     return metadata;
+  }
+
+  protected recordingEmailForLog(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    return this.resolveRecordingEmail(stackContext?.userEmail || (log as any).userEmail || '')
+      || this.findCorrelatedRecordingEmail(log);
+  }
+
+  protected recordingTraceIdForLog(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    return this.getEffectiveTraceId(log, stackContext).trim();
+  }
+
+  private findCorrelatedRecordingEmail(log: SystemLog): string {
+    const traceId = this.recordingTraceIdForLog(log);
+    if (!traceId) return '';
+
+    const logTime = new Date(log.timestamp).getTime();
+    if (!Number.isFinite(logTime)) return '';
+
+    const correlationWindowMs = 10 * 60 * 1000;
+    return this.store.logs()
+      .map(candidate => {
+        const candidateTraceId = this.recordingTraceIdForLog(candidate);
+        if (candidate.id === log.id || candidateTraceId !== traceId) return null;
+
+        const candidateEmail = this.resolveRecordingEmail(this.rawRecordingEmail(candidate));
+        if (!candidateEmail) return null;
+
+        const candidateTime = new Date(candidate.timestamp).getTime();
+        if (!Number.isFinite(candidateTime)) return null;
+
+        const distanceMs = Math.abs(candidateTime - logTime);
+        if (distanceMs > correlationWindowMs) return null;
+
+        return { email: candidateEmail, distanceMs };
+      })
+      .filter((item): item is { email: string; distanceMs: number } => !!item)
+      .sort((a, b) => a.distanceMs - b.distanceMs)[0]?.email || '';
+  }
+
+  private rawRecordingEmail(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    return stackContext?.userEmail || (log as any).userEmail || '';
+  }
+  private resolveRecordingEmail(email: string): string {
+    const candidate = (email || '').trim();
+    if (!candidate.includes('*')) return candidate;
+
+    const currentEmail = this.authStorageService.getSession()?.email || '';
+    return currentEmail && this.maskEmailForComparison(currentEmail).toLowerCase() === candidate.toLowerCase()
+      ? currentEmail
+      : '';
+  }
+
+  private maskEmailForComparison(email: string): string {
+    const [localPart, domain] = email.split('@');
+    if (!localPart || !domain) return email;
+    if (localPart.length <= 2) return localPart.charAt(0) + '*@' + domain;
+    return localPart.charAt(0) + '*'.repeat(localPart.length - 2) + localPart.charAt(localPart.length - 1) + '@' + domain;
   }
 
   protected copyToClipboard(text: string, event: Event): void {

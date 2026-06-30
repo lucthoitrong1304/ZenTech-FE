@@ -29,6 +29,7 @@ import { AccountSortField, SortDirection, AccountSummary, AdminAccountRole } fro
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { AdminProfileService } from '../../../data-access/services/admin-profile.service';
 import { AdminUploadPresignResponseDto } from '../../../data-access/models/admin-profile.model';
+import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
 import {
   IncidentStatus,
   IncidentSeverity,
@@ -114,7 +115,8 @@ interface BrowserInfo {
     LucideUser,
     LucideEye,
     SelectModule,
-    EditorModule
+    EditorModule,
+    AdminRecordingEvidenceComponent
   ],
   templateUrl: './incident-detail.component.html',
   styleUrl: './incident-detail.component.css'
@@ -364,6 +366,29 @@ export class IncidentDetailComponent implements OnInit {
         this.store.loadLogs({ level: 'ALL', search: '', traceId: occ.traceId });
       }
     }
+  }
+
+  protected selectedOccurrenceForEvidence(): { traceId?: string; userEmail?: string | null; occurredAt?: Date | string | number } | null {
+    const inc = this.incident();
+    if (!inc) return null;
+
+    const occurrences = Array.isArray(inc.occurrences) ? inc.occurrences : [];
+    const selectedTraceId = this.selectedTraceId();
+    const selectedEmail = this.selectedTimelineUserEmail();
+
+    const selectedOccurrence = occurrences.find((occ: any) => selectedTraceId && occ.traceId === selectedTraceId)
+      || occurrences.find((occ: any) => selectedEmail && occ.userEmail === selectedEmail)
+      || occurrences.find((occ: any) => !!occ.userEmail && !!occ.occurredAt);
+
+    if (selectedOccurrence) {
+      return selectedOccurrence;
+    }
+
+    return {
+      traceId: inc.traceId || selectedTraceId || undefined,
+      userEmail: inc.userEmail || selectedEmail || null,
+      occurredAt: inc.occurredAt || inc.firstOccurredAt || inc.createdAt
+    };
   }
 
   private loadUserActivities(email: string): void {

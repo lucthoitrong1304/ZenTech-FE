@@ -244,6 +244,14 @@
           }
         </div>
 
+        <app-admin-recording-evidence
+          [email]="recordingEmailForLog(log)"
+          [timestamp]="log.timestamp"
+          [traceId]="recordingTraceIdForLog(log)"
+          title="Record liên quan"
+          contextLabel="Log evidence"
+        />
+
         <div class="logs-details-card logs-details-card--modal">
           <div class="logs-details-header">
             <h4 class="logs-details-title">Chẩn đoán log</h4>
