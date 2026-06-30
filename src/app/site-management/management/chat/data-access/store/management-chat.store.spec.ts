@@ -57,7 +57,9 @@ describe('ManagementChatStore', () => {
     };
     const managementChatService = {
       getWorkspace: vi.fn(() => of(workspace)),
+      getMessages: vi.fn(() => of(createPage(createChatMessages()))),
       claimConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.AGENT_HANDLING))),
+      leaveConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.WAITING_FOR_AGENT))),
       mapToManagementChatConversation: vi.fn(mapConversationResponse),
     };
     const customerChatService = {
@@ -100,6 +102,7 @@ describe('ManagementChatStore', () => {
 
     return {
       store: TestBed.inject(ManagementChatStore),
+      managementChatService,
       customerChatService,
       websocketService,
       emitTopic<T>(destination: string, value: T): void {
@@ -228,6 +231,23 @@ describe('ManagementChatStore', () => {
     });
   });
 
+  it('does not publish staff text messages when current staff is not active', () => {
+    const workspace = createWorkspace();
+    workspace.conversations[0] = {
+      ...workspace.conversations[0],
+      status: 'STAFF_HANDLING',
+      currentStaffActive: false,
+    };
+    const { store, websocketService } = configureStore(workspace);
+
+    store.loadWorkspace();
+    store.selectConversation('conv-1');
+    store.sendStaffMessage('Khong nen gui duoc');
+
+    expect(store.canReplyToSelectedConversation()).toBe(false);
+    expect(websocketService.publish).not.toHaveBeenCalled();
+  });
+
   it('queues staff files and sends them with optional text', () => {
     const { store, customerChatService, websocketService } = configureStore();
     const file = new File(['demo'], 'staff-layout.png', { type: 'image/png' });
@@ -314,6 +334,28 @@ describe('ManagementChatStore', () => {
     expect(store.selectedConversation()?.status).toBe('STAFF_HANDLING');
     expect(store.selectedConversation()?.expertRequestStatus).toBe('ACCEPTED');
   });
+
+  it('lets active staff leave a conversation and returns it to the waiting queue', () => {
+    const workspace = createWorkspace();
+    workspace.conversations[0] = {
+      ...workspace.conversations[0],
+      status: 'STAFF_HANDLING',
+      currentStaffActive: true,
+    };
+    const { store, managementChatService } = configureStore(workspace);
+
+    store.loadWorkspace();
+    store.selectConversation('conv-1');
+    store.leaveConversation();
+
+    expect(managementChatService.leaveConversation).toHaveBeenCalledWith('conv-1');
+    expect(store.selectedConversation()?.id).toBe('conv-1');
+    expect(store.canReplyToSelectedConversation()).toBe(false);
+    expect(store.conversations().find((conversation) => conversation.id === 'conv-1')).toMatchObject({
+      status: 'WAITING_STAFF',
+      currentStaffActive: false,
+    });
+  });
 });
 
 function isTestEnvironmentAlreadyInitialized(error: Error): boolean {
@@ -336,6 +378,7 @@ function createWorkspace(): ManagementChatWorkspace {
         online: true,
       },
       status: 'AI_ASSISTING',
+      currentStaffActive: false,
       expertRequestStatus: 'WAITING',
       lastMessagePreview: 'Can tu van tai nghe',
       lastMessageAtLabel: '10:42',
@@ -353,6 +396,7 @@ function createWorkspace(): ManagementChatWorkspace {
         online: false,
       },
       status: 'WAITING_STAFF',
+      currentStaffActive: false,
       expertRequestStatus: 'ACCEPTED',
       lastMessagePreview: 'Cho nhan vien goi lai',
       lastMessageAtLabel: 'Hom qua',
@@ -414,6 +458,14 @@ function mapConversationResponse(conv: ConversationResponse): ManagementChatConv
           : conv.status === ConversationStatus.BOT_CONSULTING
             ? 'AI_ASSISTING'
             : 'CLOSED',
+    currentStaffActive:
+      conv.status === ConversationStatus.AGENT_HANDLING &&
+      conv.participants.some(
+        (participant) =>
+          participant.status === ParticipantStatus.ACTIVE &&
+          (participant.userType === ParticipantType.EMPLOYEE ||
+            participant.userType === ParticipantType.EXPERT)
+      ),
     expertRequestStatus: conv.status === ConversationStatus.WAITING_FOR_AGENT ? 'WAITING' : null,
     lastMessagePreview: conv.title,
     lastMessageAtLabel: '09:03',
@@ -458,6 +510,20 @@ function createConversationResponse(
         displayName: 'Nguyen Van A',
         avatarUrl: null,
       },
+      ...(status === ConversationStatus.AGENT_HANDLING
+        ? [
+            {
+              id: 'participant-staff',
+              userType: ParticipantType.EMPLOYEE,
+              referenceId: 'employee-1',
+              status: ParticipantStatus.ACTIVE,
+              joinedAt: '2026-05-24T02:02:00.000Z',
+              leftAt: null,
+              displayName: 'Nhan vien A',
+              avatarUrl: null,
+            },
+          ]
+        : []),
     ],
   };
 }

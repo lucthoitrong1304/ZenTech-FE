@@ -79,6 +79,24 @@
       </button>
     }
 
+    @if (canUpdate() && conversation().status !== 'CLOSED' && conversation().currentStaffActive) {
+      <button
+        type="button"
+        class="chat-header-action chat-header-action--leave min-h-10 rounded-[8px] border border-[#e08b2d] px-4 text-sm font-bold text-[#8a4a00] transition hover:bg-[#fff4e5]"
+        (click)="leaveClicked.emit()"
+        aria-label="Rời hội thoại"
+        title="Rời hội thoại"
+      >
+        <svg
+          lucideLogOut
+          class="chat-header-action__icon h-5 w-5"
+          [attr.stroke-width]="2"
+        ></svg>
+        <span class="chat-header-action__label">Rời hội thoại</span>
+        <span class="chat-header-action__short" aria-hidden="true">Rời</span>
+      </button>
+    }
+
     @if (conversation().status !== 'STAFF_HANDLING' && conversation().status !== 'CLOSED') {
       <button
         type="button"

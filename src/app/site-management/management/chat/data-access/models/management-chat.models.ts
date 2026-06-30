@@ -30,6 +30,7 @@ export interface ManagementChatConversation {
   id: string;
   customer: ManagementChatCustomer;
   status: ManagementChatConversationStatus;
+  currentStaffActive: boolean;
   expertRequestStatus: ManagementChatExpertRequestStatus | null;
   lastMessagePreview: string;
   lastMessageAtLabel: string;

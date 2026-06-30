@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ApiService } from '../../../../../core/api/api.service';
+import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
 import { environment } from '../../../../../../environments/environment';
 import {
   ApiResponse,
@@ -8,6 +9,7 @@ import {
   ChatMessageResponse,
   ConversationStatus,
   PageResponse,
+  ParticipantStatus,
   ParticipantType,
   getInitials,
   formatTime,
@@ -26,6 +28,7 @@ import {
 })
 export class ManagementChatService {
   private readonly apiService = inject(ApiService);
+  private readonly authStorageService = inject(AuthStorageService);
   private readonly baseUrl = `${environment.apiBaseUrl}/management/chat/conversations`;
 
   getWorkspace(page = 0, size = 100): Observable<ManagementChatWorkspace> {
@@ -74,6 +77,12 @@ export class ManagementChatService {
       .pipe(map((res) => res.data));
   }
 
+  leaveConversation(conversationId: string): Observable<ConversationResponse> {
+    return this.apiService
+      .post<unknown, ApiResponse<ConversationResponse>>(`${this.baseUrl}/${conversationId}/leave`, {})
+      .pipe(map((res) => res.data));
+  }
+
   getActiveStaffList(): Observable<ChatStaffResponse[]> {
     return this.apiService
       .get<ApiResponse<ChatStaffResponse[]>>(`${environment.apiBaseUrl}/management/chat/staffs/active`)
@@ -91,6 +100,12 @@ export class ManagementChatService {
   public mapToManagementChatConversation(conv: ConversationResponse): ManagementChatConversation {
     const participants = conv.participants || [];
     const customerParticipant = participants.find((p) => p.userType === ParticipantType.CUSTOMER);
+    const currentEmail = this.authStorageService.getSession()?.email?.trim().toLowerCase() || null;
+    const currentStaffActive = !!currentEmail && participants.some((p) => {
+      const participantEmail = resolveParticipantEmail(p)?.trim().toLowerCase();
+      const isStaff = p.userType === ParticipantType.EMPLOYEE || p.userType === ParticipantType.EXPERT;
+      return isStaff && p.status === ParticipantStatus.ACTIVE && participantEmail === currentEmail;
+    });
 
     const customer: ManagementChatCustomer = {
       id: customerParticipant?.referenceId || conv.customerId || '',
@@ -121,6 +136,7 @@ export class ManagementChatService {
       id: conv.id,
       customer,
       status,
+      currentStaffActive,
       expertRequestStatus: conv.status === ConversationStatus.WAITING_FOR_AGENT ? 'WAITING' : null,
       lastMessagePreview: conv.title || 'Hội thoại mới',
       lastMessageAtLabel: conv.updatedAt ? formatTime(conv.updatedAt) : 'Vừa xong',
