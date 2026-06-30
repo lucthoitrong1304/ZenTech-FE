@@ -1,7 +1,18 @@
 import { Component, ChangeDetectionStrategy, NgZone, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideChevronLeft, LucideChevronRight, LucidePointer, LucideSearch, LucideX } from '@lucide/angular';
+import {
+  LucideChevronLeft,
+  LucideChevronRight,
+  LucideSearch,
+  LucideX,
+  LucideVideoOff,
+  LucideShieldAlert,
+  LucideKeyRound,
+  LucideUserCheck,
+  LucideTerminal,
+  LucideInfo
+} from '@lucide/angular';
 import { Subscription } from 'rxjs';
 import { AdminStore } from '../../../data-access/store/admin.store';
 import { ActivityArea, ActivityLog, ActivitySeverity } from '../../../data-access/models/admin.models';
@@ -48,6 +59,28 @@ interface BrowserInfo {
   raw: string;
 }
 
+interface ReplayPanel {
+  title: string;
+  subtitle: string;
+  type: 'text' | 'bars' | 'grid' | 'device' | 'status';
+  icon?: string;
+  barHeight1?: string;
+  barHeight2?: string;
+  barHeight3?: string;
+  statusLabel?: string;
+  statusClass?: string;
+}
+
+interface RecordingLogContext {
+  sessionId: string;
+  sessionLabel: string;
+  sessionStartMs: number;
+  offsetMs: number;
+  clipStartMs: number;
+  clipEndMs: number;
+  offsetLabel: string;
+  clipLabel: string;
+}
 @Component({
   selector: 'app-admin-activity-logs',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,8 +91,13 @@ interface BrowserInfo {
     LucideSearch,
     LucideChevronLeft,
     LucideChevronRight,
-    LucidePointer,
-    LucideX
+    LucideX,
+    LucideVideoOff,
+    LucideShieldAlert,
+    LucideKeyRound,
+    LucideUserCheck,
+    LucideTerminal,
+    LucideInfo
   ],
   templateUrl: './activity-logs.component.html',
   styleUrl: './activity-logs.component.css'
@@ -77,7 +115,7 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
   protected readonly timelineLogs = signal<ActivityLog[]>([]);
   protected readonly isLoadingTimeline = signal(false);
   protected readonly timelineEmail = signal('');
-  protected readonly timelineTimeRange = signal<ActivityTimeRange>('7D');
+  protected readonly timelineTimeRange = signal<ActivityTimeRange>('TODAY');
   protected readonly timelineFrom = signal('');
   protected readonly timelineTo = signal('');
   protected readonly timelineSeverity = signal('ALL');
@@ -148,6 +186,160 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     return this.timelineLogs()[this.replayIndex()] ?? null;
   });
 
+  protected readonly replayPanels = computed<ReplayPanel[]>(() => {
+    const log = this.replayLog();
+    if (!log) return [];
+
+    const key = `${log.module || ''} ${log.targetType || ''} ${log.action || ''}`.toUpperCase();
+    const targetLabel = log.targetLabel || log.target || log.targetId || log.targetType || 'Hệ thống';
+
+    if (key.includes('AUTH') || key.includes('LOGIN') || key.includes('PASSWORD')) {
+      const browser = this.browserInfo(log.userAgent);
+      return [
+        {
+          title: 'CỔNG XÁC THỰC',
+          subtitle: log.action === 'PASSWORD_CHANGED' ? 'Đổi mật khẩu tài khoản' : 'Xác thực tài khoản',
+          type: 'status',
+          statusLabel: log.action === 'LOGIN_FAILED' ? 'Thất bại' : 'Thành công',
+          statusClass: log.action === 'LOGIN_FAILED' ? 'text-rose-500 bg-rose-500/10' : 'text-emerald-500 bg-emerald-500/10'
+        },
+        {
+          title: 'THIẾT BỊ & OS',
+          subtitle: `${browser.os} • ${browser.device}`,
+          type: 'device',
+          icon: browser.device.toLowerCase().includes('phone') || browser.device.toLowerCase().includes('mobile')
+            ? 'smartphone'
+            : browser.device.toLowerCase().includes('tablet')
+              ? 'tablet'
+              : 'monitor'
+        },
+        {
+          title: 'ĐỊA CHỈ IP',
+          subtitle: log.ipAddress || '127.0.0.1',
+          type: 'text'
+        }
+      ];
+    }
+
+    if (key.includes('INVENTORY') || key.includes('STOCK')) {
+      const diffs = this.diffRows(log);
+      const stockDiff = diffs.find(d => d.field.toLowerCase().includes('stock') || d.field.toLowerCase().includes('quantity'));
+      return [
+        {
+          title: 'SẢN PHẨM',
+          subtitle: targetLabel,
+          type: 'text'
+        },
+        {
+          title: 'THAY ĐỔI TỒN KHO',
+          subtitle: stockDiff ? `${stockDiff.before} ➡️ ${stockDiff.after}` : 'Điều chỉnh tồn kho',
+          type: 'bars',
+          barHeight1: '24px',
+          barHeight2: '44px',
+          barHeight3: '32px'
+        },
+        {
+          title: 'BIẾN THỂ',
+          subtitle: diffs.find(d => d.field.toLowerCase().includes('variant'))?.after || 'Mặc định',
+          type: 'text'
+        }
+      ];
+    }
+
+    if (key.includes('ORDER') || key.includes('CHECKOUT') || key.includes('PAYMENT')) {
+      const diffs = this.diffRows(log);
+      const statusDiff = diffs.find(d => d.field.toLowerCase().includes('status'));
+      return [
+        {
+          title: 'ĐƠN HÀNG',
+          subtitle: targetLabel,
+          type: 'text'
+        },
+        {
+          title: 'CẬP NHẬT TRẠNG THÁI',
+          subtitle: statusDiff ? `${statusDiff.before} ➡️ ${statusDiff.after}` : 'Trạng thái đơn hàng',
+          type: 'status',
+          statusLabel: statusDiff?.after || log.action,
+          statusClass: 'text-indigo-400 bg-indigo-500/10'
+        },
+        {
+          title: 'THANH TOÁN',
+          subtitle: diffs.find(d => d.field.toLowerCase().includes('payment'))?.after || 'Chưa đổi',
+          type: 'text'
+        }
+      ];
+    }
+
+    if (key.includes('PRODUCT') || key.includes('COUPON') || key.includes('VOUCHER') || key.includes('CATALOG') || key.includes('MARKETING')) {
+      const diffs = this.diffRows(log);
+      return [
+        {
+          title: 'DANH MỤC / CATALOG',
+          subtitle: targetLabel,
+          type: 'text'
+        },
+        {
+          title: 'LƯỢT THAO TÁC',
+          subtitle: log.actionLabel || log.action,
+          type: 'bars',
+          barHeight1: '35px',
+          barHeight2: '20px',
+          barHeight3: '48px'
+        },
+        {
+          title: 'MÔ TẢ CHI TIẾT',
+          subtitle: diffs.length > 0 ? `${diffs[0].field}: ${diffs[0].before} ➡️ ${diffs[0].after}` : 'Cập nhật thành công',
+          type: 'text'
+        }
+      ];
+    }
+
+    if (key.includes('AI')) {
+      return [
+        {
+          title: 'AI MANAGEMENT',
+          subtitle: targetLabel,
+          type: 'text'
+        },
+        {
+          title: 'TRẠNG THÁI DỮ LIỆU',
+          subtitle: log.actionLabel || log.action,
+          type: 'status',
+          statusLabel: 'Hoạt động',
+          statusClass: 'text-purple-400 bg-purple-500/10'
+        },
+        {
+          title: 'TẬP DỮ LIỆU',
+          subtitle: log.targetType || 'AI Dataset',
+          type: 'grid'
+        }
+      ];
+    }
+
+    return [
+      {
+        title: 'HỆ THỐNG',
+        subtitle: targetLabel,
+        type: 'text'
+      },
+      {
+        title: 'HÀNH ĐỘNG',
+        subtitle: log.actionLabel || log.action,
+        type: 'bars',
+        barHeight1: '28px',
+        barHeight2: '38px',
+        barHeight3: '18px'
+      },
+      {
+        title: 'MỨC ĐỘ',
+        subtitle: log.severity || 'INFO',
+        type: 'status',
+        statusLabel: log.severity || 'INFO',
+        statusClass: log.severity === 'SECURITY' || log.severity === 'CRITICAL' ? 'text-rose-500 bg-rose-500/10' : 'text-slate-400 bg-slate-500/10'
+      }
+    ];
+  });
+
   protected readonly replayProgress = computed(() => {
     const total = this.timelineLogs().length;
     if (total <= 1) return total === 1 ? 100 : 0;
@@ -183,6 +375,7 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
       clearTimeout(this.accountSearchTimer);
     }
     this.stopReplay();
+    this.destroyPlayer();
     this.stopRealtimeActivityLogs();
   }
 
@@ -401,7 +594,7 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
 
   protected resetTimelineFilters(): void {
     this.timelineEmail.set('');
-    this.timelineTimeRange.set('7D');
+    this.timelineTimeRange.set('TODAY');
     this.timelineFrom.set('');
     this.timelineTo.set('');
     this.timelineSeverity.set('ALL');
@@ -484,7 +677,7 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const dateParams = this.timelineDateParams();
+    const dateParams = this.selectedTimelineDateParams();
     this.isGeneratingBehaviorSummary.set(true);
     this.behaviorSummaryFallback.set(false);
     this.adminLogsService.summarizeActivityTimeline({
@@ -542,10 +735,13 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
 
   protected openDetail(log: ActivityLog): void {
     this.selectedLog.set(log);
+    this.destroyDetailPlayer();
+    setTimeout(() => this.loadDetailRecording(log), 0);
   }
 
   protected closeDetail(): void {
     this.selectedLog.set(null);
+    this.destroyDetailPlayer();
   }
 
   protected getInitials(fullName: string): string {
@@ -555,6 +751,21 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
       return parts[0].substring(0, Math.min(2, parts[0].length)).toUpperCase();
     }
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  }
+
+  protected areaChipClass(area?: string): string {
+    const normalized = (area || '').toUpperCase();
+    const classes: Record<string, string> = {
+      ADMIN: 'audit-chip--area-admin',
+      MANAGEMENT: 'audit-chip--area-management',
+      INTERNAL: 'audit-chip--area-management',
+      CUSTOMER: 'audit-chip--area-customer',
+      ORDER: 'audit-chip--area-customer',
+      SHOPPING: 'audit-chip--area-customer',
+      SYSTEM: 'audit-chip--area-system',
+      SECURITY: 'audit-chip--area-security'
+    };
+    return classes[normalized] || 'audit-chip--area-default';
   }
 
   protected areaLabel(area?: string): string {
@@ -697,12 +908,20 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     if (['LOCK_ACCOUNT', 'UNLOCK_ACCOUNT', 'CHANGE_ROLE', 'CHANGE_PERMISSION'].includes(log.action)) {
       return 'Tác động tài khoản';
     }
+    if (['LOGIN', 'LOGOUT'].includes(log.action)) return 'Bình thường';
     if (['SECURITY', 'CRITICAL'].includes(log.severity || '')) return 'Cần chú ý';
     if (['IMPORTANT'].includes(log.severity || '')) return 'Quan trọng';
     return 'Bình thường';
   }
 
+  protected shouldShowRiskLabel(log: ActivityLog): boolean {
+    const actionLabels = ['LOGIN_FAILED', 'LOCK_ACCOUNT', 'UNLOCK_ACCOUNT', 'CHANGE_ROLE', 'CHANGE_PERMISSION'];
+    if (actionLabels.includes(log.action)) return true;
+    return ['SECURITY', 'CRITICAL'].includes(log.severity || '');
+  }
+
   protected isRiskyTimelineItem(log: ActivityLog): boolean {
+    if (['LOGIN', 'LOGOUT'].includes(log.action)) return false;
     return ['LOGIN_FAILED', 'LOCK_ACCOUNT', 'UNLOCK_ACCOUNT', 'CHANGE_ROLE', 'CHANGE_PERMISSION'].includes(log.action)
       || ['SECURITY', 'CRITICAL'].includes(log.severity || '');
   }
@@ -852,6 +1071,328 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     return total > 0 ? Math.ceil(total / size) : 1;
   }
 
+  protected sessionScopeTitle(): string {
+    return this.selectedSessionFrom() && this.selectedSessionTo()
+      ? 'Timeline đang đồng bộ theo phiên record'
+      : 'Timeline dùng bộ lọc thời gian hiện tại';
+  }
+
+  protected sessionScopeRangeLabel(): string {
+    const from = this.selectedSessionFrom();
+    const to = this.selectedSessionTo();
+    if (!from || !to) return 'Chưa chọn phiên record';
+
+    return this.formatReplayTime(new Date(from)) + ' - ' + this.formatReplayTime(new Date(to));
+  }
+
+  protected sessionScopeHint(): string {
+    return this.selectedSessionFrom() && this.selectedSessionTo()
+      ? 'Activity bên dưới chỉ hiển thị trong khoảng phiên đang chọn.'
+      : 'Chọn một phiên record để đồng bộ timeline bên dưới.';
+  }
+
+  private selectedTimelineDateParams(): { from: string; to: string } {
+    const from = this.selectedSessionFrom();
+    const to = this.selectedSessionTo();
+    if (from && to) {
+      return { from, to };
+    }
+    return this.timelineDateParams();
+  }
+
+  private sessionBounds(sessionId: string): { from: string; to: string } | null {
+    const sessionList = this.sessions();
+    const index = sessionList.findIndex((session: any) => session.sessionId === sessionId);
+    if (index < 0) return null;
+
+    const start = Number(sessionList[index]?.timestamp || 0);
+    if (!Number.isFinite(start) || start <= 0) return null;
+
+    const nextSessionStart = Number(sessionList[index - 1]?.timestamp || 0);
+    const fallbackEnd = start + 30 * 60 * 1000;
+    const end = nextSessionStart > start ? nextSessionStart : fallbackEnd;
+    return {
+      from: new Date(start).toISOString(),
+      to: new Date(end).toISOString()
+    };
+  }
+
+  private sessionTimestamp(sessionId?: string): number {
+    if (!sessionId) return 0;
+    const session = this.sessions().find((item: any) => item.sessionId === sessionId);
+    return Number(session?.timestamp || 0);
+  }
+
+  private applySelectedSessionRange(sessionId: string): void {
+    const bounds = this.sessionBounds(sessionId);
+    this.selectedSessionFrom.set(bounds?.from ?? '');
+    this.selectedSessionTo.set(bounds?.to ?? '');
+  }
+
+  private clearSelectedSessionRange(): void {
+    this.selectedSessionFrom.set('');
+    this.selectedSessionTo.set('');
+  }
+
+  private loadTimelineForSelectedSession(): void {
+    this.timelinePage.set(0);
+    this.loadTimeline(false);
+  }
+
+  protected recordingContextForLog(log: ActivityLog): RecordingLogContext | null {
+    const session = this.findSessionForLog(log);
+    if (!session?.sessionId) return null;
+
+    const sessionStart = Number(session.timestamp || 0);
+    const logTime = new Date(log.timestamp).getTime();
+    if (!Number.isFinite(sessionStart) || !Number.isFinite(logTime) || logTime < sessionStart) return null;
+
+    const offsetMs = logTime - sessionStart;
+    const clipStartMs = Math.max(0, offsetMs - 15_000);
+    const clipEndMs = offsetMs + 45_000;
+    return {
+      sessionId: session.sessionId,
+      sessionLabel: this.formatReplayTime(new Date(sessionStart)),
+      sessionStartMs: sessionStart,
+      offsetMs,
+      clipStartMs,
+      clipEndMs,
+      offsetLabel: this.formatDuration(offsetMs),
+      clipLabel: this.formatDuration(clipStartMs) + ' - ' + this.formatDuration(clipEndMs)
+    };
+  }
+
+  protected openRecordingContextForLog(log: ActivityLog): void {
+    this.loadDetailRecording(log);
+  }
+
+  private findSessionForLog(log: ActivityLog): any | null {
+    const logTime = new Date(log.timestamp).getTime();
+    if (!Number.isFinite(logTime)) return null;
+
+    const sessions = this.sessions();
+    for (const session of sessions) {
+      const bounds = this.sessionBounds(session.sessionId);
+      if (!bounds) continue;
+
+      const from = new Date(bounds.from).getTime();
+      const to = new Date(bounds.to).getTime();
+      if (Number.isFinite(from) && Number.isFinite(to) && logTime >= from && logTime <= to) {
+        return session;
+      }
+    }
+
+    return sessions
+      .filter((session: any) => Number(session.timestamp || 0) <= logTime)
+      .sort((a: any, b: any) => Number(b.timestamp || 0) - Number(a.timestamp || 0))[0] || null;
+  }
+
+  private buildDetailRecordingEvents(events: any[], context: RecordingLogContext): any[] {
+    const clipStartAbs = context.sessionStartMs + context.clipStartMs;
+    const clipEndAbs = context.sessionStartMs + context.clipEndMs;
+    const validEvents = events
+      .filter(event => Number.isFinite(Number(event?.timestamp)))
+      .sort((a, b) => Number(a.timestamp) - Number(b.timestamp));
+    if (validEvents.length === 0) return [];
+
+    let snapshotIndex = validEvents.findIndex(event => event.type === 2);
+    for (let i = 0; i < validEvents.length; i++) {
+      const event = validEvents[i] as any;
+      const eventTime = Number(event.timestamp);
+      if (eventTime <= clipStartAbs && event.type === 2) {
+        snapshotIndex = i;
+      }
+      if (eventTime > clipStartAbs) break;
+    }
+    if (snapshotIndex < 0) snapshotIndex = 0;
+
+    const snapshotTime = Number(validEvents[snapshotIndex]?.timestamp || context.sessionStartMs);
+    let metaIndex = -1;
+    for (let i = snapshotIndex; i >= 0; i--) {
+      if ((validEvents[i] as any).type === 4) {
+        metaIndex = i;
+        break;
+      }
+    }
+    if (metaIndex < 0) {
+      metaIndex = validEvents.findIndex(event => event.type === 4);
+    }
+
+    const firstClipEventIndex = validEvents.findIndex(event => Number((event as any).timestamp) >= clipStartAbs);
+    const preludeEndIndex = firstClipEventIndex >= 0 ? firstClipEventIndex : validEvents.length;
+    const preludeEvents = validEvents.slice(snapshotIndex, preludeEndIndex);
+    const clipEvents = validEvents.filter(event => {
+      const eventTime = Number((event as any).timestamp);
+      return eventTime >= clipStartAbs && eventTime <= clipEndAbs;
+    });
+
+    const sourceEvents: any[] = [];
+    if (metaIndex >= 0) {
+      sourceEvents.push(validEvents[metaIndex]);
+    }
+    sourceEvents.push(...preludeEvents, ...clipEvents);
+    if (sourceEvents.length === 0) return [];
+
+    const syntheticBase = Number(validEvents[0]?.timestamp || Date.now());
+    const preludeWindowMs = 100;
+    const preludeSpan = Math.max(1, clipStartAbs - snapshotTime);
+
+    return sourceEvents.map((event, index) => {
+      const cloned = this.cloneRecordingEvent(event);
+      const eventTime = Number((event as any).timestamp);
+      if (index === 0 && cloned.type === 4) {
+        cloned.timestamp = syntheticBase;
+      } else if (eventTime < clipStartAbs) {
+        const compressedOffset = Math.max(1, Math.min(preludeWindowMs, Math.round(((eventTime - snapshotTime) / preludeSpan) * preludeWindowMs)));
+        cloned.timestamp = syntheticBase + compressedOffset;
+      } else {
+        cloned.timestamp = syntheticBase + preludeWindowMs + Math.max(0, Math.min(eventTime, clipEndAbs) - clipStartAbs);
+      }
+      return cloned;
+    });
+  }
+
+  private cloneRecordingEvent(event: any): any {
+    if (typeof structuredClone === 'function') {
+      try {
+        return structuredClone(event);
+      } catch (err) {
+        // Fall back to JSON clone for rrweb payloads that are plain objects.
+      }
+    }
+    return JSON.parse(JSON.stringify(event));
+  }
+
+  private loadDetailRecording(log: ActivityLog): void {
+    const context = this.recordingContextForLog(log);
+    if (!context) {
+      this.hasDetailRecording.set(false);
+      this.detailRecordingStatus.set('Không tìm thấy phiên record liên quan cho log này.');
+      return;
+    }
+
+    const email = this.timelineEmail().trim() || log.operatorEmail || '';
+    if (!email) {
+      this.hasDetailRecording.set(false);
+      this.detailRecordingStatus.set('Thiếu email để tải record liên quan.');
+      return;
+    }
+
+    const requestId = ++this.detailRecordingRequestId;
+    this.destroyDetailPlayer(false);
+    this.isLoadingDetailRecording.set(true);
+    this.hasDetailRecording.set(false);
+    this.detailRecordingStatus.set('Đang tải đoạn record liên quan...');
+
+    this.adminLogsService.getRecording(email, context.sessionId).subscribe({
+      next: (res) => {
+        if (requestId !== this.detailRecordingRequestId || this.selectedLog()?.id !== log.id) return;
+
+        const events = res.data;
+        if (!events || events.length === 0) {
+          this.isLoadingDetailRecording.set(false);
+          this.hasDetailRecording.set(false);
+          this.detailRecordingStatus.set('Phiên record này chưa có dữ liệu replay.');
+          return;
+        }
+
+        const detailEvents = this.buildDetailRecordingEvents(events, context);
+        if (detailEvents.length === 0) {
+          this.isLoadingDetailRecording.set(false);
+          this.hasDetailRecording.set(false);
+          this.detailRecordingStatus.set('Không có sự kiện replay trong đoạn liên quan.');
+          return;
+        }
+
+        const styleUrl = '/rrweb/zt-player-view.css?v=1.0.5';
+        const scriptUrl = '/rrweb/zt-player-view.js?v=1.0.5';
+        this.loadStyle(styleUrl);
+        this.loadScript(scriptUrl).then(() => {
+          if (requestId !== this.detailRecordingRequestId || this.selectedLog()?.id !== log.id) return;
+
+          const win = window as any;
+          if (!win.rrwebPlayer) {
+            this.isLoadingDetailRecording.set(false);
+            this.detailRecordingStatus.set('Không tải được rrweb player.');
+            return;
+          }
+
+          setTimeout(() => {
+            if (requestId !== this.detailRecordingRequestId || this.selectedLog()?.id !== log.id) return;
+
+            const container = document.getElementById('detail-rrweb-player-container');
+            if (!container) {
+              this.isLoadingDetailRecording.set(false);
+              return;
+            }
+            container.innerHTML = '';
+
+            try {
+              this.detailRrwebPlayerInstance = new win.rrwebPlayer({
+                target: container,
+                props: {
+                  events: detailEvents,
+                  width: container.clientWidth || 640,
+                  height: 430,
+                  autoPlay: false
+                }
+              });
+
+              this.detailRrwebPlayerInstance.goto(0);
+              this.hasDetailRecording.set(true);
+              this.isLoadingDetailRecording.set(false);
+              this.detailRecordingStatus.set('');
+            } catch (err) {
+              console.error('Failed to initialize detail rrweb player:', err);
+              this.isLoadingDetailRecording.set(false);
+              this.hasDetailRecording.set(false);
+              this.detailRecordingStatus.set('Không hiển thị được đoạn record liên quan.');
+            }
+          }, 80);
+        }).catch((err: any) => {
+          console.error('Failed to load detail rrweb player script:', err);
+          this.isLoadingDetailRecording.set(false);
+          this.hasDetailRecording.set(false);
+          this.detailRecordingStatus.set('Không tải được player record.');
+        });
+      },
+      error: (err) => {
+        console.error('Failed to load detail recording:', err);
+        if (requestId !== this.detailRecordingRequestId) return;
+        this.isLoadingDetailRecording.set(false);
+        this.hasDetailRecording.set(false);
+        this.detailRecordingStatus.set('Không tải được record liên quan.');
+      }
+    });
+  }
+
+  private seekReplayToLog(log: ActivityLog, leadMs = 15_000): void {
+    if (!this.rrwebPlayerInstance || this.recordingStartTimestamp() <= 0) return;
+
+    const logTime = new Date(log.timestamp).getTime();
+    const offsetMs = logTime - this.recordingStartTimestamp();
+    if (!Number.isFinite(offsetMs) || offsetMs < 0) return;
+
+    this.seekReplayToOffset(Math.max(0, offsetMs - leadMs));
+  }
+
+  private seekReplayToOffset(offsetMs: number): void {
+    if (!this.rrwebPlayerInstance) return;
+
+    try {
+      this.currentReplayOffset.set(offsetMs);
+      this.rrwebPlayerInstance.goto(offsetMs);
+    } catch (err) {
+      console.error('Failed to seek player to recording context:', err);
+    }
+  }
+
+  private formatDuration(durationMs: number): string {
+    const totalSeconds = Math.max(0, Math.floor(durationMs / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return minutes + ':' + seconds.toString().padStart(2, '0');
+  }
   protected get startRecordIndex(): number {
     const total = this.store.totalActivityLogs();
     if (total === 0) return 0;
@@ -917,13 +1458,68 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
       && this.matchesFilter(this.store.activityModule(), log.module);
   }
 
-  private loadTimeline(): void {
+  private rrwebPlayerInstance: any = null;
+  private clockAnimationFrameId: any = null;
+  private pendingReplaySeekOffsetMs: number | null = null;
+  private recordingRequestId = 0;
+  private detailRrwebPlayerInstance: any = null;
+  private detailClockAnimationFrameId: any = null;
+  private detailRecordingRequestId = 0;
+  protected readonly isLoadingDetailRecording = signal(false);
+  protected readonly hasDetailRecording = signal(false);
+  protected readonly detailRecordingStatus = signal('');
+  protected readonly hasRecording = signal(false);
+  protected readonly sessions = signal<any[]>([]);
+  protected readonly selectedSessionId = signal<string>('');
+  private readonly selectedSessionFrom = signal<string>('');
+  private readonly selectedSessionTo = signal<string>('');
+  protected readonly isDeletingRecordingSession = signal(false);
+  protected readonly currentReplayOffset = signal<number>(0);
+  protected readonly currentRealTime = computed(() => {
+    const start = this.recordingStartTimestamp();
+    const offset = this.currentReplayOffset();
+    if (start <= 0) return '';
+    const date = new Date(start + offset);
+    return new Intl.DateTimeFormat('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(date);
+  });
+  private readonly recordingStartTimestamp = signal<number>(0);
+  protected readonly syncedReplayLogId = computed(() => {
+    const start = this.recordingStartTimestamp();
+    if (start <= 0) return '';
+
+    const playbackTime = start + this.currentReplayOffset();
+    const syncWindowMs = 120_000;
+    let closestLog: ActivityLog | null = null;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    for (const log of this.timelineLogs()) {
+      const logTime = new Date(log.timestamp).getTime();
+      if (!Number.isFinite(logTime)) continue;
+
+      const distance = Math.abs(logTime - playbackTime);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestLog = log;
+      }
+    }
+
+    return closestLog && closestDistance <= syncWindowMs ? closestLog.id : '';
+  });
+
+  private loadTimeline(refreshRecording = true): void {
     if (!this.timelineEmail().trim()) {
       this.clearTimeline();
       return;
     }
 
-    const dateParams = this.timelineDateParams();
+    const dateParams = this.selectedTimelineDateParams();
     this.isLoadingTimeline.set(true);
     this.adminLogsService.getActivityTimeline({
       email: this.timelineEmail().trim(),
@@ -949,6 +1545,9 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
         this.behaviorSummary.set([]);
         this.behaviorSummaryFallback.set(false);
         this.isLoadingTimeline.set(false);
+        if (refreshRecording) {
+          this.loadRecordingAndPlayer(this.timelineEmail().trim());
+        }
       },
       error: (err) => {
         console.error('[Activity Timeline Load Error]', err);
@@ -956,6 +1555,293 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
         this.totalTimelineLogs.set(0);
         this.isLoadingTimeline.set(false);
       }
+    });
+  }
+
+  private loadRecordingAndPlayer(email: string): void {
+    this.destroyPlayer();
+    this.hasRecording.set(false);
+    const preferredSessionId = this.selectedSessionId();
+    this.sessions.set([]);
+    this.clearSelectedSessionRange();
+    this.recordingStartTimestamp.set(0);
+    this.currentReplayOffset.set(0);
+
+    if (!email) {
+      this.selectedSessionId.set('');
+      this.recordingRequestId++;
+      return;
+    }
+
+    this.adminLogsService.getRecordingSessions(email).subscribe({
+      next: (res) => {
+        let sessionList = res.data || [];
+        
+        // Filter sessions by the selected time range on top
+        const dateParams = this.selectedTimelineDateParams();
+        if (dateParams.from) {
+          const fromTime = new Date(dateParams.from).getTime();
+          sessionList = sessionList.filter((s: any) => s.timestamp >= fromTime);
+        }
+        if (dateParams.to) {
+          const toTime = new Date(dateParams.to).getTime();
+          sessionList = sessionList.filter((s: any) => s.timestamp <= toTime);
+        }
+
+        this.sessions.set(sessionList);
+        
+        if (sessionList.length > 0) {
+          const selectedSession = sessionList.find((session: any) => session.sessionId === preferredSessionId) || sessionList[0];
+          this.selectedSessionId.set(selectedSession.sessionId);
+          this.applySelectedSessionRange(selectedSession.sessionId);
+          this.fetchAndPlayRecording(email, selectedSession.sessionId, Number(selectedSession.timestamp || 0));
+        } else {
+          this.hasRecording.set(false);
+          this.clearSelectedSessionRange();
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load recording sessions:', err);
+        this.hasRecording.set(false);
+      }
+    });
+  }
+
+  private fetchAndPlayRecording(email: string, sessionId?: string, sessionStartMs?: number): void {
+    const requestId = ++this.recordingRequestId;
+    this.destroyPlayer();
+    this.hasRecording.set(false);
+    this.recordingStartTimestamp.set(0);
+    this.currentReplayOffset.set(0);
+
+    this.adminLogsService.getRecording(email, sessionId).subscribe({
+      next: (res) => {
+        if (requestId !== this.recordingRequestId || sessionId !== this.selectedSessionId()) return;
+        const events = res.data;
+        if (!events || events.length === 0) {
+          this.hasRecording.set(false);
+          this.clearSelectedSessionRange();
+          return;
+        }
+
+        this.hasRecording.set(true);
+        const eventStartMs = Number((events[0] as any).timestamp || 0);
+        const selectedSessionStartMs = Number(sessionStartMs || this.sessionTimestamp(sessionId) || 0);
+        const initialSeekOffsetMs = eventStartMs > 0 && selectedSessionStartMs > eventStartMs
+          ? selectedSessionStartMs - eventStartMs
+          : 0;
+        this.recordingStartTimestamp.set(eventStartMs || selectedSessionStartMs);
+        this.currentReplayOffset.set(initialSeekOffsetMs);
+
+        const styleUrl = '/rrweb/zt-player-view.css?v=1.0.5';
+        const scriptUrl = '/rrweb/zt-player-view.js?v=1.0.5';
+
+        this.loadStyle(styleUrl);
+        this.loadScript(scriptUrl).then(() => {
+          if (requestId !== this.recordingRequestId || sessionId !== this.selectedSessionId()) return;
+          const win = window as any;
+          if (!win.rrwebPlayer) {
+            console.error('rrwebPlayer not loaded');
+            return;
+          }
+
+          setTimeout(() => {
+            if (requestId !== this.recordingRequestId || sessionId !== this.selectedSessionId()) return;
+            const container = document.getElementById('rrweb-player-container');
+            if (!container) {
+              console.error('Container rrweb-player-container not found');
+              return;
+            }
+            container.innerHTML = '';
+
+            try {
+              this.rrwebPlayerInstance = new win.rrwebPlayer({
+                target: container,
+                props: {
+                  events: events,
+                  width: container.clientWidth || 800,
+                  height: 400,
+                  autoPlay: false
+                }
+              });
+
+              if (this.pendingReplaySeekOffsetMs !== null) {
+                this.seekReplayToOffset(this.pendingReplaySeekOffsetMs);
+                this.pendingReplaySeekOffsetMs = null;
+              } else if (initialSeekOffsetMs > 0) {
+                this.seekReplayToOffset(initialSeekOffsetMs);
+              }
+
+              // Create and append a floating clock overlay directly inside the player container
+              const playerEl = container.querySelector('.rr-player');
+              if (playerEl) {
+                const clockEl = document.createElement('div');
+                clockEl.className = 'zt-player-clock-overlay';
+                playerEl.appendChild(clockEl);
+
+                // Set initial text on load
+                const startVal = this.recordingStartTimestamp();
+                if (startVal > 0) {
+                  const date = new Date(startVal);
+                  clockEl.innerText = 'REC - ' + new Intl.DateTimeFormat('vi-VN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  }).format(date);
+                }
+
+                // Poll current time using requestAnimationFrame for 100% reliable clock sync
+                const updateClock = () => {
+                  if (requestId !== this.recordingRequestId || !this.rrwebPlayerInstance) return;
+                  try {
+                    const offset = this.rrwebPlayerInstance.getCurrentTime() || 0;
+                    this.currentReplayOffset.set(offset);
+
+                    const start = this.recordingStartTimestamp();
+                    if (start > 0) {
+                      const date = new Date(start + offset);
+                      clockEl.innerText = 'REC - ' + new Intl.DateTimeFormat('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      }).format(date);
+                    }
+                  } catch (e) {}
+                  this.clockAnimationFrameId = requestAnimationFrame(updateClock);
+                };
+                this.clockAnimationFrameId = requestAnimationFrame(updateClock);
+              }
+            } catch (err) {
+              console.error('Failed to initialize rrweb player:', err);
+            }
+          }, 100);
+        }).catch((err: any) => console.error('Failed to load rrweb player script:', err));
+      },
+      error: (err) => {
+        console.error('Failed to load recording:', err);
+        this.hasRecording.set(false);
+      }
+    });
+  }
+
+  private destroyDetailPlayer(incrementRequest = true): void {
+    if (incrementRequest) {
+      this.detailRecordingRequestId++;
+    }
+    if (this.detailClockAnimationFrameId) {
+      cancelAnimationFrame(this.detailClockAnimationFrameId);
+      this.detailClockAnimationFrameId = null;
+    }
+    if (this.detailRrwebPlayerInstance) {
+      try {
+        if (typeof this.detailRrwebPlayerInstance.$destroy === 'function') {
+          this.detailRrwebPlayerInstance.$destroy();
+        }
+      } catch (err) {
+        console.error('Error destroying detail rrweb player:', err);
+      }
+      this.detailRrwebPlayerInstance = null;
+    }
+    const container = document.getElementById('detail-rrweb-player-container');
+    if (container) {
+      container.innerHTML = '';
+    }
+    this.isLoadingDetailRecording.set(false);
+    this.hasDetailRecording.set(false);
+    this.detailRecordingStatus.set('');
+  }
+
+  private destroyPlayer(): void {
+    if (this.clockAnimationFrameId) {
+      cancelAnimationFrame(this.clockAnimationFrameId);
+      this.clockAnimationFrameId = null;
+    }
+    if (this.rrwebPlayerInstance) {
+      try {
+        if (typeof this.rrwebPlayerInstance.$destroy === 'function') {
+          this.rrwebPlayerInstance.$destroy();
+        }
+      } catch (err) {
+        console.error('Error destroying rrweb player:', err);
+      }
+      this.rrwebPlayerInstance = null;
+    }
+    const container = document.getElementById('rrweb-player-container');
+    if (container) {
+      container.innerHTML = '';
+    }
+  }
+
+  protected onSessionChange(event: Event): void {
+    const sessionId = (event.target as HTMLSelectElement).value;
+    this.selectedSessionId.set(sessionId);
+    this.applySelectedSessionRange(sessionId);
+    this.loadTimelineForSelectedSession();
+    this.fetchAndPlayRecording(this.timelineEmail().trim(), sessionId, this.sessionTimestamp(sessionId));
+  }
+  protected deleteSelectedRecordingSession(): void {
+    const email = this.timelineEmail().trim();
+    const sessionId = this.selectedSessionId();
+    if (!email || !sessionId || this.isDeletingRecordingSession()) return;
+
+    const confirmed = window.confirm('Xóa phiên recording đang chọn? Hành động này không ảnh hưởng activity timeline bên dưới.');
+    if (!confirmed) return;
+
+    this.isDeletingRecordingSession.set(true);
+    this.adminLogsService.deleteRecording(email, sessionId).subscribe({
+      next: () => {
+        this.isDeletingRecordingSession.set(false);
+        this.clearLocalRecordingSessionIfDeleted(email, sessionId);
+        this.clearSelectedSessionRange();
+        this.loadRecordingAndPlayer(email);
+      },
+      error: (err) => {
+        console.error('Failed to delete recording session:', err);
+        this.isDeletingRecordingSession.set(false);
+      }
+    });
+  }
+  private clearLocalRecordingSessionIfDeleted(email: string, sessionId: string): void {
+    if (sessionStorage.getItem('recordingSessionId') !== sessionId) return;
+    if (sessionStorage.getItem('recordingSessionEmail') !== email) return;
+
+    sessionStorage.removeItem('recordingSessionId');
+    sessionStorage.removeItem('recordingSessionEmail');
+    sessionStorage.removeItem('recordingSessionCreatedAt');
+    sessionStorage.removeItem('recordingSessionLastActiveAt');
+  }
+
+  protected isTimelineLogSynced(log: ActivityLog): boolean {
+    return !!log.id && log.id === this.syncedReplayLogId();
+  }
+
+  private loadStyle(url: string): void {
+    if (document.querySelector(`link[href="${url}"]`)) return;
+    const link = document.createElement('link');
+    link.href = url;
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+  }
+
+  private loadScript(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${url}"]`)) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = url;
+      script.type = 'text/javascript';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = (err) => reject(err);
+      document.body.appendChild(script);
     });
   }
 
@@ -969,6 +1855,7 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     this.behaviorSummaryFallback.set(false);
     this.isGeneratingBehaviorSummary.set(false);
     this.isLoadingTimeline.set(false);
+    this.loadRecordingAndPlayer('');
   }
 
   private loadTimelineAccounts(keyword = ''): void {
@@ -1369,4 +2256,31 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
       + value.charAt(firstLetterIndex).toLocaleUpperCase('vi-VN')
       + value.slice(firstLetterIndex + 1);
   }
+
+  protected isAnomalous(line: string): boolean {
+    const l = line.toLowerCase();
+    return l.includes('bất thường') || l.includes('cảnh báo') || l.includes('lỗi') || l.includes('risk') || l.includes('nguy cơ');
+  }
+
+  protected isSecurity(line: string): boolean {
+    const l = line.toLowerCase();
+    return l.includes('đăng nhập') || l.includes('đăng xuất') || l.includes('phiên') || l.includes('localhost') || l.includes('ip') || l.includes('auth');
+  }
+
+  protected isPermission(line: string): boolean {
+    const l = line.toLowerCase();
+    return l.includes('quyền') || l.includes('phân quyền') || l.includes('vai trò') || l.includes('owner') || l.includes('admin');
+  }
+
+  protected isIncident(line: string): boolean {
+    const l = line.toLowerCase();
+    return l.includes('incident') || l.includes('ticket') || l.includes('sự cố') || l.includes('tck-') || l.includes('inc-');
+  }
+
+  protected formatSummaryLine(line: string): string {
+    if (!line) return '';
+    return line.replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 mx-0.5 rounded font-mono text-[10px] font-bold bg-indigo-50 border border-indigo-100 text-indigo-700">$1</code>');
+  }
 }
+
+

@@ -65,7 +65,7 @@ export class TicketsComponent implements OnInit {
   protected startDateVal = '';
   protected endDateVal = '';
   protected readonly staffAccounts = signal<any[]>([]);
-  protected readonly dateFilterVal = signal<TicketDateFilterOption>(TicketDateFilterOption.ALL);
+  protected readonly dateFilterVal = signal<TicketDateFilterOption>(TicketDateFilterOption.TODAY);
 
 
   protected readonly datePresetOptions = [
@@ -233,7 +233,7 @@ export class TicketsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.loadTickets({});
+    this.onDatePresetChange(TicketDateFilterOption.TODAY);
     this.loadStaffAccounts();
   }
 
@@ -263,6 +263,8 @@ export class TicketsComponent implements OnInit {
   protected onDateRangeChange(): void {
     const start = this.startDateVal ? this.startDateVal : null;
     const end = this.endDateVal ? this.endDateVal : null;
+    this.startDateVal = start ?? '';
+    this.endDateVal = end ?? '';
     this.store.setTicketDateRange(start, end);
   }
 
@@ -298,6 +300,8 @@ export class TicketsComponent implements OnInit {
       end = formatDate(now);
     }
 
+    this.startDateVal = start ?? '';
+    this.endDateVal = end ?? '';
     this.store.setTicketDateRange(start, end);
   }
 
@@ -305,7 +309,7 @@ export class TicketsComponent implements OnInit {
     return this.searchVal.trim() !== '' ||
            this.priorityVal !== 'ALL' ||
            this.assigneeVal !== 'ALL' ||
-           this.dateFilterVal() !== TicketDateFilterOption.ALL ||
+           this.dateFilterVal() !== TicketDateFilterOption.TODAY ||
            this.activeFilter() !== 'ALL';
   }
 
@@ -313,11 +317,10 @@ export class TicketsComponent implements OnInit {
     this.searchVal = '';
     this.priorityVal = 'ALL';
     this.assigneeVal = 'ALL';
-    this.startDateVal = '';
-    this.endDateVal = '';
-    this.dateFilterVal.set(TicketDateFilterOption.ALL);
+    this.dateFilterVal.set(TicketDateFilterOption.TODAY);
     this.activeFilter.set('ALL');
     this.store.resetTicketFilters();
+    this.onDatePresetChange(TicketDateFilterOption.TODAY);
   }
 
   protected onAssigneeFilterChange(value: string): void {

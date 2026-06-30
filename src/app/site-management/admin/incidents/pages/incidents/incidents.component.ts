@@ -57,7 +57,7 @@ export class IncidentsComponent implements OnInit {
   protected startDateVal = '';
   protected endDateVal = '';
   protected readonly staffAccounts = signal<AccountSummary[]>([]);
-  protected dateFilterVal = signal<IncidentDateFilterOption>(IncidentDateFilterOption.ALL);
+  protected dateFilterVal = signal<IncidentDateFilterOption>(IncidentDateFilterOption.TODAY);
 
 
   protected readonly datePresetOptions = [
@@ -97,7 +97,7 @@ export class IncidentsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.loadIncidents({});
+    this.onDatePresetChange(IncidentDateFilterOption.TODAY);
     this.loadStaffAccounts();
   }
 
@@ -126,6 +126,8 @@ export class IncidentsComponent implements OnInit {
   protected onDateRangeChange(): void {
     const start = this.startDateVal ? this.startDateVal : null;
     const end = this.endDateVal ? this.endDateVal : null;
+    this.startDateVal = start ?? '';
+    this.endDateVal = end ?? '';
     this.store.setIncidentDateRange(start, end);
   }
 
@@ -161,6 +163,8 @@ export class IncidentsComponent implements OnInit {
       end = formatDate(now);
     }
 
+    this.startDateVal = start ?? '';
+    this.endDateVal = end ?? '';
     this.store.setIncidentDateRange(start, end);
   }
 
@@ -168,11 +172,10 @@ export class IncidentsComponent implements OnInit {
     this.searchVal = '';
     this.severityVal = 'ALL';
     this.assigneeVal = 'ALL';
-    this.startDateVal = '';
-    this.endDateVal = '';
-    this.dateFilterVal.set(IncidentDateFilterOption.ALL);
+    this.dateFilterVal.set(IncidentDateFilterOption.TODAY);
     this.activeFilter.set('ALL');
     this.store.resetIncidentFilters();
+    this.onDatePresetChange(IncidentDateFilterOption.TODAY);
   }
 
   protected viewIncidentDetails(incident: SystemIncident): void {

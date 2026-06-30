@@ -185,7 +185,7 @@
           <p>Theo dõi vấn đề phát sinh và tiến độ xử lý sự cố trong {{ periodLabel().toLowerCase() }}.</p>
         </div>
         <span class="resolution-badge">
-          Tỷ lệ xử lý {{ store.metrics()?.incidentResolutionRate ?? 0 }}%
+          {{ resolutionBadgeLabel() }}
         </span>
       </div>
       <div class="trend-legend" aria-label="Bật hoặc tắt đường dữ liệu trên biểu đồ">
@@ -216,12 +216,12 @@
 
       <div class="resolution-overview">
         <div class="resolution-ring" [style.--resolution]="resolutionProgress() + '%'">
-          <div><strong>{{ resolutionProgress() | number:'1.0-0' }}%</strong><span>đã xử lý</span></div>
+          <div><strong>{{ resolutionPrimaryValue() }}</strong><span>{{ resolutionPrimaryLabel() }}</span></div>
         </div>
         <div class="resolution-copy">
-          <span>Incident trong kỳ</span>
-          <strong>{{ store.metrics()?.incidentsResolvedInPeriod ?? 0 }}/{{ store.metrics()?.incidentsCreatedInPeriod ?? 0 }}</strong>
-          <small>Thời gian xử lý trung bình {{ resolutionTimeLabel() }}</small>
+          <span>Nhịp xử lý trong kỳ</span>
+          <strong>{{ incidentResolutionValue() }}</strong>
+          <small>{{ incidentResolutionDetail() }}</small>
         </div>
       </div>
 

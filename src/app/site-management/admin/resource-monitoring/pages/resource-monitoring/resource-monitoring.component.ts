@@ -59,7 +59,7 @@ export class ResourceMonitoringComponent implements OnInit, OnDestroy {
   private readonly service = inject(AdminObservabilityService);
   private readonly route = inject(ActivatedRoute);
 
-  protected readonly period = signal<DashboardPeriod>('7D');
+  protected readonly period = signal<DashboardPeriod>('TODAY');
   protected readonly data = signal<AdminObservabilityData | null>(null);
   protected readonly isLoading = signal(false);
   protected readonly error = signal<string | null>(null);

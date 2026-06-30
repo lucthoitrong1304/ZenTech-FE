@@ -156,6 +156,57 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const remainingMinutes = minutes % 60;
     return remainingMinutes ? `${hours} giờ ${remainingMinutes} phút` : `${hours} giờ`;
   }
+
+  protected resolutionBadgeLabel(): string {
+    const created = this.store.metrics()?.incidentsCreatedInPeriod ?? 0;
+    if (created === 0) {
+      return '0 incident mới';
+    }
+
+    return `Tỷ lệ xử lý ${this.store.metrics()?.incidentResolutionRate ?? 0}%`;
+  }
+
+  protected resolutionPrimaryValue(): string {
+    const created = this.store.metrics()?.incidentsCreatedInPeriod ?? 0;
+    const resolved = this.store.metrics()?.incidentsResolvedInPeriod ?? 0;
+    if (created === 0) {
+      return `${resolved}`;
+    }
+
+    return `${Math.round(this.resolutionProgress())}%`;
+  }
+
+  protected resolutionPrimaryLabel(): string {
+    const created = this.store.metrics()?.incidentsCreatedInPeriod ?? 0;
+    const resolved = this.store.metrics()?.incidentsResolvedInPeriod ?? 0;
+    if (created === 0 && resolved > 0) {
+      return 'đã xử lý';
+    }
+
+    return created === 0 ? 'phát sinh mới' : 'đã xử lý';
+  }
+
+  protected incidentResolutionValue(): string {
+    const created = this.store.metrics()?.incidentsCreatedInPeriod ?? 0;
+    const resolved = this.store.metrics()?.incidentsResolvedInPeriod ?? 0;
+    if (created === 0) {
+      return resolved > 0 ? 'Không có incident mới' : 'Không có incident';
+    }
+
+    return `${resolved}/${created}`;
+  }
+
+  protected incidentResolutionDetail(): string {
+    const created = this.store.metrics()?.incidentsCreatedInPeriod ?? 0;
+    const resolved = this.store.metrics()?.incidentsResolvedInPeriod ?? 0;
+    if (created === 0 && resolved > 0) {
+      return `${resolved} incident cũ đã xử lý trong kỳ`;
+    }
+    if (created === 0) {
+      return 'Chưa phát sinh incident trong kỳ';
+    }
+    return `Thời gian xử lý trung bình ${this.resolutionTimeLabel()}`;
+  }
   protected toggleTrendSeries(key: string): void {
     const hidden = new Set(this.hiddenTrendSeries());
     if (hidden.has(key)) hidden.delete(key);

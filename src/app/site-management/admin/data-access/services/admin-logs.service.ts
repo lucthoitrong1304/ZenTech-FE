@@ -126,6 +126,52 @@ export class AdminLogsService {
     );
   }
 
+  uploadRecording(email: string, sessionId: string, events: any[]): Observable<ApiResponse<void>> {
+    return this.apiService.post<any[], ApiResponse<void>>(
+      `${this.activityLogsUrl}/recordings?email=${encodeURIComponent(email)}&sessionId=${encodeURIComponent(sessionId)}`,
+      events,
+      {
+        context: new HttpContext()
+          .set(SKIP_CLIENT_LOG, true)
+          .set(SKIP_GLOBAL_ERROR, true)
+      }
+    );
+  }
+
+  getRecording(email: string, sessionId?: string): Observable<ApiResponse<any[]>> {
+    const url = sessionId
+      ? `${this.activityLogsUrl}/recordings?email=${encodeURIComponent(email)}&sessionId=${encodeURIComponent(sessionId)}`
+      : `${this.activityLogsUrl}/recordings?email=${encodeURIComponent(email)}`;
+    return this.apiService.get<ApiResponse<any[]>>(
+      url,
+      {
+        context: new HttpContext()
+          .set(SKIP_CLIENT_LOG, true)
+          .set(SKIP_GLOBAL_ERROR, true)
+      }
+    );
+  }
+
+  getRecordingSessions(email: string): Observable<ApiResponse<any[]>> {
+    return this.apiService.get<ApiResponse<any[]>>(
+      `${this.activityLogsUrl}/recordings/sessions?email=${encodeURIComponent(email)}`,
+      {
+        context: new HttpContext()
+          .set(SKIP_CLIENT_LOG, true)
+          .set(SKIP_GLOBAL_ERROR, true)
+      }
+    );
+  }
+  deleteRecording(email: string, sessionId?: string): Observable<ApiResponse<void>> {
+    const url = sessionId
+      ? `${this.activityLogsUrl}/recordings?email=${encodeURIComponent(email)}&sessionId=${encodeURIComponent(sessionId)}`
+      : `${this.activityLogsUrl}/recordings?email=${encodeURIComponent(email)}`;
+    return this.apiService.delete<ApiResponse<void>>(url, {
+      context: new HttpContext()
+        .set(SKIP_CLIENT_LOG, true)
+        .set(SKIP_GLOBAL_ERROR, true)
+    });
+  }
   /**
    * Gọi AI phân tích và giải thích log lỗi nhanh
    */
