@@ -24,8 +24,15 @@
       <strong class="line-clamp-2 text-sm font-semibold leading-5 sm:text-base">
         {{ product.name }}
       </strong>
-      <span class="text-base font-bold text-[#b45309] sm:text-lg">
-        {{ formatPrice(product.price) }}
+      <span class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <span class="text-base font-bold text-[#b45309] sm:text-lg">
+          {{ formatPrice(currentPrice(product)) }}
+        </span>
+        @if (originalDisplayPrice(product); as originalPrice) {
+          <span class="text-xs font-semibold text-[#8a817f] line-through sm:text-sm">
+            {{ formatPrice(originalPrice) }}
+          </span>
+        }
       </span>
       <span
         class="w-fit rounded-[5px] px-2 py-1 text-[11px] font-semibold"
@@ -69,7 +76,16 @@
           <strong class="line-clamp-2 min-h-10 text-xs font-semibold leading-5">
             {{ product.name }}
           </strong>
-          <span class="text-sm font-bold text-[#b45309]">{{ formatPrice(product.price) }}</span>
+          <span class="flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
+            <span class="text-sm font-bold text-[#b45309]">
+              {{ formatPrice(currentPrice(product)) }}
+            </span>
+            @if (originalDisplayPrice(product); as originalPrice) {
+              <span class="text-[11px] font-semibold text-[#8a817f] line-through">
+                {{ formatPrice(originalPrice) }}
+              </span>
+            }
+          </span>
           <span class="text-[11px] font-medium text-[#625b59]">
             {{ product.stock > 0 ? 'Còn ' + product.stock + ' sản phẩm' : 'Tạm hết hàng' }}
           </span>
