@@ -130,7 +130,13 @@ export class ProductDialogComponent implements OnDestroy {
             compatibilityRaw: currentDraft.compatibilityRaw || '',
             boxContentsRaw: currentDraft.boxContentsRaw || '',
             supportInfoRaw: currentDraft.supportInfoRaw || '',
-            variants: currentDraft.variants ? [...currentDraft.variants] : [],
+            variants: currentDraft.variants
+              ? currentDraft.variants.map(variant => ({
+                  ...variant,
+                  saleStartAt: this.toDateTimeLocalValue(variant.saleStartAt),
+                  saleEndAt: this.toDateTimeLocalValue(variant.saleEndAt),
+                }))
+              : [],
           });
           this.activeTab.set('basic');
           this.newVariant.set(this.createEmptyVariant());
@@ -284,7 +290,68 @@ export class ProductDialogComponent implements OnDestroy {
       return;
     }
 
-    this.save.emit(state);
+    this.save.emit({
+      ...state,
+      variants: state.variants.map(variant => ({
+        ...variant,
+        saleStartAt: this.toIsoInstantValue(variant.saleStartAt),
+        saleEndAt: this.toIsoInstantValue(variant.saleEndAt),
+      })),
+    });
+  }
+
+  protected formatSaleWindow(variant: ProductVariantUpsertRequest): string {
+    if (!variant.salePrice) {
+      return 'Không có';
+    }
+
+    const start = this.formatDateTime(variant.saleStartAt);
+    const end = this.formatDateTime(variant.saleEndAt);
+    if (start && end) {
+      return `${start} - ${end}`;
+    }
+    if (start) {
+      return `Từ ${start}`;
+    }
+    if (end) {
+      return `Đến ${end}`;
+    }
+    return 'Không giới hạn';
+  }
+
+  private toDateTimeLocalValue(value: string | null | undefined): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    const pad = (part: number) => part.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+
+  private toIsoInstantValue(value: string | null | undefined): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  }
+
+  private formatDateTime(value: string | null | undefined): string | null {
+    const isoValue = this.toIsoInstantValue(value);
+    if (!isoValue) {
+      return null;
+    }
+
+    return new Intl.DateTimeFormat('vi-VN', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    }).format(new Date(isoValue));
   }
 
   ngOnDestroy(): void {

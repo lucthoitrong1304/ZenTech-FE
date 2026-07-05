@@ -185,6 +185,7 @@
                 <th>Mã màu Hex</th>
                 <th>Giá bán gốc</th>
                 <th>Giá khuyến mãi</th>
+                <th>Thời gian khuyến mãi</th>
                 <th>Tồn kho</th>
                 <th>Hành động</th>
               </tr>
@@ -202,6 +203,7 @@
                   </td>
                   <td>{{ v.originalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</td>
                   <td>{{ v.salePrice ? (v.salePrice | currency: 'VND' : 'symbol' : '1.0-0') : 'Không có' }}</td>
+                  <td>{{ formatSaleWindow(v) }}</td>
                   <td>{{ v.stockQuantity }}</td>
                   <td>
                     <button type="button" class="variant-delete-btn" (click)="removeVariant($index)">
@@ -211,7 +213,7 @@
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="7" class="variants-table-empty">
+                  <td colspan="8" class="variants-table-empty">
                     Chưa có biến thể nào. Sản phẩm bắt buộc phải có ít nhất 1 biến thể.
                   </td>
                 </tr>
@@ -272,6 +274,24 @@
                 [ngModel]="newVariant().salePrice"
                 (ngModelChange)="onNewVariantFieldChange({ salePrice: $event || null })"
                 placeholder="Giá khuyến mãi..."
+              />
+            </label>
+
+            <label class="product-field">
+              <span>Bắt đầu khuyến mãi</span>
+              <input
+                type="datetime-local"
+                [ngModel]="newVariant().saleStartAt"
+                (ngModelChange)="onNewVariantFieldChange({ saleStartAt: $event || null })"
+              />
+            </label>
+
+            <label class="product-field">
+              <span>Kết thúc khuyến mãi</span>
+              <input
+                type="datetime-local"
+                [ngModel]="newVariant().saleEndAt"
+                (ngModelChange)="onNewVariantFieldChange({ saleEndAt: $event || null })"
               />
             </label>
 
