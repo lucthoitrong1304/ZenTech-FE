@@ -433,6 +433,11 @@ export const CustomerChatStore = signalStore(
         return context ? { ...payload, pageContext: context } : payload;
       };
 
+      const getActiveConversation = (): ConversationResponse | null => {
+        const activeId = store.activeConversationId();
+        return activeId ? store.conversations().find((c) => c.id === activeId) ?? null : null;
+      };
+
       const switchConversation = rxMethod<string>(
         pipe(
           tap((id) => {
@@ -523,7 +528,8 @@ export const CustomerChatStore = signalStore(
                               patchState(store, removeEntity('ai-streaming', MESSAGE_ENTITY_CONFIG));
                             }
                           }
-                          const participants = conv.participants || [];
+                          const currentConversation = getActiveConversation() ?? conv;
+                          const participants = currentConversation.participants || [];
                           const senderPart = participants.find(
                             (p) => p.referenceId === msg.senderReferenceId
                           );
@@ -564,7 +570,12 @@ export const CustomerChatStore = signalStore(
 
                           patchState(store, addEntity(mappedMsg, MESSAGE_ENTITY_CONFIG), {
                             sending: false,
-                            aiResponding: msg.senderType === ParticipantType.BOT ? false : store.aiResponding(),
+                            aiResponding:
+                              msg.senderType === ParticipantType.BOT ||
+                              store.session()?.status !==
+                                ('BOT_CONSULTING' as unknown as CustomerChatSessionStatus)
+                                ? false
+                                : store.aiResponding(),
                             lastActivityLabel: mappedMsg.sentAtLabel,
                           });
 
@@ -606,7 +617,13 @@ export const CustomerChatStore = signalStore(
                             authStorageService.getSession()?.accountId || null
                           );
                           newSession.messages = store.messages();
-                          patchState(store, { session: newSession });
+                          patchState(store, {
+                            session: newSession,
+                            aiResponding:
+                              updatedConv.status === ConversationStatus.BOT_CONSULTING
+                                ? store.aiResponding()
+                                : false,
+                          });
                         }
                       });
                   }
