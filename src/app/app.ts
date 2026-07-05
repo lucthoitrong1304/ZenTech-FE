@@ -214,7 +214,8 @@ export class App {
 
   private getRecordingSessionId(email: string, events: any[] = []): string {
     const now = Date.now();
-    const eventTime = this.getLatestRecordingEventTime(events) ?? now;
+    const sessionStartTime = this.getFirstRecordingEventTime(events) ?? now;
+    const eventTime = this.getLatestRecordingEventTime(events) ?? sessionStartTime;
     const storedEmail = sessionStorage.getItem('recordingSessionEmail');
     const sessionCreatedAt = Number(sessionStorage.getItem('recordingSessionCreatedAt') || '0');
     const sessionLastActiveAt = Number(sessionStorage.getItem('recordingSessionLastActiveAt') || '0');
@@ -224,14 +225,14 @@ export class App {
       !sessionId ||
       storedEmail !== email ||
       sessionCreatedAt <= 0 ||
-      eventTime - sessionCreatedAt >= App.RECORDING_SESSION_MAX_AGE_MS ||
+      sessionStartTime - sessionCreatedAt >= App.RECORDING_SESSION_MAX_AGE_MS ||
       (sessionLastActiveAt > 0 && eventTime - sessionLastActiveAt >= App.RECORDING_IDLE_BREAK_MS);
 
     if (shouldRotateSession) {
-      sessionId = this.createRecordingSessionId(eventTime);
+      sessionId = this.createRecordingSessionId(sessionStartTime);
       sessionStorage.setItem('recordingSessionId', sessionId);
       sessionStorage.setItem('recordingSessionEmail', email);
-      sessionStorage.setItem('recordingSessionCreatedAt', String(eventTime));
+      sessionStorage.setItem('recordingSessionCreatedAt', String(sessionStartTime));
     }
 
     sessionStorage.setItem('recordingSessionLastActiveAt', String(eventTime));
@@ -241,6 +242,16 @@ export class App {
   private createRecordingSessionId(timestamp: number): string {
     const uuid = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
     return `${timestamp}_${uuid}`;
+  }
+
+  private getFirstRecordingEventTime(events: any[]): number | null {
+    for (const event of events) {
+      const timestamp = Number(event?.timestamp);
+      if (Number.isFinite(timestamp) && timestamp > 0) {
+        return timestamp;
+      }
+    }
+    return null;
   }
 
   private getLatestRecordingEventTime(events: any[]): number | null {

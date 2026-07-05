@@ -173,13 +173,28 @@
               </tr>
             </thead>
             <tbody>
-              @for (log of visibleLogs(); track log.id) {
+              @for (log of visibleLogs(); track log.id; let rowIndex = $index) {
                 <tr class="logs-row" (click)="openLogDetails(log)">
                   <td class="logs-td logs-td--expand">
                     <svg lucideChevronDown [attr.stroke-width]="2"></svg>
                   </td>
                   <td class="logs-td logs-td--time">
-                    {{ log.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}
+                    <div class="logs-time-cell" [class.logs-time-cell--trace]="isTraceIdSearch()">
+                      <span class="logs-time-line" aria-hidden="true"></span>
+                      <span class="logs-time-dot" aria-hidden="true"></span>
+                      <div class="logs-time-copy">
+                        <span class="logs-time-primary">{{ formatLogClock(log.timestamp) }}</span>
+                        <span class="logs-time-secondary">{{ formatLogDate(log.timestamp) }}</span>
+                        @if (isTraceIdSearch()) {
+                          <span class="logs-time-flow-chip" [ngClass]="'logs-time-flow-chip--rank-' + traceFlowRank(log)">{{ traceFlowLabel(log) }}</span>
+                        } @else {
+                          <span class="logs-time-relative">{{ relativeLogTime(log.timestamp) }}</span>
+                        }
+                        @if (timeGapFromPrevious(rowIndex); as gapLabel) {
+                          <span class="logs-time-gap">{{ gapLabel }}</span>
+                        }
+                      </div>
+                    </div>
                   </td>
                   <td class="logs-td logs-td--level">
                     <span class="logs-level-badge" [class]="'level-' + log.level.toLowerCase()">

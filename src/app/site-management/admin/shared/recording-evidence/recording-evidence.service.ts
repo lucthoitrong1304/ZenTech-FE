@@ -18,6 +18,7 @@ export class RecordingEvidenceService {
   private readonly sessionCache = new Map<string, CachedSessions>();
   private readonly sessionCacheTtlMs = 5 * 60 * 1000;
   private readonly maxOpenSessionDurationMs = 30 * 60 * 1000;
+  private readonly preSessionMatchGraceMs = 60 * 1000;
 
   resolveEvidence(request: RecordingEvidenceRequest): Observable<RecordingEvidenceResult> {
     const email = this.normalizeEmail(request.email);
@@ -39,12 +40,6 @@ export class RecordingEvidenceService {
         if (!session) {
           return throwError(() => new Error('NO_SESSION'));
         }
-
-        const sessionStartMs = Number(session.timestamp);
-        const offsetMs = Math.max(0, eventTimestampMs - sessionStartMs);
-        const clipStartMs = Math.max(0, offsetMs - Math.max(0, request.clipBeforeMs));
-        const clipEndMs = offsetMs + Math.max(0, request.clipAfterMs);
-
         return this.adminLogsService.getRecording(email, session.sessionId).pipe(
           map((res) => {
             const rawEvents = Array.isArray(res.data) ? res.data : [];
@@ -52,6 +47,10 @@ export class RecordingEvidenceService {
               throw new Error('NO_EVENTS');
             }
 
+            const sessionStartMs = this.getFirstRecordingEventTime(rawEvents) ?? Number(session.timestamp);
+            const offsetMs = Math.max(0, eventTimestampMs - sessionStartMs);
+            const clipStartMs = Math.max(0, offsetMs - Math.max(0, request.clipBeforeMs));
+            const clipEndMs = offsetMs + Math.max(0, request.clipAfterMs);
             const events = this.buildRecordingClip(rawEvents, sessionStartMs, clipStartMs, clipEndMs);
             if (events.length === 0) {
               throw new Error('NO_CLIP_EVENTS');
@@ -116,11 +115,22 @@ export class RecordingEvidenceService {
       const start = Number(current.timestamp);
       const nextStart = next ? Number(next.timestamp) : Number.POSITIVE_INFINITY;
       const end = Math.min(nextStart, start + this.maxOpenSessionDurationMs);
-      if (timestampMs >= start && timestampMs < end) {
+      const startsJustAfterLog = timestampMs < start && start - timestampMs <= this.preSessionMatchGraceMs;
+      if ((timestampMs >= start && timestampMs < end) || startsJustAfterLog) {
         return current;
       }
     }
 
+    return null;
+  }
+
+  private getFirstRecordingEventTime(events: any[]): number | null {
+    for (const event of events) {
+      const timestamp = Number(event?.timestamp);
+      if (Number.isFinite(timestamp) && timestamp > 0) {
+        return timestamp;
+      }
+    }
     return null;
   }
 

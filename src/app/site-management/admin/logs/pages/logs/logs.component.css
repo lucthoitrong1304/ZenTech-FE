@@ -211,7 +211,7 @@
 }
 
 .logs-th--time {
-  @apply w-48;
+  @apply w-56;
 }
 
 .logs-th--level {
@@ -332,7 +332,76 @@
 }
 
 .logs-td--time {
-  @apply text-gray-500 font-mono text-xs;
+  @apply text-gray-500 font-mono text-xs align-top;
+}
+
+.logs-time-cell {
+  @apply relative flex min-h-14 gap-3 pl-2;
+}
+
+.logs-time-line {
+  @apply absolute left-[11px] top-0 bottom-[-18px] w-px bg-gray-200;
+}
+
+.logs-row:last-child .logs-time-line {
+  @apply bottom-0;
+}
+
+.logs-time-dot {
+  @apply relative z-10 mt-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-gray-400 shadow-sm ring-2 ring-gray-100;
+}
+
+.logs-time-cell--trace .logs-time-dot {
+  @apply bg-indigo-500 ring-indigo-100;
+}
+
+.logs-time-copy {
+  @apply flex min-w-0 flex-col gap-0.5;
+}
+
+.logs-time-primary {
+  @apply text-sm font-black leading-none text-gray-950 tabular-nums;
+}
+
+.logs-time-secondary {
+  @apply text-[10px] font-semibold text-gray-400 tabular-nums;
+}
+
+.logs-time-relative,
+.logs-time-gap {
+  @apply w-fit rounded-full border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] font-bold text-gray-500;
+}
+
+.logs-time-gap {
+  @apply border-dashed bg-white text-gray-400;
+}
+
+.logs-time-flow-chip {
+  @apply mt-1 w-fit rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wide;
+}
+
+.logs-time-flow-chip--rank-0 {
+  @apply border-sky-200 bg-sky-50 text-sky-700;
+}
+
+.logs-time-flow-chip--rank-1 {
+  @apply border-amber-200 bg-amber-50 text-amber-700;
+}
+
+.logs-time-flow-chip--rank-2 {
+  @apply border-indigo-200 bg-indigo-50 text-indigo-700;
+}
+
+.logs-time-flow-chip--rank-3 {
+  @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+}
+
+.logs-time-flow-chip--rank-4 {
+  @apply border-teal-200 bg-teal-50 text-teal-700;
+}
+
+.logs-time-flow-chip--rank-5 {
+  @apply border-gray-200 bg-gray-50 text-gray-600;
 }
 
 .logs-td--category {

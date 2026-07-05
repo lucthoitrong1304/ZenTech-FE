@@ -26,6 +26,18 @@ export const httpClientLogInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
+  if (LOGGED_SUCCESS_METHODS.has(req.method)) {
+    clientLogService.info(
+      ClientLogEventType.HttpRequestStarted,
+      `${req.method} ${req.url} started.`,
+      {
+        method: req.method,
+        apiPath: req.url,
+        traceId,
+      },
+    );
+  }
+
   return next(req).pipe(
     tap((event: HttpEvent<unknown>) => {
       if (event.type !== HttpEventType.Response || !LOGGED_SUCCESS_METHODS.has(req.method)) {

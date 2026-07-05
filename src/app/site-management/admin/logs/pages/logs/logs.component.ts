@@ -114,6 +114,7 @@ export class LogsComponent implements OnInit, OnDestroy {
   private readonly ngZone = inject(NgZone);
   private readonly route = inject(ActivatedRoute);
   private wsSubscription: Subscription | null = null;
+  private routeSubscription: Subscription | null = null;
 
   protected readonly chatHistories = signal<Record<string, Array<{ role: 'user' | 'assistant'; content: string }>>>({});
   protected readonly chatInputs = signal<Record<string, string>>({});
@@ -141,32 +142,118 @@ export class LogsComponent implements OnInit, OnDestroy {
   protected readonly explainingIds = signal<Record<string, boolean>>({});
 
   ngOnInit(): void {
-    const traceId = this.route.snapshot.queryParamMap.get('traceId') || '';
-    this.searchText.set(traceId);
-    if (traceId) {
-      this.store.loadLogs({ level: 'ALL', search: traceId, traceId });
-    } else {
-      this.reloadLogsFromServer();
-    }
+    this.routeSubscription = this.route.queryParamMap.subscribe(params => {
+      const traceId = params.get('traceId') || '';
+      this.searchText.set(traceId);
+      this.visibleLogCount.set(this.logPageSize);
+
+      if (traceId) {
+        this.store.setLogSearch(traceId);
+      } else {
+        this.reloadLogsFromServer();
+      }
+    });
     this.startRealtimeLogs();
   }
 
   ngOnDestroy(): void {
+    this.routeSubscription?.unsubscribe();
     this.stopRealtimeLogs();
   }
 
   protected readonly displayedLogs = computed(() => {
     const logs = this.filterLogsByTimeRange(this.store.filteredLogs());
     const service = this.activeService();
+    const filteredLogs = service === LogServiceCategory.ALL
+      ? logs
+      : logs.filter(log => this.normalizeServiceCategory(log.category) === service);
 
-    if (service === LogServiceCategory.ALL) {
-      return logs;
+    if (!this.isTraceIdSearch()) {
+      return filteredLogs;
     }
 
-    return logs.filter(log => this.normalizeServiceCategory(log.category) === service);
+    return [...filteredLogs].sort((a, b) => {
+      const timeDelta = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      if (timeDelta !== 0) return timeDelta;
+      return this.traceFlowRank(b) - this.traceFlowRank(a);
+    });
   });
 
   protected readonly visibleLogs = computed(() => this.displayedLogs().slice(0, this.visibleLogCount()));
+
+  protected isTraceIdSearch(): boolean {
+    const search = this.searchText().trim().toLowerCase();
+    return search.startsWith('zt-') && search.length > 5;
+  }
+
+  protected formatLogClock(value: Date): string {
+    return new Intl.DateTimeFormat('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(new Date(value));
+  }
+
+  protected formatLogDate(value: Date): string {
+    return new Intl.DateTimeFormat('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(new Date(value));
+  }
+
+  protected relativeLogTime(value: Date): string {
+    const diffMs = Date.now() - new Date(value).getTime();
+    if (!Number.isFinite(diffMs)) return '';
+    if (diffMs < 30_000) return 'now';
+    if (diffMs < 60_000) return `${Math.floor(diffMs / 1000)}s ago`;
+    if (diffMs < 60 * 60_000) return `${Math.floor(diffMs / 60_000)}m ago`;
+    if (diffMs < 24 * 60 * 60_000) return `${Math.floor(diffMs / (60 * 60_000))}h ago`;
+    return `${Math.floor(diffMs / (24 * 60 * 60_000))}d ago`;
+  }
+
+  protected timeGapFromPrevious(index: number): string {
+    const logs = this.visibleLogs();
+    if (index <= 0 || index >= logs.length) return '';
+
+    const previousTime = new Date(logs[index - 1].timestamp).getTime();
+    const currentTime = new Date(logs[index].timestamp).getTime();
+    const diffMs = Math.abs(previousTime - currentTime);
+    if (!Number.isFinite(diffMs) || diffMs < 1000) return '';
+
+    const seconds = Math.floor(diffMs / 1000);
+    if (seconds < 60) return `gap ${seconds}s`;
+
+    const minutes = Math.floor(seconds / 60);
+    const restSeconds = seconds % 60;
+    return restSeconds > 0 ? `gap ${minutes}m ${restSeconds}s` : `gap ${minutes}m`;
+  }
+
+  protected traceFlowLabel(log: SystemLog): string {
+    const rank = this.traceFlowRank(log);
+    if (rank === 0) return 'FE SENT';
+    if (rank === 1) return 'BE IN';
+    if (rank === 2) return 'BE PROCESS';
+    if (rank === 3) return 'BE OUT';
+    if (rank === 4) return 'FE RECEIVED';
+    return 'Related';
+  }
+
+  protected traceFlowRank(log: SystemLog): number {
+    const message = `${log.message || ''} ${log.details || ''}`.toLowerCase();
+    const category = this.normalizeServiceCategory(log.category);
+    const context = this.parseClientLogStack(log.details);
+    const eventType = context?.eventType || '';
+
+    if (eventType === 'HttpRequestStarted') return 0;
+    if (category === LogServiceCategory.BACKEND && message.includes('incoming request')) return 1;
+    if (category === LogServiceCategory.BACKEND && message.includes('outgoing response')) return 3;
+    if (eventType === 'HttpRequestSucceeded' || eventType === 'HttpRequestFailed') return 4;
+    if (category === LogServiceCategory.BACKEND && message.includes('/api/auth')) return 2;
+    if (category === LogServiceCategory.FRONTEND) return 5;
+    return 5;
+  }
 
   protected handleFilterChange(filter: LogLevel | 'ALL'): void {
     this.activeFilter.set(filter);

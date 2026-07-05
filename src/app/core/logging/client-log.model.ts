@@ -8,6 +8,7 @@ export enum ClientLogLevel {
 export enum ClientLogEventType {
   RuntimeError = 'RuntimeError',
   UnhandledPromiseRejection = 'UnhandledPromiseRejection',
+  HttpRequestStarted = 'HttpRequestStarted',
   HttpRequestSucceeded = 'HttpRequestSucceeded',
   HttpRequestFailed = 'HttpRequestFailed',
   RouteNavigated = 'RouteNavigated',

@@ -1196,14 +1196,18 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
 
       const from = new Date(bounds.from).getTime();
       const to = new Date(bounds.to).getTime();
-      if (Number.isFinite(from) && Number.isFinite(to) && logTime >= from && logTime <= to) {
+      const startsJustAfterLog = Number.isFinite(from) && logTime < from && from - logTime <= 60_000;
+      if (Number.isFinite(from) && Number.isFinite(to) && ((logTime >= from && logTime <= to) || startsJustAfterLog)) {
         return session;
       }
     }
 
     return sessions
-      .filter((session: any) => Number(session.timestamp || 0) <= logTime)
-      .sort((a: any, b: any) => Number(b.timestamp || 0) - Number(a.timestamp || 0))[0] || null;
+      .filter((session: any) => {
+        const sessionStart = Number(session.timestamp || 0);
+        return sessionStart <= logTime || (sessionStart > logTime && sessionStart - logTime <= 60_000);
+      })
+      .sort((a: any, b: any) => Math.abs(Number(a.timestamp || 0) - logTime) - Math.abs(Number(b.timestamp || 0) - logTime))[0] || null;
   }
 
   private buildDetailRecordingEvents(events: any[], context: RecordingLogContext): any[] {
@@ -1271,6 +1275,15 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private getFirstRecordingEventTime(events: any[]): number | null {
+    for (const event of events) {
+      const timestamp = Number(event?.timestamp);
+      if (Number.isFinite(timestamp) && timestamp > 0) {
+        return timestamp;
+      }
+    }
+    return null;
+  }
   private cloneRecordingEvent(event: any): any {
     if (typeof structuredClone === 'function') {
       try {
@@ -1315,7 +1328,9 @@ export class ActivityLogsComponent implements OnInit, OnDestroy {
           return;
         }
 
-        const detailEvents = this.buildDetailRecordingEvents(events, context);
+        const recordingStartMs = this.getFirstRecordingEventTime(events) ?? context.sessionStartMs;
+        const resolvedContext = { ...context, sessionStartMs: recordingStartMs };
+        const detailEvents = this.buildDetailRecordingEvents(events, resolvedContext);
         if (detailEvents.length === 0) {
           this.isLoadingDetailRecording.set(false);
           this.hasDetailRecording.set(false);
