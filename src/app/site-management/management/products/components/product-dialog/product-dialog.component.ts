@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import {
   LucideCheck,
   LucideInfo,
+  LucidePencil,
   LucidePlus,
   LucideTrash,
   LucideUpload,
@@ -35,6 +36,7 @@ interface ProductImageItem {
     DialogModule,
     LucideCheck,
     LucideInfo,
+    LucidePencil,
     LucidePlus,
     LucideTrash,
     LucideUpload,
@@ -62,6 +64,7 @@ export class ProductDialogComponent implements OnDestroy {
 
   // For adding a new variant
   protected readonly newVariant = signal<ProductVariantUpsertRequest>(this.createEmptyVariant());
+  protected readonly editingVariantIndex = signal<number | null>(null);
   protected readonly uploadingImages = signal(false);
 
   readonly visible = input.required<boolean>();
@@ -96,6 +99,14 @@ export class ProductDialogComponent implements OnDestroy {
     this.mode() === 'edit'
       ? 'Cập nhật thông tin chi tiết, đặc tả kỹ thuật và các biến thể sản phẩm.'
       : 'Tạo sản phẩm công nghệ mới trong hệ thống.'
+  );
+
+  protected readonly variantFormTitle = computed(() =>
+    this.editingVariantIndex() === null ? 'Thêm biến thể mới' : 'Chỉnh sửa biến thể'
+  );
+
+  protected readonly variantSubmitLabel = computed(() =>
+    this.editingVariantIndex() === null ? 'Thêm biến thể' : 'Cập nhật biến thể'
   );
 
   constructor() {
@@ -140,6 +151,7 @@ export class ProductDialogComponent implements OnDestroy {
           });
           this.activeTab.set('basic');
           this.newVariant.set(this.createEmptyVariant());
+          this.editingVariantIndex.set(null);
           this.hydratedMode = mode;
         });
       }
@@ -265,14 +277,49 @@ export class ProductDialogComponent implements OnDestroy {
       return;
     }
 
+    if (!this.validateVariant(v)) {
+      return;
+    }
+
     const currentVariants = this.formState().variants;
+    const editingIndex = this.editingVariantIndex();
+    if (editingIndex !== null) {
+      const nextVariants = currentVariants.map((variant, index) =>
+        index === editingIndex ? { ...v, id: variant.id } : variant
+      );
+      this.onFieldChange({ variants: nextVariants });
+      this.cancelVariantEdit();
+      return;
+    }
+
     this.onFieldChange({ variants: [...currentVariants, { ...v }] });
+    this.newVariant.set(this.createEmptyVariant());
+  }
+
+  protected editVariant(index: number): void {
+    const variant = this.formState().variants[index];
+    if (!variant) {
+      return;
+    }
+
+    this.editingVariantIndex.set(index);
+    this.newVariant.set({ ...variant });
+  }
+
+  protected cancelVariantEdit(): void {
+    this.editingVariantIndex.set(null);
     this.newVariant.set(this.createEmptyVariant());
   }
 
   protected removeVariant(index: number): void {
     const nextVariants = this.formState().variants.filter((_, i) => i !== index);
     this.onFieldChange({ variants: nextVariants });
+    const editingIndex = this.editingVariantIndex();
+    if (editingIndex === index) {
+      this.cancelVariantEdit();
+    } else if (editingIndex !== null && editingIndex > index) {
+      this.editingVariantIndex.set(editingIndex - 1);
+    }
   }
 
   protected onSave(): void {
@@ -317,6 +364,30 @@ export class ProductDialogComponent implements OnDestroy {
       return `Đến ${end}`;
     }
     return 'Không giới hạn';
+  }
+
+  private validateVariant(variant: ProductVariantUpsertRequest): boolean {
+    if (!variant.originalPrice || variant.originalPrice <= 0) {
+      alert('Vui lòng nhập giá gốc hợp lệ cho biến thể.');
+      return false;
+    }
+    if (variant.stockQuantity < 0) {
+      alert('Số lượng tồn kho không hợp lệ.');
+      return false;
+    }
+    if (variant.salePrice != null && variant.salePrice >= variant.originalPrice) {
+      alert('Giá khuyến mãi phải nhỏ hơn giá bán gốc.');
+      return false;
+    }
+
+    const start = this.toIsoInstantValue(variant.saleStartAt);
+    const end = this.toIsoInstantValue(variant.saleEndAt);
+    if (start && end && new Date(end).getTime() < new Date(start).getTime()) {
+      alert('Thời gian kết thúc khuyến mãi không được trước thời gian bắt đầu.');
+      return false;
+    }
+
+    return true;
   }
 
   private toDateTimeLocalValue(value: string | null | undefined): string | null {

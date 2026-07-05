@@ -206,9 +206,14 @@
                   <td>{{ formatSaleWindow(v) }}</td>
                   <td>{{ v.stockQuantity }}</td>
                   <td>
-                    <button type="button" class="variant-delete-btn" (click)="removeVariant($index)">
-                      <svg lucideTrash [attr.stroke-width]="2" class="w-4 h-4"></svg>
-                    </button>
+                    <div class="variant-action-buttons">
+                      <button type="button" class="variant-edit-btn" (click)="editVariant($index)">
+                        <svg lucidePencil [attr.stroke-width]="2" class="w-4 h-4"></svg>
+                      </button>
+                      <button type="button" class="variant-delete-btn" (click)="removeVariant($index)">
+                        <svg lucideTrash [attr.stroke-width]="2" class="w-4 h-4"></svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               } @empty {
@@ -223,7 +228,14 @@
         </div>
 
         <section class="add-variant-panel">
-          <h3>Thêm biến thể mới</h3>
+          <div class="add-variant-panel__header">
+            <h3>{{ variantFormTitle() }}</h3>
+            @if (editingVariantIndex() !== null) {
+              <button type="button" class="variant-cancel-edit-btn" (click)="cancelVariantEdit()">
+                Hủy chỉnh sửa
+              </button>
+            }
+          </div>
           <div class="variant-form-grid">
             <label class="product-field">
               <span>Tên phích cắm / Layout</span>
@@ -308,7 +320,7 @@
 
           <button type="button" class="variant-add-btn" (click)="addVariant()">
             <svg lucidePlus [attr.stroke-width]="2.4" class="w-4 h-4"></svg>
-            <span>Thêm biến thể</span>
+            <span>{{ variantSubmitLabel() }}</span>
           </button>
         </section>
       </div>

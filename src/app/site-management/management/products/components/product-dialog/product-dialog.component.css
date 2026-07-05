@@ -376,6 +376,13 @@
   padding: 24px !important;
 }
 
+.variant-action-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.variant-edit-btn,
 .variant-delete-btn {
   display: grid;
   place-items: center;
@@ -387,6 +394,14 @@
   color: #be0037;
   cursor: pointer;
   transition: background 0.15s ease;
+}
+
+.variant-edit-btn {
+  color: #4f46e5;
+}
+
+.variant-edit-btn:hover {
+  background: rgba(79, 70, 229, 0.1);
 }
 
 .variant-delete-btn:hover {
@@ -406,6 +421,30 @@
   margin: 0;
   font-size: 14px;
   font-weight: 700;
+  color: #111827;
+}
+
+.add-variant-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.variant-cancel-edit-btn {
+  min-height: 32px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.variant-cancel-edit-btn:hover {
+  background: #f3f4f6;
   color: #111827;
 }
 
