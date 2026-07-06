@@ -46,6 +46,9 @@ interface LeaveRequest {
   endTime: string | null;
   leaveType: LeaveType | null;
   amount: number;
+  overQuota: boolean;
+  quotaRemainingBeforeRequest: number | null;
+  quotaRemainingAfterRequest: number | null;
   reason: string;
   status: ApprovalStatus;
   requestedAt: string;
@@ -149,6 +152,7 @@ export class RequestsComponent implements OnInit {
   myLeaves = signal<LeaveRequest[]>([]);
   mySwaps = signal<ShiftSwapRequest[]>([]);
   myAdjustments = signal<AttendanceAdjustment[]>([]);
+  private readonly activeLeaveStatuses: ApprovalStatus[] = ['PENDING', 'APPROVED', 'CANCEL_PENDING'];
 
   ngOnInit(): void {
     this.loadLeaveTypes();
@@ -195,6 +199,7 @@ export class RequestsComponent implements OnInit {
 
   onLeaveDateChange(): void {
     if (this.startDate() && this.startDate() === this.endDate()) {
+      this.selectedShiftIds.set([]);
       this.loadMyDailyShifts(this.startDate());
     } else {
       this.myDailyShifts.set([]);
@@ -207,13 +212,17 @@ export class RequestsComponent implements OnInit {
       next: response => {
         if (response.success) {
           this.myDailyShifts.set(response.data);
-          this.selectedShiftIds.set([]); // clear selections
+          this.selectedShiftIds.set(this.selectedShiftIds().filter(id => !this.isShiftUnavailable(id)));
         }
       }
     });
   }
 
   toggleShiftSelection(shiftId: string): void {
+    if (this.isShiftUnavailable(shiftId)) {
+      this.toastService.error('Ca này đã có yêu cầu nghỉ đang chờ/đã duyệt.');
+      return;
+    }
     this.selectedShiftIds.update(ids => {
       if (ids.includes(shiftId)) {
         return ids.filter(id => id !== shiftId);
@@ -235,6 +244,12 @@ export class RequestsComponent implements OnInit {
     }
     if (selectedType.unit === 'HOUR' && (!this.startTime() || !this.endTime())) {
       this.toastService.error('Vui lòng nhập giờ bắt đầu và kết thúc.');
+      return;
+    }
+
+    const duplicateMessage = this.duplicateLeaveMessage(selectedType);
+    if (duplicateMessage) {
+      this.toastService.error(duplicateMessage);
       return;
     }
 
@@ -260,6 +275,9 @@ export class RequestsComponent implements OnInit {
           this.myDailyShifts.set([]);
           this.loadMyLeaves();
           this.loadMyQuotas();
+          if (this.startDate() && this.startDate() === this.endDate()) {
+            this.loadMyDailyShifts(this.startDate());
+          }
         }
         this.submitting.set(false);
       },
@@ -469,6 +487,9 @@ export class RequestsComponent implements OnInit {
               this.toastService.success('Đã gửi yêu cầu hủy.');
               this.loadMyLeaves();
               this.loadMyQuotas();
+              if (this.startDate() && this.startDate() === this.endDate()) {
+                this.loadMyDailyShifts(this.startDate());
+              }
             }
           },
           error: error => this.toastService.error(error.error?.message || 'Hủy yêu cầu thất bại.')
@@ -527,6 +548,71 @@ export class RequestsComponent implements OnInit {
 
   unitLabel(unit: LeaveTypeUnit | undefined): string {
     return unit === 'HOUR' ? 'giờ' : 'ngày';
+  }
+
+  isShiftUnavailable(shiftId: string): boolean {
+    const shift = this.myDailyShifts().find(item => item.shiftId === shiftId);
+    if (!shift) return false;
+    return this.myLeaves().some(request => this.activeLeaveOccupiesShift(request, shift));
+  }
+
+  private duplicateLeaveMessage(selectedType: LeaveType): string | null {
+    if (selectedType.unit === 'HOUR') {
+      const start = this.startTime() ? `${this.startTime()}:00` : null;
+      const end = this.endTime() ? `${this.endTime()}:00` : null;
+      const overlaps = this.myLeaves().some(request => {
+        if (!this.isActiveLeave(request) || !this.leaveCoversDate(request, this.startDate())) return false;
+        if (this.isFullDayLeave(request)) return true;
+        if (request.leaveType?.unit === 'HOUR') {
+          return this.timeRangesOverlap(start, end, request.startTime, request.endTime);
+        }
+        return (request.targetShifts ?? []).some(target => {
+          const shift = this.myDailyShifts().find(item => item.shiftId === target.id);
+          return !!shift && this.timeRangesOverlap(start, end, shift.startTime, shift.endTime);
+        });
+      });
+      return overlaps ? 'Khung giờ này đã có yêu cầu nghỉ đang chờ/đã duyệt.' : null;
+    }
+
+    if (this.startDate() === this.endDate() && this.selectedShiftIds().length > 0) {
+      const duplicated = this.selectedShiftIds().some(id => this.isShiftUnavailable(id));
+      return duplicated ? 'Ca đã chọn đã có yêu cầu nghỉ đang chờ/đã duyệt.' : null;
+    }
+
+    const overlaps = this.myLeaves().some(request =>
+      this.isActiveLeave(request) && this.dateRangesOverlap(this.startDate(), this.endDate(), request.startDate, request.endDate)
+    );
+    return overlaps ? 'Khoảng ngày này đã có yêu cầu nghỉ đang chờ/đã duyệt.' : null;
+  }
+
+  private activeLeaveOccupiesShift(request: LeaveRequest, shift: ShiftDto): boolean {
+    if (!this.isActiveLeave(request) || !this.leaveCoversDate(request, shift.workDate)) return false;
+    if (this.isFullDayLeave(request)) return true;
+    if (request.leaveType?.unit === 'HOUR') {
+      return this.timeRangesOverlap(shift.startTime, shift.endTime, request.startTime, request.endTime);
+    }
+    return (request.targetShifts ?? []).some(target => target.id === shift.shiftId);
+  }
+
+  private isActiveLeave(request: LeaveRequest): boolean {
+    return this.activeLeaveStatuses.includes(request.status);
+  }
+
+  private isFullDayLeave(request: LeaveRequest): boolean {
+    return request.leaveType?.unit !== 'HOUR' && (!request.targetShifts || request.targetShifts.length === 0);
+  }
+
+  private leaveCoversDate(request: LeaveRequest, date: string): boolean {
+    return request.startDate <= date && request.endDate >= date;
+  }
+
+  private dateRangesOverlap(firstStart: string, firstEnd: string, secondStart: string, secondEnd: string): boolean {
+    return firstStart <= secondEnd && secondStart <= firstEnd;
+  }
+
+  private timeRangesOverlap(firstStart: string | null, firstEnd: string | null, secondStart: string | null, secondEnd: string | null): boolean {
+    if (!firstStart || !firstEnd || !secondStart || !secondEnd) return false;
+    return firstStart.slice(0, 5) < secondEnd.slice(0, 5) && secondStart.slice(0, 5) < firstEnd.slice(0, 5);
   }
 
   formatLeaveSubtitle(request: LeaveRequest): string {

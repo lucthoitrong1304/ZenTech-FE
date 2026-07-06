@@ -30,6 +30,9 @@ interface LeaveRequest {
   startTime: string | null;
   endTime: string | null;
   amount: number;
+  overQuota: boolean;
+  quotaRemainingBeforeRequest: number | null;
+  quotaRemainingAfterRequest: number | null;
   leaveType: LeaveType | null;
   reason: string;
   status: string;
