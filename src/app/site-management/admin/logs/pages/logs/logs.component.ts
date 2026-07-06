@@ -593,6 +593,35 @@ export class LogsComponent implements OnInit, OnDestroy {
     return summary.length > 140 ? summary.slice(0, 137).trimEnd() + '...' : summary;
   }
 
+  protected getLogStatusCode(log: SystemLog): number | null {
+    if (typeof log.statusCode === 'number') {
+      return log.statusCode;
+    }
+
+    const stackStatus = this.parseClientLogStack(log.details)?.statusCode;
+    if (typeof stackStatus === 'number') {
+      return stackStatus;
+    }
+
+    const raw = log.details || log.message || '';
+    const patterns = [
+      /\"(?:statusCode|status_code|status)\"\s*:\s*(\d{3})/,
+      /\b(?:Business error|Validation error|Argument type mismatch|Access denied|Unexpected server error) \((\d{3})\)/,
+      /\b(?:Outgoing Response|Response):\s*(\d{3})\b/,
+      /\b(?:FE_FAILED|HttpRequestFailed)[^\r\n]*\b(\d{3})\b/,
+    ];
+
+    for (const pattern of patterns) {
+      const match = raw.match(pattern);
+      const statusCode = match?.[1] ? Number(match[1]) : NaN;
+      if (Number.isInteger(statusCode) && statusCode >= 100 && statusCode <= 599) {
+        return statusCode;
+      }
+    }
+
+    return null;
+  }
+
   protected getStructuredMetadata(log: SystemLog): LogMetadataItem[] {
     const stackContext = this.parseClientLogStack(log.details);
     const metadata: LogMetadataItem[] = [
@@ -621,8 +650,9 @@ export class LogsComponent implements OnInit, OnDestroy {
       metadata.push({ label: 'api_path', value: stackContext.apiPath });
     }
 
-    if (stackContext?.statusCode !== undefined) {
-      metadata.push({ label: 'status_code', value: String(stackContext.statusCode) });
+    const statusCode = this.getLogStatusCode(log);
+    if (statusCode !== null) {
+      metadata.push({ label: 'status_code', value: String(statusCode) });
     }
 
     if (stackContext?.reason) {

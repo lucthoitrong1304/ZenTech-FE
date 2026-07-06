@@ -13,6 +13,7 @@ export interface SystemLog {
   message: string;
   details: string;
   traceId?: string;
+  statusCode?: number;
 }
 
 export enum LogServiceCategory {

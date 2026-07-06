@@ -262,6 +262,9 @@
         <div class="logs-modal-meta-row">
           <span class="logs-level-badge" [class]="'level-' + log.level.toLowerCase()">{{ log.level }}</span>
           <span class="service-source-tag" [class]="'source-' + log.category.toLowerCase()">{{ log.category }}</span>
+          @if (getLogStatusCode(log); as statusCode) {
+            <span class="logs-status-badge" [class.logs-status-badge--error]="statusCode >= 500" [class.logs-status-badge--warn]="statusCode >= 400 && statusCode < 500" [class.logs-status-badge--ok]="statusCode < 400">HTTP {{ statusCode }}</span>
+          }
           <span class="logs-modal-time">{{ log.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</span>
           @if (log.traceId) {
             <button type="button" (click)="filterByTraceId(log.traceId, $event); closeLogDetails()" class="logs-trace-badge">
