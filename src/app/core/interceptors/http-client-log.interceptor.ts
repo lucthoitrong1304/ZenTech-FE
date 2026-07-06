@@ -26,6 +26,18 @@ export const httpClientLogInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
+  if (LOGGED_SUCCESS_METHODS.has(req.method)) {
+    clientLogService.info(
+      ClientLogEventType.FeRequestSent,
+      `${req.method} ${req.url} sent.`,
+      {
+        method: req.method,
+        apiPath: req.url,
+        traceId,
+      },
+    );
+  }
+
   return next(req).pipe(
     tap((event: HttpEvent<unknown>) => {
       if (event.type !== HttpEventType.Response || !LOGGED_SUCCESS_METHODS.has(req.method)) {
@@ -33,7 +45,7 @@ export const httpClientLogInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       clientLogService.info(
-        ClientLogEventType.HttpRequestSucceeded,
+        ClientLogEventType.FeRequestReceived,
         `${req.method} ${req.url} hoàn tất thành công.`,
         {
           method: req.method,

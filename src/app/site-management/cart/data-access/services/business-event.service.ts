@@ -1,3 +1,4 @@
+import { HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../../environments/environment';
 import { ApiService } from '../../../../core/api/api.service';
@@ -26,7 +27,13 @@ export class BusinessEventService {
   record(payload: BusinessEventRequest): void {
     // Fire-and-forget: không block luồng chính, lỗi cũng không ảnh hưởng UX
     this.apiService
-      .post<BusinessEventRequest, unknown>(this.url, payload)
+      .post<BusinessEventRequest, unknown>(this.url, payload, {
+        headers: this.createTraceHeaders(payload.traceId),
+      })
       .subscribe({ error: () => {} });
+  }
+
+  private createTraceHeaders(traceId?: string): HttpHeaders | undefined {
+    return traceId ? new HttpHeaders({ 'X-Trace-Id': traceId }) : undefined;
   }
 }

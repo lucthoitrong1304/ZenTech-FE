@@ -18,47 +18,51 @@ export class RecordingEvidenceService {
   private readonly sessionCache = new Map<string, CachedSessions>();
   private readonly sessionCacheTtlMs = 5 * 60 * 1000;
   private readonly maxOpenSessionDurationMs = 30 * 60 * 1000;
+  private readonly preSessionMatchGraceMs = 60 * 1000;
 
   resolveEvidence(request: RecordingEvidenceRequest): Observable<RecordingEvidenceResult> {
     const email = this.normalizeEmail(request.email);
+    const userId = this.normalizeUserId(request.userId);
+    const usableEmail = email && !email.includes('*') ? email : '';
     const eventTimestampMs = this.toTimestampMs(request.timestamp);
 
-    if (!email) {
-      return throwError(() => new Error('MISSING_EMAIL'));
-    }
-    if (email.includes('*')) {
-      return throwError(() => new Error('MASKED_EMAIL'));
+    if (!usableEmail && !userId) {
+      return throwError(() => new Error(email ? 'MASKED_EMAIL' : 'MISSING_EMAIL'));
     }
     if (!Number.isFinite(eventTimestampMs)) {
       return throwError(() => new Error('INVALID_TIMESTAMP'));
     }
 
-    return this.getRecordingSessions(email).pipe(
+    return this.getRecordingSessions(usableEmail, userId).pipe(
       switchMap((sessions) => {
         const session = this.findSessionForTimestamp(sessions, eventTimestampMs);
         if (!session) {
           return throwError(() => new Error('NO_SESSION'));
         }
 
-        const sessionStartMs = Number(session.timestamp);
-        const offsetMs = Math.max(0, eventTimestampMs - sessionStartMs);
-        const clipStartMs = Math.max(0, offsetMs - Math.max(0, request.clipBeforeMs));
-        const clipEndMs = offsetMs + Math.max(0, request.clipAfterMs);
+        const recording$ = userId
+          ? this.adminLogsService.getRecordingByUserId(userId, session.sessionId)
+          : this.adminLogsService.getRecording(usableEmail, session.sessionId);
 
-        return this.adminLogsService.getRecording(email, session.sessionId).pipe(
+        return recording$.pipe(
           map((res) => {
             const rawEvents = Array.isArray(res.data) ? res.data : [];
             if (rawEvents.length === 0) {
               throw new Error('NO_EVENTS');
             }
 
+            const sessionStartMs = this.getFirstRecordingEventTime(rawEvents) ?? Number(session.timestamp);
+            const offsetMs = Math.max(0, eventTimestampMs - sessionStartMs);
+            const clipStartMs = Math.max(0, offsetMs - Math.max(0, request.clipBeforeMs));
+            const clipEndMs = offsetMs + Math.max(0, request.clipAfterMs);
             const events = this.buildRecordingClip(rawEvents, sessionStartMs, clipStartMs, clipEndMs);
             if (events.length === 0) {
               throw new Error('NO_CLIP_EVENTS');
             }
 
             return {
-              email,
+              email: usableEmail,
+              userId: userId || null,
               traceId: request.traceId?.trim() || null,
               session,
               events,
@@ -74,9 +78,11 @@ export class RecordingEvidenceService {
     );
   }
 
-  getRecordingSessions(email: string): Observable<RecordingEvidenceSession[]> {
+  getRecordingSessions(email: string, userId?: string | null): Observable<RecordingEvidenceSession[]> {
     const normalizedEmail = this.normalizeEmail(email);
-    const cached = this.sessionCache.get(normalizedEmail);
+    const normalizedUserId = this.normalizeUserId(userId);
+    const cacheKey = normalizedUserId ? 'user:' + normalizedUserId : 'email:' + normalizedEmail;
+    const cached = this.sessionCache.get(cacheKey);
     const now = Date.now();
     if (cached && cached.expiresAt > now) {
       return new Observable<RecordingEvidenceSession[]>((subscriber) => {
@@ -85,7 +91,11 @@ export class RecordingEvidenceService {
       });
     }
 
-    return this.adminLogsService.getRecordingSessions(normalizedEmail).pipe(
+    const sessions$ = normalizedUserId
+      ? this.adminLogsService.getRecordingSessionsByUserId(normalizedUserId)
+      : this.adminLogsService.getRecordingSessions(normalizedEmail);
+
+    return sessions$.pipe(
       map((res) => {
         const sessions = (Array.isArray(res.data) ? res.data : [])
           .map((session: any) => ({
@@ -95,7 +105,7 @@ export class RecordingEvidenceService {
           .filter(session => !!session.sessionId && Number.isFinite(session.timestamp) && session.timestamp > 0)
           .sort((a, b) => a.timestamp - b.timestamp);
 
-        this.sessionCache.set(normalizedEmail, {
+        this.sessionCache.set(cacheKey, {
           expiresAt: now + this.sessionCacheTtlMs,
           sessions
         });
@@ -116,11 +126,22 @@ export class RecordingEvidenceService {
       const start = Number(current.timestamp);
       const nextStart = next ? Number(next.timestamp) : Number.POSITIVE_INFINITY;
       const end = Math.min(nextStart, start + this.maxOpenSessionDurationMs);
-      if (timestampMs >= start && timestampMs < end) {
+      const startsJustAfterLog = timestampMs < start && start - timestampMs <= this.preSessionMatchGraceMs;
+      if ((timestampMs >= start && timestampMs < end) || startsJustAfterLog) {
         return current;
       }
     }
 
+    return null;
+  }
+
+  private getFirstRecordingEventTime(events: any[]): number | null {
+    for (const event of events) {
+      const timestamp = Number(event?.timestamp);
+      if (Number.isFinite(timestamp) && timestamp > 0) {
+        return timestamp;
+      }
+    }
     return null;
   }
 
@@ -234,6 +255,10 @@ export class RecordingEvidenceService {
 
   private normalizeEmail(email: string | null | undefined): string {
     return (email || '').trim().toLowerCase();
+  }
+
+  private normalizeUserId(userId: string | null | undefined): string {
+    return (userId || '').trim();
   }
 
   private toTimestampMs(value: Date | string | number): number {

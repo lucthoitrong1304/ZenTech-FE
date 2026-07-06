@@ -4,6 +4,7 @@ import { AdminLogsService } from '../../site-management/admin/data-access/servic
 import { ClientLogContext, ClientLogEventType, ClientLogLevel, ClientLogPayload } from './client-log.model';
 import { sanitizeRecord, sanitizeText, sanitizeUrl } from './client-log-sanitizer';
 import { AuthStorageService } from '../services/auth-storage.service';
+import { generateTraceId } from '../tracing/trace-id.util';
 
 @Injectable({ providedIn: 'root' })
 export class ClientLogService {
@@ -37,7 +38,7 @@ export class ClientLogService {
       return;
     }
 
-    const traceId = context.traceId ?? this.generateTraceId();
+    const traceId = context.traceId ?? generateTraceId();
     const session = this.authStorage.getSession();
     const sanitizedContext = sanitizeRecord({
       eventType,
@@ -57,7 +58,12 @@ export class ClientLogService {
       reason: context.reason,
     });
     const sanitizedMessage = sanitizeText(message);
-    const duplicateKey = `${level}|${eventType}|${sanitizedMessage}|${routeUrl}`;
+    const duplicateKey = `${level}|${eventType}|${sanitizedMessage}|${this.getDuplicateScope(
+      eventType,
+      traceId,
+      sanitizedContext,
+      routeUrl
+    )}`;
 
     if (this.isDuplicate(duplicateKey)) {
       return;
@@ -96,14 +102,30 @@ export class ClientLogService {
     return false;
   }
 
-  private generateTraceId(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-
-    for (let i = 0; i < 8; i += 1) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+  private getDuplicateScope(
+    eventType: ClientLogEventType,
+    traceId: string,
+    context: Record<string, unknown>,
+    routeUrl: string
+  ): string {
+    if (this.isRequestFlowEvent(eventType)) {
+      return [
+        traceId,
+        String(context['method'] ?? ''),
+        String(context['apiPath'] ?? ''),
+      ].join('|');
     }
 
-    return `ZT-FE-${result}`;
+    return routeUrl;
   }
+
+  private isRequestFlowEvent(eventType: ClientLogEventType): boolean {
+    return eventType === ClientLogEventType.FeRequestSent
+      || eventType === ClientLogEventType.FeRequestReceived
+      || eventType === ClientLogEventType.FeRequestFailed
+      || eventType === ClientLogEventType.HttpRequestStarted
+      || eventType === ClientLogEventType.HttpRequestSucceeded
+      || eventType === ClientLogEventType.HttpRequestFailed;
+  }
+
 }

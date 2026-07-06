@@ -11,6 +11,9 @@
 
   <div class="recording-evidence__meta">
     <span>Email: <strong>{{ email() || 'N/A' }}</strong></span>
+    @if (!email() && userId()) {
+      <span>User ID: <strong>{{ userId() }}</strong></span>
+    }
     @if (traceId()) {
       <span>Trace: <strong>{{ traceId() }}</strong></span>
     }

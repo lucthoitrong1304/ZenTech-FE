@@ -162,6 +162,31 @@ export class AdminLogsService {
       }
     );
   }
+
+  getRecordingByUserId(userId: string, sessionId?: string): Observable<ApiResponse<any[]>> {
+    const url = sessionId
+      ? `${this.activityLogsUrl}/recordings?userId=${encodeURIComponent(userId)}&sessionId=${encodeURIComponent(sessionId)}`
+      : `${this.activityLogsUrl}/recordings?userId=${encodeURIComponent(userId)}`;
+    return this.apiService.get<ApiResponse<any[]>>(
+      url,
+      {
+        context: new HttpContext()
+          .set(SKIP_CLIENT_LOG, true)
+          .set(SKIP_GLOBAL_ERROR, true)
+      }
+    );
+  }
+
+  getRecordingSessionsByUserId(userId: string): Observable<ApiResponse<any[]>> {
+    return this.apiService.get<ApiResponse<any[]>>(
+      `${this.activityLogsUrl}/recordings/sessions?userId=${encodeURIComponent(userId)}`,
+      {
+        context: new HttpContext()
+          .set(SKIP_CLIENT_LOG, true)
+          .set(SKIP_GLOBAL_ERROR, true)
+      }
+    );
+  }
   deleteRecording(email: string, sessionId?: string): Observable<ApiResponse<void>> {
     const url = sessionId
       ? `${this.activityLogsUrl}/recordings?email=${encodeURIComponent(email)}&sessionId=${encodeURIComponent(sessionId)}`

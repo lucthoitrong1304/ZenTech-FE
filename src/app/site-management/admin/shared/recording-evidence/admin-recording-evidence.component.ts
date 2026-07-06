@@ -29,6 +29,7 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
   private readonly recordingEvidenceService = inject(RecordingEvidenceService);
 
   readonly email = input<string | null | undefined>(null);
+  readonly userId = input<string | null | undefined>(null);
   readonly timestamp = input<Date | string | number | null | undefined>(null);
   readonly traceId = input<string | null | undefined>(null);
   readonly title = input<string>('Record liên quan');
@@ -65,6 +66,7 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
 
   protected reload(): void {
     const email = (this.email() || '').trim();
+    const userId = (this.userId() || '').trim();
     const timestamp = this.timestamp();
     const traceId = (this.traceId() || '').trim();
     const clipBeforeMs = this.clipBeforeMs() ?? 15_000;
@@ -74,9 +76,9 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
     this.destroyPlayer();
     this.evidence.set(null);
 
-    if (!email) {
+    if (!email && !userId) {
       this.state.set('empty');
-      this.message.set('Chưa có email để tìm record liên quan.');
+      this.message.set('Không có record cho sự kiện chưa xác thực. Hệ thống chỉ lưu replay sau khi đăng nhập thành công để bảo vệ dữ liệu nhạy cảm.');
       return;
     }
     if (!timestamp) {
@@ -91,6 +93,7 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
 
     this.subscription = this.recordingEvidenceService.resolveEvidence({
       email,
+      userId,
       timestamp,
       traceId,
       clipBeforeMs,
@@ -219,9 +222,8 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
   private messageForError(err: any): string {
     switch (err?.message) {
       case 'MISSING_EMAIL':
-        return 'Chưa có email để tìm record liên quan.';
       case 'MASKED_EMAIL':
-        return 'Email trong log đã được ẩn nên chưa thể đối chiếu record.';
+        return 'Không có record cho sự kiện chưa xác thực. Hệ thống chỉ lưu replay sau khi đăng nhập thành công để bảo vệ dữ liệu nhạy cảm.';
       case 'INVALID_TIMESTAMP':
         return 'Thời điểm log không hợp lệ nên chưa tìm được record.';
       case 'NO_SESSION':

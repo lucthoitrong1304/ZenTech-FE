@@ -1,4 +1,4 @@
-import { HttpContext } from '@angular/common/http';
+import { HttpContext, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../../core/api/api.service';
@@ -23,17 +23,19 @@ export class AuthService {
   private readonly apiService = inject(ApiService);
   private readonly authBaseUrl = `${environment.apiBaseUrl}/auth`;
 
-  login(payload: LoginRequest): Observable<AuthResponse> {
+  login(payload: LoginRequest, traceId?: string): Observable<AuthResponse> {
     return this.apiService.post<LoginRequest, AuthResponse>(`${this.authBaseUrl}/login`, payload, {
+      headers: this.createTraceHeaders(traceId),
       context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
     });
   }
 
-  loginWithGoogle(token: string): Observable<AuthResponse> {
+  loginWithGoogle(token: string, traceId?: string): Observable<AuthResponse> {
     return this.apiService.post<{ token: string }, AuthResponse>(
       `${this.authBaseUrl}/google`,
       { token },
       {
+        headers: this.createTraceHeaders(traceId),
         context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
       }
     );
@@ -83,5 +85,9 @@ export class AuthService {
       `${this.authBaseUrl}/password`,
       payload
     );
+  }
+
+  private createTraceHeaders(traceId?: string): HttpHeaders | undefined {
+    return traceId ? new HttpHeaders({ 'X-Trace-Id': traceId }) : undefined;
   }
 }

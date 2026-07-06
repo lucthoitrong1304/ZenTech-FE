@@ -50,7 +50,7 @@ describe('errorInterceptor', () => {
 
     await expect(result).rejects.toBe(forbidden);
     expect(clientLogService.warn).toHaveBeenCalledWith(
-      ClientLogEventType.HttpRequestFailed,
+      ClientLogEventType.FeRequestFailed,
       expect.any(String),
       expect.objectContaining({ statusCode: 403 }),
     );
@@ -87,7 +87,7 @@ describe('errorInterceptor', () => {
       expect.objectContaining({ statusCode: 401 }),
     );
     expect(clientLogService.warn).not.toHaveBeenCalledWith(
-      ClientLogEventType.HttpRequestFailed,
+      ClientLogEventType.FeRequestFailed,
       expect.any(String),
       expect.any(Object),
     );
@@ -169,7 +169,7 @@ describe('errorInterceptor', () => {
 
     await expect(result).rejects.toBe(forbidden);
     expect(clientLogService.warn).toHaveBeenCalledWith(
-      ClientLogEventType.HttpRequestFailed,
+      ClientLogEventType.FeRequestFailed,
       expect.any(String),
       expect.objectContaining({ reason: 'Full authentication is required to access this resource' }),
     );
@@ -195,7 +195,7 @@ describe('errorInterceptor', () => {
 
     await expect(result).rejects.toBe(notFound);
     expect(clientLogService.warn).toHaveBeenCalledWith(
-      ClientLogEventType.HttpRequestFailed,
+      ClientLogEventType.FeRequestFailed,
       expect.any(String),
       expect.objectContaining({ reason: 'Not Found' }),
     );
