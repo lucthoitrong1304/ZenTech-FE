@@ -28,8 +28,8 @@ export const httpClientLogInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (LOGGED_SUCCESS_METHODS.has(req.method)) {
     clientLogService.info(
-      ClientLogEventType.HttpRequestStarted,
-      `${req.method} ${req.url} started.`,
+      ClientLogEventType.FeRequestSent,
+      `${req.method} ${req.url} sent.`,
       {
         method: req.method,
         apiPath: req.url,
@@ -45,7 +45,7 @@ export const httpClientLogInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       clientLogService.info(
-        ClientLogEventType.HttpRequestSucceeded,
+        ClientLogEventType.FeRequestReceived,
         `${req.method} ${req.url} hoàn tất thành công.`,
         {
           method: req.method,

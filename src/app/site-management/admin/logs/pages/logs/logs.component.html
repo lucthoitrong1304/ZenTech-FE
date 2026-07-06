@@ -165,19 +165,17 @@
           <table class="logs-table">
             <thead>
               <tr>
-                <th scope="col" class="logs-th logs-th--expand"></th>
                 <th scope="col" class="logs-th logs-th--time">Thời gian</th>
                 <th scope="col" class="logs-th logs-th--level">Mức độ</th>
                 <th scope="col" class="logs-th logs-th--category">Phân hệ (Source)</th>
                 <th scope="col" class="logs-th logs-th--message">Thông điệp</th>
+                <th scope="col" class="logs-th logs-th--trace">Trace ID</th>
+                <th scope="col" class="logs-th logs-th--action" aria-label="Actions"></th>
               </tr>
             </thead>
             <tbody>
               @for (log of visibleLogs(); track log.id; let rowIndex = $index) {
                 <tr class="logs-row" (click)="openLogDetails(log)">
-                  <td class="logs-td logs-td--expand">
-                    <svg lucideChevronDown [attr.stroke-width]="2"></svg>
-                  </td>
                   <td class="logs-td logs-td--time">
                     <div class="logs-time-cell" [class.logs-time-cell--trace]="isTraceIdSearch()">
                       <span class="logs-time-line" aria-hidden="true"></span>
@@ -207,19 +205,32 @@
                     </span>
                   </td>
                   <td class="logs-td logs-td--message">
-                    <div class="flex items-center justify-between w-full">
-                      <span class="truncate max-w-[500px]" [title]="log.message">{{ log.message }}</span>
-                      @if (log.traceId) {
-                        <button
-                          type="button"
-                          (click)="filterByTraceId(log.traceId, $event)"
-                          class="logs-trace-badge"
-                          title="Click để lọc truy vết tất cả log có Trace ID này"
-                        >
-                          {{ log.traceId }}
-                        </button>
-                      }
-                    </div>
+                    <span class="logs-message-text" [title]="log.message">{{ log.message }}</span>
+                  </td>
+                  <td class="logs-td logs-td--trace">
+                    @if (log.traceId) {
+                      <button
+                        type="button"
+                        (click)="filterByTraceId(log.traceId, $event)"
+                        class="logs-trace-badge"
+                        title="Filter by Trace ID"
+                      >
+                        {{ log.traceId }}
+                      </button>
+                    } @else {
+                      <span class="logs-trace-empty">N/A</span>
+                    }
+                  </td>
+                  <td class="logs-td logs-td--action">
+                    <button
+                      type="button"
+                      class="logs-row-action-btn"
+                      title="View log detail"
+                      aria-label="View log detail"
+                      (click)="$event.stopPropagation(); openLogDetails(log)"
+                    >
+                      <svg lucideEye [attr.stroke-width]="2"></svg>
+                    </button>
                   </td>
                 </tr>
               }

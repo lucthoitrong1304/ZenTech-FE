@@ -101,7 +101,7 @@ function logHttpFailure(
 
   const status = error.status;
 
-  // 1. statusCode từ 200 đến 299 => Bỏ qua hoàn toàn (không ghi ERROR / HttpRequestFailed)
+  // 1. statusCode từ 200 đến 299 => Bỏ qua hoàn toàn (không ghi ERROR / FE_FAILED)
   if (status >= 200 && status < 300) {
     return;
   }
@@ -116,7 +116,7 @@ function logHttpFailure(
   // 2. Request bị network error, timeout, CORS, server không phản hồi => ERROR với statusCode = 0
   if (status === 0 || status === null || status === undefined) {
     clientLogService.error(
-      ClientLogEventType.HttpRequestFailed,
+      ClientLogEventType.FeRequestFailed,
       `${req.method} ${req.url} thất bại do lỗi kết nối mạng (Network Error / Timeout / CORS / Server Unreachable).`,
       {
         method: req.method,
@@ -142,9 +142,9 @@ function logHttpFailure(
     };
 
     if (isWarningStatus) {
-      clientLogService.warn(ClientLogEventType.HttpRequestFailed, message, context);
+      clientLogService.warn(ClientLogEventType.FeRequestFailed, message, context);
     } else {
-      clientLogService.error(ClientLogEventType.HttpRequestFailed, message, context);
+      clientLogService.error(ClientLogEventType.FeRequestFailed, message, context);
     }
     return;
   }
@@ -152,7 +152,7 @@ function logHttpFailure(
   // 4. statusCode từ 500 trở lên => ERROR
   if (status >= 500) {
     clientLogService.error(
-      ClientLogEventType.HttpRequestFailed,
+      ClientLogEventType.FeRequestFailed,
       `${req.method} ${req.url} thất bại với mã ${status}.`,
       {
         method: req.method,

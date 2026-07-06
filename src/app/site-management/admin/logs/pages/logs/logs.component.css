@@ -206,20 +206,24 @@
   @apply px-4 py-3.5 bg-[#F9FAFB] text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-[#E5E7EB];
 }
 
-.logs-th--expand {
-  @apply w-10 text-center;
-}
-
 .logs-th--time {
   @apply w-56;
 }
 
 .logs-th--level {
-  @apply w-28;
+  @apply w-32 min-w-32 text-center whitespace-nowrap align-middle tracking-normal;
 }
 
 .logs-th--category {
-  @apply w-36;
+  @apply w-44 text-center whitespace-nowrap align-middle;
+}
+
+.logs-th--action {
+  @apply w-16 text-center;
+}
+
+.logs-th--trace {
+  @apply w-40 text-center whitespace-nowrap;
 }
 
 .logs-th--message {
@@ -319,18 +323,6 @@
   @apply px-4 py-3.5 text-sm text-gray-950 font-medium;
 }
 
-.logs-td--expand {
-  @apply text-center text-gray-400 w-10;
-}
-
-.logs-td--expand svg {
-  @apply w-4 h-4 mx-auto transition-transform duration-200;
-}
-
-.logs-row--expanded .logs-td--expand svg {
-  @apply rotate-180;
-}
-
 .logs-td--time {
   @apply text-gray-500 font-mono text-xs align-top;
 }
@@ -393,28 +385,60 @@
 }
 
 .logs-time-flow-chip--rank-3 {
-  @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+  @apply border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700;
 }
 
 .logs-time-flow-chip--rank-4 {
-  @apply border-teal-200 bg-teal-50 text-teal-700;
+  @apply border-violet-200 bg-violet-50 text-violet-700;
 }
 
 .logs-time-flow-chip--rank-5 {
+  @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+}
+
+.logs-time-flow-chip--rank-6 {
+  @apply border-teal-200 bg-teal-50 text-teal-700;
+}
+
+.logs-time-flow-chip--rank-7 {
   @apply border-gray-200 bg-gray-50 text-gray-600;
 }
 
+.logs-td--level {
+  @apply text-center align-middle whitespace-nowrap;
+}
+
 .logs-td--category {
-  @apply text-xs font-semibold;
+  @apply text-center text-xs font-semibold align-middle whitespace-nowrap;
+}
+
+.logs-td--action {
+  @apply text-center align-middle;
+}
+
+.logs-td--trace {
+  @apply text-center align-middle whitespace-nowrap;
+}
+
+.logs-row-action-btn {
+  @apply inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-gray-400 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-200;
+}
+
+.logs-row-action-btn svg {
+  @apply h-4 w-4;
 }
 
 .logs-td--message {
   @apply font-mono text-xs text-gray-800;
 }
 
+.logs-message-text {
+  @apply block min-w-0 max-w-[620px] truncate;
+}
+
 /* Level Badges */
 .logs-level-badge {
-  @apply text-[9px] font-bold px-2 py-0.5 rounded uppercase border;
+  @apply inline-flex min-w-12 items-center justify-center whitespace-nowrap text-[9px] font-bold px-2 py-0.5 rounded uppercase border leading-none;
 }
 
 .logs-level-badge.level-info {
@@ -435,7 +459,7 @@
 
 /* Service Source Tags */
 .service-source-tag {
-  @apply text-[10px] px-2 py-0.5 font-bold rounded-full uppercase;
+  @apply inline-flex items-center justify-center whitespace-nowrap text-[10px] px-2 py-0.5 font-bold rounded-full uppercase leading-none;
 }
 
 .service-source-tag.source-backend {
@@ -453,6 +477,10 @@
 /* Trace ID Badges */
 .logs-trace-badge {
   @apply text-[10px] font-mono font-semibold text-gray-500 hover:text-indigo-600 bg-gray-100 hover:bg-indigo-50 px-2 py-1 rounded transition border border-gray-200 hover:border-indigo-200 cursor-pointer outline-none;
+}
+
+.logs-trace-empty {
+  @apply text-[10px] font-mono font-semibold text-gray-300;
 }
 
 /* Log Details Row & Card */

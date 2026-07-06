@@ -1181,8 +1181,12 @@ export class IssuesComponent implements OnInit, OnDestroy {
 
   private toFriendlyJourneyTitle(eventType: string | undefined, fallbackMessage: string): string {
     switch (eventType) {
+      case 'FE_SENT':
+        return 'Gửi API';
+      case 'FE_RECEIVED':
       case 'HttpRequestSucceeded':
         return 'Gọi API thành công';
+      case 'FE_FAILED':
       case 'HttpRequestFailed':
         return 'Gọi API thất bại';
       case 'RouteNavigated':

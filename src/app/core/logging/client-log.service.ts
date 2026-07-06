@@ -4,6 +4,7 @@ import { AdminLogsService } from '../../site-management/admin/data-access/servic
 import { ClientLogContext, ClientLogEventType, ClientLogLevel, ClientLogPayload } from './client-log.model';
 import { sanitizeRecord, sanitizeText, sanitizeUrl } from './client-log-sanitizer';
 import { AuthStorageService } from '../services/auth-storage.service';
+import { generateTraceId } from '../tracing/trace-id.util';
 
 @Injectable({ providedIn: 'root' })
 export class ClientLogService {
@@ -37,7 +38,7 @@ export class ClientLogService {
       return;
     }
 
-    const traceId = context.traceId ?? this.generateTraceId();
+    const traceId = context.traceId ?? generateTraceId();
     const session = this.authStorage.getSession();
     const sanitizedContext = sanitizeRecord({
       eventType,
@@ -96,14 +97,4 @@ export class ClientLogService {
     return false;
   }
 
-  private generateTraceId(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-
-    for (let i = 0; i < 8; i += 1) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-
-    return `ZT-FE-${result}`;
-  }
 }

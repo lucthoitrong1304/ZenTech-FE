@@ -7,7 +7,7 @@ import { MarkdownComponent } from 'ngx-markdown';
 import {
   LucideSearch,
   LucideTrash2,
-  LucideChevronDown,
+  LucideEye,
   LucideBot,
   LucideCopy,
   LucideRefreshCw,
@@ -78,7 +78,7 @@ interface ClientLogStackContext {
     FormsModule,
     LucideSearch,
     LucideTrash2,
-    LucideChevronDown,
+    LucideEye,
     LucideBot,
     LucideCopy,
     LucideRefreshCw,
@@ -235,8 +235,10 @@ export class LogsComponent implements OnInit, OnDestroy {
     if (rank === 0) return 'FE SENT';
     if (rank === 1) return 'BE IN';
     if (rank === 2) return 'BE PROCESS';
-    if (rank === 3) return 'BE OUT';
-    if (rank === 4) return 'FE RECEIVED';
+    if (rank === 3) return 'AI REQUEST';
+    if (rank === 4) return 'AI RESPONSE';
+    if (rank === 5) return 'BE OUT';
+    if (rank === 6) return 'FE RECEIVED';
     return 'Related';
   }
 
@@ -246,13 +248,15 @@ export class LogsComponent implements OnInit, OnDestroy {
     const context = this.parseClientLogStack(log.details);
     const eventType = context?.eventType || '';
 
-    if (eventType === 'HttpRequestStarted') return 0;
+    if (eventType === 'FE_SENT' || eventType === 'HttpRequestStarted') return 0;
     if (category === LogServiceCategory.BACKEND && message.includes('incoming request')) return 1;
-    if (category === LogServiceCategory.BACKEND && message.includes('outgoing response')) return 3;
-    if (eventType === 'HttpRequestSucceeded' || eventType === 'HttpRequestFailed') return 4;
+    if (category === LogServiceCategory.BACKEND && message.includes('calling ai service')) return 3;
+    if (category === LogServiceCategory.AI_SERVICE) return 4;
+    if (category === LogServiceCategory.BACKEND && message.includes('outgoing response')) return 5;
+    if (eventType === 'FE_RECEIVED' || eventType === 'FE_FAILED' || eventType === 'HttpRequestSucceeded' || eventType === 'HttpRequestFailed') return 6;
     if (category === LogServiceCategory.BACKEND && message.includes('/api/auth')) return 2;
-    if (category === LogServiceCategory.FRONTEND) return 5;
-    return 5;
+    if (category === LogServiceCategory.FRONTEND) return 7;
+    return 7;
   }
 
   protected handleFilterChange(filter: LogLevel | 'ALL'): void {
@@ -672,8 +676,12 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   private toFriendlyJourneyTitle(eventType: string | undefined, fallbackMessage: string): string {
     switch (eventType) {
+      case 'FE_SENT':
+        return 'Gửi API';
+      case 'FE_RECEIVED':
       case 'HttpRequestSucceeded':
         return 'Gọi API thành công';
+      case 'FE_FAILED':
       case 'HttpRequestFailed':
         return 'Gọi API thất bại';
       case 'RouteNavigated':
