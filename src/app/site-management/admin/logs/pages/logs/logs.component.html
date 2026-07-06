@@ -26,6 +26,24 @@
           <span class="logs-live-dot"></span>
           <span>Real-time (WS)</span>
         </button>
+        <button
+
+          type="button"
+
+          (click)="toggleNoiseFilter()"
+
+          class="logs-noise-toggle-btn"
+
+          [class.logs-noise-toggle-btn--active]="hideNoiseLogs()"
+
+          aria-label="Ẩn/hiện log hệ thống ít quan trọng"
+
+        >
+
+          <span>{{ hideNoiseLogs() ? 'Đang ẩn log nhiễu' : 'Hiện tất cả log' }}</span>
+
+        </button>
+
         <button type="button" (click)="handleRefreshLogs()" class="logs-refresh-btn" aria-label="Làm mới logs">
           <svg lucideRefreshCw [attr.stroke-width]="2"></svg>
         </button>
@@ -158,7 +176,13 @@
     <div class="logs-table-card">
       @if (displayedLogs().length === 0) {
         <div class="logs-empty-state">
-          <p>Không tìm thấy log hệ thống nào phù hợp với bộ lọc hiện tại trong {{ getTimeRangeLabel(activeTimeRange()) }} gần nhất.</p>
+          <h3>Không tìm thấy log phù hợp</h3>
+          <p>Không có log trong bộ lọc hiện tại. Thử mở rộng thời gian, tắt ẩn log nhiễu hoặc kiểm tra lại Trace ID.</p>
+          <div class="logs-empty-actions">
+            <button type="button" (click)="handleTimeRangeChange(LogTimeRange.HOURS_24)">Xem 24h</button>
+            <button type="button" (click)="toggleNoiseFilter()">{{ hideNoiseLogs() ? 'Hiện log nhiễu' : 'Ẩn log nhiễu' }}</button>
+            <button type="button" (click)="handleFilterChange('ALL')">Tất cả level</button>
+          </div>
         </div>
       } @else {
         <div class="logs-table-wrapper">
@@ -262,19 +286,66 @@
         <div class="logs-modal-meta-row">
           <span class="logs-level-badge" [class]="'level-' + log.level.toLowerCase()">{{ log.level }}</span>
           <span class="service-source-tag" [class]="'source-' + log.category.toLowerCase()">{{ log.category }}</span>
+          @if (getLogClassification(log); as classification) {
+            <span class="logs-classification-badge" [ngClass]="'logs-classification-badge--' + classification.tone">{{ classification.label }}</span>
+          }
           @if (getLogStatusCode(log); as statusCode) {
             <span class="logs-status-badge" [class.logs-status-badge--error]="statusCode >= 500" [class.logs-status-badge--warn]="statusCode >= 400 && statusCode < 500" [class.logs-status-badge--ok]="statusCode < 400">HTTP {{ statusCode }}</span>
           }
           <span class="logs-modal-time">{{ log.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</span>
           @if (log.traceId) {
-            <button type="button" (click)="filterByTraceId(log.traceId, $event); closeLogDetails()" class="logs-trace-badge">
-              {{ log.traceId }}
+            <button type="button" (click)="copyToClipboard(log.traceId, $event)" class="logs-trace-badge" title="Sao chép Trace ID">
+              Trace ID: {{ log.traceId }}
+            </button>
+            <button type="button" (click)="filterByTraceId(log.traceId, $event); closeLogDetails()" class="logs-flow-link-btn">
+              Xem toàn bộ flow
+            </button>
+          }
+        </div>
+        @if (getFlowSummary(log); as summary) {
+          <div class="logs-flow-summary-card">
+            <div class="logs-flow-summary-main">
+              <span class="logs-flow-summary-kicker">Flow summary</span>
+              <strong>{{ summary.flow }}</strong>
+              <p>{{ summary.result }}</p>
+            </div>
+            <div class="logs-flow-summary-grid">
+              <div class="logs-flow-summary-api">
+                <span>API</span>
+                <button type="button" (click)="copyToClipboard(summary.api, $event)" [disabled]="summary.api === 'N/A'" [title]="summary.api">{{ summary.api }}</button>
+              </div>
+              <div>
+                <span>Thời gian xử lý</span>
+                <strong>{{ summary.duration }}</strong>
+              </div>
+              <div>
+                <span>Trace</span>
+                <button type="button" (click)="copyToClipboard(recordingTraceIdForLog(log), $event)" [disabled]="!recordingTraceIdForLog(log)">{{ recordingTraceIdForLog(log) || 'N/A' }}</button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="logs-quick-actions-row">
+          <button type="button" class="logs-copy-btn" (click)="copyToClipboard(log.message, $event)">
+            <svg lucideCopy class="w-3.5 h-3.5"></svg>
+            <span>Sao chép message</span>
+          </button>
+          <button type="button" class="logs-copy-btn" (click)="copyToClipboard(log.details || log.message, $event)">
+            <svg lucideCopy class="w-3.5 h-3.5"></svg>
+            <span>Sao chép log line</span>
+          </button>
+          @if (resolveLogApiPath(log)) {
+            <button type="button" class="logs-copy-btn" (click)="copyToClipboard(resolveLogApiPath(log), $event)">
+              <svg lucideCopy class="w-3.5 h-3.5"></svg>
+              <span>Sao chép API</span>
             </button>
           }
         </div>
 
         <app-admin-recording-evidence
           [email]="recordingEmailForLog(log)"
+          [userId]="recordingUserIdForLog(log)"
           [timestamp]="log.timestamp"
           [traceId]="recordingTraceIdForLog(log)"
           title="Record liên quan"
@@ -366,7 +437,13 @@
               <div class="logs-journey-list">
                 @for (journey of getUserJourney(log); track journey.id) {
                   <div class="logs-journey-item" [class.logs-journey-item--current]="journey.isCurrent">
-                    <div class="logs-journey-marker" [class]="'journey-level-' + journey.level.toLowerCase()"></div>
+                    <div class="logs-journey-marker" [class]="'journey-level-' + journey.level.toLowerCase()">
+                      @switch (getJourneyIcon(journey)) {
+                        @case ('frontend') { <svg lucideGlobe class="logs-journey-marker-icon"></svg> }
+                        @case ('ai') { <svg lucideBot class="logs-journey-marker-icon"></svg> }
+                        @default { <svg lucideTerminal class="logs-journey-marker-icon"></svg> }
+                      }
+                    </div>
                     <div class="logs-journey-content">
                       <div class="logs-journey-header">
                         <span class="logs-journey-title">{{ journey.title }}</span>

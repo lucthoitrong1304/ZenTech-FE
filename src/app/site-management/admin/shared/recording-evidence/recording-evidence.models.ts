@@ -5,6 +5,7 @@ export interface RecordingEvidenceSession {
 
 export interface RecordingEvidenceRequest {
   email: string;
+  userId?: string | null;
   timestamp: Date | string | number;
   traceId?: string | null;
   clipBeforeMs: number;
@@ -13,6 +14,7 @@ export interface RecordingEvidenceRequest {
 
 export interface RecordingEvidenceResult {
   email: string;
+  userId: string | null;
   traceId: string | null;
   session: RecordingEvidenceSession;
   events: any[];

@@ -58,7 +58,12 @@ export class ClientLogService {
       reason: context.reason,
     });
     const sanitizedMessage = sanitizeText(message);
-    const duplicateKey = `${level}|${eventType}|${sanitizedMessage}|${routeUrl}`;
+    const duplicateKey = `${level}|${eventType}|${sanitizedMessage}|${this.getDuplicateScope(
+      eventType,
+      traceId,
+      sanitizedContext,
+      routeUrl
+    )}`;
 
     if (this.isDuplicate(duplicateKey)) {
       return;
@@ -95,6 +100,32 @@ export class ClientLogService {
 
     this.recentLogKeys.set(key, now);
     return false;
+  }
+
+  private getDuplicateScope(
+    eventType: ClientLogEventType,
+    traceId: string,
+    context: Record<string, unknown>,
+    routeUrl: string
+  ): string {
+    if (this.isRequestFlowEvent(eventType)) {
+      return [
+        traceId,
+        String(context['method'] ?? ''),
+        String(context['apiPath'] ?? ''),
+      ].join('|');
+    }
+
+    return routeUrl;
+  }
+
+  private isRequestFlowEvent(eventType: ClientLogEventType): boolean {
+    return eventType === ClientLogEventType.FeRequestSent
+      || eventType === ClientLogEventType.FeRequestReceived
+      || eventType === ClientLogEventType.FeRequestFailed
+      || eventType === ClientLogEventType.HttpRequestStarted
+      || eventType === ClientLogEventType.HttpRequestSucceeded
+      || eventType === ClientLogEventType.HttpRequestFailed;
   }
 
 }

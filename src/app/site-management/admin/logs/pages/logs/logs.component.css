@@ -978,3 +978,130 @@
 .logs-ai-chat-send-btn {
   @apply flex items-center justify-center p-1 text-gray-400 hover:text-indigo-600 disabled:text-gray-200 transition outline-none border-none bg-transparent cursor-pointer;
 }
+
+.logs-noise-toggle-btn {
+  @apply flex items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[#E5E7EB] bg-white px-4 py-2.5 text-xs font-semibold text-gray-600 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 cursor-pointer outline-none;
+}
+
+.logs-noise-toggle-btn--active {
+  @apply border-indigo-200 bg-indigo-50 text-indigo-700;
+}
+
+.logs-empty-state {
+  @apply flex flex-col items-center justify-center gap-3 px-6 py-16 text-center;
+}
+
+.logs-empty-state h3 {
+  @apply text-base font-bold text-[#111827];
+}
+
+.logs-empty-state p {
+  @apply max-w-xl text-sm font-medium text-gray-500;
+}
+
+.logs-empty-actions {
+  @apply mt-1 flex flex-wrap items-center justify-center gap-2;
+}
+
+.logs-empty-actions button {
+  @apply rounded-full border border-[#E5E7EB] bg-white px-4 py-2 text-xs font-semibold text-gray-600 transition hover:border-[#FFC700] hover:bg-[#FFC700] hover:text-[#111827] cursor-pointer;
+}
+
+.logs-classification-badge {
+  @apply inline-flex items-center justify-center whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-black uppercase leading-none;
+}
+
+.logs-classification-badge--business {
+  @apply border-amber-200 bg-amber-50 text-amber-700;
+}
+
+.logs-classification-badge--system {
+  @apply border-rose-200 bg-rose-50 text-rose-700;
+}
+
+.logs-classification-badge--auth {
+  @apply border-violet-200 bg-violet-50 text-violet-700;
+}
+
+.logs-classification-badge--network {
+  @apply border-sky-200 bg-sky-50 text-sky-700;
+}
+
+.logs-classification-badge--ai {
+  @apply border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700;
+}
+
+.logs-classification-badge--client {
+  @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+}
+
+.logs-classification-badge--normal {
+  @apply border-gray-200 bg-gray-50 text-gray-600;
+}
+
+.logs-flow-link-btn {
+  @apply rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[11px] font-bold text-indigo-600 transition hover:bg-indigo-100 hover:text-indigo-700 cursor-pointer;
+}
+
+.logs-flow-summary-card {
+  @apply grid grid-cols-1 gap-4 rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 md:grid-cols-[minmax(0,1fr)_minmax(360px,1.4fr)];
+}
+
+.logs-flow-summary-main {
+  @apply flex min-w-0 flex-col gap-1;
+}
+
+.logs-flow-summary-kicker {
+  @apply text-[10px] font-black uppercase tracking-[0.18em] text-indigo-500;
+}
+
+.logs-flow-summary-main strong {
+  @apply text-base font-black text-[#111827];
+}
+
+.logs-flow-summary-main p {
+  @apply text-xs font-semibold text-gray-600;
+}
+
+.logs-flow-summary-grid {
+  @apply grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.7fr)_minmax(150px,0.65fr)_minmax(160px,0.65fr)];
+}
+
+.logs-flow-summary-grid div {
+  @apply min-w-0 rounded-lg border border-white/80 bg-white px-3 py-2 shadow-sm;
+}
+
+.logs-flow-summary-grid span {
+  @apply block text-[10px] font-black uppercase tracking-wide text-gray-400;
+}
+
+.logs-flow-summary-grid strong,
+.logs-flow-summary-grid button {
+  @apply mt-1 block max-w-full border-none bg-transparent p-0 text-left font-mono text-xs font-bold leading-5 text-[#111827] outline-none;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.logs-flow-summary-api {
+  @apply sm:col-span-2 lg:col-span-1;
+}
+
+.logs-flow-summary-grid button:not(:disabled) {
+  @apply cursor-pointer hover:text-indigo-600;
+}
+
+.logs-flow-summary-grid button:disabled {
+  @apply cursor-default text-gray-400;
+}
+
+.logs-quick-actions-row {
+  @apply flex flex-wrap items-center gap-2;
+}
+
+.logs-journey-marker {
+  @apply flex items-center justify-center;
+}
+
+.logs-journey-marker-icon {
+  @apply h-2.5 w-2.5 text-white;
+}

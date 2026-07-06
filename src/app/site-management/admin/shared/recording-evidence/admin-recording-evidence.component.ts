@@ -29,6 +29,7 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
   private readonly recordingEvidenceService = inject(RecordingEvidenceService);
 
   readonly email = input<string | null | undefined>(null);
+  readonly userId = input<string | null | undefined>(null);
   readonly timestamp = input<Date | string | number | null | undefined>(null);
   readonly traceId = input<string | null | undefined>(null);
   readonly title = input<string>('Record liên quan');
@@ -65,6 +66,7 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
 
   protected reload(): void {
     const email = (this.email() || '').trim();
+    const userId = (this.userId() || '').trim();
     const timestamp = this.timestamp();
     const traceId = (this.traceId() || '').trim();
     const clipBeforeMs = this.clipBeforeMs() ?? 15_000;
@@ -74,7 +76,7 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
     this.destroyPlayer();
     this.evidence.set(null);
 
-    if (!email) {
+    if (!email && !userId) {
       this.state.set('empty');
       this.message.set('Không có record cho sự kiện chưa xác thực. Hệ thống chỉ lưu replay sau khi đăng nhập thành công để bảo vệ dữ liệu nhạy cảm.');
       return;
@@ -91,6 +93,7 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
 
     this.subscription = this.recordingEvidenceService.resolveEvidence({
       email,
+      userId,
       timestamp,
       traceId,
       clipBeforeMs,
