@@ -444,7 +444,7 @@ export const ManagementProductsStore = signalStore(
             compatibility: normalizeMarkdown(form.compatibilityRaw),
             boxContents: normalizeMarkdown(form.boxContentsRaw),
             supportInfo: normalizeMarkdown(form.supportInfoRaw),
-            variants: form.variants,
+            variants: normalizeVariantPayloads(form.variants),
           };
 
           if (mode === 'edit' && editingId) {
@@ -549,4 +549,21 @@ export const ManagementProductsStore = signalStore(
 function normalizeMarkdown(markdown: string): string | null {
   const value = markdown.trim();
   return value ? value : null;
+}
+
+function normalizeVariantPayloads(variants: ProductFormValue['variants']): ProductFormValue['variants'] {
+  return variants.map(variant => ({
+    ...variant,
+    saleStartAt: normalizeDateTimeForApi(variant.saleStartAt),
+    saleEndAt: normalizeDateTimeForApi(variant.saleEndAt),
+  }));
+}
+
+function normalizeDateTimeForApi(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }

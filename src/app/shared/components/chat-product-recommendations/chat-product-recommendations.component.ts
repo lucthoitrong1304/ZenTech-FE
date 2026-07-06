@@ -28,4 +28,17 @@ export class ChatProductRecommendationsComponent {
       maximumFractionDigits: 0,
     }).format(price);
   }
+
+  protected currentPrice(product: ChatProductRecommendation): number {
+    return product.salePrice ?? product.price;
+  }
+
+  protected originalDisplayPrice(product: ChatProductRecommendation): number | null {
+    const originalPrice = product.originalPrice;
+    const salePrice = product.salePrice;
+    if (originalPrice == null || salePrice == null || salePrice >= originalPrice) {
+      return null;
+    }
+    return originalPrice;
+  }
 }

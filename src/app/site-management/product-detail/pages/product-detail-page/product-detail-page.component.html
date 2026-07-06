@@ -60,11 +60,11 @@
 
             <div class="flex flex-wrap items-end gap-4">
               <span class="text-4xl font-black text-[#be0037]">
-                {{ productDetailStore.selectedPrice() | currency: 'USD' : 'symbol' : '1.0-0' }}
+                {{ productDetailStore.selectedPrice() | currency: 'VND' : '' : '1.0-0' }} đ
               </span>
               @if (productDetailStore.selectedOriginalPrice(); as originalPrice) {
                 <span class="pb-1 text-lg text-[#81765f] line-through">
-                  {{ originalPrice | currency: 'USD' : 'symbol' : '1.0-0' }}
+                  {{ originalPrice | currency: 'VND' : '' : '1.0-0' }} đ
                 </span>
               }
             </div>
