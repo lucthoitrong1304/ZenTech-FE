@@ -517,16 +517,34 @@ export const AdminStore = signalStore(
         startDate?: string | null;
         endDate?: string | null;
         search?: string;
-      }>(
+      } | void>(
         pipe(
           debounceTime(300),
-          tap(() => patchState(store, { isLoadingIncidents: true })),
-          switchMap(({ page, size, status, severity, assignee, startDate, endDate, search }) => {
-            const p = page !== undefined ? page : store.incidentPage();
-            const s = size !== undefined ? size : store.incidentSize();
-            const statusParam = status === 'ALL' ? undefined : status;
-            const severityParam = severity === 'ALL' ? undefined : severity;
-            return adminIncidentsService.getIncidents({ page: p, size: s, status: statusParam, severity: severityParam, assignee, startDate, endDate, search }).pipe(
+          tap((params) => {
+            const patch: Partial<AdminState> = { isLoadingIncidents: true };
+            if (params) {
+              if (params.page !== undefined) patch.incidentPage = params.page;
+              if (params.size !== undefined) patch.incidentSize = params.size;
+              if (params.status !== undefined) patch.incidentFilter = params.status;
+              if (params.severity !== undefined) patch.incidentSeverityFilter = params.severity;
+              if (params.assignee !== undefined) patch.incidentAssigneeFilter = params.assignee;
+              if (params.startDate !== undefined) patch.incidentStartDate = params.startDate;
+              if (params.endDate !== undefined) patch.incidentEndDate = params.endDate;
+              if (params.search !== undefined) patch.incidentSearch = params.search;
+            }
+            patchState(store, patch);
+          }),
+          switchMap(() => {
+            const p = store.incidentPage();
+            const s = store.incidentSize();
+            const statusParam = store.incidentFilter() === 'ALL' ? undefined : store.incidentFilter() as IncidentStatus;
+            const severityParam = store.incidentSeverityFilter() === 'ALL' ? undefined : store.incidentSeverityFilter() as IncidentSeverity;
+            const assigneeParam = store.incidentAssigneeFilter() === 'ALL' ? undefined : store.incidentAssigneeFilter();
+            const startDateVal = store.incidentStartDate();
+            const endDateVal = store.incidentEndDate();
+            const searchVal = store.incidentSearch();
+
+            return adminIncidentsService.getIncidents({ page: p, size: s, status: statusParam, severity: severityParam, assignee: assigneeParam, startDate: startDateVal, endDate: endDateVal, search: searchVal }).pipe(
               tap((res) => {
                 const paginated = res.data;
                 const mappedIncidents = paginated.content.map((inc: any) => ({
@@ -536,8 +554,8 @@ export const AdminStore = signalStore(
                   description: `API: ${inc.httpMethod} ${inc.apiPath} (Mã lỗi: ${inc.statusCode})`,
                   status: inc.status,
                   severity: inc.severity,
-                   firstOccurredAt: inc.firstOccurredAt ? new Date(inc.firstOccurredAt) : undefined,
-                   reportedAt: inc.firstOccurredAt ? new Date(inc.firstOccurredAt) : (inc.occurredAt ? new Date(inc.occurredAt) : (inc.createdAt ? new Date(inc.createdAt) : new Date())),
+                  firstOccurredAt: inc.firstOccurredAt ? new Date(inc.firstOccurredAt) : undefined,
+                  reportedAt: inc.firstOccurredAt ? new Date(inc.firstOccurredAt) : (inc.occurredAt ? new Date(inc.occurredAt) : (inc.createdAt ? new Date(inc.createdAt) : new Date())),
                   resolvedAt: inc.resolvedAt ? new Date(inc.resolvedAt) : undefined,
                   assignee: inc.assignee,
                   traceId: inc.traceId,
@@ -580,16 +598,34 @@ export const AdminStore = signalStore(
         startDate?: string | null;
         endDate?: string | null;
         search?: string;
-      }>(
+      } | void>(
         pipe(
           debounceTime(300),
-          tap(() => patchState(store, { isLoadingTickets: true })),
-          switchMap(({ page, size, status, priority, assigneeEmail, startDate, endDate, search }) => {
-            const p = page !== undefined ? page : store.ticketPage();
-            const s = size !== undefined ? size : store.ticketSize();
-            const statusParam = status === 'ALL' ? undefined : status;
-            const priorityParam = priority === 'ALL' ? undefined : priority;
-            return adminTicketsService.getTickets({ page: p, size: s, status: statusParam, priority: priorityParam, assigneeEmail, startDate, endDate, search }).pipe(
+          tap((params) => {
+            const patch: Partial<AdminState> = { isLoadingTickets: true };
+            if (params) {
+              if (params.page !== undefined) patch.ticketPage = params.page;
+              if (params.size !== undefined) patch.ticketSize = params.size;
+              if (params.status !== undefined) patch.ticketFilter = params.status;
+              if (params.priority !== undefined) patch.ticketPriorityFilter = params.priority;
+              if (params.assigneeEmail !== undefined) patch.ticketAssigneeFilter = params.assigneeEmail;
+              if (params.startDate !== undefined) patch.ticketStartDate = params.startDate;
+              if (params.endDate !== undefined) patch.ticketEndDate = params.endDate;
+              if (params.search !== undefined) patch.ticketSearch = params.search;
+            }
+            patchState(store, patch);
+          }),
+          switchMap(() => {
+            const p = store.ticketPage();
+            const s = store.ticketSize();
+            const statusParam = store.ticketFilter() === 'ALL' ? undefined : store.ticketFilter() as TicketStatus;
+            const priorityParam = store.ticketPriorityFilter() === 'ALL' ? undefined : store.ticketPriorityFilter() as TicketPriority;
+            const assigneeParam = store.ticketAssigneeFilter() === 'ALL' ? undefined : store.ticketAssigneeFilter();
+            const startDateVal = store.ticketStartDate();
+            const endDateVal = store.ticketEndDate();
+            const searchVal = store.ticketSearch();
+
+            return adminTicketsService.getTickets({ page: p, size: s, status: statusParam, priority: priorityParam, assigneeEmail: assigneeParam, startDate: startDateVal, endDate: endDateVal, search: searchVal }).pipe(
               tap((res) => {
                 const paginated = res.data;
                 const mappedTickets = paginated.content.map((tck: any) => ({

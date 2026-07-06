@@ -79,18 +79,34 @@
                   Đang tải cuộc trò chuyện...
                 </div>
               } @else if (store.session()) {
-                @if (store.customerTicketStatus(); as ticketStatus) {
+                @if (store.activeTicketStatusToShow(); as ticketStatus) {
                   <div
                     class="customer-ticket-banner"
                     [class.customer-ticket-banner--resolved]="isTicketResolved(ticketStatus)"
+                    [class.customer-ticket-banner--incident]="!isTicketResolved(ticketStatus) && isIncident(ticketStatus)"
+                    [class.customer-ticket-banner--ticket]="!isTicketResolved(ticketStatus) && isTicket(ticketStatus)"
                   >
                     <span class="customer-ticket-banner__icon" aria-hidden="true">
-                      {{ isTicketResolved(ticketStatus) ? 'OK' : '!' }}
+                      @if (isTicketResolved(ticketStatus)) {
+                        <svg lucideCheckCircle class="w-4 h-4" [attr.stroke-width]="2.5"></svg>
+                      } @else if (isIncident(ticketStatus)) {
+                        <svg lucideAlertTriangle class="w-4 h-4 animate-pulse" [attr.stroke-width]="2.5"></svg>
+                      } @else {
+                        <svg lucideWrench class="w-4 h-4" [attr.stroke-width]="2.5"></svg>
+                      }
                     </span>
                     <span class="customer-ticket-banner__content">
                       <strong>{{ getTicketStatusTitle(ticketStatus) }}</strong>
                       <span>{{ getTicketStatusMessage(ticketStatus) }}</span>
                     </span>
+                    <button
+                      type="button"
+                      class="customer-ticket-banner__close"
+                      (click)="store.dismissTicketStatus(ticketStatus.ticketCode || '', ticketStatus.status)"
+                      title="Đóng thông báo"
+                    >
+                      <svg lucideX class="customer-ticket-banner__close-icon" [attr.stroke-width]="2.5"></svg>
+                    </button>
                   </div>
                 }
 

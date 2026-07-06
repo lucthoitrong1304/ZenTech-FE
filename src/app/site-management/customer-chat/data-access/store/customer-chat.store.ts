@@ -64,6 +64,8 @@ interface CustomerChatUiState {
   highlightedMessageId: string | null;
   customerTicketStatus: CustomerTicketStatus | null;
   pageContext: CustomerChatPageContext | null;
+  dismissedTicketCode: string | null;
+  dismissedTicketStatus: string | null;
 }
 
 const MESSAGE_ENTITY_CONFIG = {
@@ -102,6 +104,8 @@ const INITIAL_STATE: CustomerChatUiState = {
   highlightedMessageId: null,
   customerTicketStatus: null,
   pageContext: null,
+  dismissedTicketCode: null,
+  dismissedTicketStatus: null,
 };
 
 export const CustomerChatStore = signalStore(
@@ -128,7 +132,24 @@ export const CustomerChatStore = signalStore(
       activeConversationId,
       activeSharedTab,
       pageContext,
+      customerTicketStatus,
+      dismissedTicketCode,
+      dismissedTicketStatus,
     }) => ({
+      activeTicketStatusToShow: computed(() => {
+        const ticketStatus = customerTicketStatus();
+        if (!ticketStatus) {
+          return null;
+        }
+        if (ticketStatus.status === 'CLOSED') {
+          return null;
+        }
+        const code = ticketStatus.ticketCode;
+        if (code && code === dismissedTicketCode() && ticketStatus.status === dismissedTicketStatus()) {
+          return null;
+        }
+        return ticketStatus;
+      }),
       messages: computed(() => messageEntities()),
       sharedItems: computed(() => sharedItemEntities()),
       sharedMediaItems: computed(() =>
@@ -1080,12 +1101,24 @@ export const CustomerChatStore = signalStore(
         setPageContext(pageContext: CustomerChatPageContext | null): void {
           patchState(store, { pageContext });
         },
+        dismissTicketStatus(ticketCode: string, status: string): void {
+          patchState(store, { dismissedTicketCode: ticketCode, dismissedTicketStatus: status });
+          if (ticketCode) {
+            localStorage.setItem('dismissed_ticket_code', ticketCode);
+            localStorage.setItem('dismissed_ticket_status', status);
+          }
+        },
       };
     }
   ),
   withHooks((store) => {
     const ws = inject(CustomerChatWebsocketService);
     return {
+      onInit() {
+        const code = localStorage.getItem('dismissed_ticket_code');
+        const status = localStorage.getItem('dismissed_ticket_status');
+        patchState(store, { dismissedTicketCode: code, dismissedTicketStatus: status });
+      },
       onDestroy() {
         ws.disconnect();
       },

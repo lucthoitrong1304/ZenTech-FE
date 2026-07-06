@@ -87,6 +87,7 @@ export interface CustomerChatSendMessagePayload {
 }
 
 export interface CustomerTicketStatus {
+  ticketCode?: string;
   status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
   message: string;
   updatedAt: string;

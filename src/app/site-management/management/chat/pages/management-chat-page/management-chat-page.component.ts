@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MediaPreviewDialogComponent } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
@@ -16,6 +16,7 @@ import { ManagementShellUiState } from '../../../data-access/state/management-sh
 import { WebsocketService } from '../../../../../core/services/websocket.service';
 import { ManagementTicket } from '../../../tickets/data-access/models/management-ticket.models';
 import { ManagementTicketService } from '../../../tickets/data-access/services/management-ticket.service';
+import { LucideX } from '@lucide/angular';
 
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
@@ -39,6 +40,7 @@ import { PermissionCode } from '../../../../../core/permissions/permission.model
     ConversationListComponent,
     MediaPreviewDialogComponent,
     MessageTimelineComponent,
+    LucideX,
   ],
   providers: [ManagementChatStore],
   templateUrl: './management-chat-page.component.html',
@@ -59,11 +61,29 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
   protected readonly selectedStaffId = signal<string | null>(null);
   protected readonly relatedTickets = signal<ManagementTicket[]>([]);
   protected readonly ticketsLoading = signal(false);
+  protected readonly dismissedTicketCode = signal<string | null>(null);
+  protected readonly dismissedTicketStatus = signal<string | null>(null);
   private ticketRefreshSub: Subscription | null = null;
+
+  protected readonly activeRelatedTicket = computed(() => {
+    const tickets = this.relatedTickets();
+    const active = tickets.find(ticket => this.isTicketActive(ticket)) || tickets[0] || null;
+    if (!active) {
+      return null;
+    }
+    if (active.code === this.dismissedTicketCode() && active.status === this.dismissedTicketStatus()) {
+      return null;
+    }
+    return active;
+  });
 
   constructor() {
     effect(() => {
       const email = this.store.selectedConversation()?.customer.email || '';
+      untracked(() => {
+        this.dismissedTicketCode.set(null);
+        this.dismissedTicketStatus.set(null);
+      });
       this.loadRelatedTickets(email);
     });
   }
@@ -93,24 +113,25 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
   }
 
   protected latestRelatedTicket(): ManagementTicket | null {
-    return this.primaryRelatedTicket();
+    return this.activeRelatedTicket();
   }
 
   protected primaryRelatedTicket(): ManagementTicket | null {
-    return this.relatedTickets().find(ticket => this.isTicketActive(ticket)) || this.relatedTickets()[0] || null;
+    return this.activeRelatedTicket();
   }
 
   protected extraRelatedTicketCount(): number {
-    return Math.max(this.relatedTickets().length - (this.primaryRelatedTicket() ? 1 : 0), 0);
+    const primary = this.activeRelatedTicket();
+    return Math.max(this.relatedTickets().length - (primary ? 1 : 0), 0);
   }
 
   protected resolvedRelatedTicketCount(): number {
-    const primary = this.primaryRelatedTicket();
+    const primary = this.activeRelatedTicket();
     return this.relatedTickets().filter(ticket => ticket !== primary && !this.isTicketActive(ticket)).length;
   }
 
   protected otherActiveRelatedTicketCount(): number {
-    const primary = this.primaryRelatedTicket();
+    const primary = this.activeRelatedTicket();
     return this.relatedTickets().filter(ticket => ticket !== primary && this.isTicketActive(ticket)).length;
   }
 
@@ -122,12 +143,21 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
   }
 
   protected openTicketDetail(ticket: ManagementTicket, email: string | null): void {
+    if (ticket.code.startsWith('INC-')) {
+      this.router.navigate(['/admin/incidents', ticket.id]);
+      return;
+    }
     this.router.navigate(['/management/tickets'], {
       queryParams: {
         customerEmail: email || null,
         ticketId: ticket.id,
       },
     });
+  }
+
+  protected dismissTicket(ticketCode: string, status: string): void {
+    this.dismissedTicketCode.set(ticketCode);
+    this.dismissedTicketStatus.set(status);
   }
 
   protected isTicketActive(ticket: ManagementTicket): boolean {
@@ -193,5 +223,25 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
       this.store.transferConversation(this.selectedStaffId());
       this.transferDialogOpen.set(false);
     }
+  }
+
+  protected getFriendlyTicketTitle(title: string | null | undefined): string {
+    if (!title) return 'Yêu cầu xử lý kỹ thuật';
+    
+    let friendly = title;
+    
+    if (friendly.includes('Cannot create MoMo payment') || friendly.includes('momo')) {
+      friendly = friendly.replace(/Cannot create MoMo payment/i, 'Không thể khởi tạo thanh toán qua ví MoMo');
+    }
+    if (friendly.includes('checkout') || friendly.includes('Cannot checkout')) {
+      friendly = friendly.replace(/Cannot checkout/i, 'Lỗi tiến trình đặt hàng & thanh toán (Checkout)');
+    }
+    if (friendly.includes('login') || friendly.includes('auth')) {
+      friendly = friendly.replace(/login/i, 'Đăng nhập hệ thống').replace(/auth/i, 'Xác thực tài khoản');
+    }
+    
+    friendly = friendly.replace(/^Sửa lỗi sự cố/i, 'Khắc phục lỗi');
+    
+    return friendly;
   }
 }
