@@ -1,7 +1,7 @@
 import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
-import { EMPTY, Observable, of, throwError } from 'rxjs';
-import { vi } from 'vitest';
+import { EMPTY, Observable, Subject, of, throwError } from 'rxjs';
+import { beforeAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
 import {
   ChatAttachmentType,
@@ -39,6 +39,7 @@ describe('CustomerChatStore', () => {
       conversations?: ConversationResponse[];
       session?: { accountId: string; roles: string[] } | null;
       isAuthenticated?: boolean;
+      websocketSubject?: Subject<unknown>;
     } = {}
   ) {
     const conversation = options.conversations?.[0] ?? createConversation();
@@ -68,11 +69,14 @@ describe('CustomerChatStore', () => {
       ),
       requestAgent: vi.fn(() => of(conversation)),
       closeConversation: vi.fn(() => of({ ...conversation, status: ConversationStatus.CLOSED })),
+      reopenConversation: vi.fn(() =>
+        of({ ...conversation, status: ConversationStatus.WAITING_FOR_AGENT })
+      ),
     };
     const websocketService = {
       connect: vi.fn(),
       disconnect: vi.fn(),
-      subscribe: vi.fn(<T>(): Observable<T> => EMPTY),
+      subscribe: vi.fn(<T>(): Observable<T> => (options.websocketSubject?.asObservable() as Observable<T>) ?? EMPTY),
       publish: vi.fn(),
     };
 
@@ -220,6 +224,52 @@ describe('CustomerChatStore', () => {
       content: 'Con mau bac khong?',
       attachments: [],
     });
+  });
+
+  it('updates customer session immediately when staff claims through websocket', () => {
+    const websocketSubject = new Subject<unknown>();
+    const waitingConversation = {
+      ...createConversation('conversation-1', { status: ConversationStatus.WAITING_FOR_AGENT }),
+      participants: createConversation('conversation-1', {
+        status: ConversationStatus.WAITING_FOR_AGENT,
+      }).participants.filter((p) => p.userType !== ParticipantType.EMPLOYEE),
+    };
+    const claimedConversation = createConversation('conversation-1', {
+      status: ConversationStatus.AGENT_HANDLING,
+    });
+    const { store } = configureStore({
+      conversations: [waitingConversation],
+      websocketSubject,
+    });
+
+    store.loadSession();
+    websocketSubject.next(claimedConversation);
+
+    expect(store.session()?.status).toBe(ConversationStatus.AGENT_HANDLING);
+    expect(store.staff()?.name).toBe('Minh Anh');
+    expect(store.staffJoined()).toBe(true);
+    expect(store.aiResponding()).toBe(false);
+
+    websocketSubject.next({
+      id: 'msg-staff-1',
+      conversationId: 'conversation-1',
+      participantId: 'participant-staff',
+      senderType: ParticipantType.EMPLOYEE,
+      senderReferenceId: 'staff-1',
+      messageType: ChatMessageType.TEXT,
+      content: 'Mình tiếp nhận rồi nhé',
+      attachments: [],
+      createdAt: '2026-05-24T02:04:00.000Z',
+      deletedAt: null,
+    } satisfies ChatMessageResponse);
+
+    expect(store.messages().at(-1)).toMatchObject({
+      id: 'msg-staff-1',
+      sender: 'STAFF',
+      senderName: 'Minh Anh',
+      body: 'Mình tiếp nhận rồi nhé',
+    });
+    expect(store.aiResponding()).toBe(false);
   });
 
   it('filters shared content by selected tab', () => {
