@@ -57,6 +57,7 @@ interface LiveChartPoint {
   eventDateTime: string | null;
   timestamp: number;
   isRevenueChangePoint?: boolean;
+  eventKey?: string;
 }
 
 
@@ -776,6 +777,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             eventDateTime: point.eventDateTime || null,
             timestamp,
             isRevenueChangePoint: Boolean(point.isRevenueChangePoint),
+            eventKey: point.eventKey || undefined,
           };
         })
         .sort((a, b) => a.timestamp - b.timestamp)
@@ -789,6 +791,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
         if (Math.abs(restoredPoints[index].value - restoredPoints[index - 1].value) > 0) {
           restoredPoints[index - 1].isRevenueChangePoint = true;
           restoredPoints[index].isRevenueChangePoint = true;
+        }
+      }
+
+      // Populate processedLiveEventKeys from restored history to prevent duplicates
+      for (const point of restoredPoints) {
+        if (point.eventKey) {
+          this.processedLiveEventKeys.add(point.eventKey);
+        } else if (point.marker !== 'normal') {
+          // Fallback key generation for legacy points
+          const fallbackKey = point.marker === 'ticket'
+            ? `ticket:legacy:created`
+            : `incident:legacy:detected`;
+          this.processedLiveEventKeys.add(fallbackKey);
         }
       }
 
@@ -1094,7 +1109,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const eventDate = resolved ? (resolvedAt || occurredAt || new Date()) : (occurredAt || new Date());
     const eventKey = resolved
       ? `incident:${this.getIncidentKey(payload)}:resolved`
-      : `incident:${this.getIncidentKey(payload)}:detected:${eventDate.toISOString()}`;
+      : `incident:${this.getIncidentKey(payload)}:detected`;
 
     if (resolved) {
       this.activeLiveIncidentId = null;
@@ -1154,7 +1169,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const ticketKey = payload?.id || payload?.code || payload?.incidentId || 'unknown';
     const eventKey = resolved
       ? `ticket:${ticketKey}:resolved`
-      : `ticket:${ticketKey}:created:${eventDate.toISOString()}`;
+      : `ticket:${ticketKey}:created`;
 
     if (resolved) {
       this.activeLiveTicketCode = null;
@@ -1219,6 +1234,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       eventDescription: logItem.description,
       eventDateTime: logItem.dateTime,
       timestamp: eventDate.getTime(),
+      eventKey,
     });
     this.trimAndSortLivePoints();
     this.updateLiveChartReference();
@@ -1262,8 +1278,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
 
+  private dedupeMarkersByLabel(points: LiveChartPoint[]): LiveChartPoint[] {
+    const seen = new Set<string>();
+    return points.filter((point) => {
+      if (point.marker === 'normal') {
+        return true;
+      }
+      const key = `${point.marker}:${point.eventTitle || ''}:${point.label}`;
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
+  }
+
   private trimAndSortLivePoints(): void {
-    const sortedPoints = this.dedupeResolvedPoints(this.livePoints)
+    let sortedPoints = this.dedupeResolvedPoints(this.livePoints);
+    sortedPoints = this.dedupeMarkersByLabel(sortedPoints)
       .sort((a, b) => a.timestamp - b.timestamp);
     const protectedPoints = sortedPoints
       .filter((point) => point.marker !== 'normal' || point.isRevenueChangePoint)

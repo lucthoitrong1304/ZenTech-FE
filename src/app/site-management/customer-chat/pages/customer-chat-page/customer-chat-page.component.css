@@ -111,6 +111,7 @@
   padding: 12px 14px;
   font-size: 13px;
   box-shadow: 0 18px 42px -34px rgba(16, 16, 16, 0.45);
+  position: relative;
 }
 
 .customer-ticket-banner__icon {
@@ -131,6 +132,7 @@
   display: grid;
   min-width: 0;
   gap: 3px;
+  padding-right: 24px;
 }
 
 .customer-ticket-banner__content strong {
@@ -147,6 +149,32 @@
   line-height: 1.45;
 }
 
+.customer-ticket-banner__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px;
+  border-radius: 9999px;
+  color: #a1a1aa;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.customer-ticket-banner__close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #52525b;
+}
+
+.customer-ticket-banner__close-icon {
+  width: 14px;
+  height: 14px;
+}
+
 .customer-ticket-banner--resolved {
   border-color: #b7ebc6;
   border-left-color: #16a34a;
@@ -161,4 +189,36 @@
 
 .customer-ticket-banner--resolved .customer-ticket-banner__content span {
   color: #2f6b41;
+}
+
+/* Incident Banner Style (Rose Red) */
+.customer-ticket-banner--incident {
+  border-color: #fecdd3;
+  border-left-color: #e11d48;
+  background: #fff5f5;
+}
+
+.customer-ticket-banner--incident .customer-ticket-banner__icon {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+.customer-ticket-banner--incident .customer-ticket-banner__content span {
+  color: #9f1239;
+}
+
+/* Ticket In Progress Banner Style (Indigo Purple) */
+.customer-ticket-banner--ticket {
+  border-color: #c7d2fe;
+  border-left-color: #4f46e5;
+  background: #f5f6ff;
+}
+
+.customer-ticket-banner--ticket .customer-ticket-banner__icon {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.customer-ticket-banner--ticket .customer-ticket-banner__content span {
+  color: #3730a3;
 }

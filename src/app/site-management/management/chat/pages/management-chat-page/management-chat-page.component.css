@@ -248,6 +248,36 @@
   background: #eef2ff;
 }
 
+.management-ticket-alert__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.management-ticket-alert__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 9999px;
+  padding: 6px;
+  color: #9ca3af;
+  transition: all 0.2s;
+}
+
+.management-ticket-alert__close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #4b5563;
+}
+
+.management-ticket-alert__close-icon {
+  width: 14px;
+  height: 14px;
+}
+
 .management-ticket-alert--loading {
   display: flex;
   justify-content: center;
@@ -264,7 +294,7 @@
     grid-template-columns: auto minmax(0, 1fr);
   }
 
-  .management-ticket-alert__action {
+  .management-ticket-alert__actions {
     grid-column: 2;
     justify-self: start;
   }

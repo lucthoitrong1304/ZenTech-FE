@@ -11,6 +11,10 @@ import {
   LucidePlus,
   LucideSearch,
   LucideVideo,
+  LucideX,
+  LucideAlertTriangle,
+  LucideCheckCircle,
+  LucideWrench,
 } from '@lucide/angular';
 import { MediaPreviewDialogComponent } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
@@ -51,6 +55,10 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
     LucidePlus,
     LucideSearch,
     LucideVideo,
+    LucideX,
+    LucideAlertTriangle,
+    LucideWrench,
+    LucideCheckCircle,
   ],
   templateUrl: './customer-chat-page.component.html',
   styleUrl: './customer-chat-page.component.css',
@@ -131,12 +139,50 @@ export class CustomerChatPageComponent implements OnInit {
   }
 
   protected getTicketStatusTitle(ticketStatus: CustomerTicketStatus): string {
-    return this.isTicketResolved(ticketStatus)
-      ? 'Sự cố đã được khắc phục'
-      : 'ZenTech đã ghi nhận sự cố';
+    if (this.isTicketResolved(ticketStatus)) {
+      return 'Sự cố đã được khắc phục';
+    }
+    if (this.isIncident(ticketStatus)) {
+      return 'Phát hiện sự cố hệ thống';
+    }
+    return 'Đội kỹ thuật đang khắc phục';
+  }
+
+  protected isIncident(ticketStatus: CustomerTicketStatus): boolean {
+    return !!ticketStatus.ticketCode && ticketStatus.ticketCode.startsWith('INC-');
+  }
+
+  protected isTicket(ticketStatus: CustomerTicketStatus): boolean {
+    return !!ticketStatus.ticketCode && ticketStatus.ticketCode.startsWith('TCK-');
+  }
+
+  protected getFriendlyTicketMessage(message: string | null | undefined): string {
+    if (!message) {
+      return 'Tụi mình đang kiểm tra và sẽ cập nhật khi có kết quả. Bạn vẫn có thể nhắn thêm thông tin nếu cần.';
+    }
+
+    let friendly = message;
+    
+    if (friendly.includes('Cannot create MoMo payment') || friendly.includes('momo')) {
+      friendly = friendly.replace(/Cannot create MoMo payment/i, 'Không thể khởi tạo thanh toán qua ví MoMo');
+    }
+    if (friendly.includes('checkout') || friendly.includes('Cannot checkout')) {
+      friendly = friendly.replace(/Cannot checkout/i, 'Lỗi tiến trình đặt hàng & thanh toán (Checkout)');
+    }
+    if (friendly.includes('login') || friendly.includes('auth')) {
+      friendly = friendly.replace(/login/i, 'Đăng nhập hệ thống').replace(/auth/i, 'Xác thực tài khoản');
+    }
+    
+    // Clean up technical ticket title prefixes inside quotes for customers
+    friendly = friendly.replace(/(?:Sửa lỗi sự cố|Khắc phục lỗi)\s+INC-\d+:\s*/gi, '');
+    
+    return friendly;
   }
 
   protected getTicketStatusMessage(ticketStatus: CustomerTicketStatus): string {
+    if (ticketStatus.message) {
+      return this.getFriendlyTicketMessage(ticketStatus.message);
+    }
     return this.isTicketResolved(ticketStatus)
       ? 'Bạn có thể thử lại thao tác vừa gặp lỗi. Nếu vẫn chưa ổn, hãy nhắn với nhân viên hỗ trợ.'
       : 'Tụi mình đang kiểm tra và sẽ cập nhật khi có kết quả. Bạn vẫn có thể nhắn thêm thông tin nếu cần.';
