@@ -254,7 +254,7 @@
           <div>
 
             <p class="logs-modal-kicker">Chi tiết log</p>
-            <h3 id="log-detail-title" class="logs-modal-title">{{ log.message }}</h3>
+            <h3 id="log-detail-title" class="logs-modal-title" [title]="log.message">{{ getLogDetailTitle(log) }}</h3>
           </div>
           <button type="button" class="logs-modal-close-btn" (click)="closeLogDetails()" aria-label="Đóng chi tiết log">×</button>
         </div>

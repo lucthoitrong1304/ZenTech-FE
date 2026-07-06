@@ -15,6 +15,7 @@ import { CartSummaryComponent } from '../../components/cart-summary/cart-summary
 import { CheckoutPaymentMethod } from '../../data-access/models/checkout.model';
 import { BusinessEventService, BusinessEventType } from '../../data-access/services/business-event.service';
 import { CheckoutService } from '../../data-access/services/checkout.service';
+import { generateTraceId } from '../../../../core/tracing/trace-id.util';
 import { CartStore } from '../../data-access/store/cart.store';
 
 import { LucideArrowLeft, LucideCreditCard } from '@lucide/angular';
@@ -135,9 +136,11 @@ export class CheckoutPageComponent {
 
     // Ghi nhận sự kiện CHECKOUT_START trước khi gửi request
     const totalAmount = this.payableTotal();
+    const traceId = generateTraceId();
     this.businessEventService.record({
       eventType: BusinessEventType.CHECKOUT_START,
       amount: totalAmount,
+      traceId,
     });
 
     this.checkoutService
@@ -149,7 +152,7 @@ export class CheckoutPageComponent {
           productVariantId: item.variantId,
           quantity: item.quantity,
         })),
-      })
+      }, traceId)
       .subscribe({
         next: response => {
           const checkout = response.data;
@@ -165,6 +168,7 @@ export class CheckoutPageComponent {
           this.businessEventService.record({
             eventType: BusinessEventType.PAYMENT_SUCCESS,
             amount: totalAmount,
+            traceId,
           });
 
           this.toastService.success('Đặt hàng thành công. Đơn đang chờ xác nhận thanh toán COD.');
@@ -177,6 +181,7 @@ export class CheckoutPageComponent {
           this.businessEventService.record({
             eventType: BusinessEventType.PAYMENT_FAILED,
             amount: totalAmount,
+            traceId,
           });
           this.checkoutSubmitting.set(false);
           this.checkoutError.set(this.extractErrorMessage(error));

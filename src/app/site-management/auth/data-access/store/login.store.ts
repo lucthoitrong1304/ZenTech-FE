@@ -7,6 +7,7 @@ import { AuthService } from '../services/auth.service';
 import { AuthSessionStore } from './auth-session.store';
 import { ClientLogService } from '../../../../core/logging/client-log.service';
 import { ClientLogEventType } from '../../../../core/logging/client-log.model';
+import { generateTraceId } from '../../../../core/tracing/trace-id.util';
 import {
   AuthRequestState,
   createInitialAuthRequestState,
@@ -34,8 +35,10 @@ export const LoginStore = signalStore(
       login: rxMethod<LoginRequest>(
         pipe(
           tap(() => patchState(store, toRequestStartState())),
-          switchMap((payload) =>
-            authService.login(payload).pipe(
+          switchMap((payload) => {
+            const traceId = generateTraceId();
+
+            return authService.login(payload, traceId).pipe(
               tap({
                 next: (response) => {
                   authSessionStore.setSession(response);
@@ -47,6 +50,7 @@ export const LoginStore = signalStore(
                     {
                       routeUrl: '/auth/login',
                       userEmail: response.email,
+                      traceId,
                     },
                   );
                 },
@@ -63,21 +67,24 @@ export const LoginStore = signalStore(
                       routeUrl: '/auth/login',
                       userEmail: payload.email,
                       reason: parseAuthErrorMessage(error, LOGIN_ERROR_MESSAGE),
+                      traceId,
                     },
                   );
                 },
               }),
               catchError(() => EMPTY),
-            ),
-          ),
+            );
+          }),
         ),
       ),
 
       loginWithGoogle: rxMethod<string>(
         pipe(
           tap(() => patchState(store, toRequestStartState())),
-          switchMap((token) =>
-            authService.loginWithGoogle(token).pipe(
+          switchMap((token) => {
+            const traceId = generateTraceId();
+
+            return authService.loginWithGoogle(token, traceId).pipe(
               tap({
                 next: (response) => {
                   authSessionStore.setSession(response);
@@ -89,6 +96,7 @@ export const LoginStore = signalStore(
                     {
                       routeUrl: '/auth/login',
                       userEmail: response.email,
+                      traceId,
                     },
                   );
                 },
@@ -104,13 +112,14 @@ export const LoginStore = signalStore(
                     {
                       routeUrl: '/auth/login',
                       reason: parseAuthErrorMessage(error, 'Đăng nhập Google thất bại.'),
+                      traceId,
                     },
                   );
                 },
               }),
               catchError(() => EMPTY),
-            ),
-          ),
+            );
+          }),
         ),
       ),
 

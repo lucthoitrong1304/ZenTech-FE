@@ -695,7 +695,7 @@ export const AdminStore = signalStore(
         pipe(
           tap(() => patchState(store, { isLoadingLogs: true })),
           switchMap(({ level, search, traceId, startTime, endTime, skipGlobalError }) =>
-            adminLogsService.getLogs(level, search, traceId, 500, startTime, endTime, !!skipGlobalError).pipe(
+            adminLogsService.getLogs(level, search, traceId, 3000, startTime, endTime, !!skipGlobalError).pipe(
               tap((logs) => {
                 patchState(store, { logs, isLoadingLogs: false });
               }),
@@ -714,8 +714,8 @@ export const AdminStore = signalStore(
         pipe(
           switchMap(({ search, traceId, startTime, endTime, skipGlobalError }) =>
             forkJoin([
-              adminLogsService.getLogs(LogLevel.WARN, search, traceId, 500, startTime, endTime, !!skipGlobalError),
-              adminLogsService.getLogs(LogLevel.ERROR, search, traceId, 500, startTime, endTime, !!skipGlobalError),
+              adminLogsService.getLogs(LogLevel.WARN, search, traceId, 3000, startTime, endTime, !!skipGlobalError),
+              adminLogsService.getLogs(LogLevel.ERROR, search, traceId, 3000, startTime, endTime, !!skipGlobalError),
             ]).pipe(
               tap(([warnLogs, errorLogs]) => {
                 patchState(store, { issueLogs: [...warnLogs, ...errorLogs] });

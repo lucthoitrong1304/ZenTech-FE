@@ -18,6 +18,7 @@ import {
   LucideSend
 } from '@lucide/angular';
 import { AdminStore } from '../../../data-access/store/admin.store';
+import { AdminLogsService } from '../../../data-access/services/admin-logs.service';
 import { ActivityArea, ActivitySeverity, LogLevel, LogServiceCategory, SystemLog } from '../../../data-access/models/admin.models';
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { WebsocketService } from '../../../../../core/services/websocket.service';
@@ -97,6 +98,7 @@ export class LogsComponent implements OnInit, OnDestroy {
   protected readonly store = inject(AdminStore);
   protected readonly toastService = inject(ToastService);
   private readonly authStorageService = inject(AuthStorageService);
+  private readonly adminLogsService = inject(AdminLogsService);
   protected readonly LogLevel = LogLevel;
   protected readonly LogServiceCategory = LogServiceCategory;
 
@@ -106,6 +108,7 @@ export class LogsComponent implements OnInit, OnDestroy {
   protected readonly activeService = signal<LogServiceCategory>(LogServiceCategory.ALL); // Lọc theo SERVICE nguồn
   protected readonly searchText = signal('');
   protected readonly selectedLog = signal<SystemLog | null>(null);
+  protected readonly journeyTraceLogs = signal<Record<string, SystemLog[]>>({});
   protected readonly activeTimeRange = signal<LogTimeRange>(LogTimeRange.TODAY);
   protected readonly autoRefreshEnabled = signal(true);
   protected readonly visibleLogCount = signal(50);
@@ -115,6 +118,7 @@ export class LogsComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private wsSubscription: Subscription | null = null;
   private routeSubscription: Subscription | null = null;
+  private journeyTraceSubscription: Subscription | null = null;
 
   protected readonly chatHistories = signal<Record<string, Array<{ role: 'user' | 'assistant'; content: string }>>>({});
   protected readonly chatInputs = signal<Record<string, string>>({});
@@ -158,32 +162,36 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routeSubscription?.unsubscribe();
+    this.journeyTraceSubscription?.unsubscribe();
     this.stopRealtimeLogs();
   }
 
   protected readonly displayedLogs = computed(() => {
     const logs = this.filterLogsByTimeRange(this.store.filteredLogs());
-    const service = this.activeService();
-    const filteredLogs = service === LogServiceCategory.ALL
-      ? logs
-      : logs.filter(log => this.normalizeServiceCategory(log.category) === service);
 
-    if (!this.isTraceIdSearch()) {
-      return filteredLogs;
+    if (this.isTraceIdSearch()) {
+      return [...logs].sort((a, b) => {
+        const timeDelta = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        if (timeDelta !== 0) return timeDelta;
+        return this.traceFlowRank(b) - this.traceFlowRank(a);
+      });
     }
 
-    return [...filteredLogs].sort((a, b) => {
-      const timeDelta = new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-      if (timeDelta !== 0) return timeDelta;
-      return this.traceFlowRank(b) - this.traceFlowRank(a);
-    });
+    const service = this.activeService();
+    return service === LogServiceCategory.ALL
+      ? logs
+      : logs.filter(log => this.normalizeServiceCategory(log.category) === service);
   });
 
   protected readonly visibleLogs = computed(() => this.displayedLogs().slice(0, this.visibleLogCount()));
 
   protected isTraceIdSearch(): boolean {
-    const search = this.searchText().trim().toLowerCase();
-    return search.startsWith('zt-') && search.length > 5;
+    return this.normalizeTraceIdSearch(this.searchText()).length > 0;
+  }
+
+  private normalizeTraceIdSearch(value: string): string {
+    const search = value.trim();
+    return search.toUpperCase().startsWith('ZT-') && search.length > 5 ? search : '';
   }
 
   protected formatLogClock(value: Date): string {
@@ -252,6 +260,7 @@ export class LogsComponent implements OnInit, OnDestroy {
     if (category === LogServiceCategory.BACKEND && message.includes('incoming request')) return 1;
     if (category === LogServiceCategory.BACKEND && message.includes('calling ai service')) return 3;
     if (category === LogServiceCategory.AI_SERVICE) return 4;
+    if (category === LogServiceCategory.BACKEND && this.isBackendProcessLog(message)) return 2;
     if (category === LogServiceCategory.BACKEND && message.includes('outgoing response')) return 5;
     if (eventType === 'FE_RECEIVED' || eventType === 'FE_FAILED' || eventType === 'HttpRequestSucceeded' || eventType === 'HttpRequestFailed') return 6;
     if (category === LogServiceCategory.BACKEND && message.includes('/api/auth')) return 2;
@@ -259,10 +268,21 @@ export class LogsComponent implements OnInit, OnDestroy {
     return 7;
   }
 
+  private isBackendProcessLog(message: string): boolean {
+    return message.includes('business error')
+      || message.includes('resolved')
+      || message.includes('exception')
+      || message.includes('globalexceptionhandler')
+      || message.includes('validation')
+      || message.includes('failed')
+      || message.includes('error');
+  }
+
   protected handleFilterChange(filter: LogLevel | 'ALL'): void {
     this.activeFilter.set(filter);
     this.store.setLogFilter(filter);
     this.resetVisibleCounts();
+    this.reloadLogsFromServer();
   }
 
   protected handleServiceChange(service: LogServiceCategory): void {
@@ -404,12 +424,12 @@ export class LogsComponent implements OnInit, OnDestroy {
     }
 
     const search = this.searchText().trim();
-    const isTraceId = search.startsWith('ZT-') && search.length > 5;
+    const traceId = this.normalizeTraceIdSearch(search);
 
     this.store.loadLogs({
-      level: this.activeFilter(),
-      search: isTraceId ? '' : search,
-      traceId: isTraceId ? search : '',
+      level: traceId ? 'ALL' : this.activeFilter(),
+      search: traceId ? '' : search,
+      traceId,
       startTime,
       endTime
     });
@@ -451,6 +471,7 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   protected openLogDetails(log: SystemLog): void {
     this.selectedLog.set(log);
+    this.loadTraceJourneyLogs(log);
   }
 
   protected closeLogDetails(): void {
@@ -528,6 +549,9 @@ export class LogsComponent implements OnInit, OnDestroy {
     event.stopPropagation(); // Tránh kích hoạt toggle đóng mở dòng
     if (!traceId) return;
     this.searchText.set(traceId);
+    this.activeFilter.set('ALL');
+    this.activeService.set(LogServiceCategory.ALL);
+    this.store.setLogFilter('ALL');
     this.store.setLogSearch(traceId);
     this.reloadLogsFromServer();
   }
@@ -540,6 +564,33 @@ export class LogsComponent implements OnInit, OnDestroy {
   protected applyServiceFilter(category: string, event: Event): void {
     event.stopPropagation();
     this.handleServiceChange(this.normalizeServiceCategory(category));
+  }
+
+  protected getLogDetailTitle(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    const targetEmail = (stackContext?.userEmail || '').trim();
+
+    switch (stackContext?.eventType) {
+      case 'AuthLoginFailed':
+        return targetEmail
+          ? 'Đăng nhập thất bại: ' + targetEmail
+          : 'Đăng nhập thất bại bằng Email';
+      case 'AuthLoginSucceeded':
+        return targetEmail
+          ? 'Đăng nhập thành công: ' + targetEmail
+          : 'Đăng nhập thành công';
+      default:
+        return this.toFriendlyJourneyTitle(stackContext?.eventType, this.extractLogMessageSummary(log));
+    }
+  }
+
+  private extractLogMessageSummary(log: SystemLog): string {
+    const raw = (log.message || log.details || '').trim();
+    if (!raw) return 'Log detail';
+
+    const messageMatch = raw.match(/Msg:\s*(.*?)(?:\s+\|\s+URL:|\s+\|\s+Stack:|$)/);
+    const summary = (messageMatch?.[1] || raw.split('|')[0] || raw).trim();
+    return summary.length > 140 ? summary.slice(0, 137).trimEnd() + '...' : summary;
   }
 
   protected getStructuredMetadata(log: SystemLog): LogMetadataItem[] {
@@ -591,7 +642,6 @@ export class LogsComponent implements OnInit, OnDestroy {
 
     return [
       { label: 'service', value: service.toLowerCase() },
-      { label: 'service_name', value: service.toLowerCase() },
       { label: 'filename', value: filename },
     ];
   }
@@ -600,12 +650,69 @@ export class LogsComponent implements OnInit, OnDestroy {
     const currentContext = this.parseClientLogStack(log.details);
     const currentTime = new Date(log.timestamp).getTime();
     const journeyWindowMs = 10 * 60 * 1000;
+    const traceId = this.recordingTraceIdForLog(log);
+    const loadedTraceLogs = traceId ? this.journeyTraceLogs()[traceId] || [] : [];
 
-    return this.store.logs()
+    return this.uniqueJourneyLogs([...this.store.logs(), ...loadedTraceLogs])
       .filter(candidate => this.isJourneyCandidate(candidate, log, currentContext, currentTime, journeyWindowMs))
-      .sort((left, right) => new Date(left.timestamp).getTime() - new Date(right.timestamp).getTime())
+      .sort((left, right) => this.compareJourneyLogs(left, right))
       .slice(-8)
       .map(candidate => this.toJourneyItem(candidate, log.id));
+  }
+
+  private loadTraceJourneyLogs(log: SystemLog): void {
+    const traceId = this.recordingTraceIdForLog(log);
+    if (!traceId || this.journeyTraceLogs()[traceId]) return;
+
+    const logTime = new Date(log.timestamp).getTime();
+    if (!Number.isFinite(logTime)) return;
+
+    const startTime = logTime - 10 * 60 * 1000;
+    const endTime = logTime + 2 * 60 * 1000;
+
+    this.journeyTraceSubscription?.unsubscribe();
+    this.journeyTraceSubscription = this.adminLogsService
+      .getLogs('ALL', '', traceId, 200, startTime, endTime, true)
+      .subscribe({
+        next: logs => {
+          this.journeyTraceLogs.update(map => ({ ...map, [traceId]: logs }));
+        },
+        error: error => {
+          console.warn('[Logs] Failed to load trace journey logs', error);
+          this.journeyTraceLogs.update(map => ({ ...map, [traceId]: [] }));
+        },
+      });
+  }
+
+  private uniqueJourneyLogs(logs: SystemLog[]): SystemLog[] {
+    const seen = new Set<string>();
+
+    return logs.filter(log => {
+      const timestamp = new Date(log.timestamp).getTime();
+      const key = log.id || `${timestamp}|${log.category}|${log.level}|${log.message}|${log.traceId || ''}`;
+      if (seen.has(key)) return false;
+
+      seen.add(key);
+      return true;
+    });
+  }
+
+  private compareJourneyLogs(left: SystemLog, right: SystemLog): number {
+    const leftTime = new Date(left.timestamp).getTime();
+    const rightTime = new Date(right.timestamp).getTime();
+    const timeDelta = leftTime - rightTime;
+
+    if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
+      return this.traceFlowRank(left) - this.traceFlowRank(right);
+    }
+
+    const sameFlowMoment = Math.abs(timeDelta) <= 1000;
+    if (sameFlowMoment) {
+      const rankDelta = this.traceFlowRank(left) - this.traceFlowRank(right);
+      if (rankDelta !== 0) return rankDelta;
+    }
+
+    return timeDelta;
   }
 
   private isJourneyCandidate(
@@ -617,7 +724,8 @@ export class LogsComponent implements OnInit, OnDestroy {
   ): boolean {
     const candidateTime = new Date(candidate.timestamp).getTime();
 
-    if (candidateTime > currentTime || currentTime - candidateTime > journeyWindowMs) {
+    const futureGraceMs = 2 * 1000;
+    if (candidateTime > currentTime + futureGraceMs || currentTime - candidateTime > journeyWindowMs) {
       return false;
     }
 

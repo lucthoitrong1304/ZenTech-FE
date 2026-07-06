@@ -76,7 +76,7 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
 
     if (!email) {
       this.state.set('empty');
-      this.message.set('Chưa có email để tìm record liên quan.');
+      this.message.set('Không có record cho sự kiện chưa xác thực. Hệ thống chỉ lưu replay sau khi đăng nhập thành công để bảo vệ dữ liệu nhạy cảm.');
       return;
     }
     if (!timestamp) {
@@ -219,9 +219,8 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
   private messageForError(err: any): string {
     switch (err?.message) {
       case 'MISSING_EMAIL':
-        return 'Chưa có email để tìm record liên quan.';
       case 'MASKED_EMAIL':
-        return 'Email trong log đã được ẩn nên chưa thể đối chiếu record.';
+        return 'Không có record cho sự kiện chưa xác thực. Hệ thống chỉ lưu replay sau khi đăng nhập thành công để bảo vệ dữ liệu nhạy cảm.';
       case 'INVALID_TIMESTAMP':
         return 'Thời điểm log không hợp lệ nên chưa tìm được record.';
       case 'NO_SESSION':
