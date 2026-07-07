@@ -124,6 +124,7 @@ export class RequestsComponent implements OnInit {
   selectedType = computed(() => this.leaveTypes().find(type => type.id === this.leaveTypeId()) ?? null);
   selectedQuota = computed(() => this.quotas().find(quota => quota.leaveTypeId === this.leaveTypeId()) ?? null);
   isHourType = computed(() => this.selectedType()?.unit === 'HOUR');
+  isAfkType = computed(() => this.isAfkLeaveType(this.selectedType()));
 
   // Shift Swap Form state
   colleagues = signal<any[]>([]);
@@ -153,6 +154,9 @@ export class RequestsComponent implements OnInit {
   mySwaps = signal<ShiftSwapRequest[]>([]);
   myAdjustments = signal<AttendanceAdjustment[]>([]);
   private readonly activeLeaveStatuses: ApprovalStatus[] = ['PENDING', 'APPROVED', 'CANCEL_PENDING'];
+  private readonly afkCode = 'AFK';
+  private readonly nghiCode = 'NGHI';
+  private readonly wfhCode = 'WFH';
 
   ngOnInit(): void {
     this.loadLeaveTypes();
@@ -195,6 +199,16 @@ export class RequestsComponent implements OnInit {
         if (response.success) this.myLeaves.set(response.data);
       }
     });
+  }
+
+  onLeaveTypeChange(leaveTypeId: string): void {
+    this.leaveTypeId.set(leaveTypeId);
+    const selectedType = this.selectedType();
+    if (this.isAfkLeaveType(selectedType)) {
+      this.selectedShiftIds.set([]);
+    } else if (this.startDate() && this.startDate() === this.endDate()) {
+      this.selectedShiftIds.set(this.selectedShiftIds().filter(id => !this.isShiftUnavailable(id)));
+    }
   }
 
   onLeaveDateChange(): void {
@@ -247,6 +261,12 @@ export class RequestsComponent implements OnInit {
       return;
     }
 
+    const afkShiftMessage = this.afkOutsideAssignedShiftMessage(selectedType);
+    if (afkShiftMessage) {
+      this.toastService.error(afkShiftMessage);
+      return;
+    }
+
     const duplicateMessage = this.duplicateLeaveMessage(selectedType);
     if (duplicateMessage) {
       this.toastService.error(duplicateMessage);
@@ -259,7 +279,7 @@ export class RequestsComponent implements OnInit {
       endDate: this.endDate(),
       startTime: selectedType.unit === 'HOUR' ? `${this.startTime()}:00` : null,
       endTime: selectedType.unit === 'HOUR' ? `${this.endTime()}:00` : null,
-      shiftIds: this.selectedShiftIds(),
+      shiftIds: this.isAfkLeaveType(selectedType) ? [] : this.selectedShiftIds(),
       reason: this.reason().trim()
     };
 
@@ -553,10 +573,42 @@ export class RequestsComponent implements OnInit {
   isShiftUnavailable(shiftId: string): boolean {
     const shift = this.myDailyShifts().find(item => item.shiftId === shiftId);
     if (!shift) return false;
-    return this.myLeaves().some(request => this.activeLeaveOccupiesShift(request, shift));
+    return this.myLeaves().some(request => this.activeLeaveOccupiesShiftForSelectedType(request, shift));
+  }
+
+  private afkOutsideAssignedShiftMessage(selectedType: LeaveType): string | null {
+    if (!this.isAfkLeaveType(selectedType)) return null;
+    const start = this.startTime() ? `${this.startTime()}:00` : null;
+    const end = this.endTime() ? `${this.endTime()}:00` : null;
+    const inAssignedWorkingShift = this.myDailyShifts().some(shift =>
+      shift.shiftType !== 'OFF' && this.timeRangeContains(shift.startTime, shift.endTime, start, end)
+    );
+    return inAssignedWorkingShift ? null : 'Khung giờ AFK phải nằm trong ca làm việc của bạn.';
   }
 
   private duplicateLeaveMessage(selectedType: LeaveType): string | null {
+    if (this.isAfkLeaveType(selectedType)) {
+      const start = this.startTime() ? `${this.startTime()}:00` : null;
+      const end = this.endTime() ? `${this.endTime()}:00` : null;
+      const overlaps = this.myLeaves().some(request => {
+        if (!this.isActiveLeave(request) || !this.leaveCoversDate(request, this.startDate())) return false;
+        if (this.isWfhRequest(request)) return false;
+        if (this.isAfkRequest(request)) {
+          return this.timeRangesOverlap(start, end, request.startTime, request.endTime);
+        }
+        if (!this.isNghiRequest(request)) return false;
+        if (this.isFullDayLeave(request)) return true;
+        if (request.leaveType?.unit === 'HOUR') {
+          return this.timeRangesOverlap(start, end, request.startTime, request.endTime);
+        }
+        return (request.targetShifts ?? []).some(target => {
+          const shift = this.myDailyShifts().find(item => item.shiftId === target.id);
+          return !!shift && this.timeRangesOverlap(start, end, shift.startTime, shift.endTime);
+        });
+      });
+      return overlaps ? 'Khung giờ AFK này đã trùng với yêu cầu AFK/nghỉ đang chờ hoặc đã duyệt.' : null;
+    }
+
     if (selectedType.unit === 'HOUR') {
       const start = this.startTime() ? `${this.startTime()}:00` : null;
       const end = this.endTime() ? `${this.endTime()}:00` : null;
@@ -580,9 +632,19 @@ export class RequestsComponent implements OnInit {
     }
 
     const overlaps = this.myLeaves().some(request =>
-      this.isActiveLeave(request) && this.dateRangesOverlap(this.startDate(), this.endDate(), request.startDate, request.endDate)
+      this.isActiveLeave(request)
+        && this.dateRangesOverlap(this.startDate(), this.endDate(), request.startDate, request.endDate)
+        && !(this.isWfhLeaveType(selectedType) && this.isAfkRequest(request))
     );
     return overlaps ? 'Khoảng ngày này đã có yêu cầu nghỉ đang chờ/đã duyệt.' : null;
+  }
+
+  private activeLeaveOccupiesShiftForSelectedType(request: LeaveRequest, shift: ShiftDto): boolean {
+    const selectedType = this.selectedType();
+    if (this.isWfhLeaveType(selectedType) && this.isAfkRequest(request)) {
+      return false;
+    }
+    return this.activeLeaveOccupiesShift(request, shift);
   }
 
   private activeLeaveOccupiesShift(request: LeaveRequest, shift: ShiftDto): boolean {
@@ -602,6 +664,30 @@ export class RequestsComponent implements OnInit {
     return request.leaveType?.unit !== 'HOUR' && (!request.targetShifts || request.targetShifts.length === 0);
   }
 
+  private isAfkRequest(request: LeaveRequest): boolean {
+    return this.isAfkLeaveType(request.leaveType);
+  }
+
+  private isNghiRequest(request: LeaveRequest): boolean {
+    return this.hasLeaveTypeCode(request.leaveType, this.nghiCode);
+  }
+
+  private isWfhRequest(request: LeaveRequest): boolean {
+    return this.isWfhLeaveType(request.leaveType);
+  }
+
+  private isAfkLeaveType(leaveType: LeaveType | null | undefined): boolean {
+    return this.hasLeaveTypeCode(leaveType, this.afkCode);
+  }
+
+  private isWfhLeaveType(leaveType: LeaveType | null | undefined): boolean {
+    return this.hasLeaveTypeCode(leaveType, this.wfhCode);
+  }
+
+  private hasLeaveTypeCode(leaveType: LeaveType | null | undefined, code: string): boolean {
+    return leaveType?.code?.toUpperCase() === code;
+  }
+
   private leaveCoversDate(request: LeaveRequest, date: string): boolean {
     return request.startDate <= date && request.endDate >= date;
   }
@@ -613,6 +699,11 @@ export class RequestsComponent implements OnInit {
   private timeRangesOverlap(firstStart: string | null, firstEnd: string | null, secondStart: string | null, secondEnd: string | null): boolean {
     if (!firstStart || !firstEnd || !secondStart || !secondEnd) return false;
     return firstStart.slice(0, 5) < secondEnd.slice(0, 5) && secondStart.slice(0, 5) < firstEnd.slice(0, 5);
+  }
+
+  private timeRangeContains(containerStart: string | null, containerEnd: string | null, innerStart: string | null, innerEnd: string | null): boolean {
+    if (!containerStart || !containerEnd || !innerStart || !innerEnd) return false;
+    return innerStart.slice(0, 5) >= containerStart.slice(0, 5) && innerEnd.slice(0, 5) <= containerEnd.slice(0, 5);
   }
 
   formatLeaveSubtitle(request: LeaveRequest): string {

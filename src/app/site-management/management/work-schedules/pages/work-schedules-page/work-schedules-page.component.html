@@ -200,6 +200,7 @@
                           <span
                             class="work-schedules-cell__shift"
                             [style.border-left-color]="shift.colorCode || '#4f46e5'"
+                            [attr.title]="getShiftTooltip(shift)"
                           >
                             <span
                               class="work-schedules-cell__shift-info"
@@ -211,10 +212,14 @@
                                 class="work-schedules-cell__status"
                                 [class.work-schedules-cell__status--wfh]="shift.isWfh"
                                 [class.work-schedules-cell__status--leave]="shift.isLeave"
+                                [class.work-schedules-cell__status--afk]="shift.isAfk"
                                 [class.work-schedules-cell__status--swap]="shift.isSwap"
                               >
                                 {{ shift.statusLabel }}
                               </span>
+                              <small *ngIf="!shift.statusLabel" class="work-schedules-cell__shift-time">
+                                {{ getShiftTimeRange(shift) }}
+                              </small>
                             </span>
                           </span>
                         }
