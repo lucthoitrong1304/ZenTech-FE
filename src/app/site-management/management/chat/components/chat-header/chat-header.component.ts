@@ -32,4 +32,9 @@ export class ChatHeaderComponent {
   protected isImageFailed(id: string): boolean {
     return this.failedImages.has(id);
   }
+
+  protected canManageConversation(): boolean {
+    const conversation = this.conversation();
+    return this.canUpdate() && conversation.status === 'STAFF_HANDLING' && conversation.currentStaffActive;
+  }
 }

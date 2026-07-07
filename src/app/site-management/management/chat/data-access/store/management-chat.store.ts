@@ -257,6 +257,14 @@ export const ManagementChatStore = signalStore(
           conversationEntities().find(conversation => conversation.id === selectedConversationId()) ??
           null
       ),
+      canManageSelectedConversation: computed(
+        () => {
+          const conversation = conversationEntities().find(
+            item => item.id === selectedConversationId()
+          );
+          return conversation?.status === 'STAFF_HANDLING' && conversation.currentStaffActive;
+        }
+      ),
       canReplyToSelectedConversation: computed(
         () => {
           const conversation = conversationEntities().find(
@@ -708,7 +716,7 @@ export const ManagementChatStore = signalStore(
       pipe(
         switchMap(() => {
           const conversationId = store.selectedConversationId();
-          if (!conversationId) return EMPTY;
+          if (!conversationId || !store.canManageSelectedConversation()) return EMPTY;
 
           return customerChatService.closeConversation(conversationId).pipe(
             tap((updatedConv) => {
@@ -732,7 +740,7 @@ export const ManagementChatStore = signalStore(
       pipe(
         switchMap(() => {
           const conversationId = store.selectedConversationId();
-          if (!conversationId) return EMPTY;
+          if (!conversationId || !store.canManageSelectedConversation()) return EMPTY;
 
           patchState(store, { errorMessage: null });
 
@@ -778,7 +786,7 @@ export const ManagementChatStore = signalStore(
       pipe(
         switchMap((toAccountId) => {
           const conversationId = store.selectedConversationId();
-          if (!conversationId) return EMPTY;
+          if (!conversationId || !store.canManageSelectedConversation()) return EMPTY;
 
           patchState(store, { loading: true });
 
@@ -791,9 +799,8 @@ export const ManagementChatStore = signalStore(
                   { id: conversationId, changes: mapped },
                   CONVERSATION_ENTITY_CONFIG
                 ),
-                { loading: false, selectedConversationId: null }
+                { loading: false }
               );
-              handleEvent({ type: ManagementChatEventType.SelectionCleared });
             }),
             catchError(() => {
               patchState(store, { loading: false, errorMessage: 'Không thể chuyển tiếp hội thoại.' });
