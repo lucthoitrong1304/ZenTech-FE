@@ -62,6 +62,17 @@ interface LogJourneyItem {
   isCurrent: boolean;
 }
 
+interface LogClassification {
+  label: string;
+  tone: 'business' | 'system' | 'auth' | 'network' | 'ai' | 'client' | 'normal';
+}
+
+interface LogFlowSummary {
+  flow: string;
+  result: string;
+  duration: string;
+  api: string;
+}
 interface ClientLogStackContext {
   eventType?: string;
   routeUrl?: string;
@@ -71,6 +82,7 @@ interface ClientLogStackContext {
   statusCode?: number;
   durationMs?: number | null;
   userEmail?: string | null;
+  userId?: string | null;
   userRole?: string | null;
   productId?: string | null;
   orderId?: string | null;
@@ -159,6 +171,14 @@ export class IncidentDetailComponent implements OnInit {
   protected readonly staffAccounts = signal<AccountSummary[]>([]);
   protected readonly selectedTraceId = signal<string | null>(null);
   protected readonly selectedTimelineUserEmail = signal<string | null>(null);
+  protected readonly relatedSystemLogs = computed(() => {
+    const selectedTraceId = (this.selectedTraceId() || this.incident()?.traceId || '').trim();
+
+    return this.store.logs()
+      .filter(log => !selectedTraceId || this.recordingTraceIdForLog(log) === selectedTraceId)
+      .filter(log => !this.isNoiseSystemLog(log))
+      .sort((left, right) => this.compareIncidentLogs(left, right));
+  });
 
   protected readonly assigneeFilterOptions = computed(() => {
     const options = new Map<string, any>();
@@ -310,7 +330,7 @@ export class IncidentDetailComponent implements OnInit {
 
         // 1. Tải logs liên quan từ Loki bằng traceId đang chọn
         if (traceIdToSelect) {
-          this.store.loadLogs({ level: 'ALL', search: '', traceId: traceIdToSelect });
+          this.loadTraceLogs(traceIdToSelect);
         }
 
         // 2. Tải activity logs của user đang chọn
@@ -344,7 +364,7 @@ export class IncidentDetailComponent implements OnInit {
 
   protected selectTraceId(traceId: string): void {
     this.selectedTraceId.set(traceId);
-    this.store.loadLogs({ level: 'ALL', search: '', traceId: traceId });
+    this.loadTraceLogs(traceId);
 
     // Đồng bộ: Tìm phiên lỗi có traceId này để tự động chọn và tải timeline của khách hàng tương ứng
     const inc = this.incident();
@@ -370,11 +390,42 @@ export class IncidentDetailComponent implements OnInit {
       const occ = inc.occurrences.find((o: any) => o.userEmail === email);
       if (occ && occ.traceId) {
         this.selectedTraceId.set(occ.traceId);
-        this.store.loadLogs({ level: 'ALL', search: '', traceId: occ.traceId });
+        this.loadTraceLogs(occ.traceId);
       }
     }
   }
 
+  private loadTraceLogs(traceId: string | null | undefined): void {
+    const cleanTraceId = (traceId || '').trim();
+    if (!cleanTraceId) return;
+
+    const occurrenceTime = this.findOccurrenceTimeForTrace(cleanTraceId) || this.getIncidentIssueTime(this.incident() as SystemIncident);
+    if (!occurrenceTime) {
+      this.store.loadLogs({ level: 'ALL', search: '', traceId: cleanTraceId });
+      return;
+    }
+
+    const windowMs = 6 * 60 * 60 * 1000;
+    this.store.loadLogs({
+      level: 'ALL',
+      search: '',
+      traceId: cleanTraceId,
+      startTime: Math.max(0, occurrenceTime.getTime() - windowMs),
+      endTime: occurrenceTime.getTime() + windowMs,
+      skipGlobalError: true
+    });
+  }
+
+  private findOccurrenceTimeForTrace(traceId: string): Date | null {
+    const inc = this.incident();
+    const occurrences = Array.isArray(inc?.occurrences) ? inc.occurrences : [];
+    const occurrence = occurrences.find((occ: any) => occ?.traceId === traceId);
+    const rawTime = occurrence?.occurredAt || inc?.occurredAt || inc?.firstOccurredAt || inc?.createdAt;
+    if (!rawTime) return null;
+
+    const time = rawTime instanceof Date ? rawTime : new Date(rawTime);
+    return Number.isFinite(time.getTime()) ? time : null;
+  }
   protected selectedOccurrenceForEvidence(): { traceId?: string; userEmail?: string | null; occurredAt?: Date | string | number } | null {
     const inc = this.incident();
     if (!inc) return null;
@@ -892,6 +943,222 @@ export class IncidentDetailComponent implements OnInit {
     });
   }
 
+  protected recordingTraceIdForLog(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    const rawText = `${log.message || ''} ${log.details || ''}`;
+    return (stackContext?.traceId || log.traceId || this.extractTraceIdFromText(rawText) || '').trim();
+  }
+
+  protected recordingEmailForLog(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    return (stackContext?.userEmail || this.incident()?.userEmail || '').trim();
+  }
+
+  protected recordingUserIdForLog(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    return this.maskedUserIdToRecordingUserId(stackContext?.userId) || this.maskedUserIdToRecordingUserId(this.incident()?.userId) || '';
+  }
+
+  private maskedUserIdToRecordingUserId(value?: string | null): string {
+    const normalized = (value || '').trim();
+    if (!normalized || normalized.includes('*')) return '';
+    return normalized;
+  }
+
+  private extractTraceIdFromText(text: string): string {
+    return text.match(/\bZT-(?:FE-)?[A-Za-z0-9]{8}\b/)?.[0] || '';
+  }
+
+  private isNoiseSystemLog(log: SystemLog): boolean {
+    const text = `${log.message || ''} ${log.details || ''}`.toLowerCase();
+    if (log.level === LogLevel.ERROR || this.getLogStatusCode(log) !== null || this.traceFlowRank(log) <= 6) return false;
+
+    return text.includes('querying loki uri')
+      || text.includes('request query logs received')
+      || text.includes('/api/admin/logs')
+      || text.includes('/api/notifications/unread-count')
+      || text.includes('/api/notifications');
+  }
+
+  private compareIncidentLogs(left: SystemLog, right: SystemLog): number {
+    const leftTime = new Date(left.timestamp).getTime();
+    const rightTime = new Date(right.timestamp).getTime();
+    const leftValid = Number.isFinite(leftTime);
+    const rightValid = Number.isFinite(rightTime);
+
+    if (leftValid && rightValid) {
+      const sameSecond = Math.floor(leftTime / 1000) === Math.floor(rightTime / 1000);
+      if (sameSecond && this.recordingTraceIdForLog(left) && this.recordingTraceIdForLog(left) === this.recordingTraceIdForLog(right)) {
+        const rankDelta = this.traceFlowSortRank(right) - this.traceFlowSortRank(left);
+        if (rankDelta !== 0) return rankDelta;
+      }
+
+      if (leftTime !== rightTime) return rightTime - leftTime;
+    }
+
+    const rankDelta = this.traceFlowSortRank(right) - this.traceFlowSortRank(left);
+    if (rankDelta !== 0) return rankDelta;
+
+    return `${right.id || ''}`.localeCompare(`${left.id || ''}`);
+  }
+
+  private traceFlowSortRank(log: SystemLog): number {
+    const rank = this.traceFlowRank(log);
+    return rank >= 7 ? -1 : rank;
+  }
+
+  private traceFlowRank(log: SystemLog): number {
+    const message = `${log.message || ''} ${log.details || ''}`.toLowerCase();
+    const category = this.normalizeServiceCategory(log.category);
+    const context = this.parseClientLogStack(log.details);
+    const eventType = (context?.eventType || '').toLowerCase();
+
+    if (eventType === 'fe_sent' || eventType === 'httprequeststarted' || message.includes('[fe_sent]') || message.includes('httprequeststarted')) return 0;
+    if (category === LogServiceCategory.BACKEND && (message.includes('incoming request') || message.includes('websocket chat message received'))) return 1;
+    if (category === LogServiceCategory.BACKEND && (message.includes('request to explain log received') || message.includes('request for follow-up chat received'))) return 1;
+    if (category === LogServiceCategory.BACKEND && (message.includes('calling ai service') || message.includes('requesting ai reply stream'))) return 3;
+    if (category === LogServiceCategory.AI_SERVICE) return 4;
+    if (category === LogServiceCategory.BACKEND && (message.includes('failed to explain log using ai') || message.includes('failed to call chat follow-up'))) return 5;
+    if (category === LogServiceCategory.BACKEND && message.includes('outgoing response')) return 5;
+    if (category === LogServiceCategory.BACKEND && this.isBackendProcessLog(message)) return 2;
+    if (
+      eventType === 'fe_received'
+      || eventType === 'fe_failed'
+      || eventType === 'httprequestsucceeded'
+      || eventType === 'httprequestfailed'
+      || message.includes('[fe_received]')
+      || message.includes('[fe_failed]')
+      || message.includes('httprequestsucceeded')
+      || message.includes('httprequestfailed')
+    ) return 6;
+    if (category === LogServiceCategory.BACKEND && message.includes('/api/auth')) return 2;
+    if (category === LogServiceCategory.FRONTEND) return 7;
+    return 7;
+  }
+
+  private isBackendProcessLog(message: string): boolean {
+    return message.includes('exception')
+      || message.includes('unexpected server error')
+      || message.includes('resolved [')
+      || message.includes('cannot create')
+      || message.includes('error');
+  }
+
+  protected getLogStatusCode(log: SystemLog): number | null {
+    const stackContext = this.parseClientLogStack(log.details);
+    if (typeof stackContext?.statusCode === 'number') return stackContext.statusCode;
+
+    const text = `${log.message || ''} ${log.details || ''}`;
+    const statusMatch = text.match(/\b(?:status(?:Code)?|mã|code)[:= ]+(\d{3})\b/i)
+      || text.match(/\b(\d{3})\s+cho\s+(?:GET|POST|PUT|PATCH|DELETE)\b/i)
+      || text.match(/\b(?:HTTP\s*)?(\d{3})\b/i);
+    if (!statusMatch) return null;
+
+    const statusCode = Number(statusMatch[1]);
+    return Number.isFinite(statusCode) ? statusCode : null;
+  }
+  protected getLogDetailTitle(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    const targetEmail = (stackContext?.userEmail || '').trim();
+
+    switch (stackContext?.eventType) {
+      case 'AuthLoginFailed':
+        return targetEmail ? 'Đăng nhập thất bại: ' + targetEmail : 'Đăng nhập thất bại bằng Email';
+      case 'AuthLoginSucceeded':
+        return targetEmail ? 'Đăng nhập thành công: ' + targetEmail : 'Đăng nhập thành công';
+      default:
+        return this.toFriendlyJourneyTitle(stackContext?.eventType, this.extractLogMessageSummary(log));
+    }
+  }
+
+  protected getLogPreviewDescription(log: SystemLog): string {
+    const context = this.parseClientLogStack(log.details);
+    const method = context?.method || this.extractHttpMethodFromText(log.details || log.message || '');
+    const apiPath = this.resolveLogApiPath(log);
+    const statusCode = this.getLogStatusCode(log);
+    const reason = context?.reason || this.extractLogMessageSummary(log);
+
+    const apiText = method && apiPath ? `${method} ${this.normalizeApiPath(apiPath)}` : apiPath || '';
+    const statusText = statusCode !== null ? `HTTP ${statusCode}` : '';
+    return [apiText, statusText, reason].filter(Boolean).join(' · ');
+  }
+
+  private extractHttpMethodFromText(text: string): string {
+    const match = text.match(/\b(GET|POST|PUT|PATCH|DELETE)\b/i);
+    return match?.[1]?.toUpperCase() || '';
+  }
+  private extractLogMessageSummary(log: SystemLog): string {
+    const raw = (log.message || log.details || '').trim();
+    if (!raw) return 'Log detail';
+
+    const messageMatch = raw.match(/Msg:\s*(.*?)(?:\s+\|\s+URL:|\s+\|\s+Stack:|$)/);
+    const summary = (messageMatch?.[1] || raw.split('|')[0] || raw).trim();
+    return summary.length > 140 ? summary.slice(0, 137).trimEnd() + '...' : summary;
+  }
+
+  protected getLogClassification(log: SystemLog): LogClassification {
+    const text = ((log.message || '') + ' ' + (log.details || '')).toLowerCase();
+    const statusCode = this.getLogStatusCode(log);
+    const category = this.normalizeServiceCategory(log.category);
+
+    if (category === LogServiceCategory.AI_SERVICE || text.includes('ai service')) {
+      return { label: 'AI Service', tone: 'ai' };
+    }
+    if (text.includes('/auth/') || text.includes('auth') || text.includes('đăng nhập') || text.includes('dang nhap')) {
+      return { label: 'Auth flow', tone: 'auth' };
+    }
+    if (statusCode !== null && statusCode >= 500) {
+      return { label: 'System 5xx', tone: 'system' };
+    }
+    if (statusCode !== null && statusCode >= 400) {
+      return { label: 'Business 4xx', tone: 'business' };
+    }
+    if (text.includes('timeout') || text.includes('connection') || text.includes('network')) {
+      return { label: 'Network', tone: 'network' };
+    }
+    if (category === LogServiceCategory.FRONTEND) {
+      return { label: 'Client UI', tone: 'client' };
+    }
+    return { label: 'System signal', tone: 'normal' };
+  }
+
+  protected getFlowSummary(log: SystemLog): LogFlowSummary {
+    const statusCode = this.getLogStatusCode(log);
+    const context = this.parseClientLogStack(log.details);
+    const category = this.normalizeServiceCategory(log.category);
+    const journey = this.getUserJourney(log);
+    const hasFrontend = journey.some(item => this.normalizeServiceCategory(item.category) === LogServiceCategory.FRONTEND) || category === LogServiceCategory.FRONTEND;
+    const hasBackend = journey.some(item => this.normalizeServiceCategory(item.category) === LogServiceCategory.BACKEND) || category === LogServiceCategory.BACKEND;
+    const hasAi = journey.some(item => this.normalizeServiceCategory(item.category) === LogServiceCategory.AI_SERVICE) || category === LogServiceCategory.AI_SERVICE;
+    const flow = [hasFrontend ? 'Frontend' : '', hasBackend ? 'Backend' : '', hasAi ? 'AI' : ''].filter(Boolean).join(' -> ') || category;
+    const result = statusCode !== null
+      ? (statusCode >= 500 ? 'Thất bại hệ thống HTTP ' + statusCode : statusCode >= 400 ? 'Thất bại nghiệp vụ HTTP ' + statusCode : 'Hoàn tất HTTP ' + statusCode)
+      : (log.level === LogLevel.ERROR ? 'Lỗi hệ thống' : log.level === LogLevel.WARN ? 'Cảnh báo cần theo dõi' : 'Hoạt động bình thường');
+    const duration = context?.durationMs !== undefined && context.durationMs !== null
+      ? context.durationMs + 'ms'
+      : this.extractDurationMs(log) || 'N/A';
+    const api = this.resolveLogApiPath(log) || 'N/A';
+
+    return { flow, result, duration, api };
+  }
+
+  private extractDurationMs(log: SystemLog): string {
+    const raw = log.details || log.message || '';
+    const match = raw.match(/(\d+)ms/i);
+    return match?.[1] ? match[1] + 'ms' : '';
+  }
+
+  protected resolveLogApiPath(log: SystemLog): string {
+    const context = this.parseClientLogStack(log.details);
+    if (context?.apiPath) return context.apiPath;
+
+    return this.extractApiPathFromText(log.details || log.message || '');
+  }
+
+  private extractApiPathFromText(text: string): string {
+    const match = text.match(/\b(?:GET|POST|PUT|PATCH|DELETE)\s+((?:https?:\/\/[^\s|]+)|(?:\/api\/[^\s|]+))/i);
+    return match?.[1] || '';
+  }
   protected getStructuredMetadata(log: SystemLog): LogMetadataItem[] {
     const stackContext = this.parseClientLogStack(log.details);
     const metadata: LogMetadataItem[] = [

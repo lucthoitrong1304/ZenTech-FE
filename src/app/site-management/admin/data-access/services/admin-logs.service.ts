@@ -208,8 +208,7 @@ export class AdminLogsService {
     const payload = { logMessage, logDetails, service };
     return this.apiService.post<typeof payload, { explanation: string }>(
       this.explainLogUrl,
-      payload,
-      { context: new HttpContext().set(SKIP_CLIENT_LOG, true) }
+      payload
     );
   }
 
@@ -246,8 +245,7 @@ export class AdminLogsService {
     const payload = { service, logDetails, userMessage, history };
     return this.apiService.post<typeof payload, { content: string }>(
       `${environment.apiBaseUrl}/admin/chat/follow-up`,
-      payload,
-      { context: new HttpContext().set(SKIP_CLIENT_LOG, true) }
+      payload
     );
   }
 }

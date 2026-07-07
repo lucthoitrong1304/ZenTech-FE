@@ -459,39 +459,59 @@
             }
           </div>
           
-          <div class="section-body">
+          <div class="section-body incident-evidence-body">
             @if (selectedOccurrenceForEvidence(); as evidenceOcc) {
-              <app-admin-recording-evidence
-                [email]="evidenceOcc.userEmail || ''"
-                [timestamp]="evidenceOcc.occurredAt || inc.occurredAt || inc.createdAt"
-                [traceId]="evidenceOcc.traceId || selectedTraceId() || inc.traceId || ''"
-                title="Record theo occurrence"
-                contextLabel="Incident evidence"
-              />
-            }
-
-            @if (store.isLoadingLogs()) {
-              <div class="logs-loading">Đang truy vấn logs từ Loki...</div>
-            } @else if (store.filteredLogs().length === 0) {
-              <div class="logs-empty">Không tìm thấy log liên quan cho traceId: {{ selectedTraceId() || inc.traceId }}.</div>
-            } @else {
-              <div class="logs-list">
-                @for (sysLog of store.filteredLogs(); track sysLog.id) {
-                  <div class="log-item-row clickable-row" [class]="'log-level-' + sysLog.level.toLowerCase()" (click)="openSystemLogDetails(sysLog)">
-                    <div class="log-meta">
-                      <span class="log-time">{{ sysLog.timestamp | date:'HH:mm:ss.SSS' }}</span>
-                      <span class="log-level">{{ sysLog.level }}</span>
-                      <span class="log-service">{{ sysLog.category }}</span>
-                    </div>
-                    <p class="log-message">{{ sysLog.message }}</p>
-                    <details class="log-details-accordion" (click)="$event.stopPropagation()">
-                      <summary class="log-details-summary">Xem chi tiết raw log</summary>
-                      <pre class="log-raw-pre"><code>{{ sysLog.details }}</code></pre>
-                    </details>
-                  </div>
-                }
+              <div class="incident-recording-panel">
+                <app-admin-recording-evidence
+                  [email]="evidenceOcc.userEmail || ''"
+                  [timestamp]="evidenceOcc.occurredAt || inc.occurredAt || inc.createdAt"
+                  [traceId]="evidenceOcc.traceId || selectedTraceId() || inc.traceId || ''"
+                  title="Record theo occurrence"
+                  contextLabel="Incident evidence"
+                />
               </div>
             }
+
+            <div class="incident-log-panel">
+              <div class="incident-log-toolbar">
+                <div class="incident-log-heading">
+                  <span>Logs cùng phiên</span>
+                  <strong>{{ relatedSystemLogs().length }} dòng log</strong>
+                </div>
+                <span class="incident-log-trace">{{ selectedTraceId() || inc.traceId || 'N/A' }}</span>
+              </div>
+
+              @if (store.isLoadingLogs()) {
+                <div class="logs-loading">Đang truy vấn logs từ Loki...</div>
+              } @else if (relatedSystemLogs().length === 0) {
+                <div class="logs-empty">Không tìm thấy log liên quan cho traceId: {{ selectedTraceId() || inc.traceId }}.</div>
+              } @else {
+                <div class="logs-list logs-list--incident">
+                  @for (sysLog of relatedSystemLogs(); track sysLog.id; let rowIndex = $index) {
+                    <div class="log-item-row incident-log-row clickable-row" [class]="'log-level-' + sysLog.level.toLowerCase()" [class.incident-log-row--frontend]="sysLog.category === 'FRONTEND'" [class.incident-log-row--backend]="sysLog.category === 'BACKEND'" [class.incident-log-row--ai]="sysLog.category === 'AI_SERVICE'" (click)="openSystemLogDetails(sysLog)">
+                      <div class="incident-log-step">{{ rowIndex + 1 }}</div>
+                      <div class="incident-log-content">
+                        <div class="log-row-head">
+                          <div class="log-meta">
+                            <span class="log-time">{{ sysLog.timestamp | date:'HH:mm:ss.SSS' }}</span>
+                            <span class="log-level">{{ sysLog.level }}</span>
+                            <span class="log-service">{{ sysLog.category }}</span>
+                          </div>
+                        </div>
+                                                <div class="incident-log-preview" [title]="sysLog.message">
+                          <strong>{{ getLogDetailTitle(sysLog) }}</strong>
+                          <p>{{ getLogPreviewDescription(sysLog) }}</p>
+                        </div>
+                        <details class="log-details-accordion" (click)="$event.stopPropagation()">
+                          <summary class="log-details-summary">Raw log</summary>
+                          <pre class="log-raw-pre"><code>{{ sysLog.details }}</code></pre>
+                        </details>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
           </div>
         </div>
 
@@ -648,10 +668,10 @@
 @if (selectedSystemLog(); as log) {
   <div class="logs-modal-backdrop" (click)="closeSystemLogDetails()">
     <section class="logs-modal-panel" role="dialog" aria-modal="true" aria-labelledby="log-detail-title" (click)="$event.stopPropagation()">
-      <div class="logs-modal-header">
+            <div class="logs-modal-header">
         <div>
-          <p class="logs-modal-kicker">Chi tiết nhật ký hệ thống</p>
-          <h3 id="log-detail-title" class="logs-modal-title">{{ log.message }}</h3>
+          <p class="logs-modal-kicker">Chi tiết log</p>
+          <h3 id="log-detail-title" class="logs-modal-title" [title]="log.message">{{ getLogDetailTitle(log) }}</h3>
         </div>
         <button type="button" class="logs-modal-close-btn" (click)="closeSystemLogDetails()" aria-label="Đóng chi tiết log">×</button>
       </div>
@@ -659,11 +679,70 @@
       <div class="logs-modal-meta-row">
         <span class="logs-level-badge" [class]="'level-' + log.level.toLowerCase()">{{ log.level }}</span>
         <span class="service-source-tag" [class]="'source-' + log.category.toLowerCase()">{{ log.category }}</span>
+        @if (getLogClassification(log); as classification) {
+          <span class="logs-classification-badge" [ngClass]="'logs-classification-badge--' + classification.tone">{{ classification.label }}</span>
+        }
+        @if (getLogStatusCode(log); as statusCode) {
+          <span class="logs-status-badge" [class.logs-status-badge--error]="statusCode >= 500" [class.logs-status-badge--warn]="statusCode >= 400 && statusCode < 500" [class.logs-status-badge--ok]="statusCode < 400">HTTP {{ statusCode }}</span>
+        }
         <span class="logs-modal-time">{{ log.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</span>
-        @if (log.traceId) {
-          <span class="logs-modal-trace-id">{{ log.traceId }}</span>
+        @if (recordingTraceIdForLog(log)) {
+          <button type="button" (click)="copyToClipboard(recordingTraceIdForLog(log), $event)" class="logs-trace-badge" title="Sao chép Trace ID">
+            Trace ID: {{ recordingTraceIdForLog(log) }}
+          </button>
         }
       </div>
+
+      @if (getFlowSummary(log); as summary) {
+        <div class="logs-flow-summary-card">
+          <div class="logs-flow-summary-main">
+            <span class="logs-flow-summary-kicker">Flow summary</span>
+            <strong>{{ summary.flow }}</strong>
+            <p>{{ summary.result }}</p>
+          </div>
+          <div class="logs-flow-summary-grid">
+            <div class="logs-flow-summary-api">
+              <span>API</span>
+              <button type="button" (click)="copyToClipboard(summary.api, $event)" [disabled]="summary.api === 'N/A'" [title]="summary.api">{{ summary.api }}</button>
+            </div>
+            <div>
+              <span>Thời gian xử lý</span>
+              <strong>{{ summary.duration }}</strong>
+            </div>
+            <div>
+              <span>Trace</span>
+              <button type="button" (click)="copyToClipboard(recordingTraceIdForLog(log), $event)" [disabled]="!recordingTraceIdForLog(log)">{{ recordingTraceIdForLog(log) || 'N/A' }}</button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <div class="logs-quick-actions-row">
+        <button type="button" class="logs-copy-btn" (click)="copyToClipboard(log.message, $event)">
+          <svg lucideCopy class="w-3.5 h-3.5"></svg>
+          <span>Sao chép message</span>
+        </button>
+        <button type="button" class="logs-copy-btn" (click)="copyToClipboard(log.details || log.message, $event)">
+          <svg lucideCopy class="w-3.5 h-3.5"></svg>
+          <span>Sao chép log line</span>
+        </button>
+        @if (resolveLogApiPath(log)) {
+          <button type="button" class="logs-copy-btn" (click)="copyToClipboard(resolveLogApiPath(log), $event)">
+            <svg lucideCopy class="w-3.5 h-3.5"></svg>
+            <span>Sao chép API</span>
+          </button>
+        }
+      </div>
+
+      <app-admin-recording-evidence
+        [email]="recordingEmailForLog(log)"
+        [userId]="recordingUserIdForLog(log)"
+        [timestamp]="log.timestamp"
+        [traceId]="recordingTraceIdForLog(log)"
+        title="Record liên quan"
+        contextLabel="Log evidence"
+      />
+
 
       <div class="logs-details-card logs-details-card--modal">
         <div class="logs-details-header">
@@ -706,7 +785,7 @@
           <div class="logs-inspector-section">
             <button type="button" class="logs-inspector-section-title">
               <span>⌄</span>
-              <span>Structured metadata</span>
+              <span>Metadata có cấu trúc</span>
             </button>
             <div class="logs-metadata-list">
               @for (item of getStructuredMetadata(log); track item.label) {
@@ -721,7 +800,7 @@
           <div class="logs-inspector-section">
             <button type="button" class="logs-inspector-section-title">
               <span>⌄</span>
-              <span>Indexed labels</span>
+              <span>Nhãn index</span>
             </button>
             <div class="logs-metadata-list">
               @for (item of getIndexedLabels(log); track item.label) {
@@ -736,7 +815,7 @@
           <div class="logs-inspector-section">
             <button type="button" class="logs-inspector-section-title">
               <span>⌄</span>
-              <span>Event timeline</span>
+              <span>Luồng request</span>
             </button>
             <div class="logs-journey-list">
               @for (journey of getUserJourney(log); track journey.id) {
@@ -746,7 +825,7 @@
                     <div class="logs-journey-header">
                       <span class="logs-journey-title">{{ journey.title }}</span>
                       @if (journey.isCurrent) {
-                        <span class="logs-journey-current-badge">Current event</span>
+                        <span class="logs-journey-current-badge">Bước hiện tại</span>
                       }
                       <span class="logs-journey-time">{{ journey.time | date:'HH:mm:ss' }}</span>
                     </div>

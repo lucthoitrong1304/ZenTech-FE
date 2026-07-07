@@ -121,6 +121,7 @@ export interface ChatMessageRequestPayload {
     attachmentType: ChatAttachmentType;
   }[];
   pageContext?: CustomerChatPageContext;
+  traceId?: string;
 }
 
 // ==========================================
@@ -223,6 +224,7 @@ export interface ChatMessageResponse {
   recommendedProducts?: ChatProductRecommendation[];
   createdAt: string;
   deletedAt: string | null;
+  traceId?: string;
 }
 
 export interface ApiResponse<T> {
