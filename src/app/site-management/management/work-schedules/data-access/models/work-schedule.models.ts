@@ -48,8 +48,11 @@ export interface DailyShift {
   onTimeCheckOutEndMinutes: number;
   isLeave?: boolean;
   isWfh?: boolean;
+  isAfk?: boolean;
   isSwap?: boolean;
   statusLabel?: string;
+  afkStartTime?: string | number[] | null;
+  afkEndTime?: string | number[] | null;
 }
 
 export interface EmployeeWeeklySchedule {

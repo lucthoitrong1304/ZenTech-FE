@@ -167,8 +167,12 @@
               </td>
               <td class="work-schedules-grid__employee">
                 <div class="work-schedules-employee">
-                  <span>{{ getEmployeeInitials(employee.employeeName) }}</span>
-                  <strong>{{ employee.employeeName }}</strong>
+                  <span class="work-schedules-employee__avatar" aria-hidden="true">
+                    {{ getEmployeeInitials(employee.employeeName) }}
+                  </span>
+                  <span class="work-schedules-employee__meta">
+                    <strong>{{ employee.employeeName }}</strong>
+                  </span>
                 </div>
               </td>
               @for (date of store.weekDates(); track date) {
@@ -196,18 +200,27 @@
                           <span
                             class="work-schedules-cell__shift"
                             [style.border-left-color]="shift.colorCode || '#4f46e5'"
+                            [attr.title]="getShiftTooltip(shift)"
                           >
-                            <span [style.color]="shift.colorCode || '#4f46e5'" class="flex flex-col gap-1">
+                            <span
+                              class="work-schedules-cell__shift-info"
+                              [style.color]="shift.colorCode || '#4f46e5'"
+                            >
                               <strong>{{ shift.shiftName }}</strong>
-                              <span *ngIf="shift.statusLabel" 
-                                    [class.bg-green-50]="shift.isWfh" [class.text-green-700]="shift.isWfh" [class.border-green-200]="shift.isWfh"
-                                    [class.bg-red-50]="shift.isLeave" [class.text-red-700]="shift.isLeave" [class.border-red-200]="shift.isLeave"
-                                    [class.bg-yellow-50]="shift.isSwap" [class.text-yellow-700]="shift.isSwap" [class.border-yellow-200]="shift.isSwap"
-                                    class="text-[9px] font-bold block px-1 py-0.5 rounded border text-center leading-tight">
+                              <span
+                                *ngIf="shift.statusLabel"
+                                class="work-schedules-cell__status"
+                                [class.work-schedules-cell__status--wfh]="shift.isWfh"
+                                [class.work-schedules-cell__status--leave]="shift.isLeave"
+                                [class.work-schedules-cell__status--afk]="shift.isAfk"
+                                [class.work-schedules-cell__status--swap]="shift.isSwap"
+                              >
                                 {{ shift.statusLabel }}
                               </span>
+                              <small *ngIf="!shift.statusLabel" class="work-schedules-cell__shift-time">
+                                {{ getShiftTimeRange(shift) }}
+                              </small>
                             </span>
-                            <small>{{ getShiftTimeRange(shift) }}</small>
                           </span>
                         }
                       </span>

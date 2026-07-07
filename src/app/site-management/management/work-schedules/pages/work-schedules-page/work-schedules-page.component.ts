@@ -604,6 +604,14 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     return `${formatTime(shift.startTime)} - ${formatTime(shift.endTime)}`;
   }
 
+  protected getShiftTooltip(shift: DailyShift): string | null {
+    if (!shift.isAfk) {
+      return null;
+    }
+
+    return `AFK: ${formatTime(shift.afkStartTime ?? null)} - ${formatTime(shift.afkEndTime ?? null)}`;
+  }
+
   protected getDayCoverageLabel(shifts: DailyShift[]): string {
     if (shifts.length === 0) {
       return 'Chưa xếp lịch';
@@ -697,6 +705,11 @@ function normalizeTime(value: string): string | null {
   return value ? `${value}:00` : null;
 }
 
-function formatTime(value: string | null): string {
+function formatTime(value: string | number[] | null): string {
+  if (Array.isArray(value)) {
+    const [hour, minute = 0] = value;
+    return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+  }
+
   return value ? value.slice(0, 5) : '--:--';
 }
