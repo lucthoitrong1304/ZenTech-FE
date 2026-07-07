@@ -1,0 +1,439 @@
+:host {
+  display: block;
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 50;
+  width: 90px;
+  height: 110px;
+}
+
+.launcher-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.robot-launcher-btn {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  padding: 0;
+}
+
+.robot-launcher-btn:active {
+  transform: scale(0.92);
+}
+
+/* Base floating & 3D body sway animation */
+.robot-container {
+  width: 100%;
+  height: 100%;
+  transform-origin: bottom center;
+  animation: mechaFloating 5s ease-in-out infinite;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.45));
+  transition: filter 0.3s ease;
+}
+
+.robot-launcher-btn:hover .robot-container {
+  animation: mechaFloatingHover 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 16px 32px rgba(34, 211, 238, 0.4));
+}
+
+@keyframes mechaFloating {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) translateX(0);
+  }
+  25% {
+    transform: translateY(-5px) rotate(1.5deg) translateX(2px);
+  }
+  50% {
+    transform: translateY(-9px) rotate(0deg) translateX(0);
+  }
+  75% {
+    transform: translateY(-5px) rotate(-1.5deg) translateX(-2px);
+  }
+}
+
+@keyframes mechaFloatingHover {
+  0%, 100% {
+    transform: translateY(-4px) rotate(0deg) translateX(0);
+  }
+  25% {
+    transform: translateY(-9px) rotate(3deg) translateX(4px);
+  }
+  50% {
+    transform: translateY(-13px) rotate(0deg) translateX(0);
+  }
+  75% {
+    transform: translateY(-9px) rotate(-3deg) translateX(-4px);
+  }
+}
+
+/* 3D look-around parallax effect (sliding visor contents) */
+.parallax-face {
+  animation: lookAroundParallax 8s ease-in-out infinite;
+}
+
+.robot-launcher-btn:hover .parallax-face {
+  animation: lookAroundParallaxHover 4s ease-in-out infinite;
+}
+
+@keyframes lookAroundParallax {
+  0%, 35%, 65%, 100% {
+    transform: translateX(0);
+  }
+  15%, 20% {
+    transform: translateX(-4px); /* Looks left */
+  }
+  45%, 50% {
+    transform: translateX(4px);  /* Looks right */
+  }
+}
+
+@keyframes lookAroundParallaxHover {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5.5px);
+  }
+  75% {
+    transform: translateX(5.5px);
+  }
+}
+
+/* Head bobbing slightly out-of-phase with body */
+.head-group {
+  transform-origin: 50px 52px;
+  animation: headSway 5s ease-in-out infinite;
+}
+
+@keyframes headSway {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(-1deg) translateY(0.5px);
+  }
+  50% {
+    transform: rotate(0deg) translateY(0);
+  }
+  75% {
+    transform: rotate(1deg) translateY(0.5px);
+  }
+}
+
+/* Holographic HUD rings rotation */
+.holo-ring {
+  transform-origin: 50px 50px;
+  animation: spinHolo 18s linear infinite;
+}
+
+.holo-ring-inner {
+  transform-origin: 50px 50px;
+  animation: spinHoloReverse 12s linear infinite;
+}
+
+@keyframes spinHolo {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinHoloReverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+/* Blinking eyes animation */
+.eyes-group {
+  transform-origin: 50px 42px;
+  animation: blinkEyes 7s infinite;
+}
+
+@keyframes blinkEyes {
+  0%, 48%, 50%, 98%, 100% {
+    transform: scaleY(1);
+  }
+  49%, 99% {
+    transform: scaleY(0.08);
+  }
+}
+
+/* Forehead indicator light pulsing */
+.top-light {
+  animation: pulseLightDot 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseLightDot {
+  0%, 100% {
+    opacity: 0.6;
+    filter: drop-shadow(0 0 1px #22d3ee);
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 5px #22d3ee);
+  }
+}
+
+/* Core Reactor pulse breathing */
+.core-reactor {
+  animation: coreBreathing 3s ease-in-out infinite;
+}
+
+@keyframes coreBreathing {
+  0%, 100% {
+    transform: scale(0.9);
+    opacity: 0.7;
+    filter: drop-shadow(0 0 2px #22d3ee);
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+    filter: drop-shadow(0 0 8px #22d3ee);
+  }
+}
+
+/* Soundwave mouth animation */
+.mouth-wave {
+  stroke-dasharray: 18;
+  animation: chatter 1.2s ease-in-out infinite;
+}
+
+@keyframes chatter {
+  0%, 100% {
+    stroke-dashoffset: 0;
+    opacity: 0.8;
+  }
+  50% {
+    stroke-dashoffset: 6;
+    opacity: 1;
+  }
+}
+
+/* Plasma Jet Flame flicker & scale */
+.thruster-flame {
+  transform-origin: 50px 88px;
+  animation: flameFlicker 0.15s linear infinite;
+}
+
+@keyframes flameFlicker {
+  0%, 100% {
+    transform: scaleY(0.9) scaleX(0.95);
+    filter: drop-shadow(0 0 2px #06b6d4);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scaleY(1.15) scaleX(1.05);
+    filter: drop-shadow(0 0 8px #06b6d4);
+    opacity: 1;
+  }
+}
+
+/* Jointed Robotic Arms sways */
+.left-arm {
+  transform-origin: 20px 75px;
+  animation: armSwayLeft 3s ease-in-out infinite;
+}
+
+.right-arm {
+  transform-origin: 80px 75px;
+  animation: armSwayRight 3s ease-in-out infinite;
+}
+
+@keyframes armSwayLeft {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-5deg);
+  }
+}
+
+@keyframes armSwayRight {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+
+/* Floating chat bubble indicator */
+.holo-bubble {
+  transform-origin: 81px 15px;
+  animation: floatBubble 3s ease-in-out infinite;
+}
+
+@keyframes floatBubble {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 2px 4px rgba(6, 182, 212, 0.4));
+  }
+  50% {
+    transform: translateY(-4px) scale(1.06);
+    filter: drop-shadow(0 6px 12px rgba(6, 182, 212, 0.6));
+  }
+}
+
+/* Welcome Pop-up Box styling */
+.welcome-box {
+  position: absolute;
+  right: 105px;
+  bottom: 15px;
+  width: 290px;
+  background: rgba(8, 12, 21, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  border-radius: 16px;
+  padding: 14px;
+  color: #ffffff;
+  z-index: 60;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(34, 211, 238, 0.05);
+  animation: slideInLeft 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  pointer-events: auto;
+  text-align: left;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(25px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.welcome-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.welcome-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.welcome-dot {
+  width: 6px;
+  height: 6px;
+  background: #22d3ee;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #22d3ee;
+  animation: pulseLightDot 1.5s infinite;
+}
+
+.welcome-title-group h4 {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.welcome-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.welcome-close:hover {
+  color: #ffc700;
+}
+
+.welcome-body {
+  margin-bottom: 8px;
+}
+
+.welcome-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffc700;
+  margin: 0 0 4px 0;
+}
+
+.welcome-desc {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.welcome-footer {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(34, 211, 238, 0.6);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 8px;
+}
+
+/* Hover Speech Bubble styling */
+.hover-speech-bubble {
+  position: absolute;
+  right: 105px;
+  bottom: 45px;
+  background: #080c14;
+  border: 1px solid #ffc700;
+  color: #ffc700;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  box-shadow: 0 4px 15px rgba(255, 199, 0, 0.25);
+  animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  pointer-events: none;
+  z-index: 55;
+}
+
+.hover-speech-bubble::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: #080c14;
+  border-top: 1px solid #ffc700;
+  border-right: 1px solid #ffc700;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateX(0);
+  }
+}

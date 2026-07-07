@@ -71,7 +71,15 @@ export class SiteHeaderComponent implements OnDestroy {
   protected readonly instantResults = signal<ProductListItem[]>([]);
   protected readonly loadingResults = signal(false);
 
+  protected readonly isHovered = signal(false);
+  protected readonly isScrolled = signal(false);
+
   constructor() {
+    if (typeof window !== 'undefined') {
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      this.isScrolled.set(scrollY > 20);
+    }
+
     this.searchSubject.pipe(
       takeUntil(this.destroy$),
       debounceTime(300),
@@ -99,8 +107,17 @@ export class SiteHeaderComponent implements OnDestroy {
     });
   }
 
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    if (typeof window !== 'undefined') {
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      this.isScrolled.set(scrollY > 20);
+    }
+  }
+
   @ViewChild(NotificationBellComponent) bellComponent?: NotificationBellComponent;
 
+  readonly transparent = input<boolean>(false);
   readonly navItems = input<HeaderNavItem[]>([]);
   readonly activeNavLabel = input<string | null>(null);
   readonly cartCount = input(0);
