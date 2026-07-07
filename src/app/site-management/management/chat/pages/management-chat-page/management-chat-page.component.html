@@ -177,7 +177,7 @@
         <option [ngValue]="null" disabled>-- Ch&#7885;n nh&#226;n vi&#234;n --</option>
         @for (staff of store.activeStaffList(); track staff.accountId) {
           <option [ngValue]="staff.accountId">
-            {{ staff.displayName }} ({{ staff.role }})
+            {{ staff.fullName || 'Nhân viên hỗ trợ' }} ({{ staff.role }})
           </option>
         }
       </select>

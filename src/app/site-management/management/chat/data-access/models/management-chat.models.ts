@@ -98,8 +98,7 @@ export interface ManagementChatExpertRequestCount {
 
 export interface ChatStaffResponse {
   accountId: string;
-  email: string;
-  displayName: string;
-  avatarUrl: string | null;
+  fullName: string | null;
+  imageUrl: string | null;
   role: string;
 }
