@@ -60,6 +60,17 @@ describe('ManagementChatStore', () => {
       getMessages: vi.fn(() => of(createPage(createChatMessages()))),
       claimConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.AGENT_HANDLING))),
       leaveConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.WAITING_FOR_AGENT))),
+      getActiveStaffList: vi.fn(() =>
+        of([
+          {
+            accountId: 'staff-1',
+            fullName: 'Minh Anh',
+            imageUrl: null,
+            role: 'EMPLOYEE',
+          },
+        ])
+      ),
+      transferConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.AGENT_HANDLING))),
       mapToManagementChatConversation: vi.fn(mapConversationResponse),
     };
     const customerChatService = {
@@ -384,6 +395,22 @@ describe('ManagementChatStore', () => {
       status: 'WAITING_STAFF',
       currentStaffActive: false,
     });
+  });
+
+  it('loads active staff using the backend fullName and imageUrl contract', () => {
+    const { store, managementChatService } = configureStore();
+
+    store.loadActiveStaffList();
+
+    expect(managementChatService.getActiveStaffList).toHaveBeenCalled();
+    expect(store.activeStaffList()).toEqual([
+      {
+        accountId: 'staff-1',
+        fullName: 'Minh Anh',
+        imageUrl: null,
+        role: 'EMPLOYEE',
+      },
+    ]);
   });
 });
 
