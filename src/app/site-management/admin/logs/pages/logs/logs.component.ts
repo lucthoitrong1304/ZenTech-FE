@@ -22,6 +22,7 @@ import { ActivityArea, ActivitySeverity, LogLevel, LogServiceCategory, SystemLog
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { WebsocketService } from '../../../../../core/services/websocket.service';
 import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
+import { normalizeTraceIdInput } from '../../../../../core/observability/tracing/trace-id.util';
 import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
 
 interface LogMetadataItem {
@@ -167,11 +168,8 @@ export class LogsComponent implements OnInit, OnDestroy {
       this.searchText.set(traceId);
       this.visibleLogCount.set(this.logPageSize);
 
-      if (traceId) {
-        this.store.setLogSearch(traceId);
-      } else {
-        this.reloadLogsFromServer();
-      }
+      this.store.setLogSearchValue(traceId);
+      this.reloadLogsFromServer();
     });
     this.startRealtimeLogs();
   }
@@ -203,17 +201,14 @@ export class LogsComponent implements OnInit, OnDestroy {
   }
 
   private normalizeTraceIdSearch(value: string): string {
-    const search = value.trim();
-    return search.toUpperCase().startsWith('ZT-') && search.length > 5 ? search : '';
+    return normalizeTraceIdInput(value);
   }
 
   protected formatLogClock(value: Date): string {
-    return new Intl.DateTimeFormat('vi-VN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }).format(new Date(value));
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return '';
+
+    return `${this.padTimePart(date.getHours())}:${this.padTimePart(date.getMinutes())}:${this.padTimePart(date.getSeconds())}.${this.padMilliseconds(date.getMilliseconds())}`;
   }
 
   protected formatLogDate(value: Date): string {
@@ -258,21 +253,25 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   private isNoiseLog(log: SystemLog): boolean {
     const text = ((log.message || '') + ' ' + (log.details || '')).toLowerCase();
+    if (log.level !== LogLevel.ERROR && this.isInternalObservabilityLog(text)) return true;
     if (log.level === LogLevel.ERROR || this.getLogStatusCode(log) !== null || this.isRequestFlowBreadcrumb(log)) return false;
-    return text.includes('querying loki uri')
-      || text.includes('request query logs received')
-      || text.includes('application startup complete')
+    return text.includes('application startup complete')
       || text.includes('waiting for application startup')
       || text.includes('started server process')
       || text.includes('started reloader process')
       || text.includes('uvicorn running on')
-      || text.includes('/api/admin/logs')
-      || text.includes('/api/notifications/unread-count')
-      || text.includes('/api/notifications')
       || text.includes('spring.jpa.open-in-view')
       || text.includes('mysqldialect does not need');
   }
 
+  private isInternalObservabilityLog(text: string): boolean {
+    return text.includes('querying loki uri')
+      || text.includes('request query logs received')
+      || text.includes('/api/admin/logs')
+      || text.includes('/loki/api/v1/query_range')
+      || text.includes('/api/notifications/unread-count')
+      || text.includes('/api/notifications');
+  }
   private compareLogListLogs(left: SystemLog, right: SystemLog): number {
     const leftTime = new Date(left.timestamp).getTime();
     const rightTime = new Date(right.timestamp).getTime();
@@ -282,41 +281,44 @@ export class LogsComponent implements OnInit, OnDestroy {
     if (this.isTraceIdSearch()) {
       const rankDelta = this.traceFlowSortRank(right) - this.traceFlowSortRank(left);
       if (rankDelta !== 0) return rankDelta;
-
-      if (leftTimeValid && rightTimeValid && leftTime !== rightTime) {
-        return rightTime - leftTime;
-      }
-
-      return this.compareStableLogIdentity(left, right);
     }
 
-    if (leftTimeValid && rightTimeValid) {
-      const leftSecond = Math.floor(leftTime / 1000);
-      const rightSecond = Math.floor(rightTime / 1000);
-
-      if (leftSecond === rightSecond && this.logsShareTrace(left, right)) {
-        const rankDelta = this.traceFlowSortRank(right) - this.traceFlowSortRank(left);
-        if (rankDelta !== 0) return rankDelta;
-      }
-
-      if (leftTime !== rightTime) {
-        return rightTime - leftTime;
-      }
+    if (leftTimeValid && rightTimeValid && leftTime !== rightTime) {
+      return rightTime - leftTime;
     }
-
-    const rankDelta = this.traceFlowSortRank(right) - this.traceFlowSortRank(left);
-    if (rankDelta !== 0) return rankDelta;
 
     return this.compareStableLogIdentity(left, right);
   }
-
-  private logsShareTrace(left: SystemLog, right: SystemLog): boolean {
-    const leftTraceId = this.recordingTraceIdForLog(left);
-    const rightTraceId = this.recordingTraceIdForLog(right);
-    return !!leftTraceId && leftTraceId === rightTraceId;
-  }
   private isRequestFlowBreadcrumb(log: SystemLog): boolean {
-    return this.traceFlowRank(log) <= 6;
+    const message = `${log.message || ''} ${log.details || ''}`.toLowerCase();
+    const category = this.normalizeServiceCategory(log.category);
+    const context = this.parseClientLogStack(log.details);
+    const eventType = (context?.eventType || '').toLowerCase();
+
+    return eventType === 'fe_sent'
+      || eventType === 'fe_received'
+      || eventType === 'fe_failed'
+      || eventType === 'httprequeststarted'
+      || eventType === 'httprequestsucceeded'
+      || eventType === 'httprequestfailed'
+      || message.includes('[fe_sent]')
+      || message.includes('[fe_received]')
+      || message.includes('[fe_failed]')
+      || message.includes('httprequeststarted')
+      || message.includes('httprequestsucceeded')
+      || message.includes('httprequestfailed')
+      || (
+        category === LogServiceCategory.BACKEND
+        && (
+          message.includes('incoming request')
+          || message.includes('outgoing response')
+          || message.includes('websocket chat message received')
+          || message.includes('calling ai service')
+          || message.includes('requesting ai reply stream')
+          || this.isBackendProcessLog(message)
+        )
+      )
+      || category === LogServiceCategory.AI_SERVICE;
   }
   private traceFlowSortRank(log: SystemLog): number {
     const rank = this.traceFlowRank(log);
@@ -374,7 +376,7 @@ export class LogsComponent implements OnInit, OnDestroy {
       || message.includes('httprequestsucceeded')
       || message.includes('httprequestfailed')
     ) return 6;
-    if (category === LogServiceCategory.BACKEND && message.includes('/api/auth')) return 2;
+    if (category === LogServiceCategory.BACKEND) return 2;
     if (category === LogServiceCategory.FRONTEND) return 7;
     return 7;
   }
@@ -405,7 +407,7 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   protected handleFilterChange(filter: LogLevel | 'ALL'): void {
     this.activeFilter.set(filter);
-    this.store.setLogFilter(filter);
+    this.store.setLogFilterValue(filter);
     this.resetVisibleCounts();
     this.reloadLogsFromServer();
   }
@@ -589,7 +591,7 @@ export class LogsComponent implements OnInit, OnDestroy {
   protected handleSearchInput(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.searchText.set(value);
-    this.store.setLogSearch(value);
+    this.store.setLogSearchValue(value);
     this.resetVisibleCounts();
     this.reloadLogsFromServer();
   }
@@ -676,8 +678,8 @@ export class LogsComponent implements OnInit, OnDestroy {
     this.searchText.set(traceId);
     this.activeFilter.set('ALL');
     this.activeService.set(LogServiceCategory.ALL);
-    this.store.setLogFilter('ALL');
-    this.store.setLogSearch(traceId);
+    this.store.setLogFilterValue('ALL');
+    this.store.setLogSearchValue(traceId);
     this.reloadLogsFromServer();
   }
 
@@ -1119,16 +1121,23 @@ export class LogsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private formatLogDateTime(value: Date): string {
-    return new Intl.DateTimeFormat('vi-VN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour12: false,
-    }).format(new Date(value));
+  protected formatLogDateTime(value: Date): string {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) return '';
+
+    const day = this.padTimePart(date.getDate());
+    const month = this.padTimePart(date.getMonth() + 1);
+    const year = date.getFullYear();
+
+    return `${this.formatLogClock(date)} ${day}/${month}/${year}`;
+  }
+
+  private padTimePart(value: number): string {
+    return String(value).padStart(2, '0');
+  }
+
+  private padMilliseconds(value: number): string {
+    return String(value).padStart(3, '0');
   }
 
 

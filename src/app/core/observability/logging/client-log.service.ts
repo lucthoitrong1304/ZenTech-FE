@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AdminLogsService } from '../../site-management/admin/data-access/services/admin-logs.service';
+import { AdminLogsService } from '../../../site-management/admin/data-access/services/admin-logs.service';
 import { ClientLogContext, ClientLogEventType, ClientLogLevel, ClientLogPayload } from './client-log.model';
 import { sanitizeRecord, sanitizeText, sanitizeUrl } from './client-log-sanitizer';
-import { AuthStorageService } from '../services/auth-storage.service';
+import { AuthStorageService } from '../../services/auth-storage.service';
 import { generateTraceId } from '../tracing/trace-id.util';
 
 @Injectable({ providedIn: 'root' })

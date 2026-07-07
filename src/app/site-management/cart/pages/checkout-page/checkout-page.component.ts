@@ -15,7 +15,7 @@ import { CartSummaryComponent } from '../../components/cart-summary/cart-summary
 import { CheckoutPaymentMethod } from '../../data-access/models/checkout.model';
 import { BusinessEventService, BusinessEventType } from '../../data-access/services/business-event.service';
 import { CheckoutService } from '../../data-access/services/checkout.service';
-import { generateTraceId } from '../../../../core/tracing/trace-id.util';
+import { generateTraceId } from '../../../../core/observability/tracing/trace-id.util';
 import { CartStore } from '../../data-access/store/cart.store';
 
 import { LucideArrowLeft, LucideCreditCard } from '@lucide/angular';

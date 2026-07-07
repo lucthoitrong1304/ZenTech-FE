@@ -7,7 +7,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
 import { CustomerChatPopupComponent } from './site-management/customer-chat/components/customer-chat-popup/customer-chat-popup.component';
 import { CategoryNavigationStore } from './site-management/shared/data-access/store/category-navigation.store';
 import { AuthStorageService } from './core/services/auth-storage.service';
-import { RouteClientLogService } from './core/logging/route-client-log.service';
+import { RouteClientLogService } from './core/observability/logging/route-client-log.service';
 import { Role } from './site-management/auth/data-access/models/auth.enums';
 import { hasRole } from './site-management/auth/data-access/utils/auth-role.utils';
 import { AdminLogsService } from './site-management/admin/data-access/services/admin-logs.service';

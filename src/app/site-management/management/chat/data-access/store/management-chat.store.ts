@@ -30,9 +30,9 @@ import {
 import { ManagementChatService } from '../services/management-chat.service';
 import { CustomerChatService } from '../../../../customer-chat/data-access/services/customer-chat.service';
 import { CustomerChatWebsocketService } from '../../../../customer-chat/data-access/services/customer-chat-websocket.service';
-import { ClientLogEventType } from '../../../../../core/logging/client-log.model';
-import { ClientLogService } from '../../../../../core/logging/client-log.service';
-import { generateTraceId } from '../../../../../core/tracing/trace-id.util';
+import { ClientLogEventType } from '../../../../../core/observability/logging/client-log.model';
+import { ClientLogService } from '../../../../../core/observability/logging/client-log.service';
+import { generateTraceId } from '../../../../../core/observability/tracing/trace-id.util';
 import {
   ChatMessageResponse,
   ConversationResponse,

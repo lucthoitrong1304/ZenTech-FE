@@ -7,6 +7,7 @@ import { AdminLogsService } from '../services/admin-logs.service';
 import { AdminIncidentsService } from '../../incidents/data-access/services/admin-incidents.service';
 import { AdminTicketsService } from '../../tickets/data-access/services/admin-tickets.service';
 import { WebsocketService } from '../../../../core/services/websocket.service';
+import { normalizeTraceIdInput } from '../../../../core/observability/tracing/trace-id.util';
 import {
   LogLevel,
   SystemLog,
@@ -365,9 +366,9 @@ export const AdminStore = signalStore(
         result = result.filter(log => log.level === filterVal);
       }
       if (searchVal) {
-        const isTraceIdQuery = searchVal.startsWith('zt-') && searchVal.length > 5;
-        if (isTraceIdQuery) {
-          result = result.filter(log => log.traceId && log.traceId.toLowerCase() === searchVal);
+        const normalizedTraceId = normalizeTraceIdInput(searchVal);
+        if (normalizedTraceId) {
+          result = result.filter(log => log.traceId && log.traceId.toLowerCase() === normalizedTraceId.toLowerCase());
         } else {
           result = result.filter(log =>
             log.message.toLowerCase().includes(searchVal) ||
@@ -385,9 +386,9 @@ export const AdminStore = signalStore(
       let result = issueLogs();
 
       if (searchVal) {
-        const isTraceIdQuery = searchVal.startsWith('zt-') && searchVal.length > 5;
-        if (isTraceIdQuery) {
-          result = result.filter(log => log.traceId && log.traceId.toLowerCase() === searchVal);
+        const normalizedTraceId = normalizeTraceIdInput(searchVal);
+        if (normalizedTraceId) {
+          result = result.filter(log => log.traceId && log.traceId.toLowerCase() === normalizedTraceId.toLowerCase());
         } else {
           result = result.filter(log =>
             log.message.toLowerCase().includes(searchVal) ||
@@ -820,25 +821,33 @@ export const AdminStore = signalStore(
         });
       },
 
+      setLogFilterValue(filter: LogLevel | 'ALL') {
+        patchState(store, { logFilter: filter });
+      },
+
+      setLogSearchValue(search: string) {
+        patchState(store, { logSearch: search });
+      },
+
       setLogFilter(filter: LogLevel | 'ALL') {
         patchState(store, { logFilter: filter });
         const search = store.logSearch().trim();
-        const isTraceId = search.startsWith('ZT-') && search.length > 5;
+        const traceId = normalizeTraceIdInput(search);
         this.loadLogs({
           level: filter,
-          search: isTraceId ? '' : search,
-          traceId: isTraceId ? search : ''
+          search: traceId ? '' : search,
+          traceId
         });
       },
 
       setLogSearch(search: string) {
         patchState(store, { logSearch: search });
         const trimmed = search.trim();
-        const isTraceId = trimmed.startsWith('ZT-') && trimmed.length > 5;
+        const traceId = normalizeTraceIdInput(trimmed);
         this.loadLogs({
           level: store.logFilter(),
-          search: isTraceId ? '' : trimmed,
-          traceId: isTraceId ? trimmed : ''
+          search: traceId ? '' : trimmed,
+          traceId
         });
       },
 
