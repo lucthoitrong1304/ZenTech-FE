@@ -70,7 +70,7 @@ describe('ManagementChatStore', () => {
           },
         ])
       ),
-      transferConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.AGENT_HANDLING))),
+      transferConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.AGENT_HANDLING, { includeStaff: false }))),
       mapToManagementChatConversation: vi.fn(mapConversationResponse),
     };
     const customerChatService = {
@@ -375,6 +375,63 @@ describe('ManagementChatStore', () => {
     expect(store.selectedConversation()?.expertRequestStatus).toBe('ACCEPTED');
   });
 
+  it('only allows management actions for the selected active staff conversation', () => {
+    const workspace = createWorkspace();
+    workspace.conversations[0] = {
+      ...workspace.conversations[0],
+      status: 'STAFF_HANDLING',
+      currentStaffActive: true,
+    };
+    const { store } = configureStore(workspace);
+
+    store.loadWorkspace();
+    store.selectConversation('conv-1');
+
+    expect(store.canManageSelectedConversation()).toBe(true);
+    expect(store.canReplyToSelectedConversation()).toBe(true);
+
+    store.selectConversation('conv-2');
+
+    expect(store.canManageSelectedConversation()).toBe(false);
+    expect(store.canReplyToSelectedConversation()).toBe(false);
+  });
+
+  it('keeps the selected conversation open after transfer succeeds', () => {
+    const workspace = createWorkspace();
+    workspace.conversations[0] = {
+      ...workspace.conversations[0],
+      status: 'STAFF_HANDLING',
+      currentStaffActive: true,
+    };
+    const { store, managementChatService } = configureStore(workspace);
+
+    store.loadWorkspace();
+    store.selectConversation('conv-1');
+    store.transferConversation('staff-2');
+
+    expect(managementChatService.transferConversation).toHaveBeenCalledWith('conv-1', 'staff-2');
+    expect(store.selectedConversationId()).toBe('conv-1');
+    expect(store.selectedConversation()).toMatchObject({
+      id: 'conv-1',
+      status: 'STAFF_HANDLING',
+      currentStaffActive: false,
+    });
+    expect(store.canReplyToSelectedConversation()).toBe(false);
+    expect(store.canManageSelectedConversation()).toBe(false);
+  });
+
+  it('does not transfer conversations that are not actively handled by the current staff', () => {
+    const { store, managementChatService } = configureStore();
+
+    store.loadWorkspace();
+    store.selectConversation('conv-1');
+    store.transferConversation('staff-2');
+
+    expect(store.canManageSelectedConversation()).toBe(false);
+    expect(managementChatService.transferConversation).not.toHaveBeenCalled();
+    expect(store.selectedConversationId()).toBe('conv-1');
+  });
+
   it('lets active staff leave a conversation and returns it to the waiting queue', () => {
     const workspace = createWorkspace();
     workspace.conversations[0] = {
@@ -543,8 +600,10 @@ function createPage<T>(content: T[]): PageResponse<T> {
 
 function createConversationResponse(
   id: string,
-  status: ConversationStatus
+  status: ConversationStatus,
+  options: { includeStaff?: boolean } = {}
 ): ConversationResponse {
+  const includeStaff = options.includeStaff ?? status === ConversationStatus.AGENT_HANDLING;
   return {
     id,
     customerId: 'customer-1',
@@ -566,7 +625,7 @@ function createConversationResponse(
         displayName: 'Nguyen Van A',
         avatarUrl: null,
       },
-      ...(status === ConversationStatus.AGENT_HANDLING
+      ...(includeStaff
         ? [
             {
               id: 'participant-staff',
