@@ -3,8 +3,8 @@ import { inject } from '@angular/core';
 import { AuthStorageService } from '../services/auth-storage.service';
 import { Role } from '../../site-management/auth/data-access/models/auth.enums';
 import { hasRole } from '../../site-management/auth/data-access/utils/auth-role.utils';
-import { ClientLogService } from '../logging/client-log.service';
-import { ClientLogEventType } from '../logging/client-log.model';
+import { ClientLogService } from '../observability/logging/client-log.service';
+import { ClientLogEventType } from '../observability/logging/client-log.model';
 
 export const managementGuard: CanActivateFn = () => {
   const router = inject(Router);

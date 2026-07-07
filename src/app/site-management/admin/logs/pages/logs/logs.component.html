@@ -280,7 +280,7 @@
           @if (getLogStatusCode(log); as statusCode) {
             <span class="logs-status-badge" [class.logs-status-badge--error]="statusCode >= 500" [class.logs-status-badge--warn]="statusCode >= 400 && statusCode < 500" [class.logs-status-badge--ok]="statusCode < 400">HTTP {{ statusCode }}</span>
           }
-          <span class="logs-modal-time">{{ log.timestamp | date:'HH:mm:ss dd/MM/yyyy' }}</span>
+          <span class="logs-modal-time">{{ formatLogDateTime(log.timestamp) }}</span>
           @if (log.traceId) {
             <button type="button" (click)="copyToClipboard(log.traceId, $event)" class="logs-trace-badge" title="Sao chép Trace ID">
               Trace ID: {{ log.traceId }}

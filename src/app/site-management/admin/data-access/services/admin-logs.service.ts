@@ -34,7 +34,7 @@ export class AdminLogsService {
     endTime?: number,
     skipGlobalError: boolean = false
   ): Observable<SystemLog[]> {
-    let url = `${this.adminLogsUrl}?level=${level}&search=${encodeURIComponent(search)}&traceId=${traceId}&limit=${limit}`;
+    let url = `${this.adminLogsUrl}?level=${level}&search=${encodeURIComponent(search)}&traceId=${encodeURIComponent(traceId)}&limit=${limit}`;
     if (startTime !== undefined) {
       url += `&startTime=${startTime}`;
     }

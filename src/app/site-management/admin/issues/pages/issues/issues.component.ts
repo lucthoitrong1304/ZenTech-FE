@@ -20,6 +20,7 @@ import { ActivityArea, ActivitySeverity, IncidentCreationSource, IncidentSeverit
 import { ToastService } from '../../../../../shared/components/toast/toast.service';
 import { WebsocketService } from '../../../../../core/services/websocket.service';
 import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
+import { normalizeTraceIdInput } from '../../../../../core/observability/tracing/trace-id.util';
 import { AdminIncidentsService } from '../../../incidents/data-access/services/admin-incidents.service';
 import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
 
@@ -175,7 +176,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
 
     if (search) {
       this.searchText.set(search);
-      this.store.setLogSearch(search);
+      this.store.setLogSearchValue(search);
     }
     if (service && Object.values(LogServiceCategory).includes(service)) {
       this.activeService.set(service);
@@ -449,20 +450,20 @@ export class IssuesComponent implements OnInit, OnDestroy {
     }
 
     const search = this.searchText().trim();
-    const isTraceId = search.startsWith('ZT-') && search.length > 5;
+    const traceId = normalizeTraceIdInput(search);
 
     this.store.loadLogs({
-      level: this.activeFilter(),
-      search: isTraceId ? '' : search,
-      traceId: isTraceId ? search : '',
+      level: traceId ? 'ALL' : this.activeFilter(),
+      search: traceId ? '' : search,
+      traceId,
       startTime,
       endTime,
       skipGlobalError: true
     });
 
     this.store.loadIssueLogs({
-      search: isTraceId ? '' : search,
-      traceId: isTraceId ? search : '',
+      search: traceId ? '' : search,
+      traceId,
       startTime,
       endTime,
       skipGlobalError: true
@@ -751,7 +752,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
   protected handleSearchInput(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.searchText.set(value);
-    this.store.setLogSearch(value);
+    this.store.setLogSearchValue(value);
     this.resetVisibleCounts();
     this.reloadLogsFromServer();
   }

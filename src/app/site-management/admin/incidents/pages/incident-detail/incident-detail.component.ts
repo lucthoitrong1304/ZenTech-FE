@@ -1031,7 +1031,7 @@ export class IncidentDetailComponent implements OnInit {
       || message.includes('httprequestsucceeded')
       || message.includes('httprequestfailed')
     ) return 6;
-    if (category === LogServiceCategory.BACKEND && message.includes('/api/auth')) return 2;
+    if (category === LogServiceCategory.BACKEND) return 2;
     if (category === LogServiceCategory.FRONTEND) return 7;
     return 7;
   }

@@ -13,9 +13,9 @@ import {
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, Subscription, catchError, filter, forkJoin, map, of, pipe, switchMap, tap } from 'rxjs';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
-import { ClientLogEventType } from '../../../../core/logging/client-log.model';
-import { ClientLogService } from '../../../../core/logging/client-log.service';
-import { generateTraceId } from '../../../../core/tracing/trace-id.util';
+import { ClientLogEventType } from '../../../../core/observability/logging/client-log.model';
+import { ClientLogService } from '../../../../core/observability/logging/client-log.service';
+import { generateTraceId } from '../../../../core/observability/tracing/trace-id.util';
 import { Role } from '../../../auth/data-access/models/auth.enums';
 import { hasRole } from '../../../auth/data-access/utils/auth-role.utils';
 import { CustomerChatEvent, CustomerChatEventType } from '../models/customer-chat.event';

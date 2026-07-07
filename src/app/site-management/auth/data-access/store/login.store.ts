@@ -5,9 +5,9 @@ import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
 import { LoginRequest } from '../models/auth.models';
 import { AuthService } from '../services/auth.service';
 import { AuthSessionStore } from './auth-session.store';
-import { ClientLogService } from '../../../../core/logging/client-log.service';
-import { ClientLogEventType } from '../../../../core/logging/client-log.model';
-import { generateTraceId } from '../../../../core/tracing/trace-id.util';
+import { ClientLogService } from '../../../../core/observability/logging/client-log.service';
+import { ClientLogEventType } from '../../../../core/observability/logging/client-log.model';
+import { generateTraceId } from '../../../../core/observability/tracing/trace-id.util';
 import {
   AuthRequestState,
   createInitialAuthRequestState,

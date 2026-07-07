@@ -1,9 +1,9 @@
 import { HttpEvent, HttpEventType, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { tap } from 'rxjs';
-import { ClientLogEventType } from '../logging/client-log.model';
-import { ClientLogService } from '../logging/client-log.service';
-import { SKIP_CLIENT_LOG } from '../tokens/api-context.token';
+import { ClientLogEventType } from './client-log.model';
+import { ClientLogService } from './client-log.service';
+import { SKIP_CLIENT_LOG } from '../../tokens/api-context.token';
 
 const LOGGED_SUCCESS_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']);
 const EXCLUDED_SUCCESS_URLS = [

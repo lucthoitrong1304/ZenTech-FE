@@ -22,8 +22,8 @@ import { ProductReviewDraft } from '../../data-access/models/product-detail-view
 import { AddReviewModalComponent } from '../../components/add-review-modal/add-review-modal.component';
 import { ProductDetailGalleryComponent } from '../../components/product-detail-gallery/product-detail-gallery.component';
 import { ProductReviewListComponent } from '../../components/product-review-list/product-review-list.component';
-import { ClientLogService } from '../../../../core/logging/client-log.service';
-import { ClientLogEventType } from '../../../../core/logging/client-log.model';
+import { ClientLogService } from '../../../../core/observability/logging/client-log.service';
+import { ClientLogEventType } from '../../../../core/observability/logging/client-log.model';
 import { setupLogoutMessageEffects } from '../../../auth/data-access/utils/logout-message-effects.util';
 
 @Component({
