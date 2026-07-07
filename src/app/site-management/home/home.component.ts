@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectionStrategy, effect, inject, signal, untracked, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject, signal, untracked, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '../../shared/components/toast/toast.service';
@@ -89,70 +89,98 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly activeHeroSlide = signal(0);
   readonly activeTestimonial = signal(0);
   readonly selectedVideoId = signal<string | null>(null);
+  readonly parallaxX = signal(0);
+  readonly parallaxY = signal(0);
 
-  readonly announcement = 'A new level. A new universe. New arrival V60 Pro HE Keyboard';
+  @HostListener('mousemove', ['$event'])
+  onMouseMove(event: MouseEvent): void {
+    if (typeof window !== 'undefined') {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const normalizedX = (event.clientX - centerX) / centerX;
+      const normalizedY = (event.clientY - centerY) / centerY;
+      this.parallaxX.set(normalizedX * 16);
+      this.parallaxY.set(normalizedY * 16);
+    }
+  }
+
+  @HostListener('mouseleave')
+  onMouseLeave(): void {
+    this.parallaxX.set(0);
+    this.parallaxY.set(0);
+  }
+
+  readonly announcementMessages = [
+    'Một đẳng cấp mới. Một vũ trụ mới. Bàn phím V60 Pro HE mới cập bến',
+    'Tần số quét 8K. Công tắc từ tính. Thiết kế riêng cho game thủ chuyên nghiệp',
+    'Cực nhiều ưu đãi hấp dẫn cho bàn phím, chuột và tai nghe Gaming',
+    'Miễn phí vận chuyển cho tất cả các combo Gaming nổi bật tuần này',
+    'Đăng ký thành viên để nhận voucher độc quyền và đặc quyền mua sớm',
+    'Nâng tầm góc máy chiến game của bạn cùng các sản phẩm ZenTech',
+  ];
 
   readonly heroSlides: HeroSlide[] = [
     {
-      eyebrow: 'New Arrival 2026',
-      title: 'Mercury V60 Pro HE',
+      eyebrow: 'Sản phẩm mới 2026',
+      title: 'Mercury K98 Pro',
       description:
-        'Hall Effect precision, 8K response, aluminum sci-fi body and a setup presence made for next-level gaming desks.',
-      image: '/home/asset-5.webp',
-      primaryCta: 'Shop Now',
-      secondaryCta: 'Explore Series',
+        'Giữ trọn vẹn cụm phím số, mở khóa độ chính xác 8K kép và mang trạm chỉ huy viễn tưởng đầy đủ lên bàn làm việc của bạn.',
+      image: '/home/mercury-k98-pro-mechaniccal-gaming-keyboard-1002.webp',
+      primaryCta: 'Mua Ngay',
+      secondaryCta: 'Khám Phá Phím',
     },
     {
-      eyebrow: 'Gaming Bundles',
-      title: 'Build Your Cyber Loadout',
+      eyebrow: 'Đặc quyền Đặt Trước',
+      title: 'Nhận ngay 2 Gear Cyber Miễn Phí',
       description:
-        'Pair keyboards, mice, chargers and audio gear into one clean ecosystem with limited bundle savings.',
-      image: '/home/asset-9.webp',
-      primaryCta: 'View Deals',
-      secondaryCta: 'Create Account',
+        'Hoàn thiện bộ trang bị của bạn với quà tặng ra mắt số lượng giới hạn, phụ kiện bàn làm việc viễn tưởng và một góc setup ZenTech cực ngầu.',
+      image: '/home/20260501-164934.webp',
+      primaryCta: 'Đặt Hàng Ngay',
+      secondaryCta: 'Xem Ưu Đãi',
     },
   ];
 
   readonly heroStats: StatItem[] = [
-    { label: 'Latency', value: '8K Hz' },
-    { label: 'Switch', value: 'Magnetic HE' },
-    { label: 'Frame', value: 'CNC Alloy' },
+    { label: 'Độ trễ', value: '8K Hz' },
+    { label: 'Công tắc', value: 'Từ Tính HE' },
+    { label: 'Khung vỏ', value: 'CNC Hợp Kim' },
   ];
 
   readonly categories: CategoryCard[] = [
     {
       slug: 'keyboards',
-      title: 'Shop Keyboard',
-      subtitle: 'Hall Effect / Mechanical',
-      image: '/home/asset-5.webp',
+      title: 'Bàn Phím Gaming',
+      subtitle: 'Từ tính / Cơ học',
+      image: '/home/1_8903b6a7-cea7-481d-ac1b-31d5ac7950ad.webp',
       size: 'large',
     },
     {
       slug: 'mice',
-      title: 'Shop Mouse',
-      subtitle: '8K wireless precision',
-      image: '/home/asset-7.webp',
+      title: 'Chuột Gaming',
+      subtitle: 'Độ chính xác 8K không dây',
+      image: '/home/6_eae6f3cd-3b4c-4fb7-b615-621e2fb41b13.webp',
       size: 'small',
     },
     {
       slug: 'chargers',
-      title: 'Shop Charger',
-      subtitle: 'Fast power core',
-      image: '/home/asset-3.webp',
+      title: 'Củ Sạc Robot',
+      subtitle: 'Nguồn sạc nhanh',
+      image:
+        '/home/Gan-fast-charger-65w-power-adapter-gravastar-alpha65-robot-charger-blue-14.webp',
       size: 'small',
     },
     {
       slug: 'earbuds',
-      title: 'Shop Earbud',
-      subtitle: 'Portable sonic armor',
-      image: '/home/asset-2.webp',
+      title: 'Tai Nghe Gaming',
+      subtitle: 'Âm thanh chất lượng cao',
+      image: '/home/Anc-earbuds-noise-cancelling-headphones-gravastar-sirius-plus-black-5.jpg',
       size: 'small',
     },
     {
       slug: 'speakers',
-      title: 'Shop Speaker',
-      subtitle: 'Desktop audio beast',
-      image: '/home/asset-6.webp',
+      title: 'Loa Bluetooth',
+      subtitle: 'Quái thú âm thanh để bàn',
+      image: '/home/382db98bc3940982e4a12468e7fd68ae_739b6dc5-6abf-489c-9ee8-40a8c4249053.webp',
       size: 'large',
     },
   ];
@@ -162,32 +190,32 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly flashSales: ProductCard[] = [
     {
       title: 'GravaStar V60 Pro & X Pro Gaming Set',
-      image: '/home/asset-7.webp',
-      badge: 'New Arrival',
+      image: '/home/gravastar-v60-pro-8khz-magnetic-switch-gaming-keyboard-1001_ad8079ca-c7cd-4f28-b9db-0409bcc3d1ed.webp',
+      badge: 'Hàng Mới',
       badgeTone: 'purple',
       price: 9050366,
       originalPrice: 10245722,
     },
     {
       title: 'Ultimate Gaming Set - Cyberpunk',
-      image: '/home/asset-9.webp',
-      badge: 'Bestseller',
+      image: '/home/GravaStar-Ultimate-Gaming-Set-Cyberpunk-Mercury-K1-Pro-Mercury-X-Pro-75-Compact-49g-Magnesium-2.webp',
+      badge: 'Bán Chạy',
       badgeTone: 'purple',
       price: 8384800,
       originalPrice: 9393798,
     },
     {
       title: 'HE 8000Hz Ultra-Fast Hall Effect Set',
-      image: '/home/asset-5.webp',
-      badge: 'Save Big',
+      image: '/home/2_37cf100d-5e30-4172-bd2b-15dd45495b55.webp',
+      badge: 'Giảm Sâu',
       badgeTone: 'red',
       price: 9396460,
       originalPrice: 10778175,
     },
     {
       title: 'Ultimate Gaming Set - Interstellar Silver',
-      image: '/home/asset-8.webp',
-      badge: 'Hot Deal',
+      image: '/home/GravaStar-Ultimate-Gaming-Set-Interstellar-Silver-Mercury-K1-Pro-Keyboard-Mercury-X-Pro-Mouse-RGB-75-Layout-49g-Magnesium.webp',
+      badge: 'Giá Hời',
       badgeTone: 'red',
       price: 7958838,
       originalPrice: 8861345,
@@ -195,28 +223,28 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   readonly featurePromo: PromoCard = {
-    eyebrow: 'Discover Art In Technology',
-    title: 'HandCraft Collection',
+    eyebrow: 'Khám phá Nghệ thuật trong Công nghệ',
+    title: 'Bộ sưu tập Thủ công',
     description:
-      'Limited edition pieces that blend advanced tech with collectible sci-fi industrial design.',
-    image: '/home/asset-10.webp',
+      'Những tác phẩm phiên bản giới hạn kết hợp công nghệ tiên tiến với thiết kế công nghiệp viễn tưởng đầy nghệ thuật.',
+    image: '/home/wardamagedyellowfamily.webp',
     tone: 'dark',
-    cta: 'Learn More',
+    cta: 'Tìm hiểu thêm',
   };
 
   readonly sidePromos: PromoCard[] = [
     {
-      eyebrow: 'Special Offers',
-      title: 'This Week’s Best Deals',
-      description: 'Save more on top-tier gear bundles and starter desk setups.',
-      image: '/home/asset-6.webp',
+      eyebrow: 'Khuyến mãi đặc biệt',
+      title: 'Ưu đãi tốt nhất tuần này',
+      description: 'Tiết kiệm nhiều hơn với các gói thiết bị cao cấp và bộ setup bàn làm việc lý tưởng.',
+      image: '/home/Best_Desktop_Gaming_Setups_Ultimate_Gaming_Rigs_Best_Performance_Setups.webp',
       tone: 'dark',
-      cta: 'Shop Now',
+      cta: 'Mua ngay',
     },
     {
-      eyebrow: 'Community',
-      title: 'Join the Tech Vanguard',
-      description: '42k+ members sharing custom builds, sound tests, and first-look drops.',
+      eyebrow: 'Cộng đồng',
+      title: 'Gia nhập Biệt đội Công nghệ',
+      description: 'Hơn 42k thành viên cùng chia sẻ góc máy tùy biến, test âm phím và nhận thông tin hàng mới sớm nhất.',
       tone: 'light',
     },
   ];
@@ -263,31 +291,31 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly testimonials: Testimonial[] = [
     {
       quote:
-        'V75 Pro positions itself as a high-performance keyboard for gamers who prioritise precision, speed, and customisation.',
+        'V75 Pro định vị bản thân là dòng bàn phím hiệu năng cao dành cho các game thủ ưu tiên độ chính xác, tốc độ và khả năng tùy biến.',
       source: 'Mighty Gadget',
       image: '/home/mighty-gadget.png',
     },
     {
       quote:
-        'There’s a TWS (True Stereo Sound) mode, allowing you to connect two and playback audio with stereo fidelity.',
+        'Sản phẩm hỗ trợ chế độ kết nối TWS (True Wireless Stereo), cho phép liên kết 2 loa cùng lúc để phát âm thanh nổi trung thực.',
       source: 'Android Central',
       image: '/home/android-central.png',
     },
     {
       quote:
-        'When gaming, the Mercury M1 Pro is reliably quick, with an incredibly stable, low-latency wireless connection.',
+        'Khi chiến game, chuột Mercury M1 Pro phản hồi cực nhanh với kết nối không dây siêu ổn định cùng độ trễ cực thấp.',
       source: 'Creative Bloq',
       image: '/home/creative-bloq.webp',
     },
     {
       quote:
-        'The Alpha65 is a great grab and go desktop accessory that works as decor when not in use.',
+        'Alpha65 là một phụ kiện để bàn tuyệt vời, vừa sạc nhanh vừa dùng như một mô hình trang trí robot cực chất khi không sử dụng.',
       source: 'MacRumors',
       image: '/home/macrumors.webp',
     },
     {
       quote:
-        'The Mars Pro is a totally unique, beautifully crafted accessory that will give you a planet’s worth of pride.',
+        'Mars Pro là một kiệt tác loa hoàn toàn độc đáo và được chế tác tinh xảo, là niềm tự hào cho bất kỳ góc máy nào sở hữu.',
       source: 'Digital Trends',
       image: '/home/digital-trends.webp',
     },
@@ -301,16 +329,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   readonly footerColumns = [
     {
-      title: 'Support',
-      links: ['Software Download', 'FAQ', 'Warranty', 'Shipping', 'Return Policy', 'Privacy'],
+      title: 'Hỗ trợ',
+      links: ['Tải Phần Mềm', 'Câu Hỏi Thường Gặp', 'Chính Sách Bảo Hành', 'Chính Sách Giao Hàng', 'Chính Sách Đổi Trả', 'Quyền Riêng Tư'],
     },
     {
-      title: 'About',
-      links: ['About Us', 'Press', 'Blog', 'Contact'],
+      title: 'Giới thiệu',
+      links: ['Về Chúng Tôi', 'Báo Chí', 'Trang Tin Tức', 'Liên Hệ'],
     },
     {
-      title: 'Explore',
-      links: ['Discord Community', 'Also Selling Here', 'Loyalty Page', 'Bundles'],
+      title: 'Khám phá',
+      links: ['Cộng Đồng Discord', 'Các Đại Lý Ủy Quyền', 'Khách Hàng Thân Thiết', 'Combo Ưu Đãi'],
     },
   ];
 

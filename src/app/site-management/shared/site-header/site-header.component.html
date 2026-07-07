@@ -1,5 +1,12 @@
 <header
-  class="site-header sticky top-0 z-50 border-b border-white/10 bg-[rgba(10,10,10,0.9)] backdrop-blur-md"
+  class="site-header sticky top-0 z-50 border-b transition-all duration-300"
+  [ngClass]="
+    transparent() && !isHovered() && !isScrolled()
+      ? 'border-transparent bg-transparent backdrop-blur-none'
+      : 'border-white/10 bg-[rgba(10,10,10,0.9)] backdrop-blur-md'
+  "
+  (mouseenter)="isHovered.set(true)"
+  (mouseleave)="isHovered.set(false)"
 >
   <div class="site-header__inner">
     <div class="site-header__left">
