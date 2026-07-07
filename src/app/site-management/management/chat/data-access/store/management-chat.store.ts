@@ -1018,12 +1018,16 @@ export const ManagementChatStore = signalStore(
         handleEvent({ type: ManagementChatEventType.SearchKeywordChanged, searchKeyword });
       },
       setStatusFilter(statusFilter: ManagementChatStatusFilter): void {
-        handleEvent({ type: ManagementChatEventType.StatusFilterChanged, statusFilter });
+        handleEvent({
+          type: ManagementChatEventType.StatusFilterChanged,
+          statusFilter: store.statusFilter() === statusFilter ? 'ALL' : statusFilter,
+        });
       },
       setExpertRequestFilter(expertRequestFilter: ManagementChatExpertRequestFilter): void {
         handleEvent({
           type: ManagementChatEventType.ExpertRequestFilterChanged,
-          expertRequestFilter,
+          expertRequestFilter:
+            store.expertRequestFilter() === expertRequestFilter ? 'ALL' : expertRequestFilter,
         });
       },
       toggleMediaDrawer(): void {

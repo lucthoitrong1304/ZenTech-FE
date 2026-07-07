@@ -121,6 +121,34 @@ describe('ManagementChatStore', () => {
     expect(store.filteredConversations().map(conversation => conversation.id)).toEqual(['conv-2']);
   });
 
+  it('clears the status filter when the active status is selected again', () => {
+    const { store } = configureStore();
+
+    store.loadWorkspace();
+    store.setStatusFilter('WAITING_STAFF');
+    store.setStatusFilter('WAITING_STAFF');
+
+    expect(store.statusFilter()).toBe('ALL');
+    expect(store.filteredConversations().map(conversation => conversation.id)).toEqual([
+      'conv-1',
+      'conv-2',
+    ]);
+  });
+
+  it('clears the expert request filter when the active request status is selected again', () => {
+    const { store } = configureStore();
+
+    store.loadWorkspace();
+    store.setExpertRequestFilter('ACCEPTED');
+    store.setExpertRequestFilter('ACCEPTED');
+
+    expect(store.expertRequestFilter()).toBe('ALL');
+    expect(store.filteredConversations().map(conversation => conversation.id)).toEqual([
+      'conv-1',
+      'conv-2',
+    ]);
+  });
+
   it('selects and clears a conversation', () => {
     const { store } = configureStore();
 
@@ -228,6 +256,7 @@ describe('ManagementChatStore', () => {
       messageType: ChatMessageType.TEXT,
       content: 'Hang mau den con san.',
       attachments: [],
+      traceId: expect.any(String),
     });
   });
 
