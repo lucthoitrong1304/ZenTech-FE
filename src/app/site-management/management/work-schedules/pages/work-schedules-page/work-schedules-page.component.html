@@ -1057,6 +1057,15 @@
               </div>
             } @else {
               <div class="work-schedules-map-shell">
+                <button
+                  type="button"
+                  class="work-schedules-map-reset"
+                  [disabled]="locatingCurrentPosition()"
+                  (click)="onGetGPSClick()"
+                >
+                  <svg lucideRefreshCw [attr.stroke-width]="2"></svg>
+                  <span>Reset vị trí</span>
+                </button>
                 <div
                   #locationMap
                   class="work-schedules-leaflet-map"

@@ -301,8 +301,7 @@ export class WorkSchedulesPageComponent implements OnDestroy {
   }
 
   protected onGetGPSClick(): void {
-    this.currentLocationRequested = false;
-    this.requestCurrentLocationCenter();
+    this.requestCurrentLocationCenter(true);
   }
 
   protected closeSettingsModal(): void {
@@ -516,8 +515,8 @@ export class WorkSchedulesPageComponent implements OnDestroy {
     };
   }
 
-  private requestCurrentLocationCenter(): void {
-    if (this.currentLocationRequested) {
+  private requestCurrentLocationCenter(forceRefresh = false): void {
+    if (this.locatingCurrentPosition() || (!forceRefresh && this.currentLocationRequested)) {
       return;
     }
 
