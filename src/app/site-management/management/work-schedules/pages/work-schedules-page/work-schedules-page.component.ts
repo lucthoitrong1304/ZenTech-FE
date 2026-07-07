@@ -543,14 +543,26 @@ export class WorkSchedulesPageComponent implements OnDestroy {
         this.renderLocationOverlay();
         this.locatingCurrentPosition.set(false);
       },
-      () => {
+      (error: GeolocationPositionError) => {
         this.locatingCurrentPosition.set(false);
-        this.toastService.warning('Vui lòng mở quyền vị trí để lấy tọa độ GPS hiện tại.');
+        let message = 'Có lỗi xảy ra khi lấy vị trí.';
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            message = 'Vui lòng cấp quyền vị trí cho trình duyệt và thiết bị.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            message = 'Không thể xác định vị trí hiện tại. Vui lòng kiểm tra lại GPS thiết bị.';
+            break;
+          case error.TIMEOUT:
+            message = 'Quá thời gian lấy vị trí. Vui lòng thử lại ở nơi có sóng GPS tốt hơn.';
+            break;
+        }
+        this.toastService.warning(message);
       },
       {
         enableHighAccuracy: true,
         maximumAge: 60000,
-        timeout: 10000,
+        timeout: 60000,
       },
     );
   }
