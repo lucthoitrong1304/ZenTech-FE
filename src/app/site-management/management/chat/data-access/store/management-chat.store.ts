@@ -30,6 +30,9 @@ import {
 import { ManagementChatService } from '../services/management-chat.service';
 import { CustomerChatService } from '../../../../customer-chat/data-access/services/customer-chat.service';
 import { CustomerChatWebsocketService } from '../../../../customer-chat/data-access/services/customer-chat-websocket.service';
+import { ClientLogEventType } from '../../../../../core/logging/client-log.model';
+import { ClientLogService } from '../../../../../core/logging/client-log.service';
+import { generateTraceId } from '../../../../../core/tracing/trace-id.util';
 import {
   ChatMessageResponse,
   ConversationResponse,
@@ -311,11 +314,39 @@ export const ManagementChatStore = signalStore(
     store,
     managementChatService = inject(ManagementChatService),
     customerChatService = inject(CustomerChatService),
-    websocketService = inject(CustomerChatWebsocketService)
+    websocketService = inject(CustomerChatWebsocketService),
+    clientLogService = inject(ClientLogService)
   ) => {
     let queueSub: Subscription | null = null;
+    const receivedTraceIds = new Set<string>();
     let messageSub: Subscription | null = null;
     let conversationSub: Subscription | null = null;
+
+    const logRealtimeSend = (traceId: string, destination: string): void => {
+      clientLogService.info(ClientLogEventType.FeRequestSent, `WS ${destination} sent.`, {
+        method: 'WS',
+        apiPath: destination,
+        traceId,
+      });
+    };
+
+    const logRealtimeReceive = (traceId: string | undefined, destination: string): void => {
+      if (!traceId || receivedTraceIds.has(traceId)) return;
+
+      receivedTraceIds.add(traceId);
+      clientLogService.info(ClientLogEventType.FeRequestReceived, `WS ${destination} received.`, {
+        method: 'WS',
+        apiPath: destination,
+        traceId,
+      });
+    };
+
+    const publishChatMessage = (conversationId: string, messageRequest: { messageType: ChatMessageType; content: string; attachments: unknown[] }): void => {
+      const destination = `/app/chat/${conversationId}/send`;
+      const traceId = generateTraceId();
+      logRealtimeSend(traceId, destination);
+      websocketService.publish(destination, { ...messageRequest, traceId });
+    };
 
     const handleEvent = (event: ManagementChatEvent): void => {
       switch (event.type) {
@@ -569,6 +600,7 @@ export const ManagementChatStore = signalStore(
                     return;
                   }
 
+                  logRealtimeReceive(msg.traceId, `/topic/conversations.${id}`);
                   if (msg.messageType as any === 'TEXT_STREAM_CHUNK') {
                     const streamingMsg = store.messages().find((m) => m.id === 'ai-streaming');
                     if (!streamingMsg) {
@@ -797,7 +829,7 @@ export const ManagementChatStore = signalStore(
               content: body,
               attachments: [],
             };
-            websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
+            publishChatMessage(conversationId, messageRequest);
             return of(null);
           }
 

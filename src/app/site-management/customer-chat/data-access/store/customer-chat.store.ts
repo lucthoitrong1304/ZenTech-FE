@@ -13,6 +13,9 @@ import {
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, Subscription, catchError, filter, forkJoin, map, of, pipe, switchMap, tap } from 'rxjs';
 import { AuthStorageService } from '../../../../core/services/auth-storage.service';
+import { ClientLogEventType } from '../../../../core/logging/client-log.model';
+import { ClientLogService } from '../../../../core/logging/client-log.service';
+import { generateTraceId } from '../../../../core/tracing/trace-id.util';
 import { Role } from '../../../auth/data-access/models/auth.enums';
 import { hasRole } from '../../../auth/data-access/utils/auth-role.utils';
 import { CustomerChatEvent, CustomerChatEventType } from '../models/customer-chat.event';
@@ -216,11 +219,39 @@ export const CustomerChatStore = signalStore(
       store,
       customerChatService = inject(CustomerChatService),
       websocketService = inject(CustomerChatWebsocketService),
-      authStorageService = inject(AuthStorageService)
+      authStorageService = inject(AuthStorageService),
+      clientLogService = inject(ClientLogService)
     ) => {
       let messageSub: Subscription | null = null;
+      const receivedTraceIds = new Set<string>();
       let conversationSub: Subscription | null = null;
       let ticketStatusSub: Subscription | null = null;
+
+      const logRealtimeSend = (traceId: string, destination: string): void => {
+        clientLogService.info(ClientLogEventType.FeRequestSent, `WS ${destination} sent.`, {
+          method: 'WS',
+          apiPath: destination,
+          traceId,
+        });
+      };
+
+      const logRealtimeReceive = (traceId: string | undefined, destination: string): void => {
+        if (!traceId || receivedTraceIds.has(traceId)) return;
+
+        receivedTraceIds.add(traceId);
+        clientLogService.info(ClientLogEventType.FeRequestReceived, `WS ${destination} received.`, {
+          method: 'WS',
+          apiPath: destination,
+          traceId,
+        });
+      };
+
+      const publishChatMessage = (conversationId: string, messageRequest: ChatMessageRequestPayload): void => {
+        const destination = `/app/chat/${conversationId}/send`;
+        const traceId = generateTraceId();
+        logRealtimeSend(traceId, destination);
+        websocketService.publish(destination, { ...messageRequest, traceId });
+      };
 
       const isStaffSession = (): boolean => {
         const roles = authStorageService.getSession()?.roles ?? [];
@@ -511,6 +542,7 @@ export const CustomerChatStore = signalStore(
                           return;
                         }
 
+                        logRealtimeReceive(msg.traceId, `/topic/conversations.${id}`);
                         if (msg.messageType as any === 'TEXT_STREAM_CHUNK') {
                           const streamingMsg = store.messages().find((m) => m.id === 'ai-streaming');
                           if (!streamingMsg) {
@@ -758,7 +790,7 @@ export const CustomerChatStore = signalStore(
                 aiResponding: store.session()?.status === 'BOT_CONSULTING',
                 errorMessage: null,
               });
-              websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
+              publishChatMessage(conversationId, messageRequest);
               return of(null);
             }
 
@@ -806,7 +838,7 @@ export const CustomerChatStore = signalStore(
                   patchState(store, {
                     aiResponding: store.session()?.status === 'BOT_CONSULTING',
                   });
-                  websocketService.publish(`/app/chat/${conversationId}/send`, messageRequest);
+                  publishChatMessage(conversationId, messageRequest);
                   patchState(
                     store,
                     removeEntities(uploadIds, UPLOAD_ENTITY_CONFIG),

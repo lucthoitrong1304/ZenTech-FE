@@ -7,7 +7,6 @@ import { MarkdownComponent } from 'ngx-markdown';
 import {
   LucideSearch,
   LucideTrash2,
-  LucideEye,
   LucideBot,
   LucideCopy,
   LucideRefreshCw,
@@ -38,6 +37,10 @@ interface LogJourneyItem {
   level: LogLevel;
   category: string;
   isCurrent: boolean;
+  step: number;
+  timeLabel: string;
+  deltaLabel: string;
+  flowLabel: string;
 }
 
 interface LogFlowSummary {
@@ -92,7 +95,6 @@ interface ClientLogStackContext {
     FormsModule,
     LucideSearch,
     LucideTrash2,
-    LucideEye,
     LucideBot,
     LucideCopy,
     LucideRefreshCw,
@@ -182,7 +184,7 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   protected readonly displayedLogs = computed(() => {
     const timeFilteredLogs = this.filterLogsByTimeRange(this.store.filteredLogs());
-    const logs = this.hideNoiseLogs() && !this.isTraceIdSearch()
+    const logs = this.hideNoiseLogs()
       ? timeFilteredLogs.filter(log => !this.isNoiseLog(log))
       : timeFilteredLogs;
 
@@ -256,7 +258,7 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   private isNoiseLog(log: SystemLog): boolean {
     const text = ((log.message || '') + ' ' + (log.details || '')).toLowerCase();
-    if (log.level === LogLevel.ERROR || this.getLogStatusCode(log) !== null) return false;
+    if (log.level === LogLevel.ERROR || this.getLogStatusCode(log) !== null || this.isRequestFlowBreadcrumb(log)) return false;
     return text.includes('querying loki uri')
       || text.includes('request query logs received')
       || text.includes('application startup complete')
@@ -274,18 +276,55 @@ export class LogsComponent implements OnInit, OnDestroy {
   private compareLogListLogs(left: SystemLog, right: SystemLog): number {
     const leftTime = new Date(left.timestamp).getTime();
     const rightTime = new Date(right.timestamp).getTime();
+    const leftTimeValid = Number.isFinite(leftTime);
+    const rightTimeValid = Number.isFinite(rightTime);
 
-    if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
-      return this.traceFlowRank(right) - this.traceFlowRank(left);
-    }
-
-    const sameFlowMoment = Math.abs(leftTime - rightTime) <= 1000;
-    if (sameFlowMoment) {
-      const rankDelta = this.traceFlowRank(right) - this.traceFlowRank(left);
+    if (this.isTraceIdSearch()) {
+      const rankDelta = this.traceFlowSortRank(right) - this.traceFlowSortRank(left);
       if (rankDelta !== 0) return rankDelta;
+
+      if (leftTimeValid && rightTimeValid && leftTime !== rightTime) {
+        return rightTime - leftTime;
+      }
+
+      return this.compareStableLogIdentity(left, right);
     }
 
-    return rightTime - leftTime;
+    if (leftTimeValid && rightTimeValid) {
+      const leftSecond = Math.floor(leftTime / 1000);
+      const rightSecond = Math.floor(rightTime / 1000);
+
+      if (leftSecond === rightSecond && this.logsShareTrace(left, right)) {
+        const rankDelta = this.traceFlowSortRank(right) - this.traceFlowSortRank(left);
+        if (rankDelta !== 0) return rankDelta;
+      }
+
+      if (leftTime !== rightTime) {
+        return rightTime - leftTime;
+      }
+    }
+
+    const rankDelta = this.traceFlowSortRank(right) - this.traceFlowSortRank(left);
+    if (rankDelta !== 0) return rankDelta;
+
+    return this.compareStableLogIdentity(left, right);
+  }
+
+  private logsShareTrace(left: SystemLog, right: SystemLog): boolean {
+    const leftTraceId = this.recordingTraceIdForLog(left);
+    const rightTraceId = this.recordingTraceIdForLog(right);
+    return !!leftTraceId && leftTraceId === rightTraceId;
+  }
+  private isRequestFlowBreadcrumb(log: SystemLog): boolean {
+    return this.traceFlowRank(log) <= 6;
+  }
+  private traceFlowSortRank(log: SystemLog): number {
+    const rank = this.traceFlowRank(log);
+    return rank >= 7 ? -1 : rank;
+  }
+
+  private compareStableLogIdentity(left: SystemLog, right: SystemLog): number {
+    return `${right.id || ''}`.localeCompare(`${left.id || ''}`);
   }
 
   protected traceFlowLabel(log: SystemLog): string {
@@ -295,8 +334,8 @@ export class LogsComponent implements OnInit, OnDestroy {
     if (rank === 2) return 'BE PROCESS';
     if (rank === 3) return 'AI REQUEST';
     if (rank === 4) return 'AI RESPONSE';
-    if (rank === 5) return 'BE OUT';
-    if (rank === 6) return 'FE RECEIVED';
+    if (rank === 5) return this.isErrorLog(log) ? 'BE ERROR' : 'BE OUT';
+    if (rank === 6) return this.isFailedFrontendLog(log) ? 'FE FAILED' : 'FE RECEIVED';
     return 'Related';
   }
 
@@ -304,15 +343,37 @@ export class LogsComponent implements OnInit, OnDestroy {
     const message = `${log.message || ''} ${log.details || ''}`.toLowerCase();
     const category = this.normalizeServiceCategory(log.category);
     const context = this.parseClientLogStack(log.details);
-    const eventType = context?.eventType || '';
+    const eventType = (context?.eventType || '').toLowerCase();
 
-    if (eventType === 'FE_SENT' || eventType === 'HttpRequestStarted') return 0;
-    if (category === LogServiceCategory.BACKEND && message.includes('incoming request')) return 1;
-    if (category === LogServiceCategory.BACKEND && message.includes('calling ai service')) return 3;
+    if (
+      eventType === 'fe_sent'
+      || eventType === 'httprequeststarted'
+      || message.includes('[fe_sent]')
+      || message.includes('httprequeststarted')
+    ) return 0;
+    if (category === LogServiceCategory.BACKEND && (message.includes('incoming request') || message.includes('websocket chat message received'))) return 1;
+    if (
+      category === LogServiceCategory.BACKEND
+      && (message.includes('request to explain log received') || message.includes('request for follow-up chat received'))
+    ) return 1;
+    if (category === LogServiceCategory.BACKEND && (message.includes('calling ai service') || message.includes('requesting ai reply stream'))) return 3;
     if (category === LogServiceCategory.AI_SERVICE) return 4;
-    if (category === LogServiceCategory.BACKEND && this.isBackendProcessLog(message)) return 2;
+    if (
+      category === LogServiceCategory.BACKEND
+      && (message.includes('failed to explain log using ai') || message.includes('failed to call chat follow-up'))
+    ) return 5;
     if (category === LogServiceCategory.BACKEND && message.includes('outgoing response')) return 5;
-    if (eventType === 'FE_RECEIVED' || eventType === 'FE_FAILED' || eventType === 'HttpRequestSucceeded' || eventType === 'HttpRequestFailed') return 6;
+    if (category === LogServiceCategory.BACKEND && this.isBackendProcessLog(message)) return 2;
+    if (
+      eventType === 'fe_received'
+      || eventType === 'fe_failed'
+      || eventType === 'httprequestsucceeded'
+      || eventType === 'httprequestfailed'
+      || message.includes('[fe_received]')
+      || message.includes('[fe_failed]')
+      || message.includes('httprequestsucceeded')
+      || message.includes('httprequestfailed')
+    ) return 6;
     if (category === LogServiceCategory.BACKEND && message.includes('/api/auth')) return 2;
     if (category === LogServiceCategory.FRONTEND) return 7;
     return 7;
@@ -326,6 +387,20 @@ export class LogsComponent implements OnInit, OnDestroy {
       || message.includes('validation')
       || message.includes('failed')
       || message.includes('error');
+  }
+
+  private isErrorLog(log: SystemLog): boolean {
+    return `${log.level || ''}`.toUpperCase() === LogLevel.ERROR;
+  }
+
+  private isFailedFrontendLog(log: SystemLog): boolean {
+    const message = `${log.message || ''} ${log.details || ''}`.toLowerCase();
+    const context = this.parseClientLogStack(log.details);
+    const eventType = (context?.eventType || '').toLowerCase();
+    return eventType === 'fe_failed'
+      || eventType === 'httprequestfailed'
+      || message.includes('[fe_failed]')
+      || message.includes('httprequestfailed');
   }
 
   protected handleFilterChange(filter: LogLevel | 'ALL'): void {
@@ -833,10 +908,16 @@ export class LogsComponent implements OnInit, OnDestroy {
     const loadedTraceLogs = traceId ? this.journeyTraceLogs()[traceId] || [] : [];
 
     return this.uniqueJourneyLogs([...this.store.logs(), ...loadedTraceLogs])
+      .filter(candidate => candidate.id === log.id || !this.hideNoiseLogs() || !this.isNoiseLog(candidate))
       .filter(candidate => this.isJourneyCandidate(candidate, log, currentContext, currentTime, journeyWindowMs))
       .sort((left, right) => this.compareJourneyLogs(left, right))
       .slice(0, 8)
-      .map(candidate => this.toJourneyItem(candidate, log.id));
+      .map((candidate, index, journeyLogs) => this.toJourneyItem(
+        candidate,
+        log.id,
+        index + 1,
+        index > 0 ? new Date(journeyLogs[index - 1].timestamp).getTime() : null
+      ));
   }
 
   private loadTraceJourneyLogs(log: SystemLog): void {
@@ -894,16 +975,16 @@ export class LogsComponent implements OnInit, OnDestroy {
     const rightTime = new Date(right.timestamp).getTime();
 
     if (!Number.isFinite(leftTime) || !Number.isFinite(rightTime)) {
-      return this.traceFlowRank(right) - this.traceFlowRank(left);
+      return this.traceFlowRank(left) - this.traceFlowRank(right);
     }
 
     const sameFlowMoment = Math.abs(leftTime - rightTime) <= 1000;
     if (sameFlowMoment) {
-      const rankDelta = this.traceFlowRank(right) - this.traceFlowRank(left);
+      const rankDelta = this.traceFlowRank(left) - this.traceFlowRank(right);
       if (rankDelta !== 0) return rankDelta;
     }
 
-    return rightTime - leftTime;
+    return leftTime - rightTime;
   }
 
   private isJourneyCandidate(
@@ -954,23 +1035,52 @@ export class LogsComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  private toJourneyItem(log: SystemLog, currentLogId: string): LogJourneyItem {
+  private toJourneyItem(log: SystemLog, currentLogId: string, step: number, previousTime: number | null): LogJourneyItem {
     const context = this.parseClientLogStack(log.details);
     const title = this.toFriendlyJourneyTitle(context?.eventType, log.message);
     const routeText = context?.routeUrl ? `Route: ${context.routeUrl}` : '';
     const apiText = context?.apiPath ? `API: ${context.method || 'HTTP'} ${this.normalizeApiPath(context.apiPath)}` : '';
     const reasonText = context?.reason ? `Reason: ${context.reason}` : '';
-    const description = [routeText, apiText, reasonText].filter(Boolean).join(' · ') || log.message;
+    const description = [routeText, apiText, reasonText].filter(Boolean).join(' - ') || log.message;
+    const time = new Date(log.timestamp);
 
     return {
       id: log.id,
-      time: new Date(log.timestamp),
+      time,
       title,
       description,
       level: log.level,
       category: log.category,
       isCurrent: log.id === currentLogId,
+      step,
+      timeLabel: this.formatJourneyTime(time),
+      deltaLabel: this.formatJourneyDelta(time.getTime(), previousTime),
+      flowLabel: this.traceFlowLabel(log),
     };
+  }
+
+  private formatJourneyTime(value: Date): string {
+    const time = value.getTime();
+    if (!Number.isFinite(time)) return '';
+
+    const base = new Intl.DateTimeFormat('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).format(value);
+
+    return `${base}.${String(value.getMilliseconds()).padStart(3, '0')}`;
+  }
+
+  private formatJourneyDelta(time: number, previousTime: number | null): string {
+    if (!Number.isFinite(time) || previousTime === null || !Number.isFinite(previousTime)) return '';
+
+    const deltaMs = Math.max(0, Math.round(time - previousTime));
+    if (deltaMs < 1000) return `+${deltaMs}ms`;
+
+    const seconds = deltaMs / 1000;
+    return `+${seconds.toFixed(seconds >= 10 ? 1 : 2)}s`;
   }
 
   private toFriendlyJourneyTitle(eventType: string | undefined, fallbackMessage: string): string {

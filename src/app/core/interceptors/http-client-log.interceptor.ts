@@ -10,17 +10,21 @@ const EXCLUDED_SUCCESS_URLS = [
   '/api/notifications',
   '/api/notifications/unread-count',
   '/api/logs/client',
-  '/api/admin/logs',
   '/api/admin/activity-logs',
   '/api/admin/incidents/issue-links'
 ];
+
+const EXCLUDED_SUCCESS_PATHS = new Set([
+  '/api/admin/logs',
+]);
 
 export const httpClientLogInterceptor: HttpInterceptorFn = (req, next) => {
   const clientLogService = inject(ClientLogService);
   const startedAt = performance.now();
   const traceId = req.headers.get('X-Trace-Id') ?? undefined;
 
-  const isExcludedUrl = EXCLUDED_SUCCESS_URLS.some(url => req.url.includes(url));
+  const isExcludedUrl = EXCLUDED_SUCCESS_URLS.some(url => req.url.includes(url))
+    || EXCLUDED_SUCCESS_PATHS.has(getRequestPath(req.url));
 
   if (req.context.get(SKIP_CLIENT_LOG) || isExcludedUrl) {
     return next(req);
@@ -58,3 +62,11 @@ export const httpClientLogInterceptor: HttpInterceptorFn = (req, next) => {
     }),
   );
 };
+
+function getRequestPath(url: string): string {
+  try {
+    return new URL(url, window.location.origin).pathname;
+  } catch {
+    return url.split('?')[0] || url;
+  }
+}
