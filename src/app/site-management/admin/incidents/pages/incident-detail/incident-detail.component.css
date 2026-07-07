@@ -209,11 +209,11 @@
 
 /* Loki Logs */
 .logs-list {
-  @apply flex flex-col gap-3.5;
+  @apply flex flex-col gap-2.5;
 }
 
 .log-item-row {
-  @apply flex flex-col gap-1 bg-white p-3 rounded-lg border border-l-4 border-[#E5E7EB];
+  @apply flex flex-col gap-2 rounded-lg border border-l-4 border-[#E5E7EB] bg-white px-3.5 py-3 shadow-xs transition hover:border-gray-300 hover:bg-gray-50;
 }
 
 .log-item-row.log-level-info {
@@ -233,7 +233,7 @@
 }
 
 .log-meta {
-  @apply flex items-center gap-2 text-[10px] text-gray-400 font-semibold;
+  @apply flex min-w-0 flex-wrap items-center gap-2 text-[10px] text-gray-400 font-semibold;
 }
 
 .log-time {
@@ -249,15 +249,20 @@
 }
 
 .log-message {
-  @apply text-xs font-mono text-gray-800 leading-relaxed break-all;
+  @apply min-w-0 text-xs font-mono text-gray-800 leading-relaxed;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .log-details-accordion {
-  @apply mt-2 border-t border-gray-100 pt-2;
+  @apply border-t border-gray-100 pt-2;
 }
 
 .log-details-summary {
-  @apply text-[10px] font-bold text-gray-400 hover:text-gray-700 cursor-pointer outline-none select-none;
+  @apply w-fit rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-bold text-gray-400 hover:bg-gray-100 hover:text-gray-700 cursor-pointer outline-none select-none;
 }
 
 .log-raw-pre {
@@ -268,6 +273,208 @@
   @apply text-center py-8 text-xs text-gray-400 font-medium;
 }
 
+
+.incident-evidence-body {
+  @apply gap-5 max-h-none overflow-visible bg-[#F9FAFB];
+}
+
+.incident-recording-panel {
+  @apply rounded-xl border border-gray-200 bg-white p-3 shadow-sm;
+}
+
+.incident-log-panel {
+  @apply rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden;
+}
+
+.incident-log-toolbar {
+  @apply flex flex-col gap-3 border-b border-gray-100 bg-gray-50/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between;
+}
+
+.incident-log-heading {
+  @apply flex flex-col gap-0.5;
+}
+
+.incident-log-heading span {
+  @apply text-[10px] font-black uppercase tracking-wider text-gray-400;
+}
+
+.incident-log-heading strong {
+  @apply text-sm font-bold text-gray-900;
+}
+
+.incident-log-trace {
+  @apply max-w-full truncate rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 font-mono text-[11px] font-bold text-indigo-700 sm:max-w-[360px];
+}
+
+.logs-list--incident {
+  @apply relative max-h-[420px] overflow-y-auto px-4 py-4;
+  background: linear-gradient(90deg, rgba(248, 250, 252, 0.9), rgba(255, 255, 255, 1));
+}
+
+.logs-list--incident::before {
+  content: '';
+  @apply absolute bottom-4 top-4 w-px bg-gradient-to-b from-indigo-200 via-cyan-200 to-emerald-200;
+  left: 24px;
+}
+
+.incident-log-row {
+  @apply relative flex-row gap-3 border-l-0 px-0 py-0 shadow-none hover:bg-transparent;
+  background: transparent;
+  border-color: transparent;
+}
+
+.incident-log-step {
+  @apply z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 bg-white text-[11px] font-black shadow-sm;
+  color: #4f46e5;
+  border-color: #c7d2fe;
+}
+
+.incident-log-content {
+  @apply min-w-0 flex-1 rounded-xl border px-4 py-3 shadow-sm transition;
+  background: rgba(255, 255, 255, 0.92);
+  border-color: #e2e8f0;
+}
+
+.incident-log-row:hover .incident-log-content {
+  @apply shadow-md;
+  transform: translateY(-1px);
+}
+
+.incident-log-row.log-level-info .incident-log-content {
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.96), rgba(255, 255, 255, 0.98));
+  border-color: #bfdbfe;
+}
+
+.incident-log-row.log-level-info .incident-log-step {
+  color: #2563eb;
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.incident-log-row.log-level-warn .incident-log-content {
+  background: linear-gradient(135deg, rgba(255, 251, 235, 0.98), rgba(255, 255, 255, 0.98));
+  border-color: #fde68a;
+}
+
+.incident-log-row.log-level-warn .incident-log-step {
+  color: #d97706;
+  border-color: #fcd34d;
+  background: #fffbeb;
+}
+
+.incident-log-row.log-level-error .incident-log-content {
+  background: linear-gradient(135deg, rgba(255, 241, 242, 0.98), rgba(255, 255, 255, 0.98));
+  border-color: #fda4af;
+}
+
+.incident-log-row.log-level-error .incident-log-step {
+  color: #e11d48;
+  border-color: #fb7185;
+  background: #fff1f2;
+}
+
+.incident-log-row.log-level-debug .incident-log-content {
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 0.98));
+  border-color: #cbd5e1;
+}
+
+.incident-log-row.log-level-debug .incident-log-step {
+  color: #64748b;
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.log-row-head {
+  @apply flex min-w-0 items-center justify-between gap-3;
+}
+
+.logs-list--incident .log-meta {
+  @apply gap-1.5;
+}
+
+.logs-list--incident .log-time {
+  @apply rounded-full bg-white/80 px-2 py-1 text-[11px] font-black text-slate-700 shadow-xs;
+}
+
+.logs-list--incident .log-level {
+  @apply rounded-full px-2 py-1 text-[10px] font-black;
+}
+
+.logs-list--incident .incident-log-row.log-level-info .log-level {
+  @apply bg-sky-100 text-sky-700;
+}
+
+.logs-list--incident .incident-log-row.log-level-warn .log-level {
+  @apply bg-amber-100 text-amber-700;
+}
+
+.logs-list--incident .incident-log-row.log-level-error .log-level {
+  @apply bg-rose-100 text-rose-700;
+}
+
+.logs-list--incident .incident-log-row.log-level-debug .log-level {
+  @apply bg-slate-100 text-slate-600;
+}
+
+.logs-list--incident .log-service {
+  @apply rounded-full px-2 py-1 text-[10px] shadow-xs;
+}
+
+.logs-list--incident .incident-log-row--frontend .log-service {
+  @apply bg-emerald-100 text-emerald-700;
+}
+
+.logs-list--incident .incident-log-row--backend .log-service {
+  @apply bg-indigo-100 text-indigo-700;
+}
+
+.logs-list--incident .incident-log-row--ai .log-service {
+  @apply bg-fuchsia-100 text-fuchsia-700;
+}
+
+.logs-list--incident .log-message {
+  @apply mt-2 border-l-2 border-slate-200 pl-3 pr-2 py-1 text-[12px] leading-6 text-slate-900;
+}
+
+.incident-log-preview {
+  @apply mt-2 border-l-2 border-slate-200 pl-3 pr-2 py-1;
+}
+
+.incident-log-preview strong {
+  @apply block text-sm font-black leading-5 text-slate-950;
+}
+
+.incident-log-preview p {
+  @apply mt-1 text-[12px] font-medium leading-5 text-slate-600;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.logs-list--incident .incident-log-row.log-level-info .log-message,
+.logs-list--incident .incident-log-row.log-level-info .incident-log-preview {
+  border-left-color: #60a5fa;
+}
+
+.logs-list--incident .incident-log-row.log-level-warn .log-message,
+.logs-list--incident .incident-log-row.log-level-warn .incident-log-preview {
+  border-left-color: #f59e0b;
+}
+
+.logs-list--incident .incident-log-row.log-level-error .log-message,
+.logs-list--incident .incident-log-row.log-level-error .incident-log-preview {
+  border-left-color: #fb7185;
+}
+
+.logs-list--incident .log-details-accordion {
+  @apply mt-2 border-t border-white/70 pt-2;
+}
+
+.logs-list--incident .log-details-summary {
+  @apply bg-white/70 text-slate-400 hover:bg-white hover:text-slate-700;
+}
 /* Stack Trace */
 .stacktrace-pre {
   @apply p-4 bg-[#111827] text-rose-300 text-[10px] font-mono rounded-xl overflow-x-auto whitespace-pre-wrap break-all max-h-96 border border-rose-950;
@@ -660,6 +867,112 @@
   @apply text-[10px] font-mono font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200;
 }
 
+.logs-trace-badge {
+  @apply text-[10px] font-mono font-semibold text-gray-500 hover:text-indigo-600 bg-gray-100 hover:bg-indigo-50 px-2 py-1 rounded transition border border-gray-200 hover:border-indigo-200 cursor-pointer outline-none;
+}
+
+.logs-status-badge {
+  @apply inline-flex items-center justify-center whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-black uppercase leading-none;
+}
+
+.logs-status-badge--ok {
+  @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+}
+
+.logs-status-badge--warn {
+  @apply border-amber-200 bg-amber-50 text-amber-700;
+}
+
+.logs-status-badge--error {
+  @apply border-rose-200 bg-rose-50 text-rose-700;
+}
+
+.logs-classification-badge {
+  @apply inline-flex items-center justify-center whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-black uppercase leading-none;
+}
+
+.logs-classification-badge--business {
+  @apply border-amber-200 bg-amber-50 text-amber-700;
+}
+
+.logs-classification-badge--system {
+  @apply border-rose-200 bg-rose-50 text-rose-700;
+}
+
+.logs-classification-badge--auth {
+  @apply border-violet-200 bg-violet-50 text-violet-700;
+}
+
+.logs-classification-badge--network {
+  @apply border-sky-200 bg-sky-50 text-sky-700;
+}
+
+.logs-classification-badge--ai {
+  @apply border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700;
+}
+
+.logs-classification-badge--client {
+  @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+}
+
+.logs-classification-badge--normal {
+  @apply border-gray-200 bg-gray-50 text-gray-600;
+}
+
+.logs-flow-summary-card {
+  @apply grid grid-cols-1 gap-4 rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 md:grid-cols-[minmax(0,1fr)_minmax(360px,1.4fr)];
+}
+
+.logs-flow-summary-main {
+  @apply flex min-w-0 flex-col gap-1;
+}
+
+.logs-flow-summary-kicker {
+  @apply text-[10px] font-black uppercase tracking-[0.18em] text-indigo-500;
+}
+
+.logs-flow-summary-main strong {
+  @apply text-base font-black text-[#111827];
+}
+
+.logs-flow-summary-main p {
+  @apply text-xs font-semibold text-gray-600;
+}
+
+.logs-flow-summary-grid {
+  @apply grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.7fr)_minmax(150px,0.65fr)_minmax(160px,0.65fr)];
+}
+
+.logs-flow-summary-grid div {
+  @apply min-w-0 rounded-lg border border-white/80 bg-white px-3 py-2 shadow-sm;
+}
+
+.logs-flow-summary-grid span {
+  @apply block text-[10px] font-black uppercase tracking-wide text-gray-400;
+}
+
+.logs-flow-summary-grid strong,
+.logs-flow-summary-grid button {
+  @apply mt-1 block max-w-full border-none bg-transparent p-0 text-left font-mono text-xs font-bold leading-5 text-[#111827] outline-none;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.logs-flow-summary-api {
+  @apply sm:col-span-2 lg:col-span-1;
+}
+
+.logs-flow-summary-grid button:not(:disabled) {
+  @apply cursor-pointer hover:text-indigo-600;
+}
+
+.logs-flow-summary-grid button:disabled {
+  @apply cursor-default text-gray-400;
+}
+
+.logs-quick-actions-row {
+  @apply flex flex-wrap items-center gap-2;
+}
 .logs-details-card--modal {
   @apply shadow-none border-gray-200;
 }
