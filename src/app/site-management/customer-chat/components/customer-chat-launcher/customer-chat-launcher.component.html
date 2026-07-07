@@ -1,181 +1,217 @@
-<button
-  type="button"
-  class="robot-launcher"
-  (click)="opened.emit()"
-  aria-label="Chat with ZenTech AI"
->
-  <div class="robot-container">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" class="w-full h-full">
-      <defs>
-        <!-- Metallic gradients -->
-        <linearGradient id="metalHead" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#ffffff" />
-          <stop offset="30%" stop-color="#cbd5e1" />
-          <stop offset="70%" stop-color="#64748b" />
-          <stop offset="100%" stop-color="#334155" />
-        </linearGradient>
+<div class="launcher-wrapper">
+  <!-- Welcome Pop-up Box (starts next to robot) -->
+  @if (showWelcomeBox()) {
+    <div class="welcome-box shadow-2xl">
+      <div class="welcome-header">
+        <div class="welcome-title-group">
+          <span class="welcome-dot"></span>
+          <h4>Trợ lý AI ZenTech</h4>
+        </div>
+        <button type="button" class="welcome-close" (click)="closeWelcomeBox($event)" aria-label="Close greeting">
+          &times;
+        </button>
+      </div>
+      <div class="welcome-body">
+        <p class="welcome-title">Xin chào! 👋</p>
+        <p class="welcome-desc">
+          Em sẵn lòng hỗ trợ tìm kiếm sản phẩm gaming gear, tư vấn chính sách bảo hành, đổi trả và khuyến mãi ạ!
+        </p>
+      </div>
+      <div class="welcome-footer">
+        Hỏi em về bàn phím, chuột hoặc bảo hành...
+      </div>
+    </div>
+  }
 
-        <linearGradient id="metalBody" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#e2e8f0" />
-          <stop offset="60%" stop-color="#475569" />
-          <stop offset="100%" stop-color="#1e293b" />
-        </linearGradient>
+  <!-- Hover Speech Bubble (Xin chào!) -->
+  @if (!showWelcomeBox() && isHovered()) {
+    <div class="hover-speech-bubble shadow-lg">
+      Xin chào! 👋
+    </div>
+  }
 
-        <linearGradient id="goldAcc" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#ffe066" />
-          <stop offset="50%" stop-color="#ffc700" />
-          <stop offset="100%" stop-color="#d97706" />
-        </linearGradient>
+  <!-- Main Floating Robot Button -->
+  <button
+    type="button"
+    class="robot-launcher-btn"
+    (click)="opened.emit()"
+    (mouseenter)="isHovered.set(true)"
+    (mouseleave)="isHovered.set(false)"
+    aria-label="Chat with ZenTech AI"
+  >
+    <div class="robot-container">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120" class="w-full h-full">
+        <defs>
+          <!-- Metallic gradients -->
+          <linearGradient id="metalHead" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" />
+            <stop offset="30%" stop-color="#cbd5e1" />
+            <stop offset="70%" stop-color="#64748b" />
+            <stop offset="100%" stop-color="#334155" />
+          </linearGradient>
 
-        <!-- Visor/Screen Gradient -->
-        <linearGradient id="visorScr" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#020617" />
-          <stop offset="100%" stop-color="#1e1b4b" />
-        </linearGradient>
+          <linearGradient id="metalBody" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#e2e8f0" />
+            <stop offset="60%" stop-color="#475569" />
+            <stop offset="100%" stop-color="#1e293b" />
+          </linearGradient>
 
-        <!-- Cyan/Blue LED Glow Gradient -->
-        <linearGradient id="cyanGlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#22d3ee" />
-          <stop offset="100%" stop-color="#0284c7" />
-        </linearGradient>
+          <linearGradient id="goldAcc" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffe066" />
+            <stop offset="50%" stop-color="#ffc700" />
+            <stop offset="100%" stop-color="#d97706" />
+          </linearGradient>
 
-        <!-- Flame plasma gradient -->
-        <linearGradient id="plasmaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#22d3ee" />
-          <stop offset="50%" stop-color="#06b6d4" />
-          <stop offset="100%" stop-color="transparent" />
-        </linearGradient>
+          <!-- Visor/Screen Gradient -->
+          <linearGradient id="visorScr" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#020617" />
+            <stop offset="100%" stop-color="#1e1b4b" />
+          </linearGradient>
 
-        <!-- Glowing Filters -->
-        <filter id="glowCyan" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
+          <!-- Cyan/Blue LED Glow Gradient -->
+          <linearGradient id="cyanGlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#22d3ee" />
+            <stop offset="100%" stop-color="#0284c7" />
+          </linearGradient>
 
-        <filter id="glowGold" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="2" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
+          <!-- Flame plasma gradient -->
+          <linearGradient id="plasmaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#22d3ee" />
+            <stop offset="50%" stop-color="#06b6d4" />
+            <stop offset="100%" stop-color="transparent" />
+          </linearGradient>
 
-        <filter id="largeGlow" x="-45%" y="-45%" width="190%" height="190%">
-          <feGaussianBlur stdDeviation="8" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-          </feMerge>
-        </filter>
-      </defs>
+          <!-- Glowing Filters -->
+          <filter id="glowCyan" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
 
-      <!-- Cyan Background Aura -->
-      <circle cx="50" cy="55" r="35" fill="#06b6d4" opacity="0.22" filter="url(#largeGlow)" />
+          <filter id="glowGold" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
 
-      <!-- Outer Spinning Sci-Fi HUD Radar (Behind) -->
-      <circle cx="50" cy="50" r="46" fill="none" stroke="url(#goldAcc)" stroke-width="1.2" stroke-dasharray="2 12" class="holo-ring" />
-      <circle cx="50" cy="50" r="41" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="30 18 10 18" class="holo-ring-inner" filter="url(#glowCyan)" opacity="0.8" />
+          <filter id="largeGlow" x="-45%" y="-45%" width="190%" height="190%">
+            <feGaussianBlur stdDeviation="8" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+            </feMerge>
+          </filter>
+        </defs>
 
-      <!-- Plasma Jet Flame (Exhaust) -->
-      <g class="thruster-flame">
-        <!-- Outer flame -->
-        <path d="M 45 88 L 50 112 L 55 88 Z" fill="url(#plasmaGrad)" filter="url(#glowCyan)" opacity="0.8" />
-        <!-- Inner bright core flame -->
-        <path d="M 47 88 L 50 104 L 53 88 Z" fill="#ffffff" filter="url(#glowCyan)" opacity="0.9" />
-      </g>
+        <!-- Cyan Background Aura -->
+        <circle cx="50" cy="55" r="35" fill="#06b6d4" opacity="0.22" filter="url(#largeGlow)" />
 
-      <!-- ROBOT TORSO & ARMS -->
-      <!-- Left Shoulder Pad -->
-      <path d="M 26 65 L 18 69 L 20 77 L 28 73 Z" fill="url(#metalHead)" stroke="#475569" stroke-width="0.5" />
-      <!-- Right Shoulder Pad -->
-      <path d="M 74 65 L 82 69 L 80 77 L 72 73 Z" fill="url(#metalHead)" stroke="#475569" stroke-width="0.5" />
+        <!-- Outer Spinning Sci-Fi HUD Radar (Behind) -->
+        <circle cx="50" cy="50" r="46" fill="none" stroke="url(#goldAcc)" stroke-width="1.2" stroke-dasharray="2 12" class="holo-ring" />
+        <circle cx="50" cy="50" r="41" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="30 18 10 18" class="holo-ring-inner" filter="url(#glowCyan)" opacity="0.8" />
 
-      <!-- Left Arm -->
-      <g class="left-arm">
-        <rect x="18" y="75" width="5" height="12" rx="2.5" fill="url(#metalBody)" stroke="#334155" stroke-width="0.5" />
-        <circle cx="20.5" cy="89" r="2.5" fill="url(#goldAcc)" />
-      </g>
-      <!-- Right Arm -->
-      <g class="right-arm">
-        <rect x="77" y="75" width="5" height="12" rx="2.5" fill="url(#metalBody)" stroke="#334155" stroke-width="0.5" />
-        <circle cx="79.5" cy="89" r="2.5" fill="url(#goldAcc)" />
-      </g>
-
-      <!-- Torso Body Casing -->
-      <path d="M 32 64 L 68 64 L 62 86 L 38 86 Z" fill="url(#metalBody)" stroke="url(#goldAcc)" stroke-width="1.8" />
-      
-      <!-- Jet Thruster Cup (Bottom of Torso) -->
-      <rect x="42" y="85" width="16" height="5" rx="1" fill="#1e293b" stroke="#475569" stroke-width="1" />
-      <line x1="44" y1="87" x2="56" y2="87" stroke="#ffc700" stroke-width="1" />
-
-      <!-- Core Reactor (Glowing Chest Light) -->
-      <circle cx="50" cy="74" r="7" fill="#0f172a" stroke="url(#goldAcc)" stroke-width="1" />
-      <circle cx="50" cy="74" r="5" fill="url(#cyanGlowGrad)" filter="url(#glowCyan)" class="core-reactor" />
-      <!-- Core inner detail -->
-      <path d="M 50 71 L 50 77 M 47 74 L 53 74" stroke="#ffffff" stroke-width="0.75" opacity="0.9" />
-
-      <!-- ROBOT NECK JOINT -->
-      <g class="neck-joint">
-        <rect x="45" y="52" width="10" height="14" fill="#334155" rx="1" />
-        <line x1="45" y1="56" x2="55" y2="56" stroke="#475569" stroke-width="1" />
-        <line x1="45" y1="61" x2="55" y2="61" stroke="#475569" stroke-width="1" />
-      </g>
-
-      <!-- ROBOT HEAD ASSEMBLY (Parallax group for 3D lookaround) -->
-      <g class="head-group">
-        <!-- Left Antenna -->
-        <path d="M 32 23 L 26 12" stroke="url(#metalHead)" stroke-width="2.5" stroke-linecap="round" />
-        <circle cx="26" cy="12" r="2.5" fill="#ffe066" filter="url(#glowGold)" />
-        
-        <!-- Right Antenna -->
-        <path d="M 66 23 L 74 12" stroke="url(#metalHead)" stroke-width="2.5" stroke-linecap="round" />
-        <circle cx="74" cy="12" r="2.5" fill="#ffe066" filter="url(#glowGold)" />
-
-        <!-- Head Main Casing -->
-        <rect x="20" y="21" width="60" height="42" rx="21" ry="21" fill="url(#metalHead)" stroke="url(#goldAcc)" stroke-width="2" />
-        
-        <!-- Forehead Light Dot -->
-        <circle cx="50" cy="27" r="1.8" fill="#22d3ee" filter="url(#glowCyan)" class="top-light" />
-
-        <!-- Visor Face Plate Screen -->
-        <rect x="26" y="30" width="48" height="26" rx="13" ry="13" fill="url(#visorScr)" stroke="#475569" stroke-width="0.75" />
-        
-        <!-- Visor Reflection Shine -->
-        <path d="M 30 33 Q 50 31 70 33" fill="none" stroke="#ffffff" stroke-width="0.75" opacity="0.25" />
-
-        <!-- Parallax Face Elements (This group sways left/right inside the head to simulate 3D rotation) -->
-        <g class="parallax-face">
-          <!-- Digital Eyes -->
-          <g class="eyes-group">
-            <!-- Left Eye (Sci-Fi Angled Bracket) -->
-            <path d="M 34 40 L 41 40 L 43 44 L 36 44 Z" fill="url(#cyanGlowGrad)" filter="url(#glowCyan)" />
-            <circle cx="38.5" cy="42" r="1.2" fill="#ffffff" />
-            
-            <!-- Right Eye (Sci-Fi Angled Bracket) -->
-            <path d="M 66 40 L 59 40 L 57 44 L 64 44 Z" fill="url(#cyanGlowGrad)" filter="url(#glowCyan)" />
-            <circle cx="61.5" cy="42" r="1.2" fill="#ffffff" />
-          </g>
-
-          <!-- Digital Mouth Soundwave -->
-          <line x1="44" y1="50" x2="56" y2="50" stroke="rgba(34, 211, 238, 0.25)" stroke-width="1" />
-          <path d="M 45 50 Q 47.5 46 50 50 Q 52.5 54 55 50" fill="none" stroke="#22d3ee" stroke-width="1.8" filter="url(#glowCyan)" class="mouth-wave" />
+        <!-- Plasma Jet Flame (Exhaust) -->
+        <g class="thruster-flame">
+          <!-- Outer flame -->
+          <path d="M 45 88 L 50 112 L 55 88 Z" fill="url(#plasmaGrad)" filter="url(#glowCyan)" opacity="0.8" />
+          <!-- Inner bright core flame -->
+          <path d="M 47 88 L 50 104 L 53 88 Z" fill="#ffffff" filter="url(#glowCyan)" opacity="0.9" />
         </g>
-      </g>
 
-      <!-- Digital Speech Bubble (Floating Chat Indicator) -->
-      <g class="holo-bubble">
-        <!-- Bubble Body with Tail pointing to head -->
-        <path d="M 64 7 C 64 4.2 66.2 2 69 2 L 93 2 C 95.8 2 98 4.2 98 7 L 98 23 C 98 25.8 95.8 28 93 28 L 78 28 L 68 34 L 71 28 C 67.1 28 64 25.8 64 23 Z" fill="url(#cyanGlowGrad)" stroke="#ffffff" stroke-width="1" filter="url(#glowCyan)" opacity="0.95" />
-        <!-- Message Line 1 -->
-        <rect x="70" y="8" width="20" height="3.5" rx="1.75" fill="#ffffff" />
-        <!-- Message Line 2 -->
-        <rect x="70" y="16" width="12" height="3.5" rx="1.75" fill="#ffffff" opacity="0.8" />
-      </g>
-    </svg>
-  </div>
-</button>
+        <!-- ROBOT TORSO & ARMS -->
+        <!-- Left Shoulder Pad -->
+        <path d="M 26 65 L 18 69 L 20 77 L 28 73 Z" fill="url(#metalHead)" stroke="#475569" stroke-width="0.5" />
+        <!-- Right Shoulder Pad -->
+        <path d="M 74 65 L 82 69 L 80 77 L 72 73 Z" fill="url(#metalHead)" stroke="#475569" stroke-width="0.5" />
+
+        <!-- Left Arm -->
+        <g class="left-arm">
+          <rect x="18" y="75" width="5" height="12" rx="2.5" fill="url(#metalBody)" stroke="#334155" stroke-width="0.5" />
+          <circle cx="20.5" cy="89" r="2.5" fill="url(#goldAcc)" />
+        </g>
+        <!-- Right Arm -->
+        <g class="right-arm">
+          <rect x="77" y="75" width="5" height="12" rx="2.5" fill="url(#metalBody)" stroke="#334155" stroke-width="0.5" />
+          <circle cx="79.5" cy="89" r="2.5" fill="url(#goldAcc)" />
+        </g>
+
+        <!-- Torso Body Casing -->
+        <path d="M 32 64 L 68 64 L 62 86 L 38 86 Z" fill="url(#metalBody)" stroke="url(#goldAcc)" stroke-width="1.8" />
+        
+        <!-- Jet Thruster Cup (Bottom of Torso) -->
+        <rect x="42" y="85" width="16" height="5" rx="1" fill="#1e293b" stroke="#475569" stroke-width="1" />
+        <line x1="44" y1="87" x2="56" y2="87" stroke="#ffc700" stroke-width="1" />
+
+        <!-- Core Reactor (Glowing Chest Light) -->
+        <circle cx="50" cy="74" r="7" fill="#0f172a" stroke="url(#goldAcc)" stroke-width="1" />
+        <circle cx="50" cy="74" r="5" fill="url(#cyanGlowGrad)" filter="url(#glowCyan)" class="core-reactor" />
+        <!-- Core inner detail -->
+        <path d="M 50 71 L 50 77 M 47 74 L 53 74" stroke="#ffffff" stroke-width="0.75" opacity="0.9" />
+
+        <!-- ROBOT NECK JOINT -->
+        <g class="neck-joint">
+          <rect x="45" y="52" width="10" height="14" fill="#334155" rx="1" />
+          <line x1="45" y1="56" x2="55" y2="56" stroke="#475569" stroke-width="1" />
+          <line x1="45" y1="61" x2="55" y2="61" stroke="#475569" stroke-width="1" />
+        </g>
+
+        <!-- ROBOT HEAD ASSEMBLY (Parallax group for 3D lookaround) -->
+        <g class="head-group">
+          <!-- Left Antenna -->
+          <path d="M 32 23 L 26 12" stroke="url(#metalHead)" stroke-width="2.5" stroke-linecap="round" />
+          <circle cx="26" cy="12" r="2.5" fill="#ffe066" filter="url(#glowGold)" />
+          
+          <!-- Right Antenna -->
+          <path d="M 66 23 L 74 12" stroke="url(#metalHead)" stroke-width="2.5" stroke-linecap="round" />
+          <circle cx="74" cy="12" r="2.5" fill="#ffe066" filter="url(#glowGold)" />
+
+          <!-- Head Main Casing -->
+          <rect x="20" y="21" width="60" height="42" rx="21" ry="21" fill="url(#metalHead)" stroke="url(#goldAcc)" stroke-width="2" />
+          
+          <!-- Forehead Light Dot -->
+          <circle cx="50" cy="27" r="1.8" fill="#22d3ee" filter="url(#glowCyan)" class="top-light" />
+
+          <!-- Visor Face Plate Screen -->
+          <rect x="26" y="30" width="48" height="26" rx="13" ry="13" fill="url(#visorScr)" stroke="#475569" stroke-width="0.75" />
+          
+          <!-- Visor Reflection Shine -->
+          <path d="M 30 33 Q 50 31 70 33" fill="none" stroke="#ffffff" stroke-width="0.75" opacity="0.25" />
+
+          <!-- Parallax Face Elements (This group sways left/right inside the head to simulate 3D rotation) -->
+          <g class="parallax-face">
+            <!-- Digital Eyes -->
+            <g class="eyes-group">
+              <!-- Left Eye (Sci-Fi Angled Bracket) -->
+              <path d="M 34 40 L 41 40 L 43 44 L 36 44 Z" fill="url(#cyanGlowGrad)" filter="url(#glowCyan)" />
+              <circle cx="38.5" cy="42" r="1.2" fill="#ffffff" />
+              
+              <!-- Right Eye (Sci-Fi Angled Bracket) -->
+              <path d="M 66 40 L 59 40 L 57 44 L 64 44 Z" fill="url(#cyanGlowGrad)" filter="url(#glowCyan)" />
+              <circle cx="61.5" cy="42" r="1.2" fill="#ffffff" />
+            </g>
+
+            <!-- Digital Mouth Soundwave -->
+            <line x1="44" y1="50" x2="56" y2="50" stroke="rgba(34, 211, 238, 0.25)" stroke-width="1" />
+            <path d="M 45 50 Q 47.5 46 50 50 Q 52.5 54 55 50" fill="none" stroke="#22d3ee" stroke-width="1.8" filter="url(#glowCyan)" class="mouth-wave" />
+          </g>
+        </g>
+
+        <!-- Digital Speech Bubble (Floating Chat Indicator) -->
+        <g class="holo-bubble">
+          <!-- Bubble Body with Tail pointing to head -->
+          <path d="M 64 7 C 64 4.2 66.2 2 69 2 L 93 2 C 95.8 2 98 4.2 98 7 L 98 23 C 98 25.8 95.8 28 93 28 L 78 28 L 68 34 L 71 28 C 67.1 28 64 25.8 64 23 Z" fill="url(#cyanGlowGrad)" stroke="#ffffff" stroke-width="1" filter="url(#glowCyan)" opacity="0.95" />
+          <!-- Message Line 1 -->
+          <rect x="70" y="8" width="20" height="3.5" rx="1.75" fill="#ffffff" />
+          <!-- Message Line 2 -->
+          <rect x="70" y="16" width="12" height="3.5" rx="1.75" fill="#ffffff" opacity="0.8" />
+        </g>
+      </svg>
+    </div>
+  </button>
+</div>
 
 
 
