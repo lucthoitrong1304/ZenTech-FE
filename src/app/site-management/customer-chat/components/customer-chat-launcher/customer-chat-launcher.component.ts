@@ -4,8 +4,9 @@ import { LucideMessageCircle } from '@lucide/angular';
 @Component({
   selector: 'app-customer-chat-launcher',
   standalone: true,
-  imports: [LucideMessageCircle],
+  imports: [],
   templateUrl: './customer-chat-launcher.component.html',
+  styleUrl: './customer-chat-launcher.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CustomerChatLauncherComponent {

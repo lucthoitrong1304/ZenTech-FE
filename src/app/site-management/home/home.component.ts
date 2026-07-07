@@ -90,26 +90,33 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly activeTestimonial = signal(0);
   readonly selectedVideoId = signal<string | null>(null);
 
-  readonly announcement = 'A new level. A new universe. New arrival V60 Pro HE Keyboard';
+  readonly announcementMessages = [
+    'A new level. A new universe. New arrival V60 Pro HE Keyboard',
+    '8K polling. Magnetic switches. Built for competitive desks',
+    'Cyber setup deals are live for keyboards, mice and audio gear',
+    'Free shipping for featured gaming bundles this week',
+    'Members unlock early access drops and exclusive vouchers',
+    'Level up your battle station with ZenTech essentials',
+  ];
 
   readonly heroSlides: HeroSlide[] = [
     {
       eyebrow: 'New Arrival 2026',
-      title: 'Mercury V60 Pro HE',
+      title: 'Mercury K98 Pro',
       description:
-        'Hall Effect precision, 8K response, aluminum sci-fi body and a setup presence made for next-level gaming desks.',
-      image: '/home/asset-5.webp',
+        'Retain the numpad, unlock dual 8K precision and bring a full-size sci-fi command center to your gaming desk.',
+      image: '/home/mercury-k98-pro-mechaniccal-gaming-keyboard-1002.webp',
       primaryCta: 'Shop Now',
-      secondaryCta: 'Explore Series',
+      secondaryCta: 'Explore Keyboard',
     },
     {
-      eyebrow: 'Gaming Bundles',
-      title: 'Build Your Cyber Loadout',
+      eyebrow: 'Pre-Order Special',
+      title: 'Claim 2 Free Cyber Gears',
       description:
-        'Pair keyboards, mice, chargers and audio gear into one clean ecosystem with limited bundle savings.',
-      image: '/home/asset-9.webp',
-      primaryCta: 'View Deals',
-      secondaryCta: 'Create Account',
+        'Complete your loadout with limited launch perks, futuristic desk gear and a sharper ZenTech gaming setup.',
+      image: '/home/20260501-164934.webp',
+      primaryCta: 'Pre-Order Now',
+      secondaryCta: 'View Deals',
     },
   ];
 
@@ -124,35 +131,36 @@ export class HomeComponent implements OnInit, OnDestroy {
       slug: 'keyboards',
       title: 'Shop Keyboard',
       subtitle: 'Hall Effect / Mechanical',
-      image: '/home/asset-5.webp',
+      image: '/home/1_8903b6a7-cea7-481d-ac1b-31d5ac7950ad.webp',
       size: 'large',
     },
     {
       slug: 'mice',
       title: 'Shop Mouse',
       subtitle: '8K wireless precision',
-      image: '/home/asset-7.webp',
+      image: '/home/6_eae6f3cd-3b4c-4fb7-b615-621e2fb41b13.webp',
       size: 'small',
     },
     {
       slug: 'chargers',
       title: 'Shop Charger',
       subtitle: 'Fast power core',
-      image: '/home/asset-3.webp',
+      image:
+        '/home/Gan-fast-charger-65w-power-adapter-gravastar-alpha65-robot-charger-blue-14.webp',
       size: 'small',
     },
     {
       slug: 'earbuds',
       title: 'Shop Earbud',
       subtitle: 'Portable sonic armor',
-      image: '/home/asset-2.webp',
+      image: '/home/Anc-earbuds-noise-cancelling-headphones-gravastar-sirius-plus-black-5.jpg',
       size: 'small',
     },
     {
       slug: 'speakers',
       title: 'Shop Speaker',
       subtitle: 'Desktop audio beast',
-      image: '/home/asset-6.webp',
+      image: '/home/382db98bc3940982e4a12468e7fd68ae_739b6dc5-6abf-489c-9ee8-40a8c4249053.webp',
       size: 'large',
     },
   ];
@@ -162,7 +170,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly flashSales: ProductCard[] = [
     {
       title: 'GravaStar V60 Pro & X Pro Gaming Set',
-      image: '/home/asset-7.webp',
+      image: '/home/gravastar-v60-pro-8khz-magnetic-switch-gaming-keyboard-1001_ad8079ca-c7cd-4f28-b9db-0409bcc3d1ed.webp',
       badge: 'New Arrival',
       badgeTone: 'purple',
       price: 9050366,
@@ -170,7 +178,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
     {
       title: 'Ultimate Gaming Set - Cyberpunk',
-      image: '/home/asset-9.webp',
+      image: '/home/GravaStar-Ultimate-Gaming-Set-Cyberpunk-Mercury-K1-Pro-Mercury-X-Pro-75-Compact-49g-Magnesium-2.webp',
       badge: 'Bestseller',
       badgeTone: 'purple',
       price: 8384800,
@@ -178,7 +186,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
     {
       title: 'HE 8000Hz Ultra-Fast Hall Effect Set',
-      image: '/home/asset-5.webp',
+      image: '/home/2_37cf100d-5e30-4172-bd2b-15dd45495b55.webp',
       badge: 'Save Big',
       badgeTone: 'red',
       price: 9396460,
@@ -186,7 +194,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
     {
       title: 'Ultimate Gaming Set - Interstellar Silver',
-      image: '/home/asset-8.webp',
+      image: '/home/GravaStar-Ultimate-Gaming-Set-Interstellar-Silver-Mercury-K1-Pro-Keyboard-Mercury-X-Pro-Mouse-RGB-75-Layout-49g-Magnesium.webp',
       badge: 'Hot Deal',
       badgeTone: 'red',
       price: 7958838,
@@ -199,7 +207,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     title: 'HandCraft Collection',
     description:
       'Limited edition pieces that blend advanced tech with collectible sci-fi industrial design.',
-    image: '/home/asset-10.webp',
+    image: '/home/wardamagedyellowfamily.webp',
     tone: 'dark',
     cta: 'Learn More',
   };
@@ -209,7 +217,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       eyebrow: 'Special Offers',
       title: 'This Week’s Best Deals',
       description: 'Save more on top-tier gear bundles and starter desk setups.',
-      image: '/home/asset-6.webp',
+      image: '/home/Best_Desktop_Gaming_Setups_Ultimate_Gaming_Rigs_Best_Performance_Setups.webp',
       tone: 'dark',
       cta: 'Shop Now',
     },

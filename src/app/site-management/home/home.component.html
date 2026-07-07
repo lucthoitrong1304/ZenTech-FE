@@ -1,11 +1,19 @@
 <div class="home-page w-full max-w-[100vw] overflow-x-clip bg-[#f4f4f4] text-[#111]">
-  <div
-    class="bg-zinc-950 px-4 py-2 text-center text-[11px] font-black uppercase tracking-[0.22em] text-zinc-200 sm:text-xs"
-  >
-    ✨ {{ announcement }} ✨
+  <div class="announcement-marquee" aria-label="Store announcement">
+    <div class="announcement-marquee__viewport">
+      <div class="announcement-marquee__track">
+        @for (message of announcementMessages; track message) {
+          <span class="announcement-marquee__item">✨ {{ message }} ✨</span>
+        }
+        @for (message of announcementMessages; track message) {
+          <span class="announcement-marquee__item" aria-hidden="true">✨ {{ message }} ✨</span>
+        }
+      </div>
+    </div>
   </div>
 
   <app-site-header
+    [transparent]="true"
     [navItems]="navItems()"
     [activeNavLabel]="activeNavLabel()"
     [cartCount]="cartStore.itemCount()"
@@ -16,7 +24,7 @@
 
   <main>
     <section
-      class="scanlines relative h-[calc(100vh-5.25rem)] min-h-[620px] overflow-hidden bg-black"
+      class="scanlines relative h-[calc(100vh-2.25rem)] min-h-[620px] overflow-hidden bg-black"
     >
       @for (slide of heroSlides; track slide.title; let index = $index) {
         <article
@@ -122,7 +130,7 @@
               class="cyber-clip group relative h-[360px] overflow-hidden bg-zinc-950 shadow-sm md:h-[60%]"
             >
               <img
-                src="/home/asset-5.webp"
+                src="/home/1_8903b6a7-cea7-481d-ac1b-31d5ac7950ad.webp"
                 alt="Shop Keyboard"
                 class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"
               />
@@ -145,7 +153,7 @@
                 class="cyber-clip group relative overflow-hidden bg-zinc-950 shadow-sm"
               >
                 <img
-                  src="/home/asset-3.webp"
+                  src="/home/Gan-fast-charger-65w-power-adapter-gravastar-alpha65-robot-charger-blue-14.webp"
                   alt="Shop Charger"
                   class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"
                 />
@@ -164,7 +172,7 @@
                 class="cyber-clip group relative overflow-hidden bg-zinc-950 shadow-sm"
               >
                 <img
-                  src="/home/asset-2.webp"
+                  src="/home/Anc-earbuds-noise-cancelling-headphones-gravastar-sirius-plus-black-5.jpg"
                   alt="Shop Earbud"
                   class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"
                 />
@@ -186,7 +194,7 @@
               class="cyber-clip group relative h-[280px] overflow-hidden bg-zinc-950 shadow-sm md:h-[40%]"
             >
               <img
-                src="/home/asset-7.webp"
+                src="/home/6_eae6f3cd-3b4c-4fb7-b615-621e2fb41b13.webp"
                 alt="Shop Mouse"
                 class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"
               />
@@ -206,7 +214,7 @@
               class="cyber-clip group relative h-[360px] overflow-hidden bg-zinc-950 shadow-sm md:h-[60%]"
             >
               <img
-                src="/home/asset-6.webp"
+                src="/home/382db98bc3940982e4a12468e7fd68ae_739b6dc5-6abf-489c-9ee8-40a8c4249053.webp"
                 alt="Shop Speaker"
                 class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:opacity-70"
               />
