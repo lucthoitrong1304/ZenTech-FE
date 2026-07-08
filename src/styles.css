@@ -471,12 +471,6 @@ samp {
     6px 6px;
 }
 
-app-site-header {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  display: block;
-}
 
 .zt-chat-ai-markdown {
   color: #1f2937;

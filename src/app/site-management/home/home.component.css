@@ -70,7 +70,6 @@
 
 
 .home-page app-site-header {
-  position: relative;
   z-index: 50;
   margin-bottom: -4.5rem;
 }
