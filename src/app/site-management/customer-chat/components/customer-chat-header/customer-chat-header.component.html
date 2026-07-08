@@ -56,21 +56,23 @@
   }
 
   <div class="flex shrink-0 items-center gap-2">
-    <button
-      type="button"
-      class="grid h-10 w-10 place-items-center rounded-[8px] transition"
-      [class.bg-[#ffc700]]="sharedSidebarOpen()"
-      [class.text-[#101010]]="sharedSidebarOpen()"
-      [class.shadow-[0_0_0_1px_rgba(255,199,0,0.18),0_14px_32px_-24px_rgba(255,199,0,0.9)]]="sharedSidebarOpen()"
-      [class.bg-transparent]="!sharedSidebarOpen()"
-      [class.text-[#6B7280]]="!sharedSidebarOpen()"
-      [class.hover:bg-gray-100]="!sharedSidebarOpen()"
-      [class.hover:text-[#111827]]="!sharedSidebarOpen()"
-      (click)="sharedClicked.emit()"
-      title="Nội dung đã chia sẻ"
-    >
-      <svg lucideImages class="h-5 w-5" [attr.stroke-width]="2"></svg>
-    </button>
+    @if (!hideSharedButton()) {
+      <button
+        type="button"
+        class="grid h-10 w-10 place-items-center rounded-[8px] transition"
+        [class.bg-[#ffc700]]="sharedSidebarOpen()"
+        [class.text-[#101010]]="sharedSidebarOpen()"
+        [class.shadow-[0_0_0_1px_rgba(255,199,0,0.18),0_14px_32px_-24px_rgba(255,199,0,0.9)]]="sharedSidebarOpen()"
+        [class.bg-transparent]="!sharedSidebarOpen()"
+        [class.text-[#6B7280]]="!sharedSidebarOpen()"
+        [class.hover:bg-gray-100]="!sharedSidebarOpen()"
+        [class.hover:text-[#111827]]="!sharedSidebarOpen()"
+        (click)="sharedClicked.emit()"
+        title="Nội dung đã chia sẻ"
+      >
+        <svg lucideImages class="h-5 w-5" [attr.stroke-width]="2"></svg>
+      </button>
+    }
 
     @if (compact()) {
       <a

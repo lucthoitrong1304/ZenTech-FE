@@ -114,6 +114,10 @@ export class CustomerChatPageComponent implements OnInit {
     this.store.dispatch({ type: CustomerChatEventType.SearchRequested });
   }
 
+  protected closePage(): void {
+    this.router.navigate(['/']);
+  }
+
   protected onLogout(): void {
     this.authSessionStore.logout();
   }

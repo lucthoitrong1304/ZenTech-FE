@@ -20,6 +20,7 @@ export class CustomerChatHeaderComponent {
   readonly status = input<string | null>(null);
   readonly compact = input(false);
   readonly sharedSidebarOpen = input(false);
+  readonly hideSharedButton = input(false);
   readonly closeClicked = output<void>();
   readonly sharedClicked = output<void>();
 }

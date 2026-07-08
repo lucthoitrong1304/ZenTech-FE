@@ -170,7 +170,7 @@ export const AuthSessionStore = signalStore(
                 return authRefreshService.refresh(refreshToken).pipe(
                   tap((res) => _setSession(res)),
                   catchError(() => {
-                    completeLogout(null, LOGOUT_WARNING_MESSAGE);
+                    completeLogout(null, null);
                     router.navigate(['/auth/login'], { replaceUrl: true });
                     return EMPTY;
                   }),
@@ -186,7 +186,7 @@ export const AuthSessionStore = signalStore(
                   return authRefreshService.refresh(refreshToken).pipe(
                     tap((res) => _setSession(res)),
                     catchError(() => {
-                      completeLogout(null, LOGOUT_WARNING_MESSAGE);
+                      completeLogout(null, null);
                       router.navigate(['/auth/login'], { replaceUrl: true });
                       return EMPTY;
                     }),
@@ -215,7 +215,7 @@ export const AuthSessionStore = signalStore(
         loadProfile,
         startTokenRefreshTimer,
         expireSession(): void {
-          completeLogout(null, LOGOUT_WARNING_MESSAGE);
+          completeLogout(null, null);
         },
         updateCurrentUserProfile(fullName: string, avatarUrl: string | null): void {
           if (typeof authStorageService.updateProfileInfo === 'function') {

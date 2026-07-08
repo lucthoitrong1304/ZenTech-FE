@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+import { computed, effect, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 import {
   addEntities,
@@ -18,6 +18,7 @@ import { ClientLogService } from '../../../../core/observability/logging/client-
 import { generateTraceId } from '../../../../core/observability/tracing/trace-id.util';
 import { Role } from '../../../auth/data-access/models/auth.enums';
 import { hasRole } from '../../../auth/data-access/utils/auth-role.utils';
+import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
 import { CustomerChatEvent, CustomerChatEventType } from '../models/customer-chat.event';
 import {
   ChatAttachmentType,
@@ -1162,11 +1163,25 @@ export const CustomerChatStore = signalStore(
   ),
   withHooks((store) => {
     const ws = inject(CustomerChatWebsocketService);
+    const authSessionStore = inject(AuthSessionStore);
+    
     return {
       onInit() {
         const code = localStorage.getItem('dismissed_ticket_code');
         const status = localStorage.getItem('dismissed_ticket_status');
         patchState(store, { dismissedTicketCode: code, dismissedTicketStatus: status });
+
+        effect(() => {
+          if (!authSessionStore.isAuthenticated()) {
+            patchState(
+              store,
+              setAllEntities([] as CustomerChatMessage[], MESSAGE_ENTITY_CONFIG),
+              setAllEntities([] as CustomerChatSharedItem[], SHARED_ITEM_ENTITY_CONFIG),
+              setAllEntities([] as CustomerChatUpload[], UPLOAD_ENTITY_CONFIG),
+              INITIAL_STATE
+            );
+          }
+        }, { allowSignalWrites: true });
       },
       onDestroy() {
         ws.disconnect();
