@@ -26,6 +26,7 @@ import {
   ChatMessageResponse,
   ChatMessageType,
   ConversationResponse,
+  CustomerChatConversationArchiveFilter,
   CustomerChatPageContext,
   ConversationStatus,
   CustomerChatFullSidebarMode,
@@ -53,6 +54,7 @@ interface CustomerChatUiState {
   activeConversationId: string | null;
   activeSharedTab: CustomerChatSharedTab;
   fullSidebarMode: CustomerChatFullSidebarMode;
+  conversationArchiveFilter: CustomerChatConversationArchiveFilter;
   popupOpen: boolean;
   sharedSidebarOpen: boolean;
   requiresLogin: boolean;
@@ -93,6 +95,7 @@ const INITIAL_STATE: CustomerChatUiState = {
   activeConversationId: null,
   activeSharedTab: 'MEDIA',
   fullSidebarMode: 'DETAILS',
+  conversationArchiveFilter: 'ACTIVE',
   popupOpen: false,
   sharedSidebarOpen: false,
   requiresLogin: false,
@@ -133,6 +136,7 @@ export const CustomerChatStore = signalStore(
       messageEntities,
       sharedItemEntities,
       uploadEntities,
+      conversations,
       activeConversationId,
       activeSharedTab,
       pageContext,
@@ -155,6 +159,10 @@ export const CustomerChatStore = signalStore(
         return ticketStatus;
       }),
       messages: computed(() => messageEntities()),
+      activeConversationArchived: computed(() => {
+        const id = activeConversationId();
+        return !!id && conversations().some((conversation) => conversation.id === id && conversation.archived);
+      }),
       sharedItems: computed(() => sharedItemEntities()),
       sharedMediaItems: computed(() =>
         sharedItemEntities().filter((item) => item.type === 'IMAGE' || item.type === 'VIDEO')
@@ -491,6 +499,49 @@ export const CustomerChatStore = signalStore(
         return activeId ? store.conversations().find((c) => c.id === activeId) ?? null : null;
       };
 
+      const clearActiveConversation = (): void => {
+        if (messageSub) {
+          messageSub.unsubscribe();
+          messageSub = null;
+        }
+        if (conversationSub) {
+          conversationSub.unsubscribe();
+          conversationSub = null;
+        }
+
+        patchState(
+          store,
+          setAllEntities([] as CustomerChatMessage[], MESSAGE_ENTITY_CONFIG),
+          setAllEntities([] as CustomerChatSharedItem[], SHARED_ITEM_ENTITY_CONFIG),
+          {
+            session: null,
+            activeConversationId: null,
+            loading: false,
+            sending: false,
+            aiResponding: false,
+            searchResults: [],
+            highlightedMessageId: null,
+          }
+        );
+      };
+
+      const removeConversationFromCurrentList = (conversationId: string): void => {
+        const remaining = store.conversations().filter((c) => c.id !== conversationId);
+        patchState(store, { conversations: remaining });
+
+        if (store.activeConversationId() !== conversationId) {
+          patchState(store, { loading: false });
+          return;
+        }
+
+        if (remaining.length > 0) {
+          switchConversation(remaining[0].id);
+          return;
+        }
+
+        clearActiveConversation();
+      };
+
       const switchConversation = rxMethod<string>(
         pipe(
           tap((id) => {
@@ -698,7 +749,7 @@ export const CustomerChatStore = signalStore(
 
       const createNewConversation = rxMethod<void>(
         pipe(
-          tap(() => patchState(store, { loading: true, errorMessage: null })),
+          tap(() => patchState(store, { loading: true, errorMessage: null, conversationArchiveFilter: 'ACTIVE' })),
           switchMap(() =>
             customerChatService.createNewConversation().pipe(
               tap({
@@ -753,13 +804,19 @@ export const CustomerChatStore = signalStore(
               return EMPTY;
             }
 
-            return customerChatService.getMyConversations(0, 100).pipe(
+            const archived = store.conversationArchiveFilter() === 'ARCHIVED';
+
+            return customerChatService.getMyConversations(0, 100, archived).pipe(
               switchMap((pageResponse) => {
                 const list = pageResponse.content || [];
                 patchState(store, { conversations: list });
 
                 if (list.length === 0) {
-                  createNewConversation();
+                  if (!archived) {
+                    createNewConversation();
+                  } else {
+                    clearActiveConversation();
+                  }
                   return EMPTY;
                 }
 
@@ -995,6 +1052,69 @@ export const CustomerChatStore = signalStore(
         )
       );
 
+      const archiveConversation = rxMethod<string | void>(
+        pipe(
+          switchMap((conversationId) => {
+            const id = conversationId || store.activeConversationId();
+            if (!id) return EMPTY;
+            patchState(store, { loading: true, errorMessage: null });
+
+            return customerChatService.archiveConversation(id).pipe(
+              tap({
+                next: () => removeConversationFromCurrentList(id),
+                error: () => patchState(store, {
+                  loading: false,
+                  errorMessage: 'Không thể lưu trữ cuộc trò chuyện.',
+                }),
+              }),
+              catchError(() => EMPTY)
+            );
+          })
+        )
+      );
+
+      const unarchiveConversation = rxMethod<string | void>(
+        pipe(
+          switchMap((conversationId) => {
+            const id = conversationId || store.activeConversationId();
+            if (!id) return EMPTY;
+            patchState(store, { loading: true, errorMessage: null });
+
+            return customerChatService.unarchiveConversation(id).pipe(
+              tap({
+                next: () => removeConversationFromCurrentList(id),
+                error: () => patchState(store, {
+                  loading: false,
+                  errorMessage: 'Không thể khôi phục cuộc trò chuyện.',
+                }),
+              }),
+              catchError(() => EMPTY)
+            );
+          })
+        )
+      );
+
+      const deleteConversation = rxMethod<string | void>(
+        pipe(
+          switchMap((conversationId) => {
+            const id = conversationId || store.activeConversationId();
+            if (!id) return EMPTY;
+            patchState(store, { loading: true, errorMessage: null });
+
+            return customerChatService.deleteConversation(id).pipe(
+              tap({
+                next: () => removeConversationFromCurrentList(id),
+                error: () => patchState(store, {
+                  loading: false,
+                  errorMessage: 'Không thể xóa cuộc trò chuyện.',
+                }),
+              }),
+              catchError(() => EMPTY)
+            );
+          })
+        )
+      );
+
       const searchMessages = rxMethod<string>(
         pipe(
           tap((keyword) => {
@@ -1094,6 +1214,9 @@ export const CustomerChatStore = signalStore(
         requestAgent,
         closeConversation,
         reopenConversation,
+        archiveConversation,
+        unarchiveConversation,
+        deleteConversation,
         searchMessages,
         jumpToMessage,
         clearHighlightedMessage,
@@ -1126,6 +1249,13 @@ export const CustomerChatStore = signalStore(
         },
         openFullChat(): void {
           handleEvent({ type: CustomerChatEventType.FullChatOpened });
+        },
+        setConversationArchiveFilter(filterValue: CustomerChatConversationArchiveFilter): void {
+          if (store.conversationArchiveFilter() === filterValue) {
+            return;
+          }
+          patchState(store, { conversationArchiveFilter: filterValue });
+          loadSession();
         },
         requestSharedContent(): void {
           handleEvent({ type: CustomerChatEventType.SharedContentRequested });

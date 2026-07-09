@@ -41,6 +41,25 @@
                   Hội thoại gần đây
                 </p>
 
+                <div class="conversation-filter-tabs">
+                  <button
+                    type="button"
+                    class="conversation-filter-tab"
+                    [class.active]="store.conversationArchiveFilter() === 'ACTIVE'"
+                    (click)="store.setConversationArchiveFilter('ACTIVE')"
+                  >
+                    Đang hoạt động
+                  </button>
+                  <button
+                    type="button"
+                    class="conversation-filter-tab"
+                    [class.active]="store.conversationArchiveFilter() === 'ARCHIVED'"
+                    (click)="store.setConversationArchiveFilter('ARCHIVED')"
+                  >
+                    Đã lưu trữ
+                  </button>
+                </div>
+
                 @for (conv of store.conversations(); track conv.id) {
                   <button
                     type="button"
@@ -68,6 +87,35 @@
                       </span>
                     </span>
                   </button>
+                  <div class="sidebar-conv-actions">
+                    @if (conv.archived) {
+                      <button
+                        type="button"
+                        class="sidebar-conv-action"
+                        title="Khôi phục"
+                        (click)="store.unarchiveConversation(conv.id)"
+                      >
+                        <svg lucideRotateCcw class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                      </button>
+                    } @else {
+                      <button
+                        type="button"
+                        class="sidebar-conv-action"
+                        title="Lưu trữ"
+                        (click)="store.archiveConversation(conv.id)"
+                      >
+                        <svg lucideArchive class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="sidebar-conv-action danger"
+                      title="Xóa vĩnh viễn"
+                      (click)="store.deleteConversation(conv.id)"
+                    >
+                      <svg lucideTrash2 class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                    </button>
+                  </div>
                 } @empty {
                   <p class="text-xs text-[#4f4632]/70 font-semibold p-2">Chưa có hội thoại nào</p>
                 }
@@ -128,7 +176,7 @@
 
                 <app-customer-chat-composer
                   [secureCaption]="true"
-                  [disabled]="store.session()?.status === 'CLOSED'"
+                  [disabled]="store.session()?.status === 'CLOSED' || store.activeConversationArchived()"
                   [hasPendingAttachments]="store.hasPendingAttachments()"
                   (messageSubmitted)="store.sendMessage($event)"
                   (filesSelected)="store.selectFiles($event)"
@@ -235,7 +283,24 @@
                   }
 
                   @if (store.session(); as session) {
-                    @if (session.status !== 'CLOSED') {
+                    @if (store.activeConversationArchived()) {
+                      <div class="chat-actions-section">
+                        <button
+                          type="button"
+                          class="restore-conversation-btn"
+                          (click)="store.unarchiveConversation()"
+                        >
+                          Khôi phục cuộc hội thoại
+                        </button>
+                        <button
+                          type="button"
+                          class="delete-conversation-btn"
+                          (click)="store.deleteConversation()"
+                        >
+                          Xóa vĩnh viễn
+                        </button>
+                      </div>
+                    } @else if (session.status !== 'CLOSED') {
                       <div class="chat-actions-section">
                         @if (session.status === 'BOT_CONSULTING') {
                           <button
@@ -248,10 +313,24 @@
                         }
                         <button
                           type="button"
+                          class="archive-conversation-btn"
+                          (click)="store.archiveConversation()"
+                        >
+                          Lưu trữ cuộc hội thoại
+                        </button>
+                        <button
+                          type="button"
                           class="close-conversation-btn"
                           (click)="store.closeConversation()"
                         >
                           Đóng cuộc hội thoại
+                        </button>
+                        <button
+                          type="button"
+                          class="delete-conversation-btn"
+                          (click)="store.deleteConversation()"
+                        >
+                          Xóa vĩnh viễn
                         </button>
                       </div>
                     } @else {

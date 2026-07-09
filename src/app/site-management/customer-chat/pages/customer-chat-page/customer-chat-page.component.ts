@@ -2,14 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, OnInit, effect, inject, signal, untracked } from '@angular/core';
 import { Router } from '@angular/router';
 import {
+  LucideArchive,
   LucideExternalLink,
   LucideFileText,
   LucideImage,
   LucideLink,
   LucideMessageCircle,
-  LucideMoreVertical,
   LucidePlus,
+  LucideRotateCcw,
   LucideSearch,
+  LucideTrash2,
   LucideVideo,
   LucideX,
   LucideAlertTriangle,
@@ -53,7 +55,10 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
     LucideLink,
     LucideMessageCircle,
     LucidePlus,
+    LucideArchive,
+    LucideRotateCcw,
     LucideSearch,
+    LucideTrash2,
     LucideVideo,
     LucideX,
     LucideAlertTriangle,

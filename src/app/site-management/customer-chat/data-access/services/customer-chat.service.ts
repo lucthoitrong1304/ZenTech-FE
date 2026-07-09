@@ -34,10 +34,14 @@ export class CustomerChatService {
       .pipe(map((res) => res.data));
   }
 
-  getMyConversations(page = 0, size = 10): Observable<PageResponse<ConversationResponse>> {
+  getMyConversations(
+    page = 0,
+    size = 10,
+    archived = false
+  ): Observable<PageResponse<ConversationResponse>> {
     return this.apiService
       .get<ApiResponse<PageResponse<ConversationResponse>>>(`${this.baseUrl}/me`, {
-        params: { page, size },
+        params: { page, size, archived },
       })
       .pipe(map((res) => res.data));
   }
@@ -118,6 +122,30 @@ export class CustomerChatService {
         {}
       )
       .pipe(map((res) => res.data));
+  }
+
+  archiveConversation(conversationId: string): Observable<ConversationResponse> {
+    return this.apiService
+      .patch<unknown, ApiResponse<ConversationResponse>>(
+        `${this.baseUrl}/${conversationId}/archive`,
+        {}
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  unarchiveConversation(conversationId: string): Observable<ConversationResponse> {
+    return this.apiService
+      .patch<unknown, ApiResponse<ConversationResponse>>(
+        `${this.baseUrl}/${conversationId}/unarchive`,
+        {}
+      )
+      .pipe(map((res) => res.data));
+  }
+
+  deleteConversation(conversationId: string): Observable<void> {
+    return this.apiService
+      .delete<ApiResponse<void>>(`${this.baseUrl}/${conversationId}`)
+      .pipe(map(() => undefined));
   }
 
   // Quy trình upload file qua presigned URL:
