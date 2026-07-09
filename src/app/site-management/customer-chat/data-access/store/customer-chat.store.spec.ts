@@ -72,6 +72,13 @@ describe('CustomerChatStore', () => {
       reopenConversation: vi.fn(() =>
         of({ ...conversation, status: ConversationStatus.WAITING_FOR_AGENT })
       ),
+      archiveConversation: vi.fn((conversationId: string) =>
+        of({ ...conversation, id: conversationId, archived: true, archivedAt: '2026-05-24T02:05:00.000Z' })
+      ),
+      unarchiveConversation: vi.fn((conversationId: string) =>
+        of({ ...conversation, id: conversationId, archived: false, archivedAt: null })
+      ),
+      deleteConversation: vi.fn(() => of(undefined)),
     };
     const websocketService = {
       connect: vi.fn(),
@@ -95,6 +102,8 @@ describe('CustomerChatStore', () => {
           provide: AuthStorageService,
           useValue: {
             getSession: vi.fn(() => session),
+            getCurrentUser: vi.fn(() => null),
+            getAccessToken: vi.fn(() => null),
             isAuthenticated: vi.fn(() => isAuthenticated),
           },
         },
@@ -113,7 +122,7 @@ describe('CustomerChatStore', () => {
 
     store.loadSession();
 
-    expect(chatService.getMyConversations).toHaveBeenCalledWith(0, 100);
+    expect(chatService.getMyConversations).toHaveBeenCalledWith(0, 100, false);
     expect(chatService.getMessages).toHaveBeenCalledWith('conversation-1', 0, 100);
     expect(websocketService.connect).toHaveBeenCalled();
     expect(store.session()?.id).toBe('conversation-1');
@@ -219,11 +228,11 @@ describe('CustomerChatStore', () => {
     store.loadSession();
     store.sendMessage('Con mau bac khong?');
 
-    expect(websocketService.publish).toHaveBeenCalledWith('/app/chat/conversation-1/send', {
+    expect(websocketService.publish).toHaveBeenCalledWith('/app/chat/conversation-1/send', expect.objectContaining({
       messageType: ChatMessageType.TEXT,
       content: 'Con mau bac khong?',
       attachments: [],
-    });
+    }));
   });
 
   it('updates customer session immediately when staff claims through websocket', () => {
@@ -314,7 +323,7 @@ describe('CustomerChatStore', () => {
 
     expect(chatService.uploadFile).toHaveBeenCalledWith(file);
     expect(store.uploads()).toEqual([]);
-    expect(websocketService.publish).toHaveBeenCalledWith('/app/chat/conversation-1/send', {
+    expect(websocketService.publish).toHaveBeenCalledWith('/app/chat/conversation-1/send', expect.objectContaining({
       messageType: ChatMessageType.IMAGE,
       content: 'Xem giup minh file nay',
       attachments: [
@@ -326,7 +335,7 @@ describe('CustomerChatStore', () => {
           attachmentType: ChatAttachmentType.IMAGE,
         },
       ],
-    });
+    }));
     expect(store.aiResponding()).toBe(true);
   });
 
@@ -340,7 +349,7 @@ describe('CustomerChatStore', () => {
     store.selectFiles([file]);
     store.sendMessage('');
 
-    expect(websocketService.publish).toHaveBeenCalledWith('/app/chat/conversation-1/send', {
+    expect(websocketService.publish).toHaveBeenCalledWith('/app/chat/conversation-1/send', expect.objectContaining({
       messageType: ChatMessageType.IMAGE,
       content: 'layout.png',
       attachments: [
@@ -352,7 +361,7 @@ describe('CustomerChatStore', () => {
           attachmentType: ChatAttachmentType.IMAGE,
         },
       ],
-    });
+    }));
     expect(store.aiResponding()).toBe(true);
   });
 

@@ -1,20 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectionStrategy, OnInit, effect, inject, signal, untracked } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, effect, inject, signal, untracked, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import {
+  LucideArchive,
   LucideExternalLink,
   LucideFileText,
   LucideImage,
   LucideLink,
   LucideMessageCircle,
-  LucideMoreVertical,
   LucidePlus,
+  LucideRotateCcw,
   LucideSearch,
+  LucideTrash2,
   LucideVideo,
   LucideX,
   LucideAlertTriangle,
   LucideCheckCircle,
   LucideWrench,
+  LucideMoreVertical,
 } from '@lucide/angular';
 import { MediaPreviewDialogComponent } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
@@ -32,6 +35,7 @@ import { CustomerUploadQueueComponent } from '../../components/customer-upload-q
 import { CustomerChatSharedItem, CustomerTicketStatus } from '../../data-access/models/customer-chat.models';
 import { CustomerChatEventType } from '../../data-access/models/customer-chat.event';
 import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
+import { ConfirmService } from '../../../../shared/components/confirm/confirm.service';
 
 @Component({
   selector: 'app-customer-chat-page',
@@ -53,12 +57,16 @@ import { CustomerChatStore } from '../../data-access/store/customer-chat.store';
     LucideLink,
     LucideMessageCircle,
     LucidePlus,
+    LucideArchive,
+    LucideRotateCcw,
     LucideSearch,
+    LucideTrash2,
     LucideVideo,
     LucideX,
     LucideAlertTriangle,
     LucideWrench,
     LucideCheckCircle,
+    LucideMoreVertical,
   ],
   templateUrl: './customer-chat-page.component.html',
   styleUrl: './customer-chat-page.component.css',
@@ -68,12 +76,14 @@ export class CustomerChatPageComponent implements OnInit {
   private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  private readonly confirmService = inject(ConfirmService);
   protected readonly cartStore = inject(CartStore);
   protected readonly store = inject(CustomerChatStore);
 
   protected readonly navItems = this.categoryNavigationStore.navItems;
   protected readonly currentUser = this.authSessionStore.currentUser;
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
+  protected readonly activeDropdownId = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -136,6 +146,31 @@ export class CustomerChatPageComponent implements OnInit {
 
   protected closePreview(): void {
     this.previewItem.set(null);
+  }
+
+  toggleDropdown(event: Event, id: string): void {
+    event.stopPropagation();
+    this.activeDropdownId.set(this.activeDropdownId() === id ? null : id);
+  }
+
+  @HostListener('document:click')
+  closeDropdown(): void {
+    this.activeDropdownId.set(null);
+  }
+
+  protected confirmDelete(id?: string): void {
+    this.confirmService.open({
+      title: 'Xóa hội thoại',
+      content: 'Bạn có chắc chắn muốn xóa vĩnh viễn cuộc hội thoại này không?',
+    }).subscribe((confirmed) => {
+      if (confirmed) {
+        if (id) {
+          this.store.deleteConversation(id);
+        } else {
+          this.store.deleteConversation();
+        }
+      }
+    });
   }
 
   protected isTicketResolved(ticketStatus: CustomerTicketStatus): boolean {

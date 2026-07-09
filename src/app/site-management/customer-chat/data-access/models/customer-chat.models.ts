@@ -10,6 +10,8 @@ export type CustomerChatSharedTab = 'ALL' | 'MEDIA' | 'FILES' | 'LINKS';
 
 export type CustomerChatFullSidebarMode = 'DETAILS' | 'SHARED' | 'SEARCH';
 
+export type CustomerChatConversationArchiveFilter = 'ACTIVE' | 'ARCHIVED';
+
 export type CustomerChatUploadStatus = 'PENDING' | 'UPLOADING' | 'COMPLETE' | 'FAILED';
 
 export interface CustomerChatParticipant {
@@ -198,7 +200,10 @@ export interface ConversationResponse {
   createdAt: string;
   updatedAt: string;
   closedAt: string | null;
+  archived?: boolean;
+  archivedAt?: string | null;
   participants: ParticipantResponse[];
+  lastMessagePreview?: string;
 }
 
 export interface ChatAttachmentResponse {

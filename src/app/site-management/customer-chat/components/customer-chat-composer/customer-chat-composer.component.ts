@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   input,
+  computed,
   output,
   signal,
   viewChild,
@@ -20,11 +21,14 @@ import { getImageFilesFromClipboard } from '../../../../shared/utils/clipboard-i
 })
 export class CustomerChatComposerComponent {
   readonly secureCaption = input(false);
-  readonly disabled = input(false);
+  readonly isClosed = input(false);
+  readonly isArchived = input(false);
+  protected readonly disabled = computed(() => this.isClosed() || this.isArchived());
   readonly hasPendingAttachments = input(false);
   readonly messageSubmitted = output<string>();
   readonly filesSelected = output<File[]>();
   readonly reopenClicked = output<void>();
+  readonly unarchiveClicked = output<void>();
   protected readonly draft = signal('');
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
