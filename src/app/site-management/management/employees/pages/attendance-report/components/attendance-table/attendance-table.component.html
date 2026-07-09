@@ -42,6 +42,30 @@
                     <b>{{ group.summary.totalProvisional }}</b>
                   }
                 </div>
+                @if (group.summary.sections.length > 0) {
+                  <div class="att-date-summary-sections">
+                    @for (section of group.summary.sections; track section.key) {
+                      <section class="att-date-summary-section">
+                        <h5>{{ section.label }}</h5>
+                        @for (record of section.records; track record.id) {
+                          <button type="button" class="att-date-summary-person" (click)="openSummaryRecord(record)">
+                            <span class="att-date-summary-person__name">{{ record.employeeName }}</span>
+                            <span class="att-date-summary-person__meta">
+                              {{ record.shiftName }} ·
+                              {{ record.checkInTime ? (record.checkInTime | date:'HH:mm') : '--:--' }}
+                              -
+                              {{ record.checkOutTime ? (record.checkOutTime | date:'HH:mm') : '--:--' }}
+                              · {{ getDisplayWorkingHours(record) | number:'1.1-1' }}h
+                            </span>
+                          </button>
+                        }
+                        @if (section.hiddenCount > 0) {
+                          <span class="att-date-summary-more">+{{ section.hiddenCount }} người khác</span>
+                        }
+                      </section>
+                    }
+                  </div>
+                }
               </div>
             </div>
           </td>
@@ -247,6 +271,11 @@
         <div class="att-evidence-map-panel">
           @if (hasEventLocation(evidence.event) && hasMapTilerApiKey) {
             <div #evidenceMap class="att-evidence-map"></div>
+            <div class="att-evidence-map-legend">
+              <span><i class="att-legend-dot att-legend-dot--event"></i>Vị trí chấm công</span>
+              <span><i class="att-legend-dot att-legend-dot--policy"></i>Vùng/tâm hợp lệ</span>
+              <span><i class="att-legend-line"></i>Độ chính xác GPS</span>
+            </div>
           } @else if (hasEventLocation(evidence.event)) {
             <div class="att-evidence-empty-map">
               Chưa cấu hình MapTiler API key để hiển thị bản đồ.
@@ -275,9 +304,15 @@
               </dd>
             </div>
             <div>
-              <dt>Khoảng cách thực tế</dt>
+              <dt>Khoảng cách tới vùng hợp lệ</dt>
               <dd>{{ formatMeters(evidence.event.distanceMeters) }}</dd>
             </div>
+            @if (getCircleContextLabel(evidence.event); as circleContext) {
+              <div>
+                <dt>Tâm / bán kính vùng</dt>
+                <dd>{{ circleContext }}</dd>
+              </div>
+            }
             <div>
               <dt>Độ chính xác GPS</dt>
               <dd>{{ formatMeters(evidence.event.accuracyMeters) }}</dd>

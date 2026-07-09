@@ -13,6 +13,7 @@ import {
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import {
   AttendanceEventTimelineResponse,
+  AttendanceLocationPolicy,
   AttendanceRecordResponse,
   AttendanceShiftBreakdownResponse,
 } from '../../../../../data-access/models/attendance.model';
@@ -43,7 +44,17 @@ interface DateGroupSummary {
   totalAbsent: number;
   totalLeave: number;
   totalProvisional: number;
+  sections: DateGroupSummarySection[];
 }
+
+interface DateGroupSummarySection {
+  key: SummarySectionKey;
+  label: string;
+  records: AttendanceRecordResponse[];
+  hiddenCount: number;
+}
+
+type SummarySectionKey = 'missingCheckout' | 'absent' | 'leave' | 'late' | 'early' | 'onTime';
 
 interface SelectedEvidence {
   event: AttendanceEventTimelineResponse;
@@ -77,6 +88,7 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
   totalRecords = input.required<number>();
   page = input.required<number>();
   size = input.required<number>();
+  locationPolicy = input<AttendanceLocationPolicy | null>(null);
 
   pageChange = output<{page: number, size: number}>();
 
@@ -118,7 +130,7 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
     }
 
     this.renderedEvidenceKey = key;
-    this.renderEvidenceMap(selected.event);
+    this.renderEvidenceMap(selected);
   }
 
   ngOnDestroy(): void {
@@ -162,6 +174,12 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
     });
   }
 
+  openSummaryRecord(record: AttendanceRecordResponse): void {
+    const set = new Set(this.expandedRows());
+    set.add(record.id);
+    this.expandedRows.set(set);
+  }
+
   closeEvidence(): void {
     this.selectedEvidence.set(null);
     this.renderedEvidenceKey = null;
@@ -197,6 +215,24 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
       return '--';
     }
     return value.toFixed(6);
+  }
+
+  getCircleContextLabel(event: AttendanceEventTimelineResponse): string | null {
+    const policy = this.locationPolicy();
+    if (!policy?.enabled || policy.shapeType !== 'CIRCLE') {
+      return null;
+    }
+    if (!this.isValidCoordinate(policy.centerLatitude, policy.centerLongitude) || !this.hasEventLocation(event)) {
+      return null;
+    }
+
+    const distanceToCenter = this.haversineMeters(
+      policy.centerLatitude!,
+      policy.centerLongitude!,
+      event.latitude!,
+      event.longitude!,
+    );
+    return `Cách tâm ${this.formatMeters(distanceToCenter)} / bán kính ${this.formatMeters(policy.radiusMeters)}`;
   }
 
   getStatusBadgeClass(status: string): string {
@@ -339,7 +375,7 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
   }
 
   private buildDateGroupSummary(records: AttendanceRecordResponse[]): DateGroupSummary {
-    return records.reduce<DateGroupSummary>((summary, record) => {
+    const summary = records.reduce<DateGroupSummary>((summary, record) => {
       const status = this.getDisplayStatus(record);
       summary.totalRecords += 1;
       summary.totalWorkingHours += this.getDisplayWorkingHours(record);
@@ -360,11 +396,172 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
       totalMissingCheckOut: 0,
       totalAbsent: 0,
       totalLeave: 0,
-      totalProvisional: 0
+      totalProvisional: 0,
+      sections: []
+    });
+
+    summary.sections = this.buildDateGroupSummarySections(records);
+    return summary;
+  }
+
+  private buildDateGroupSummarySections(records: AttendanceRecordResponse[]): DateGroupSummarySection[] {
+    const sections: Array<{ key: SummarySectionKey; label: string; predicate: (record: AttendanceRecordResponse) => boolean }> = [
+      { key: 'missingCheckout', label: 'Thiếu checkout', predicate: (record) => ['MISSING_CHECK_OUT', 'WFH_MISSING_CHECK_OUT'].includes(this.getDisplayStatus(record)) },
+      { key: 'absent', label: 'Vắng', predicate: (record) => this.getDisplayStatus(record) === 'ABSENT_UNEXCUSED' },
+      { key: 'leave', label: 'Nghỉ phép', predicate: (record) => this.getDisplayStatus(record) === 'ABSENT_EXCUSED' },
+      { key: 'late', label: 'Trễ', predicate: (record) => ['LATE', 'LATE_AND_EARLY'].includes(this.getDisplayStatus(record)) },
+      { key: 'early', label: 'Về sớm', predicate: (record) => ['EARLY_CHECKOUT', 'LATE_AND_EARLY'].includes(this.getDisplayStatus(record)) },
+      { key: 'onTime', label: 'Đúng giờ', predicate: (record) => this.getDisplayStatus(record) === 'ON_TIME' },
+    ];
+
+    return sections
+      .map(section => {
+        const matchingRecords = records.filter(section.predicate);
+        return {
+          key: section.key,
+          label: section.label,
+          records: matchingRecords.slice(0, 4),
+          hiddenCount: Math.max(0, matchingRecords.length - 4),
+        };
+      })
+      .filter(section => section.records.length > 0 || section.hiddenCount > 0);
+  }
+
+  private renderEvidenceMap(selected: SelectedEvidence): void {
+    const event = selected.event;
+    if (!this.evidenceMapRef?.nativeElement || !this.hasEventLocation(event)) {
+      return;
+    }
+
+    this.destroyEvidenceMap();
+
+    const eventPoint: L.LatLngExpression = [event.latitude!, event.longitude!];
+    this.evidenceMap = L.map(this.evidenceMapRef.nativeElement, {
+      center: eventPoint,
+      zoom: 17,
+      zoomControl: true,
+      attributionControl: true
+    });
+
+    this.evidenceTileLayer = L.tileLayer(
+      `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${encodeURIComponent(environment.mapTilerApiKey)}`,
+      {
+        maxZoom: 20,
+        tileSize: 512,
+        zoomOffset: -1,
+        attribution:
+          '&copy; <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>',
+      },
+    ).addTo(this.evidenceMap);
+
+    const boundsLayers: L.Layer[] = [];
+    this.renderPolicyOverlay(boundsLayers);
+
+    const eventMarker = L.circleMarker(eventPoint, {
+      radius: 8,
+      color: '#ffffff',
+      fillColor: event.locationValid === false ? '#ef4444' : '#10b981',
+      fillOpacity: 1,
+      weight: 3,
+    })
+      .bindPopup(`Vị trí chấm công<br>Khoảng cách tới vùng hợp lệ: ${this.formatMeters(event.distanceMeters)}`)
+      .addTo(this.evidenceMap)
+      .openPopup();
+    boundsLayers.push(eventMarker);
+
+    if (event.accuracyMeters && event.accuracyMeters > 0) {
+      const accuracyCircle = L.circle(eventPoint, {
+        radius: event.accuracyMeters,
+        color: '#2563eb',
+        fillColor: '#2563eb',
+        fillOpacity: 0.04,
+        opacity: 0.4,
+        weight: 1,
+        dashArray: '5 6',
+        interactive: false,
+      }).addTo(this.evidenceMap);
+      boundsLayers.push(accuracyCircle);
+    }
+
+    const boundsGroup = L.featureGroup(boundsLayers);
+    if (boundsLayers.length > 1) {
+      this.evidenceMap.fitBounds(boundsGroup.getBounds().pad(0.18), { maxZoom: 17 });
+    }
+
+    window.setTimeout(() => {
+      this.evidenceMap?.invalidateSize();
+      if (boundsLayers.length > 1) {
+        this.evidenceMap?.fitBounds(boundsGroup.getBounds().pad(0.18), { maxZoom: 17 });
+      }
+    }, 0);
+  }
+
+  private renderPolicyOverlay(boundsLayers: L.Layer[]): void {
+    const map = this.evidenceMap;
+    const policy = this.locationPolicy();
+    if (!map || !policy?.enabled) {
+      return;
+    }
+
+    if (policy.shapeType === 'CIRCLE') {
+      if (!this.isValidCoordinate(policy.centerLatitude, policy.centerLongitude)) {
+        return;
+      }
+
+      const center: L.LatLngExpression = [policy.centerLatitude!, policy.centerLongitude!];
+      const radius = policy.radiusMeters || 100;
+      const areaCircle = L.circle(center, {
+        radius,
+        color: '#4f46e5',
+        fillColor: '#4f46e5',
+        fillOpacity: 0.12,
+        opacity: 0.85,
+        weight: 2,
+        interactive: false,
+      }).addTo(map);
+      boundsLayers.push(areaCircle);
+
+      const centerMarker = L.circleMarker(center, {
+        radius: 6,
+        color: '#ffffff',
+        fillColor: '#4f46e5',
+        fillOpacity: 1,
+        weight: 2,
+      }).bindTooltip('Tâm vùng hợp lệ', { permanent: false }).addTo(map);
+      boundsLayers.push(centerMarker);
+      return;
+    }
+
+    const polygonPoints = (policy.polygonPoints || [])
+      .filter(point => this.isValidCoordinate(point.lat, point.lng))
+      .map(point => [point.lat, point.lng] as L.LatLngExpression);
+
+    if (polygonPoints.length < 3) {
+      return;
+    }
+
+    const polygon = L.polygon(polygonPoints, {
+      color: '#4f46e5',
+      fillColor: '#4f46e5',
+      fillOpacity: 0.12,
+      opacity: 0.85,
+      weight: 2,
+    }).addTo(map);
+    boundsLayers.push(polygon);
+
+    polygonPoints.forEach((point, index) => {
+      const vertex = L.circleMarker(point, {
+        radius: 4,
+        color: '#ffffff',
+        fillColor: '#4f46e5',
+        fillOpacity: 1,
+        weight: 2,
+      }).bindTooltip(`Điểm vùng ${index + 1}`, { permanent: false }).addTo(map);
+      boundsLayers.push(vertex);
     });
   }
 
-  private renderEvidenceMap(event: AttendanceEventTimelineResponse): void {
+  private renderEvidenceMapLegacy(event: AttendanceEventTimelineResponse): void {
     if (!this.evidenceMapRef?.nativeElement || !this.hasEventLocation(event)) {
       return;
     }
@@ -431,8 +628,25 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
       event.timestamp,
       event.latitude ?? '',
       event.longitude ?? '',
-      event.faceImageUrl ?? ''
+      event.faceImageUrl ?? '',
+      this.locationPolicy()?.id ?? '',
+      this.locationPolicy()?.updatedAt ?? ''
     ].join('|');
+  }
+
+  private haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const earthRadiusMeters = 6_371_000;
+    const dLat = this.toRadians(lat2 - lat1);
+    const dLng = this.toRadians(lng2 - lng1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+      + Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2))
+      * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusMeters * c;
+  }
+
+  private toRadians(value: number): number {
+    return value * Math.PI / 180;
   }
 
   private isValidCoordinate(latitude: number | null | undefined, longitude: number | null | undefined): boolean {
