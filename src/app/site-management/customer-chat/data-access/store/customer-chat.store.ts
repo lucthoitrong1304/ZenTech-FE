@@ -752,20 +752,30 @@ export const CustomerChatStore = signalStore(
           tap(() => patchState(store, { loading: true, errorMessage: null, conversationArchiveFilter: 'ACTIVE' })),
           switchMap(() =>
             customerChatService.createNewConversation().pipe(
-              tap({
-                next: (newConv) => {
-                  const currentList = store.conversations();
-                  patchState(store, { conversations: [newConv, ...currentList] });
-                  switchConversation(newConv.id);
-                },
-                error: () => {
-                  patchState(store, {
-                    loading: false,
-                    errorMessage: 'Không thể tạo cuộc trò chuyện mới.',
-                  });
-                },
-              }),
-              catchError(() => EMPTY)
+              switchMap((newConv) =>
+                customerChatService.getMyConversations(0, 100, false).pipe(
+                  tap({
+                    next: (pageResponse) => {
+                      const list = pageResponse.content || [];
+                      patchState(store, { conversations: list });
+                      switchConversation(newConv.id);
+                    },
+                    error: () => {
+                      patchState(store, {
+                        loading: false,
+                        errorMessage: 'Không thể tải danh sách hội thoại.',
+                      });
+                    }
+                  })
+                )
+              ),
+              catchError(() => {
+                patchState(store, {
+                  loading: false,
+                  errorMessage: 'Không thể tạo cuộc trò chuyện mới.',
+                });
+                return EMPTY;
+              })
             )
           )
         )

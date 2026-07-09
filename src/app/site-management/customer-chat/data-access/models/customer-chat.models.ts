@@ -203,6 +203,7 @@ export interface ConversationResponse {
   archived?: boolean;
   archivedAt?: string | null;
   participants: ParticipantResponse[];
+  lastMessagePreview?: string;
 }
 
 export interface ChatAttachmentResponse {

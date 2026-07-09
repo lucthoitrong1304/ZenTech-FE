@@ -61,22 +61,24 @@
                 </div>
 
                 @for (conv of store.conversations(); track conv.id) {
-                  <button
-                    type="button"
-                    class="sidebar-conv-btn"
-                    [class.active]="store.activeConversationId() === conv.id"
-                    [class.inactive]="store.activeConversationId() !== conv.id"
+                  <div
+                    class="sidebar-conv-wrapper group relative flex min-w-0 cursor-pointer items-center gap-3 rounded-[8px] px-4 py-3 transition hover:bg-white/70"
+                    [class.bg-white]="store.activeConversationId() === conv.id"
+                    [class.shadow-sm]="store.activeConversationId() === conv.id"
+                    [class.text-[#101010]]="store.activeConversationId() === conv.id"
+                    [class.text-[#4f4632]]="store.activeConversationId() !== conv.id"
+                    [class.z-20]="activeDropdownId() === conv.id"
                     (click)="store.switchConversation(conv.id)"
                   >
                     <svg
                       lucideMessageCircle
-                      class="sidebar-conv-icon"
-                      [class.active]="store.activeConversationId() === conv.id"
+                      class="h-5 w-5 shrink-0 transition-colors"
+                      [class.text-[#4f4632]]="store.activeConversationId() === conv.id"
                       [attr.stroke-width]="2"
                     ></svg>
-                    <span class="sidebar-conv-text-container">
-                      <span class="sidebar-conv-title">{{ conv.title || 'Product Support' }}</span>
-                      <span class="sidebar-conv-subtitle">
+                    <div class="min-w-0 flex-1 pr-14 group-hover:pr-16 transition-all">
+                      <strong class="block truncate font-medium text-[14px]">{{ conv.title || 'Product Support' }}</strong>
+                      <span class="mt-1 block truncate text-xs font-semibold text-[#4f4632]/70">
                         @switch (conv.status) {
                           @case ('BOT_CONSULTING') { Trợ lý ảo }
                           @case ('WAITING_FOR_AGENT') { Chờ kết nối }
@@ -85,36 +87,56 @@
                           @default { Hoạt động }
                         }
                       </span>
-                    </span>
-                  </button>
-                  <div class="sidebar-conv-actions">
-                    @if (conv.archived) {
+                    </div>
+
+                    <!-- Actions dropdown toggle -->
+                    <div class="absolute right-2 top-1/2 flex -translate-y-1/2 items-center opacity-0 transition-opacity group-hover:opacity-100"
+                         [class.opacity-100]="store.activeConversationId() === conv.id || activeDropdownId() === conv.id">
                       <button
                         type="button"
-                        class="sidebar-conv-action"
-                        title="Khôi phục"
-                        (click)="store.unarchiveConversation(conv.id)"
+                        class="grid h-8 w-8 place-items-center rounded-[8px] hover:bg-gray-200 text-[#4f4632] transition"
+                        (click)="toggleDropdown($event, conv.id)"
                       >
-                        <svg lucideRotateCcw class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                        <svg lucideMoreVertical class="h-4 w-4" [attr.stroke-width]="2"></svg>
                       </button>
-                    } @else {
-                      <button
-                        type="button"
-                        class="sidebar-conv-action"
-                        title="Lưu trữ"
-                        (click)="store.archiveConversation(conv.id)"
-                      >
-                        <svg lucideArchive class="h-4 w-4" [attr.stroke-width]="2"></svg>
-                      </button>
-                    }
-                    <button
-                      type="button"
-                      class="sidebar-conv-action danger"
-                      title="Xóa vĩnh viễn"
-                      (click)="store.deleteConversation(conv.id)"
-                    >
-                      <svg lucideTrash2 class="h-4 w-4" [attr.stroke-width]="2"></svg>
-                    </button>
+
+                      <!-- Dropdown menu -->
+                      @if (activeDropdownId() === conv.id) {
+                        <div
+                          class="absolute right-0 top-10 z-10 w-36 rounded-[8px] border border-[#d2c5ab]/30 bg-white py-1 shadow-lg"
+                          (click)="$event.stopPropagation()"
+                        >
+                          @if (store.conversationArchiveFilter() === 'ACTIVE') {
+                            <button
+                              type="button"
+                              class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-[#4f4632] hover:bg-gray-100 transition-colors"
+                              (click)="store.archiveConversation(conv.id); closeDropdown()"
+                            >
+                              <svg lucideArchive class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                              Lưu trữ
+                            </button>
+                          }
+                          @if (store.conversationArchiveFilter() === 'ARCHIVED') {
+                            <button
+                              type="button"
+                              class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-[#4f4632] hover:bg-gray-100 transition-colors"
+                              (click)="store.unarchiveConversation(conv.id); closeDropdown()"
+                            >
+                              <svg lucideRotateCcw class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                              Khôi phục
+                            </button>
+                          }
+                          <button
+                            type="button"
+                            class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-[#b42318] hover:bg-[#fee4e2] transition-colors"
+                            (click)="confirmDelete(conv.id); closeDropdown()"
+                          >
+                            <svg lucideTrash2 class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                            Xóa vĩnh viễn
+                          </button>
+                        </div>
+                      }
+                    </div>
                   </div>
                 } @empty {
                   <p class="text-xs text-[#4f4632]/70 font-semibold p-2">Chưa có hội thoại nào</p>
@@ -122,12 +144,21 @@
               </div>
             </aside>
 
-            <section class="flex min-w-0 flex-1 flex-col bg-[#fcf9f8]">
+            <section class="relative flex min-w-0 flex-1 flex-col bg-[#fcf9f8]">
+              <!-- Loading Overlay -->
               @if (store.loading()) {
-                <div class="grid flex-1 place-items-center bg-[#fcf9f8] text-sm font-semibold text-[#4f4632]">
-                  Đang tải cuộc trò chuyện...
+                <div class="absolute inset-0 z-50 flex items-center justify-center bg-[#fcf9f8]/60 backdrop-blur-[2px]">
+                  <div class="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm border border-[#d2c5ab]/30">
+                    <svg class="h-5 w-5 animate-spin text-[#4f4632]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-sm font-semibold text-[#4f4632]">Đang tải...</span>
+                  </div>
                 </div>
-              } @else if (store.session()) {
+              }
+
+              @if (store.session()) {
                 @if (store.activeTicketStatusToShow(); as ticketStatus) {
                   <div
                     class="customer-ticket-banner"
@@ -176,12 +207,22 @@
 
                 <app-customer-chat-composer
                   [secureCaption]="true"
-                  [disabled]="store.session()?.status === 'CLOSED' || store.activeConversationArchived()"
+                  [isClosed]="store.session()?.status === 'CLOSED'"
+                  [isArchived]="store.activeConversationArchived()"
                   [hasPendingAttachments]="store.hasPendingAttachments()"
                   (messageSubmitted)="store.sendMessage($event)"
                   (filesSelected)="store.selectFiles($event)"
                   (reopenClicked)="store.reopenConversation()"
+                  (unarchiveClicked)="store.unarchiveConversation()"
                 />
+              } @else if (store.conversationArchiveFilter() === 'ARCHIVED' && store.conversations().length === 0) {
+                <div class="flex flex-1 flex-col items-center justify-center bg-[#fcf9f8] p-6 text-center">
+                  <div class="mb-4 rounded-full bg-[#f6f3f2] p-4 text-[#4f4632]/50">
+                    <svg lucideArchive class="h-10 w-10" [attr.stroke-width]="1.5"></svg>
+                  </div>
+                  <h3 class="text-lg font-bold text-[#4f4632]">Không có hội thoại đã lưu trữ</h3>
+                  <p class="mt-2 text-sm text-[#4f4632]/70">Các cuộc hội thoại bạn đã lưu trữ sẽ xuất hiện ở đây.</p>
+                </div>
               } @else {
                 <div class="relative flex flex-1 flex-col items-center justify-center overflow-hidden bg-[#fcf9f8] p-6">
                   
@@ -295,7 +336,7 @@
                         <button
                           type="button"
                           class="delete-conversation-btn"
-                          (click)="store.deleteConversation()"
+                          (click)="confirmDelete()"
                         >
                           Xóa vĩnh viễn
                         </button>
@@ -328,7 +369,7 @@
                         <button
                           type="button"
                           class="delete-conversation-btn"
-                          (click)="store.deleteConversation()"
+                          (click)="confirmDelete()"
                         >
                           Xóa vĩnh viễn
                         </button>
