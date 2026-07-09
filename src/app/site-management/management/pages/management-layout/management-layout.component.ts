@@ -544,6 +544,7 @@ export class ManagementLayoutComponent {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         accuracyMeters: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
+        faceImage: normalizeFaceImage(data.faceImage),
       })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -696,6 +697,15 @@ function readCurrentPosition(): Promise<GeolocationPosition> {
       timeout: 15_000,
     });
   });
+}
+
+function normalizeFaceImage(faceImage: string | null | undefined): string | null {
+  if (!faceImage || faceImage === 'data:,' || !faceImage.startsWith('data:image/jpeg;base64,')) {
+    console.warn('Face check-in image is missing or invalid; sending null evidence image.');
+    return null;
+  }
+
+  return faceImage;
 }
 
 function hasApiMessage(value: unknown): value is { message: string } {

@@ -1,10 +1,14 @@
 import { inject } from '@angular/core';
 import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { pipe, switchMap, tap } from 'rxjs';
+import { forkJoin, pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
 import { AttendanceService } from '../services/attendance.service';
-import { AttendanceRecordResponse, AttendanceStatisticsResponse } from '../models/attendance.model';
+import {
+  AttendanceLocationPolicy,
+  AttendanceRecordResponse,
+  AttendanceStatisticsResponse
+} from '../models/attendance.model';
 
 export interface AttendanceReportState {
   records: AttendanceRecordResponse[];
@@ -16,6 +20,7 @@ export interface AttendanceReportState {
   size: number;
   startDate: string;
   endDate: string;
+  locationPolicy: AttendanceLocationPolicy | null;
 }
 
 const formatDate = (date: Date) => {
@@ -31,8 +36,6 @@ const formatDate = (date: Date) => {
 };
 
 const today = new Date();
-const lastWeek = new Date(today);
-lastWeek.setDate(lastWeek.getDate() - 7);
 
 const initialState: AttendanceReportState = {
   records: [],
@@ -42,8 +45,9 @@ const initialState: AttendanceReportState = {
   totalRecords: 0,
   page: 0,
   size: 10,
-  startDate: formatDate(lastWeek),
+  startDate: formatDate(today),
   endDate: formatDate(today),
+  locationPolicy: null,
 };
 
 export const AttendanceReportStore = signalStore(
@@ -60,13 +64,17 @@ export const AttendanceReportStore = signalStore(
       pipe(
         tap(() => patchState(store, { isLoading: true, error: null })),
         switchMap(() => {
-          return attendanceService.getReport(store.startDate(), store.endDate(), store.page(), store.size()).pipe(
+          return forkJoin({
+            report: attendanceService.getReport(store.startDate(), store.endDate(), store.page(), store.size()),
+            locationPolicy: attendanceService.getLocationPolicy(),
+          }).pipe(
             tapResponse({
-              next: (response) => {
+              next: ({ report, locationPolicy }) => {
                 patchState(store, {
-                  records: response.data.records.content,
-                  totalRecords: response.data.records.totalElements,
-                  statistics: response.data.statistics,
+                  records: report.data.records.content,
+                  totalRecords: report.data.records.totalElements,
+                  statistics: report.data.statistics,
+                  locationPolicy: normalizeLocationPolicy(locationPolicy.data),
                   isLoading: false,
                 });
               },
@@ -81,3 +89,21 @@ export const AttendanceReportStore = signalStore(
     )
   }))
 );
+
+function normalizeLocationPolicy(policy: AttendanceLocationPolicy | null | undefined): AttendanceLocationPolicy | null {
+  if (!policy) {
+    return null;
+  }
+
+  return {
+    id: policy.id ?? null,
+    enabled: !!policy.enabled,
+    shapeType: policy.shapeType ?? 'CIRCLE',
+    centerLatitude: policy.centerLatitude ?? null,
+    centerLongitude: policy.centerLongitude ?? null,
+    radiusMeters: policy.radiusMeters ?? 100,
+    polygonPoints: policy.polygonPoints ?? [],
+    updatedAt: policy.updatedAt ?? null,
+    updatedBy: policy.updatedBy ?? null,
+  };
+}

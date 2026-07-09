@@ -5,6 +5,7 @@ export interface CheckInRequest {
   latitude: number;
   longitude: number;
   accuracyMeters: number | null;
+  faceImage?: string | null;
 }
 
 export type CheckInResponse = ApiResponseDto<EmployeeProfileResponse>;
@@ -57,6 +58,12 @@ export interface AttendanceEventTimelineResponse {
   type: string;
   timestamp: string;
   source: string | null;
+  faceImageUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  accuracyMeters?: number | null;
+  locationValid?: boolean | null;
+  distanceMeters?: number | null;
 }
 
 export interface AttendanceStatisticsResponse {
@@ -86,3 +93,22 @@ export interface AttendanceReportResponse {
 }
 
 export type AttendanceReportApiResponse = ApiResponseDto<AttendanceReportResponse>;
+
+export type AttendanceLocationShapeType = 'CIRCLE' | 'POLYGON';
+
+export interface AttendanceGeoPoint {
+  lat: number;
+  lng: number;
+}
+
+export interface AttendanceLocationPolicy {
+  id: string | null;
+  enabled: boolean;
+  shapeType: AttendanceLocationShapeType;
+  centerLatitude: number | null;
+  centerLongitude: number | null;
+  radiusMeters: number | null;
+  polygonPoints: AttendanceGeoPoint[];
+  updatedAt?: string | null;
+  updatedBy?: string | null;
+}

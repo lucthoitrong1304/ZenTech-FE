@@ -5,8 +5,10 @@ import { environment } from '../../../../../environments/environment';
 import { 
   CheckInRequest, 
   CheckInResponse,
-  AttendanceReportApiResponse 
+  AttendanceLocationPolicy,
+  AttendanceReportApiResponse,
 } from '../models/attendance.model';
+import { ApiResponseDto } from '../models/profile.model';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +16,7 @@ import {
 export class AttendanceService {
   private readonly apiService = inject(ApiService);
   private readonly baseUrl = `${environment.apiBaseUrl}/attendance`;
+  private readonly locationPolicyUrl = `${environment.apiBaseUrl}/attendance/location-policy`;
 
   checkIn(payload: CheckInRequest): Observable<CheckInResponse> {
     return this.apiService.post<CheckInRequest, CheckInResponse>(
@@ -34,5 +37,9 @@ export class AttendanceService {
         }
       }
     );
+  }
+
+  getLocationPolicy(): Observable<ApiResponseDto<AttendanceLocationPolicy>> {
+    return this.apiService.get<ApiResponseDto<AttendanceLocationPolicy>>(this.locationPolicyUrl);
   }
 }

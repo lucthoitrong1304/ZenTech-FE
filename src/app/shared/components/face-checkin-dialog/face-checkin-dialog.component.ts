@@ -6,7 +6,7 @@ import { ButtonModule } from 'primeng/button';
 
 export interface FaceCheckinData {
   descriptor: Float32Array;
-  faceImage?: string;
+  faceImage?: string | null;
 }
 
 @Component({
@@ -128,24 +128,44 @@ export class FaceCheckinDialogComponent implements OnInit, OnDestroy {
   }
 
   private captureDescriptor(descriptor: Float32Array) {
-    this.stopProcess();
-    let faceImage: string | undefined = undefined;
+    const faceImage = this.captureFaceImage();
     try {
-      const video = this.videoElement?.nativeElement;
-      if (video) {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          faceImage = canvas.toDataURL('image/jpeg', 0.8);
-        }
-      }
+      this.stopProcess();
     } catch (err) {
-      console.error('Failed to capture face image frame:', err);
+      console.error('Failed to stop face check-in camera:', err);
     }
     this.onSuccess.emit({ descriptor, faceImage });
+  }
+
+  private captureFaceImage(): string | null {
+    try {
+      const video = this.videoElement?.nativeElement;
+      if (!video || video.videoWidth <= 0 || video.videoHeight <= 0) {
+        console.warn('Face image capture skipped: video frame is not ready.');
+        return null;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.warn('Face image capture skipped: canvas context is unavailable.');
+        return null;
+      }
+
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const faceImage = canvas.toDataURL('image/jpeg', 0.8);
+      if (!faceImage || faceImage === 'data:,' || !faceImage.startsWith('data:image/jpeg;base64,')) {
+        console.warn('Face image capture produced an invalid data URL.');
+        return null;
+      }
+
+      return faceImage;
+    } catch (err) {
+      console.error('Failed to capture face image frame:', err);
+      return null;
+    }
   }
 
   handleHide() {
