@@ -14,7 +14,37 @@
     <tbody>
       @for (group of groupedRecords(); track group.date) {
         <tr class="att-date-sep">
-          <td colspan="7">Ngày {{ group.date | date:'dd/MM/yyyy' }}</td>
+          <td colspan="7">
+            <div class="att-date-summary-trigger">
+              <span>Ngày {{ group.date | date:'dd/MM/yyyy' }}</span>
+              <span class="att-date-summary-pill">{{ group.summary.totalRecords }} nhân viên</span>
+              <div class="att-date-summary-popover">
+                <strong>Tổng hợp trong ngày</strong>
+                <div class="att-date-summary-grid">
+                  <span>Bản ghi</span>
+                  <b>{{ group.summary.totalRecords }}</b>
+                  <span>Giờ làm</span>
+                  <b>{{ group.summary.totalWorkingHours | number:'1.1-2' }}h</b>
+                  <span>Đúng giờ</span>
+                  <b>{{ group.summary.totalOnTime }}</b>
+                  <span>Trễ</span>
+                  <b>{{ group.summary.totalLate }}</b>
+                  <span>Về sớm</span>
+                  <b>{{ group.summary.totalEarly }}</b>
+                  <span>Thiếu checkout</span>
+                  <b>{{ group.summary.totalMissingCheckOut }}</b>
+                  <span>Vắng</span>
+                  <b>{{ group.summary.totalAbsent }}</b>
+                  <span>Nghỉ phép</span>
+                  <b>{{ group.summary.totalLeave }}</b>
+                  @if (group.summary.totalProvisional > 0) {
+                    <span>Tạm tính</span>
+                    <b>{{ group.summary.totalProvisional }}</b>
+                  }
+                </div>
+              </div>
+            </div>
+          </td>
         </tr>
 
         @for (record of group.records; track record.id) {
@@ -109,7 +139,19 @@
                                 <span class="att-timeline-label">
                                   {{ getEventLabel(event.type) }}
                                 </span>
-                                <strong class="text-sm font-bold text-gray-900">{{ event.timestamp | date:'HH:mm:ss' }}</strong>
+                                <div class="att-event-meta-line">
+                                  <strong class="text-sm font-bold text-gray-900">{{ event.timestamp | date:'HH:mm:ss' }}</strong>
+                                  @if (hasEvidence(event)) {
+                                    <button
+                                      type="button"
+                                      class="att-evidence-btn"
+                                      title="Xem bằng chứng chấm công"
+                                      (click)="openEvidence(event, record, shift)">
+                                      <svg lucideMapPin class="w-3.5 h-3.5"></svg>
+                                      <span>Bằng chứng</span>
+                                    </button>
+                                  }
+                                </div>
                                 @if (event.source) {
                                   <span class="text-xs text-gray-500">Nguồn: {{ event.source }}</span>
                                 }
@@ -186,6 +228,74 @@
     </tbody>
   </table>
 </div>
+
+@if (selectedEvidence(); as evidence) {
+  <div class="att-evidence-backdrop" role="presentation" (click)="closeEvidence()">
+    <section class="att-evidence-dialog" role="dialog" aria-modal="true" aria-label="Bằng chứng chấm công" (click)="$event.stopPropagation()">
+      <header class="att-evidence-header">
+        <div>
+          <span class="att-evidence-kicker">{{ evidence.workDate | date:'dd/MM/yyyy' }} · {{ evidence.shiftName }}</span>
+          <h3>{{ evidence.employeeName }}</h3>
+          <p>{{ getEventLabel(evidence.event.type) }} lúc {{ evidence.event.timestamp | date:'HH:mm:ss' }}</p>
+        </div>
+        <button type="button" class="att-evidence-close" title="Đóng" (click)="closeEvidence()">
+          <svg lucideX class="w-5 h-5"></svg>
+        </button>
+      </header>
+
+      <div class="att-evidence-body">
+        <div class="att-evidence-map-panel">
+          @if (hasEventLocation(evidence.event) && hasMapTilerApiKey) {
+            <div #evidenceMap class="att-evidence-map"></div>
+          } @else if (hasEventLocation(evidence.event)) {
+            <div class="att-evidence-empty-map">
+              Chưa cấu hình MapTiler API key để hiển thị bản đồ.
+            </div>
+          } @else {
+            <div class="att-evidence-empty-map">
+              Không có dữ liệu vị trí cho sự kiện này.
+            </div>
+          }
+        </div>
+
+        <aside class="att-evidence-side">
+          <div class="att-evidence-photo">
+            @if (evidence.event.faceImageUrl) {
+              <img [src]="evidence.event.faceImageUrl" alt="Ảnh khuôn mặt lúc chấm công" />
+            } @else {
+              <span>Không có ảnh khuôn mặt</span>
+            }
+          </div>
+
+          <dl class="att-evidence-facts">
+            <div>
+              <dt>Trạng thái vị trí</dt>
+              <dd [class.att-evidence-location-invalid]="evidence.event.locationValid === false">
+                {{ getLocationStatusLabel(evidence.event) }}
+              </dd>
+            </div>
+            <div>
+              <dt>Khoảng cách thực tế</dt>
+              <dd>{{ formatMeters(evidence.event.distanceMeters) }}</dd>
+            </div>
+            <div>
+              <dt>Độ chính xác GPS</dt>
+              <dd>{{ formatMeters(evidence.event.accuracyMeters) }}</dd>
+            </div>
+            <div>
+              <dt>Tọa độ</dt>
+              <dd>{{ formatCoordinate(evidence.event.latitude) }}, {{ formatCoordinate(evidence.event.longitude) }}</dd>
+            </div>
+            <div>
+              <dt>Nguồn</dt>
+              <dd>{{ evidence.event.source || '--' }}</dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
+    </section>
+  </div>
+}
 
 <div class="att-pagination">
   <span class="att-pagination__info">

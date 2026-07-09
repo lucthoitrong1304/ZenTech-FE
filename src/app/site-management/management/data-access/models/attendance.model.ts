@@ -57,6 +57,12 @@ export interface AttendanceEventTimelineResponse {
   type: string;
   timestamp: string;
   source: string | null;
+  faceImageUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  accuracyMeters?: number | null;
+  locationValid?: boolean | null;
+  distanceMeters?: number | null;
 }
 
 export interface AttendanceStatisticsResponse {

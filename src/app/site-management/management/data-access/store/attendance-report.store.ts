@@ -31,8 +31,6 @@ const formatDate = (date: Date) => {
 };
 
 const today = new Date();
-const lastWeek = new Date(today);
-lastWeek.setDate(lastWeek.getDate() - 7);
 
 const initialState: AttendanceReportState = {
   records: [],
@@ -42,7 +40,7 @@ const initialState: AttendanceReportState = {
   totalRecords: 0,
   page: 0,
   size: 10,
-  startDate: formatDate(lastWeek),
+  startDate: formatDate(today),
   endDate: formatDate(today),
 };
 

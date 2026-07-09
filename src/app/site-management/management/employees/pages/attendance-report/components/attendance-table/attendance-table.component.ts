@@ -1,14 +1,55 @@
-import { Component, ChangeDetectionStrategy, computed, input, output, signal } from '@angular/core';
+import {
+  AfterViewChecked,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+  computed,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
 import {
+  AttendanceEventTimelineResponse,
   AttendanceRecordResponse,
   AttendanceShiftBreakdownResponse,
 } from '../../../../../data-access/models/attendance.model';
-import { LucideChevronLeft, LucideChevronRight, LucideChevronDown, LucideChevronUp } from '@lucide/angular';
+import {
+  LucideChevronLeft,
+  LucideChevronRight,
+  LucideChevronDown,
+  LucideChevronUp,
+  LucideMapPin,
+  LucideX,
+} from '@lucide/angular';
+import * as L from 'leaflet';
+import { environment } from '../../../../../../../../environments/environment';
 
 interface GroupedDateRecord {
   date: string;
   records: AttendanceRecordResponse[];
+  summary: DateGroupSummary;
+}
+
+interface DateGroupSummary {
+  totalRecords: number;
+  totalWorkingHours: number;
+  totalOnTime: number;
+  totalLate: number;
+  totalEarly: number;
+  totalMissingCheckOut: number;
+  totalAbsent: number;
+  totalLeave: number;
+  totalProvisional: number;
+}
+
+interface SelectedEvidence {
+  event: AttendanceEventTimelineResponse;
+  employeeName: string;
+  shiftName: string;
+  workDate: string;
 }
 
 @Component({
@@ -22,12 +63,16 @@ interface GroupedDateRecord {
     LucideChevronLeft,
     LucideChevronRight,
     LucideChevronDown,
-    LucideChevronUp
+    LucideChevronUp,
+    LucideMapPin,
+    LucideX
   ],
   templateUrl: './attendance-table.component.html',
   styleUrl: './attendance-table.component.css'
 })
-export class AttendanceTableComponent {
+export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
+  @ViewChild('evidenceMap') evidenceMapRef?: ElementRef<HTMLDivElement>;
+
   records = input.required<AttendanceRecordResponse[]>();
   totalRecords = input.required<number>();
   page = input.required<number>();
@@ -36,6 +81,11 @@ export class AttendanceTableComponent {
   pageChange = output<{page: number, size: number}>();
 
   expandedRows = signal<Set<string>>(new Set());
+  selectedEvidence = signal<SelectedEvidence | null>(null);
+  protected readonly hasMapTilerApiKey = !!environment.mapTilerApiKey;
+  private evidenceMap?: L.Map;
+  private evidenceTileLayer?: L.TileLayer;
+  private renderedEvidenceKey: string | null = null;
 
   groupedRecords = computed<GroupedDateRecord[]>(() => {
     const groups: { [key: string]: AttendanceRecordResponse[] } = {};
@@ -50,9 +100,30 @@ export class AttendanceTableComponent {
       .sort((a, b) => b.localeCompare(a))
       .map(dateKey => ({
         date: dateKey,
-        records: groups[dateKey]
+        records: groups[dateKey],
+        summary: this.buildDateGroupSummary(groups[dateKey])
       }));
   });
+
+  ngAfterViewChecked(): void {
+    const selected = this.selectedEvidence();
+    if (!selected || !this.evidenceMapRef?.nativeElement || !this.hasEventLocation(selected.event)) {
+      return;
+    }
+
+    const key = this.getEvidenceKey(selected);
+    if (this.renderedEvidenceKey === key) {
+      this.evidenceMap?.invalidateSize();
+      return;
+    }
+
+    this.renderedEvidenceKey = key;
+    this.renderEvidenceMap(selected.event);
+  }
+
+  ngOnDestroy(): void {
+    this.destroyEvidenceMap();
+  }
 
   toggleRow(id: string) {
     const set = new Set(this.expandedRows());
@@ -80,6 +151,52 @@ export class AttendanceTableComponent {
 
   onPageChange(newPage: number) {
     this.pageChange.emit({ page: newPage, size: this.size() });
+  }
+
+  openEvidence(event: AttendanceEventTimelineResponse, record: AttendanceRecordResponse, shift: AttendanceShiftBreakdownResponse): void {
+    this.selectedEvidence.set({
+      event,
+      employeeName: record.employeeName,
+      shiftName: shift.shiftName,
+      workDate: record.workDate
+    });
+  }
+
+  closeEvidence(): void {
+    this.selectedEvidence.set(null);
+    this.renderedEvidenceKey = null;
+    this.destroyEvidenceMap();
+  }
+
+  hasEvidence(event: AttendanceEventTimelineResponse): boolean {
+    return this.hasEventLocation(event) || !!event.faceImageUrl;
+  }
+
+  hasEventLocation(event: AttendanceEventTimelineResponse): boolean {
+    return this.isValidCoordinate(event.latitude, event.longitude);
+  }
+
+  getLocationStatusLabel(event: AttendanceEventTimelineResponse): string {
+    if (event.locationValid === true) return 'Trong vùng hợp lệ';
+    if (event.locationValid === false) return 'Ngoài vùng hợp lệ';
+    return 'Chưa xác định';
+  }
+
+  formatMeters(value: number | null | undefined): string {
+    if (value === null || value === undefined || !Number.isFinite(value)) {
+      return 'Không có dữ liệu';
+    }
+    if (value < 1000) {
+      return `${Math.round(value)}m`;
+    }
+    return `${(value / 1000).toFixed(2)}km`;
+  }
+
+  formatCoordinate(value: number | null | undefined): string {
+    if (value === null || value === undefined || !Number.isFinite(value)) {
+      return '--';
+    }
+    return value.toFixed(6);
   }
 
   getStatusBadgeClass(status: string): string {
@@ -219,5 +336,111 @@ export class AttendanceTableComponent {
     const month = `${today.getMonth() + 1}`.padStart(2, '0');
     const day = `${today.getDate()}`.padStart(2, '0');
     return date === `${today.getFullYear()}-${month}-${day}`;
+  }
+
+  private buildDateGroupSummary(records: AttendanceRecordResponse[]): DateGroupSummary {
+    return records.reduce<DateGroupSummary>((summary, record) => {
+      const status = this.getDisplayStatus(record);
+      summary.totalRecords += 1;
+      summary.totalWorkingHours += this.getDisplayWorkingHours(record);
+      summary.totalOnTime += status === 'ON_TIME' ? 1 : 0;
+      summary.totalLate += status === 'LATE' || status === 'LATE_AND_EARLY' ? 1 : 0;
+      summary.totalEarly += status === 'EARLY_CHECKOUT' || status === 'LATE_AND_EARLY' ? 1 : 0;
+      summary.totalMissingCheckOut += status === 'MISSING_CHECK_OUT' || status === 'WFH_MISSING_CHECK_OUT' ? 1 : 0;
+      summary.totalAbsent += status === 'ABSENT_UNEXCUSED' ? 1 : 0;
+      summary.totalLeave += status === 'ABSENT_EXCUSED' ? 1 : 0;
+      summary.totalProvisional += this.isLiveRecord(record) ? 1 : 0;
+      return summary;
+    }, {
+      totalRecords: 0,
+      totalWorkingHours: 0,
+      totalOnTime: 0,
+      totalLate: 0,
+      totalEarly: 0,
+      totalMissingCheckOut: 0,
+      totalAbsent: 0,
+      totalLeave: 0,
+      totalProvisional: 0
+    });
+  }
+
+  private renderEvidenceMap(event: AttendanceEventTimelineResponse): void {
+    if (!this.evidenceMapRef?.nativeElement || !this.hasEventLocation(event)) {
+      return;
+    }
+
+    this.destroyEvidenceMap();
+
+    const center: L.LatLngExpression = [event.latitude!, event.longitude!];
+    this.evidenceMap = L.map(this.evidenceMapRef.nativeElement, {
+      center,
+      zoom: 17,
+      zoomControl: true,
+      attributionControl: true
+    });
+
+    this.evidenceTileLayer = L.tileLayer(
+      `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${encodeURIComponent(environment.mapTilerApiKey)}`,
+      {
+        maxZoom: 20,
+        tileSize: 512,
+        zoomOffset: -1,
+        attribution:
+          '&copy; <a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>',
+      },
+    ).addTo(this.evidenceMap);
+
+    L.circleMarker(center, {
+      radius: 8,
+      color: '#ffffff',
+      fillColor: event.locationValid === false ? '#ef4444' : '#10b981',
+      fillOpacity: 1,
+      weight: 3,
+    })
+      .bindPopup(`Vị trí chấm công<br>${this.formatMeters(event.distanceMeters)}`)
+      .addTo(this.evidenceMap)
+      .openPopup();
+
+    if (event.accuracyMeters && event.accuracyMeters > 0) {
+      L.circle(center, {
+        radius: event.accuracyMeters,
+        color: '#2563eb',
+        fillColor: '#2563eb',
+        fillOpacity: 0.08,
+        opacity: 0.45,
+        weight: 1,
+        interactive: false,
+      }).addTo(this.evidenceMap);
+    }
+
+    window.setTimeout(() => this.evidenceMap?.invalidateSize(), 0);
+  }
+
+  private destroyEvidenceMap(): void {
+    this.evidenceTileLayer = undefined;
+    this.evidenceMap?.off();
+    this.evidenceMap?.remove();
+    this.evidenceMap = undefined;
+  }
+
+  private getEvidenceKey(selected: SelectedEvidence): string {
+    const event = selected.event;
+    return [
+      selected.employeeName,
+      selected.shiftName,
+      event.timestamp,
+      event.latitude ?? '',
+      event.longitude ?? '',
+      event.faceImageUrl ?? ''
+    ].join('|');
+  }
+
+  private isValidCoordinate(latitude: number | null | undefined, longitude: number | null | undefined): boolean {
+    return latitude !== null
+      && latitude !== undefined
+      && longitude !== null
+      && longitude !== undefined
+      && Number.isFinite(latitude)
+      && Number.isFinite(longitude);
   }
 }
