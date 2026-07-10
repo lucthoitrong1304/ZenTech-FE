@@ -144,15 +144,6 @@ Event reducers are optional and reserved for complex UI flows: multi-step dialog
 * Manual `subscribe()` in components.
 * Data-processing function calls in HTML templates.
 
-### Existing refactor priorities
-
-Move the direct `ApiService` usage in these pages behind Feature Service and SignalStore first:
-
-* `management/pages/approvals/approvals.component.ts`
-* `management/pages/requests/requests.component.ts`
-* `management/pages/leave-settings/leave-settings.component.ts`
-* `management/pages/pay-periods/pay-periods.component.ts`
-
 ---
 
 ## ✅ Delivery Checklist

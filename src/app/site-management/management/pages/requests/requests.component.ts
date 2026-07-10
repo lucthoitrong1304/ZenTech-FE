@@ -1,95 +1,35 @@
-import { Component, ChangeDetectionStrategy, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ApiService } from '../../../../core/api/api.service';
-import { environment } from '../../../../../environments/environment';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { LucideLoader2 } from '@lucide/angular';
+import { firstValueFrom } from 'rxjs';
 import { ConfirmService } from '../../../../shared/components/confirm/confirm.service';
+import { ToastService } from '../../../../shared/components/toast/toast.service';
+import {
+  ApprovalStatus,
+  AttendanceAdjustment,
+  AttendanceAdjustmentType,
+  CreateLeaveRequest,
+  CreateSwapRequest,
+  LeaveRequest,
+  LeaveType,
+  ShiftDto,
+  ShiftSwapRequest,
+  SwapRequestType,
+} from '../../requests/data-access/models/requests.models';
+import { RequestsService } from '../../requests/data-access/services/requests.service';
+import { RequestsStore } from '../../requests/data-access/store/requests.store';
 
-type LeaveTypeUnit = 'DAY' | 'HOUR';
-type ApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCEL_PENDING' | 'CANCELLED';
-
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string | null;
-}
-
-interface LeaveType {
-  id: string;
-  code: string;
-  name: string;
-  description: string | null;
-  unit: LeaveTypeUnit;
-  active: boolean;
-  systemDefault: boolean;
-  sortOrder: number;
-}
-
-interface LeaveQuota {
-  employeeId: string;
-  leaveTypeId: string;
-  leaveType: LeaveType;
-  year: number;
-  entitlement: number;
-  approvedUsed: number;
-  pendingUsed: number;
-  remaining: number;
-}
-
-interface LeaveRequest {
-  id: string;
-  startDate: string;
-  endDate: string;
-  startTime: string | null;
-  endTime: string | null;
-  leaveType: LeaveType | null;
-  amount: number;
-  overQuota: boolean;
-  quotaRemainingBeforeRequest: number | null;
-  quotaRemainingAfterRequest: number | null;
-  reason: string;
-  status: ApprovalStatus;
-  requestedAt: string;
-  targetShifts?: { id: string; name: string }[] | null;
-}
-
-interface ShiftDto {
-  employeeShiftId: string;
-  shiftId: string;
-  shiftName: string;
-  startTime: string;
-  endTime: string;
-  colorCode: string;
-  shiftType: string;
-  workDate: string;
-}
-
-interface ShiftSwapRequest {
-  id: string;
-  requester: { fullName: string };
-  targetEmployee: { fullName: string };
-  workDate: string;
-  shift: { name: string } | null;
-  targetWorkDate: string | null;
-  targetShift: { name: string } | null;
-  type: 'SWAP' | 'COVER';
-  reason: string;
-  status: ApprovalStatus;
-  requestedAt: string;
-}
-
-interface AttendanceAdjustment {
-  id: string;
-  employee: { fullName: string };
-  workDate: string;
-  type: string;
-  proposedTime: string;
-  reason: string;
-  status: ApprovalStatus;
-  requestedAt: string;
-}
+type RequestsTab = 'leave' | 'swap' | 'adjust';
 
 @Component({
   selector: 'app-requests',
@@ -97,139 +37,110 @@ interface AttendanceAdjustment {
   standalone: true,
   imports: [CommonModule, FormsModule, LucideLoader2],
   templateUrl: './requests.component.html',
-  styleUrl: './requests.component.css'
+  styleUrl: './requests.component.css',
+  providers: [RequestsService, RequestsStore],
 })
 export class RequestsComponent implements OnInit {
-  private readonly apiService = inject(ApiService);
+  protected readonly store = inject(RequestsStore);
   private readonly toastService = inject(ToastService);
   private readonly confirmService = inject(ConfirmService);
 
-  // activeTab state
-  activeTab = signal<'leave' | 'swap' | 'adjust'>('leave');
-  submitting = signal(false);
-
-  // Leave Form state
-  leaveTypes = signal<LeaveType[]>([]);
-  quotas = signal<LeaveQuota[]>([]);
-  myDailyShifts = signal<ShiftDto[]>([]);
-  selectedShiftIds = signal<string[]>([]);
-
-  leaveTypeId = signal('');
-  startDate = signal('');
-  endDate = signal('');
-  startTime = signal('');
-  endTime = signal('');
-  reason = signal('');
-
-  selectedType = computed(() => this.leaveTypes().find(type => type.id === this.leaveTypeId()) ?? null);
-  selectedQuota = computed(() => this.quotas().find(quota => quota.leaveTypeId === this.leaveTypeId()) ?? null);
-  isHourType = computed(() => this.selectedType()?.unit === 'HOUR');
-  isAfkType = computed(() => this.isAfkLeaveType(this.selectedType()));
-
-  // Shift Swap Form state
-  colleagues = signal<any[]>([]);
-  mySwapShifts = signal<ShiftDto[]>([]);
-  colleagueShifts = signal<ShiftDto[]>([]);
-
-  swapData = {
+  readonly activeTab = signal<RequestsTab>('leave');
+  readonly leaveTypeId = signal('');
+  readonly startDate = signal('');
+  readonly endDate = signal('');
+  readonly startTime = signal('');
+  readonly endTime = signal('');
+  readonly reason = signal('');
+  readonly selectedShiftIds = signal<string[]>([]);
+  readonly swapData = {
     colleagueId: '',
-    type: 'SWAP' as 'SWAP' | 'COVER',
+    type: 'SWAP' as SwapRequestType,
     myWorkDate: '',
     myShiftId: '',
     colleagueWorkDate: '',
     colleagueShiftId: '',
-    reason: ''
+    reason: '',
   };
-
-  // Attendance Adjustment Form state
-  adjustData = {
+  readonly adjustData: {
+    workDate: string;
+    type: AttendanceAdjustmentType;
+    proposedTime: string;
+    reason: string;
+  } = {
     workDate: '',
     type: 'FORGOT_CHECK_IN',
     proposedTime: '',
-    reason: ''
+    reason: '',
   };
 
-  // Histories state
-  myLeaves = signal<LeaveRequest[]>([]);
-  mySwaps = signal<ShiftSwapRequest[]>([]);
-  myAdjustments = signal<AttendanceAdjustment[]>([]);
-  private readonly activeLeaveStatuses: ApprovalStatus[] = ['PENDING', 'APPROVED', 'CANCEL_PENDING'];
+  readonly submitting = this.store.submitting;
+  readonly leaveTypes = this.store.leaveTypes;
+  readonly quotas = this.store.quotas;
+  readonly myDailyShifts = this.store.myDailyShifts;
+  readonly mySwapShifts = this.store.mySwapShifts;
+  readonly colleagueShifts = this.store.colleagueShifts;
+  readonly colleagues = this.store.colleagues;
+  readonly myLeaves = this.store.myLeaves;
+  readonly mySwaps = this.store.mySwaps;
+  readonly myAdjustments = this.store.myAdjustments;
+  readonly selectedType = computed(
+    () => this.leaveTypes().find((type) => type.id === this.leaveTypeId()) ?? null,
+  );
+  readonly selectedQuota = computed(
+    () => this.quotas().find((quota) => quota.leaveTypeId === this.leaveTypeId()) ?? null,
+  );
+  readonly isHourType = computed(() => this.selectedType()?.unit === 'HOUR');
+  readonly isAfkType = computed(() => this.isAfkLeaveType(this.selectedType()));
+
+  private readonly activeLeaveStatuses: ApprovalStatus[] = [
+    'PENDING',
+    'APPROVED',
+    'CANCEL_PENDING',
+  ];
   private readonly afkCode = 'AFK';
   private readonly nghiCode = 'NGHI';
   private readonly wfhCode = 'WFH';
 
+  constructor() {
+    effect(() => {
+      const success = this.store.lastSuccess();
+      if (!success) return;
+      untracked(() => {
+        if (success === 'leave') this.resetLeaveForm();
+        if (success === 'swap') this.resetSwapForm();
+        if (success === 'adjustment') this.resetAdjustmentForm();
+        this.store.clearSuccess();
+      });
+    });
+    effect(() => {
+      const types = this.leaveTypes();
+      if (!this.leaveTypeId() && types.length > 0) this.leaveTypeId.set(types[0].id);
+    });
+  }
+
   ngOnInit(): void {
-    this.loadLeaveTypes();
-    this.loadMyQuotas();
-    this.loadHistories();
-    this.loadColleagues();
+    this.store.loadInitialData();
   }
 
-  loadHistories(): void {
-    this.loadMyLeaves();
-    this.loadMySwaps();
-    this.loadMyAdjustments();
-  }
-
-  // --- Leave / WFH / AFK Logic ---
-  loadLeaveTypes(): void {
-    this.apiService.get<ApiResponse<LeaveType[]>>(`${environment.apiBaseUrl}/leave-types`).subscribe({
-      next: response => {
-        if (!response.success) return;
-        this.leaveTypes.set(response.data);
-        if (!this.leaveTypeId() && response.data.length > 0) {
-          this.leaveTypeId.set(response.data[0].id);
-        }
-      },
-      error: () => this.toastService.error('Không tải được danh sách loại phép.')
-    });
-  }
-
-  loadMyQuotas(): void {
-    this.apiService.get<ApiResponse<LeaveQuota[]>>(`${environment.apiBaseUrl}/leaves/my/quotas`).subscribe({
-      next: response => {
-        if (response.success) this.quotas.set(response.data);
-      }
-    });
-  }
-
-  loadMyLeaves(): void {
-    this.apiService.get<ApiResponse<LeaveRequest[]>>(`${environment.apiBaseUrl}/leaves/my`).subscribe({
-      next: response => {
-        if (response.success) this.myLeaves.set(response.data);
-      }
-    });
+  switchTab(tab: RequestsTab): void {
+    this.activeTab.set(tab);
   }
 
   onLeaveTypeChange(leaveTypeId: string): void {
     this.leaveTypeId.set(leaveTypeId);
-    const selectedType = this.selectedType();
-    if (this.isAfkLeaveType(selectedType)) {
-      this.selectedShiftIds.set([]);
-    } else if (this.startDate() && this.startDate() === this.endDate()) {
-      this.selectedShiftIds.set(this.selectedShiftIds().filter(id => !this.isShiftUnavailable(id)));
-    }
+    if (this.isAfkLeaveType(this.selectedType())) this.selectedShiftIds.set([]);
+    else this.removeUnavailableSelectedShifts();
   }
 
   onLeaveDateChange(): void {
     if (this.startDate() && this.startDate() === this.endDate()) {
       this.selectedShiftIds.set([]);
-      this.loadMyDailyShifts(this.startDate());
+      this.store.loadDailyShifts(this.startDate());
     } else {
-      this.myDailyShifts.set([]);
+      this.store.clearDailyShifts();
       this.selectedShiftIds.set([]);
     }
-  }
-
-  loadMyDailyShifts(date: string): void {
-    this.apiService.get<ApiResponse<ShiftDto[]>>(`${environment.apiBaseUrl}/shifts/my-schedules?startDate=${date}&endDate=${date}`).subscribe({
-      next: response => {
-        if (response.success) {
-          this.myDailyShifts.set(response.data);
-          this.selectedShiftIds.set(this.selectedShiftIds().filter(id => !this.isShiftUnavailable(id)));
-        }
-      }
-    });
   }
 
   toggleShiftSelection(shiftId: string): void {
@@ -237,13 +148,9 @@ export class RequestsComponent implements OnInit {
       this.toastService.error('Ca này đã có yêu cầu nghỉ đang chờ/đã duyệt.');
       return;
     }
-    this.selectedShiftIds.update(ids => {
-      if (ids.includes(shiftId)) {
-        return ids.filter(id => id !== shiftId);
-      } else {
-        return [...ids, shiftId];
-      }
-    });
+    this.selectedShiftIds.update((ids) =>
+      ids.includes(shiftId) ? ids.filter((id) => id !== shiftId) : [...ids, shiftId],
+    );
   }
 
   submitLeave(): void {
@@ -260,133 +167,42 @@ export class RequestsComponent implements OnInit {
       this.toastService.error('Vui lòng nhập giờ bắt đầu và kết thúc.');
       return;
     }
-
-    const afkShiftMessage = this.afkOutsideAssignedShiftMessage(selectedType);
-    if (afkShiftMessage) {
-      this.toastService.error(afkShiftMessage);
+    const afkMessage = this.afkOutsideAssignedShiftMessage(selectedType);
+    if (afkMessage) {
+      this.toastService.error(afkMessage);
       return;
     }
-
     const duplicateMessage = this.duplicateLeaveMessage(selectedType);
     if (duplicateMessage) {
       this.toastService.error(duplicateMessage);
       return;
     }
-
-    const payload = {
-      leaveTypeId: this.leaveTypeId(),
+    const payload: CreateLeaveRequest = {
+      leaveTypeId: selectedType.id,
       startDate: this.startDate(),
       endDate: this.endDate(),
       startTime: selectedType.unit === 'HOUR' ? `${this.startTime()}:00` : null,
       endTime: selectedType.unit === 'HOUR' ? `${this.endTime()}:00` : null,
       shiftIds: this.isAfkLeaveType(selectedType) ? [] : this.selectedShiftIds(),
-      reason: this.reason().trim()
+      reason: this.reason().trim(),
     };
-
-    this.submitting.set(true);
-    this.apiService.post<typeof payload, ApiResponse<LeaveRequest>>(`${environment.apiBaseUrl}/leaves`, payload).subscribe({
-      next: response => {
-        if (response.success) {
-          this.toastService.success('Đã gửi yêu cầu nghỉ.');
-          this.reason.set('');
-          this.startTime.set('');
-          this.endTime.set('');
-          this.selectedShiftIds.set([]);
-          this.myDailyShifts.set([]);
-          this.loadMyLeaves();
-          this.loadMyQuotas();
-          if (this.startDate() && this.startDate() === this.endDate()) {
-            this.loadMyDailyShifts(this.startDate());
-          }
-        }
-        this.submitting.set(false);
-      },
-      error: error => {
-        this.toastService.error(error.error?.message || 'Gửi yêu cầu thất bại.');
-        this.submitting.set(false);
-      }
-    });
-  }
-
-  // --- Shift Swap Logic ---
-  loadColleagues(): void {
-    // Load colleague directory
-    this.apiService.get<ApiResponse<{ content: any[] }>>(`${environment.apiBaseUrl}/management/employees?size=100`).subscribe({
-      next: response => {
-        if (response.success) {
-          this.colleagues.set(response.data.content);
-        }
-      }
+    this.store.submitLeave({
+      payload,
+      date: this.startDate() === this.endDate() ? this.startDate() : undefined,
     });
   }
 
   loadMySwapShifts(): void {
-    if (!this.swapData.myWorkDate) return;
-    const date = this.swapData.myWorkDate;
-    this.apiService.get<ApiResponse<ShiftDto[]>>(`${environment.apiBaseUrl}/shifts/my-schedules?startDate=${date}&endDate=${date}`).subscribe({
-      next: response => {
-        if (response.success) {
-          this.mySwapShifts.set(response.data);
-          if (response.data.length > 0) {
-            this.swapData.myShiftId = response.data[0].shiftId;
-          } else {
-            this.swapData.myShiftId = '';
-          }
-        }
-      }
-    });
+    if (this.swapData.myWorkDate) this.store.loadSwapShifts(this.swapData.myWorkDate);
   }
 
   loadColleagueShifts(): void {
-    if (!this.swapData.colleagueId || !this.swapData.colleagueWorkDate) return;
-    const date = this.swapData.colleagueWorkDate;
-
-    // To load colleague shifts, we query the weekly schedule with colleague's employeeId
-    const selectedColleague = this.colleagues().find(c => c.employeeId === this.swapData.colleagueId);
-    if (!selectedColleague) return;
-
-    this.apiService.get<ApiResponse<{ employees: { content: any[] } }>>(`${environment.apiBaseUrl}/shifts/schedules`, {
-      params: {
-        startDate: date,
-        endDate: date,
-        employeeId: selectedColleague.employeeId
-      }
-    }).subscribe({
-      next: response => {
-        if (response.success) {
-          const emp = response.data.employees?.content?.find((e: any) => e.employeeId === selectedColleague.employeeId);
-          if (emp && emp.shifts) {
-            const mappedShifts: ShiftDto[] = emp.shifts.map((s: any) => ({
-              employeeShiftId: s.employeeShiftId,
-              shiftId: s.shiftId,
-              shiftName: s.shiftName,
-              startTime: s.startTime,
-              endTime: s.endTime,
-              colorCode: s.colorCode,
-              shiftType: s.shiftType,
-              workDate: s.workDate
-            }));
-            this.colleagueShifts.set(mappedShifts);
-            if (mappedShifts.length > 0) {
-              this.swapData.colleagueShiftId = mappedShifts[0].shiftId;
-            } else {
-              this.swapData.colleagueShiftId = '';
-            }
-          } else {
-            this.colleagueShifts.set([]);
-            this.swapData.colleagueShiftId = '';
-          }
-        }
-      }
-    });
-  }
-
-  loadMySwaps(): void {
-    this.apiService.get<ApiResponse<ShiftSwapRequest[]>>(`${environment.apiBaseUrl}/schedules/swaps/my`).subscribe({
-      next: response => {
-        if (response.success) this.mySwaps.set(response.data);
-      }
-    });
+    if (this.swapData.colleagueId && this.swapData.colleagueWorkDate) {
+      this.store.loadColleagueShifts({
+        employeeId: this.swapData.colleagueId,
+        date: this.swapData.colleagueWorkDate,
+      });
+    }
   }
 
   submitSwap(): void {
@@ -394,7 +210,13 @@ export class RequestsComponent implements OnInit {
       this.toastService.error('Vui lòng nhập đồng nghiệp và lý do.');
       return;
     }
-    if (this.swapData.type === 'SWAP' && (!this.swapData.myWorkDate || !this.swapData.myShiftId || !this.swapData.colleagueWorkDate || !this.swapData.colleagueShiftId)) {
+    if (
+      this.swapData.type === 'SWAP' &&
+      (!this.swapData.myWorkDate ||
+        !this.swapData.myShiftId ||
+        !this.swapData.colleagueWorkDate ||
+        !this.swapData.colleagueShiftId)
+    ) {
       this.toastService.error('Vui lòng chọn đầy đủ ngày ca đổi của bạn và đồng nghiệp.');
       return;
     }
@@ -402,337 +224,276 @@ export class RequestsComponent implements OnInit {
       this.toastService.error('Vui lòng chọn ca làm việc của bạn cần nhờ trực thay.');
       return;
     }
-
-    const payload = {
+    const payload: CreateSwapRequest = {
       targetEmployee: { id: this.swapData.colleagueId },
       workDate: this.swapData.myWorkDate,
       shift: this.swapData.myShiftId ? { id: this.swapData.myShiftId } : null,
       targetWorkDate: this.swapData.type === 'SWAP' ? this.swapData.colleagueWorkDate : null,
-      targetShift: (this.swapData.type === 'SWAP' && this.swapData.colleagueShiftId) ? { id: this.swapData.colleagueShiftId } : null,
+      targetShift:
+        this.swapData.type === 'SWAP' && this.swapData.colleagueShiftId
+          ? { id: this.swapData.colleagueShiftId }
+          : null,
       type: this.swapData.type,
       reason: this.swapData.reason.trim(),
-      status: 'PENDING'
+      status: 'PENDING',
     };
-
-    this.submitting.set(true);
-    this.apiService.post<any, ApiResponse<any>>(`${environment.apiBaseUrl}/schedules/swaps`, payload).subscribe({
-      next: response => {
-        if (response.success) {
-          this.toastService.success('Đã gửi yêu cầu đổi ca.');
-          this.swapData.reason = '';
-          this.swapData.myWorkDate = '';
-          this.swapData.myShiftId = '';
-          this.swapData.colleagueWorkDate = '';
-          this.swapData.colleagueShiftId = '';
-          this.mySwapShifts.set([]);
-          this.colleagueShifts.set([]);
-          this.loadMySwaps();
-        }
-        this.submitting.set(false);
-      },
-      error: error => {
-        this.toastService.error(error.error?.message || 'Gửi yêu cầu đổi ca thất bại.');
-        this.submitting.set(false);
-      }
-    });
-  }
-
-  // --- Attendance Adjustment Logic ---
-  loadMyAdjustments(): void {
-    this.apiService.get<ApiResponse<AttendanceAdjustment[]>>(`${environment.apiBaseUrl}/attendance/adjustments/my`).subscribe({
-      next: response => {
-        if (response.success) this.myAdjustments.set(response.data);
-      }
-    });
+    this.store.submitSwap(payload);
   }
 
   submitAdjustment(): void {
-    if (!this.adjustData.workDate || !this.adjustData.proposedTime || !this.adjustData.reason.trim()) {
+    if (
+      !this.adjustData.workDate ||
+      !this.adjustData.proposedTime ||
+      !this.adjustData.reason.trim()
+    ) {
       this.toastService.error('Vui lòng nhập ngày, giờ điều chỉnh và lý do.');
       return;
     }
-
-    const payload = {
+    this.store.submitAdjustment({
       workDate: this.adjustData.workDate,
       type: this.adjustData.type,
       proposedTime: `${this.adjustData.proposedTime}:00`,
       reason: this.adjustData.reason.trim(),
-      status: 'PENDING'
-    };
-
-    this.submitting.set(true);
-    this.apiService.post<any, ApiResponse<any>>(`${environment.apiBaseUrl}/attendance/adjustments`, payload).subscribe({
-      next: response => {
-        if (response.success) {
-          this.toastService.success('Đã gửi yêu cầu điều chỉnh công.');
-          this.adjustData.reason = '';
-          this.adjustData.proposedTime = '';
-          this.adjustData.workDate = '';
-          this.loadMyAdjustments();
-        }
-        this.submitting.set(false);
-      },
-      error: error => {
-        this.toastService.error(error.error?.message || 'Gửi yêu cầu chỉnh công thất bại.');
-        this.submitting.set(false);
-      }
+      status: 'PENDING',
     });
   }
 
-  // Helpers
-  switchTab(tab: 'leave' | 'swap' | 'adjust'): void {
-    this.activeTab.set(tab);
+  async cancelLeave(id: string): Promise<void> {
+    if (await this.confirmCancellation('Bạn có chắc chắn muốn hủy yêu cầu nghỉ này?'))
+      this.store.cancelLeave({
+        id,
+        date: this.startDate() === this.endDate() ? this.startDate() : undefined,
+      });
+  }
+  async cancelSwap(id: string): Promise<void> {
+    if (await this.confirmCancellation('Bạn có chắc chắn muốn hủy yêu cầu đổi ca này?'))
+      this.store.cancelSwap(id);
+  }
+  async cancelAdjustment(id: string): Promise<void> {
+    if (await this.confirmCancellation('Bạn có chắc chắn muốn hủy yêu cầu chỉnh công này?'))
+      this.store.cancelAdjustment(id);
   }
 
-  getStatusLabel(status: string): string {
-    switch (status) {
-      case 'APPROVED': return 'Đã duyệt';
-      case 'PENDING': return 'Đang chờ';
-      case 'REJECTED': return 'Từ chối';
-      case 'CANCELLED': return 'Đã hủy';
-      case 'CANCEL_PENDING': return 'Chờ duyệt hủy';
-      default: return status;
-    }
-  }
-
-  cancelLeave(id: string): void {
-    this.confirmService.open({
-      title: 'Xác nhận hủy yêu cầu',
-      content: 'Bạn có chắc chắn muốn hủy yêu cầu nghỉ này?'
-    }).subscribe(accept => {
-      if (accept) {
-        this.apiService.post<null, ApiResponse<any>>(`${environment.apiBaseUrl}/leaves/${id}/cancel`, null).subscribe({
-          next: response => {
-            if (response.success) {
-              this.toastService.success('Đã gửi yêu cầu hủy.');
-              this.loadMyLeaves();
-              this.loadMyQuotas();
-              if (this.startDate() && this.startDate() === this.endDate()) {
-                this.loadMyDailyShifts(this.startDate());
-              }
-            }
-          },
-          error: error => this.toastService.error(error.error?.message || 'Hủy yêu cầu thất bại.')
-        });
-      }
-    });
-  }
-
-  cancelSwap(id: string): void {
-    this.confirmService.open({
-      title: 'Xác nhận hủy yêu cầu',
-      content: 'Bạn có chắc chắn muốn hủy yêu cầu đổi ca này?'
-    }).subscribe(accept => {
-      if (accept) {
-        this.apiService.post<null, ApiResponse<any>>(`${environment.apiBaseUrl}/schedules/swaps/${id}/cancel`, null).subscribe({
-          next: response => {
-            if (response.success) {
-              this.toastService.success('Đã gửi yêu cầu hủy.');
-              this.loadMySwaps();
-            }
-          },
-          error: error => this.toastService.error(error.error?.message || 'Hủy yêu cầu thất bại.')
-        });
-      }
-    });
-  }
-
-  cancelAdjustment(id: string): void {
-    this.confirmService.open({
-      title: 'Xác nhận hủy yêu cầu',
-      content: 'Bạn có chắc chắn muốn hủy yêu cầu chỉnh công này?'
-    }).subscribe(accept => {
-      if (accept) {
-        this.apiService.post<null, ApiResponse<any>>(`${environment.apiBaseUrl}/attendance/adjustments/${id}/cancel`, null).subscribe({
-          next: response => {
-            if (response.success) {
-              this.toastService.success('Đã gửi yêu cầu hủy.');
-              this.loadMyAdjustments();
-            }
-          },
-          error: error => this.toastService.error(error.error?.message || 'Hủy yêu cầu thất bại.')
-        });
-      }
-    });
-  }
-
-  getAdjustmentTypeLabel(type: string): string {
-    switch (type) {
-      case 'FORGOT_CHECK_IN': return 'Quên check-in';
-      case 'FORGOT_CHECK_OUT': return 'Quên check-out';
-      case 'DEVICE_ERROR': return 'Lỗi máy chấm công';
-      case 'EDIT_TIME': return 'Điều chỉnh giờ';
-      default: return type;
-    }
-  }
-
-  unitLabel(unit: LeaveTypeUnit | undefined): string {
+  unitLabel(unit: LeaveType['unit'] | undefined): string {
     return unit === 'HOUR' ? 'giờ' : 'ngày';
   }
-
+  getStatusLabel(status: ApprovalStatus): string {
+    return (
+      {
+        APPROVED: 'Đã duyệt',
+        PENDING: 'Đang chờ',
+        REJECTED: 'Từ chối',
+        CANCELLED: 'Đã hủy',
+        CANCEL_PENDING: 'Chờ duyệt hủy',
+      } as Record<ApprovalStatus, string>
+    )[status];
+  }
+  formatLeaveSubtitle(request: LeaveRequest): string {
+    const time = (value: string | null) => (value ? value.slice(0, 5) : '--:--');
+    const base =
+      request.leaveType?.unit === 'HOUR'
+        ? `${request.startDate} · ${time(request.startTime)} - ${time(request.endTime)} · ${request.amount} giờ`
+        : `${request.startDate} đến ${request.endDate} · ${request.amount} ngày`;
+    return request.targetShifts?.length
+      ? `${base} (${request.targetShifts.map((shift) => shift.name).join(', ')})`
+      : base;
+  }
+  formatSwapSubtitle(request: ShiftSwapRequest): string {
+    const label = request.type === 'SWAP' ? 'Đổi ca' : 'Trực thay';
+    return request.type === 'SWAP'
+      ? `${label}: Ca của bạn (${request.workDate} · ${request.shift?.name || 'Kỳ ca'}) ⇄ Colleague (${request.targetWorkDate} · ${request.targetShift?.name || 'Kỳ ca'})`
+      : `${label}: Ca của bạn (${request.workDate} · ${request.shift?.name || 'Kỳ ca'}) ⇄ đồng nghiệp ${request.targetEmployee.fullName} trực giúp`;
+  }
+  formatAdjustSubtitle(request: AttendanceAdjustment): string {
+    return `${request.workDate} · Đề xuất giờ: ${request.proposedTime.slice(0, 5)} · Loại: ${this.adjustmentTypeLabel(request.type)}`;
+  }
   isShiftUnavailable(shiftId: string): boolean {
-    const shift = this.myDailyShifts().find(item => item.shiftId === shiftId);
-    if (!shift) return false;
-    return this.myLeaves().some(request => this.activeLeaveOccupiesShiftForSelectedType(request, shift));
+    const shift = this.myDailyShifts().find((item) => item.shiftId === shiftId);
+    return (
+      !!shift &&
+      this.myLeaves().some((request) =>
+        this.activeLeaveOccupiesShiftForSelectedType(request, shift),
+      )
+    );
   }
 
-  private afkOutsideAssignedShiftMessage(selectedType: LeaveType): string | null {
-    if (!this.isAfkLeaveType(selectedType)) return null;
+  private async confirmCancellation(content: string): Promise<boolean> {
+    return firstValueFrom(this.confirmService.open({ title: 'Xác nhận hủy yêu cầu', content }));
+  }
+  private resetLeaveForm(): void {
+    this.reason.set('');
+    this.startTime.set('');
+    this.endTime.set('');
+    this.selectedShiftIds.set([]);
+    this.store.clearDailyShifts();
+  }
+  private resetSwapForm(): void {
+    this.swapData.reason = '';
+    this.swapData.myWorkDate = '';
+    this.swapData.myShiftId = '';
+    this.swapData.colleagueWorkDate = '';
+    this.swapData.colleagueShiftId = '';
+    this.store.clearSwapShifts();
+    this.store.clearColleagueShifts();
+  }
+  private resetAdjustmentForm(): void {
+    this.adjustData.reason = '';
+    this.adjustData.proposedTime = '';
+    this.adjustData.workDate = '';
+  }
+  private removeUnavailableSelectedShifts(): void {
+    if (this.startDate() && this.startDate() === this.endDate())
+      this.selectedShiftIds.set(
+        this.selectedShiftIds().filter((id) => !this.isShiftUnavailable(id)),
+      );
+  }
+  private adjustmentTypeLabel(type: AttendanceAdjustment['type']): string {
+    return (
+      (
+        {
+          FORGOT_CHECK_IN: 'Quên check-in',
+          FORGOT_CHECK_OUT: 'Quên check-out',
+          DEVICE_ERROR: 'Lỗi máy chấm công',
+          EDIT_TIME: 'Điều chỉnh giờ',
+        } as Record<string, string>
+      )[type] ?? type
+    );
+  }
+  private afkOutsideAssignedShiftMessage(type: LeaveType): string | null {
+    if (!this.isAfkLeaveType(type)) return null;
     const start = this.startTime() ? `${this.startTime()}:00` : null;
     const end = this.endTime() ? `${this.endTime()}:00` : null;
-    const inAssignedWorkingShift = this.myDailyShifts().some(shift =>
-      shift.shiftType !== 'OFF' && this.timeRangeContains(shift.startTime, shift.endTime, start, end)
-    );
-    return inAssignedWorkingShift ? null : 'Khung giờ AFK phải nằm trong ca làm việc của bạn.';
+    return this.myDailyShifts().some(
+      (shift) =>
+        shift.shiftType !== 'OFF' &&
+        this.timeRangeContains(shift.startTime, shift.endTime, start, end),
+    )
+      ? null
+      : 'Khung giờ AFK phải nằm trong ca làm việc của bạn.';
   }
-
-  private duplicateLeaveMessage(selectedType: LeaveType): string | null {
-    if (this.isAfkLeaveType(selectedType)) {
-      const start = this.startTime() ? `${this.startTime()}:00` : null;
-      const end = this.endTime() ? `${this.endTime()}:00` : null;
-      const overlaps = this.myLeaves().some(request => {
-        if (!this.isActiveLeave(request) || !this.leaveCoversDate(request, this.startDate())) return false;
-        if (this.isWfhRequest(request)) return false;
-        if (this.isAfkRequest(request)) {
-          return this.timeRangesOverlap(start, end, request.startTime, request.endTime);
-        }
-        if (!this.isNghiRequest(request)) return false;
-        if (this.isFullDayLeave(request)) return true;
-        if (request.leaveType?.unit === 'HOUR') {
-          return this.timeRangesOverlap(start, end, request.startTime, request.endTime);
-        }
-        return (request.targetShifts ?? []).some(target => {
-          const shift = this.myDailyShifts().find(item => item.shiftId === target.id);
-          return !!shift && this.timeRangesOverlap(start, end, shift.startTime, shift.endTime);
-        });
-      });
-      return overlaps ? 'Khung giờ AFK này đã trùng với yêu cầu AFK/nghỉ đang chờ hoặc đã duyệt.' : null;
-    }
-
-    if (selectedType.unit === 'HOUR') {
-      const start = this.startTime() ? `${this.startTime()}:00` : null;
-      const end = this.endTime() ? `${this.endTime()}:00` : null;
-      const overlaps = this.myLeaves().some(request => {
-        if (!this.isActiveLeave(request) || !this.leaveCoversDate(request, this.startDate())) return false;
-        if (this.isFullDayLeave(request)) return true;
-        if (request.leaveType?.unit === 'HOUR') {
-          return this.timeRangesOverlap(start, end, request.startTime, request.endTime);
-        }
-        return (request.targetShifts ?? []).some(target => {
-          const shift = this.myDailyShifts().find(item => item.shiftId === target.id);
-          return !!shift && this.timeRangesOverlap(start, end, shift.startTime, shift.endTime);
-        });
-      });
-      return overlaps ? 'Khung giờ này đã có yêu cầu nghỉ đang chờ/đã duyệt.' : null;
-    }
-
-    if (this.startDate() === this.endDate() && this.selectedShiftIds().length > 0) {
-      const duplicated = this.selectedShiftIds().some(id => this.isShiftUnavailable(id));
-      return duplicated ? 'Ca đã chọn đã có yêu cầu nghỉ đang chờ/đã duyệt.' : null;
-    }
-
-    const overlaps = this.myLeaves().some(request =>
-      this.isActiveLeave(request)
-        && this.dateRangesOverlap(this.startDate(), this.endDate(), request.startDate, request.endDate)
-        && !(this.isWfhLeaveType(selectedType) && this.isAfkRequest(request))
-    );
-    return overlaps ? 'Khoảng ngày này đã có yêu cầu nghỉ đang chờ/đã duyệt.' : null;
+  private duplicateLeaveMessage(type: LeaveType): string | null {
+    const isHour = type.unit === 'HOUR';
+    const start = this.startTime() ? `${this.startTime()}:00` : null;
+    const end = this.endTime() ? `${this.endTime()}:00` : null;
+    if (this.isAfkLeaveType(type))
+      return this.myLeaves().some(
+        (r) =>
+          this.isActiveLeave(r) &&
+          this.leaveCoversDate(r, this.startDate()) &&
+          !this.isWfhRequest(r) &&
+          (this.isFullDayLeave(r) ||
+            ((this.isAfkRequest(r) || this.isNghiRequest(r)) &&
+              this.timeRangesOverlap(start, end, r.startTime, r.endTime))),
+      )
+        ? 'Khung giờ AFK này đã trùng với yêu cầu AFK/nghỉ đang chờ hoặc đã duyệt.'
+        : null;
+    if (isHour)
+      return this.myLeaves().some(
+        (r) =>
+          this.isActiveLeave(r) &&
+          this.leaveCoversDate(r, this.startDate()) &&
+          (this.isFullDayLeave(r) ||
+            (r.leaveType?.unit === 'HOUR' &&
+              this.timeRangesOverlap(start, end, r.startTime, r.endTime))),
+      )
+        ? 'Khung giờ này đã có yêu cầu nghỉ đang chờ/đã duyệt.'
+        : null;
+    if (
+      this.startDate() === this.endDate() &&
+      this.selectedShiftIds().some((id) => this.isShiftUnavailable(id))
+    )
+      return 'Ca đã chọn đã có yêu cầu nghỉ đang chờ/đã duyệt.';
+    return this.myLeaves().some(
+      (r) =>
+        this.isActiveLeave(r) &&
+        this.dateRangesOverlap(this.startDate(), this.endDate(), r.startDate, r.endDate) &&
+        !(this.isWfhLeaveType(type) && this.isAfkRequest(r)),
+    )
+      ? 'Khoảng ngày này đã có yêu cầu nghỉ đang chờ/đã duyệt.'
+      : null;
   }
-
   private activeLeaveOccupiesShiftForSelectedType(request: LeaveRequest, shift: ShiftDto): boolean {
-    const selectedType = this.selectedType();
-    if (this.isWfhLeaveType(selectedType) && this.isAfkRequest(request)) {
-      return false;
-    }
-    return this.activeLeaveOccupiesShift(request, shift);
+    return (
+      !(this.isWfhLeaveType(this.selectedType()) && this.isAfkRequest(request)) &&
+      this.activeLeaveOccupiesShift(request, shift)
+    );
   }
-
   private activeLeaveOccupiesShift(request: LeaveRequest, shift: ShiftDto): boolean {
-    if (!this.isActiveLeave(request) || !this.leaveCoversDate(request, shift.workDate)) return false;
-    if (this.isFullDayLeave(request)) return true;
-    if (request.leaveType?.unit === 'HOUR') {
-      return this.timeRangesOverlap(shift.startTime, shift.endTime, request.startTime, request.endTime);
-    }
-    return (request.targetShifts ?? []).some(target => target.id === shift.shiftId);
+    return (
+      this.isActiveLeave(request) &&
+      this.leaveCoversDate(request, shift.workDate) &&
+      (this.isFullDayLeave(request) || request.leaveType?.unit === 'HOUR'
+        ? this.isFullDayLeave(request) ||
+          this.timeRangesOverlap(shift.startTime, shift.endTime, request.startTime, request.endTime)
+        : (request.targetShifts ?? []).some((target) => target.id === shift.shiftId))
+    );
   }
-
   private isActiveLeave(request: LeaveRequest): boolean {
     return this.activeLeaveStatuses.includes(request.status);
   }
-
   private isFullDayLeave(request: LeaveRequest): boolean {
-    return request.leaveType?.unit !== 'HOUR' && (!request.targetShifts || request.targetShifts.length === 0);
+    return (
+      request.leaveType?.unit !== 'HOUR' &&
+      (!request.targetShifts || request.targetShifts.length === 0)
+    );
   }
-
   private isAfkRequest(request: LeaveRequest): boolean {
     return this.isAfkLeaveType(request.leaveType);
   }
-
   private isNghiRequest(request: LeaveRequest): boolean {
     return this.hasLeaveTypeCode(request.leaveType, this.nghiCode);
   }
-
   private isWfhRequest(request: LeaveRequest): boolean {
     return this.isWfhLeaveType(request.leaveType);
   }
-
-  private isAfkLeaveType(leaveType: LeaveType | null | undefined): boolean {
-    return this.hasLeaveTypeCode(leaveType, this.afkCode);
+  private isAfkLeaveType(type: LeaveType | null | undefined): boolean {
+    return this.hasLeaveTypeCode(type, this.afkCode);
   }
-
-  private isWfhLeaveType(leaveType: LeaveType | null | undefined): boolean {
-    return this.hasLeaveTypeCode(leaveType, this.wfhCode);
+  private isWfhLeaveType(type: LeaveType | null | undefined): boolean {
+    return this.hasLeaveTypeCode(type, this.wfhCode);
   }
-
-  private hasLeaveTypeCode(leaveType: LeaveType | null | undefined, code: string): boolean {
-    return leaveType?.code?.toUpperCase() === code;
+  private hasLeaveTypeCode(type: LeaveType | null | undefined, code: string): boolean {
+    return type?.code.toUpperCase() === code;
   }
-
   private leaveCoversDate(request: LeaveRequest, date: string): boolean {
     return request.startDate <= date && request.endDate >= date;
   }
-
-  private dateRangesOverlap(firstStart: string, firstEnd: string, secondStart: string, secondEnd: string): boolean {
+  private dateRangesOverlap(
+    firstStart: string,
+    firstEnd: string,
+    secondStart: string,
+    secondEnd: string,
+  ): boolean {
     return firstStart <= secondEnd && secondStart <= firstEnd;
   }
-
-  private timeRangesOverlap(firstStart: string | null, firstEnd: string | null, secondStart: string | null, secondEnd: string | null): boolean {
-    if (!firstStart || !firstEnd || !secondStart || !secondEnd) return false;
-    return firstStart.slice(0, 5) < secondEnd.slice(0, 5) && secondStart.slice(0, 5) < firstEnd.slice(0, 5);
+  private timeRangesOverlap(
+    firstStart: string | null,
+    firstEnd: string | null,
+    secondStart: string | null,
+    secondEnd: string | null,
+  ): boolean {
+    return (
+      !!firstStart &&
+      !!firstEnd &&
+      !!secondStart &&
+      !!secondEnd &&
+      firstStart.slice(0, 5) < secondEnd.slice(0, 5) &&
+      secondStart.slice(0, 5) < firstEnd.slice(0, 5)
+    );
   }
-
-  private timeRangeContains(containerStart: string | null, containerEnd: string | null, innerStart: string | null, innerEnd: string | null): boolean {
-    if (!containerStart || !containerEnd || !innerStart || !innerEnd) return false;
-    return innerStart.slice(0, 5) >= containerStart.slice(0, 5) && innerEnd.slice(0, 5) <= containerEnd.slice(0, 5);
-  }
-
-  formatLeaveSubtitle(request: LeaveRequest): string {
-    let text = '';
-    if (request.leaveType?.unit === 'HOUR') {
-      text = `${request.startDate} · ${this.shortTime(request.startTime)} - ${this.shortTime(request.endTime)} · ${request.amount} giờ`;
-    } else {
-      text = `${request.startDate} đến ${request.endDate} · ${request.amount} ngày`;
-    }
-    if (request.targetShifts && request.targetShifts.length > 0) {
-      const shiftsText = request.targetShifts.map(s => s.name).join(', ');
-      text += ` (${shiftsText})`;
-    }
-    return text;
-  }
-
-  formatSwapSubtitle(request: ShiftSwapRequest): string {
-    const typeLabel = request.type === 'SWAP' ? 'Đổi ca' : 'Trực thay';
-    if (request.type === 'SWAP') {
-      return `${typeLabel}: Ca của bạn (${request.workDate} · ${request.shift?.name || 'Kỳ ca'}) ⇄ Colleague (${request.targetWorkDate} · ${request.targetShift?.name || 'Kỳ ca'})`;
-    }
-    return `${typeLabel}: Ca của bạn (${request.workDate} · ${request.shift?.name || 'Kỳ ca'}) ⇄ đồng nghiệp ${request.targetEmployee.fullName} trực giúp`;
-  }
-
-  formatAdjustSubtitle(request: AttendanceAdjustment): string {
-    return `${request.workDate} · Đề xuất giờ: ${this.shortTime(request.proposedTime)} · Loại: ${this.getAdjustmentTypeLabel(request.type)}`;
-  }
-
-  private shortTime(value: string | null): string {
-    return value ? value.slice(0, 5) : '--:--';
+  private timeRangeContains(
+    containerStart: string | null,
+    containerEnd: string | null,
+    innerStart: string | null,
+    innerEnd: string | null,
+  ): boolean {
+    return (
+      !!containerStart &&
+      !!containerEnd &&
+      !!innerStart &&
+      !!innerEnd &&
+      innerStart.slice(0, 5) >= containerStart.slice(0, 5) &&
+      innerEnd.slice(0, 5) <= containerEnd.slice(0, 5)
+    );
   }
 }
