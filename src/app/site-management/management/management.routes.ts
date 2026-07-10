@@ -279,7 +279,7 @@ export const managementRoutes: Routes = [
           description: 'Quản lý khóa và mở khóa các kỳ tính công hàng tháng.',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.PAY_PERIOD_VIEW, () =>
-          import('./pages/pay-periods/pay-periods.component').then(
+          import('./pay-periods/pages/pay-periods-page/pay-periods-page.component').then(
             m => m.PayPeriodsComponent
           )),
       },
