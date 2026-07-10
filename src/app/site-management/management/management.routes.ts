@@ -85,7 +85,7 @@ export const managementRoutes: Routes = [
           description: 'Gửi yêu cầu nghỉ phép, đổi ca, và điều chỉnh giờ công.',
         },
         loadComponent: () =>
-          import('./pages/requests/requests.component').then(
+          import('./requests/pages/requests-page/requests-page.component').then(
             m => m.RequestsComponent
           ),
       },
