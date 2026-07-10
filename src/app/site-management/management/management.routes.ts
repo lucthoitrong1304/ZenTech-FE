@@ -292,7 +292,7 @@ export const managementRoutes: Routes = [
           description: 'Cấu hình loại yêu cầu nghỉ phép và hạn mức theo nhân viên.',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.EMPLOYEE_UPDATE, () =>
-          import('./pages/leave-settings/leave-settings.component').then(
+          import('./leave-settings/pages/leave-settings-page/leave-settings-page.component').then(
             m => m.LeaveSettingsComponent
           )),
       },
