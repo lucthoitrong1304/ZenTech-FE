@@ -50,8 +50,7 @@ interface DateGroupSummary {
 interface DateGroupSummarySection {
   key: SummarySectionKey;
   label: string;
-  records: AttendanceRecordResponse[];
-  hiddenCount: number;
+  allRecords: AttendanceRecordResponse[];
 }
 
 type SummarySectionKey = 'missingCheckout' | 'absent' | 'leave' | 'late' | 'early' | 'onTime';
@@ -94,6 +93,10 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
 
   expandedRows = signal<Set<string>>(new Set());
   selectedEvidence = signal<SelectedEvidence | null>(null);
+  
+  openDrawerDate = signal<string | null>(null);
+  activeExceptionFilter = signal<SummarySectionKey | null>(null);
+
   protected readonly hasMapTilerApiKey = !!environment.mapTilerApiKey;
   private evidenceMap?: L.Map;
   private evidenceTileLayer?: L.TileLayer;
@@ -115,6 +118,12 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
         records: groups[dateKey],
         summary: this.buildDateGroupSummary(groups[dateKey])
       }));
+  });
+
+  selectedGroupSummary = computed(() => {
+    const date = this.openDrawerDate();
+    if (!date) return null;
+    return this.groupedRecords().find(g => g.date === date) || null;
   });
 
   ngAfterViewChecked(): void {
@@ -178,6 +187,58 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
     const set = new Set(this.expandedRows());
     set.add(record.id);
     this.expandedRows.set(set);
+  }
+
+  openSummaryDrawer(date: string) {
+    this.openDrawerDate.set(date);
+    this.activeExceptionFilter.set(null);
+  }
+
+  closeSummaryDrawer() {
+    this.openDrawerDate.set(null);
+  }
+
+  openSummaryRecordAndCloseDrawer(recordId: string) {
+    const set = new Set(this.expandedRows());
+    set.add(recordId);
+    this.expandedRows.set(set);
+    this.closeSummaryDrawer();
+    // Scroll row to view if needed could be added here
+  }
+
+  toggleExceptionFilter(key: SummarySectionKey) {
+    if (this.activeExceptionFilter() === key) {
+      this.activeExceptionFilter.set(null);
+    } else {
+      this.activeExceptionFilter.set(key);
+    }
+  }
+
+  filteredSummarySections(group: GroupedDateRecord): DateGroupSummarySection[] {
+    const active = this.activeExceptionFilter();
+    if (!active) {
+      // Mặc định chỉ hiện danh sách vi phạm
+      return group.summary.sections.filter(s => s.key !== 'onTime' && s.key !== 'leave' && s.allRecords.length > 0);
+    }
+    // Nếu bấm filter thì hiện đúng danh sách đó
+    return group.summary.sections.filter(s => s.key === active);
+  }
+
+  getExceptionCardClass(key: SummarySectionKey, isActive: boolean): string {
+    const base = 'exception-card-' + key;
+    return isActive ? base + ' active' : base;
+  }
+
+  getExceptionTextClass(key: SummarySectionKey): string {
+    switch (key) {
+      case 'absent': return 'text-rose-700';
+      case 'missingCheckout': return 'text-blue-700';
+      case 'late': return 'text-red-600';
+      case 'early': return 'text-amber-600';
+      case 'onTime': return 'text-emerald-700';
+      case 'leave': return 'text-teal-700';
+      default: return 'text-gray-900';
+    }
   }
 
   closeEvidence(): void {
@@ -406,7 +467,7 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
 
   private buildDateGroupSummarySections(records: AttendanceRecordResponse[]): DateGroupSummarySection[] {
     const sections: Array<{ key: SummarySectionKey; label: string; predicate: (record: AttendanceRecordResponse) => boolean }> = [
-      { key: 'missingCheckout', label: 'Thiếu checkout', predicate: (record) => ['MISSING_CHECK_OUT', 'WFH_MISSING_CHECK_OUT'].includes(this.getDisplayStatus(record)) },
+      { key: 'missingCheckout', label: 'Chưa Check-out', predicate: (record) => ['MISSING_CHECK_OUT', 'WFH_MISSING_CHECK_OUT'].includes(this.getDisplayStatus(record)) },
       { key: 'absent', label: 'Vắng', predicate: (record) => this.getDisplayStatus(record) === 'ABSENT_UNEXCUSED' },
       { key: 'leave', label: 'Nghỉ phép', predicate: (record) => this.getDisplayStatus(record) === 'ABSENT_EXCUSED' },
       { key: 'late', label: 'Trễ', predicate: (record) => ['LATE', 'LATE_AND_EARLY'].includes(this.getDisplayStatus(record)) },
@@ -420,11 +481,10 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
         return {
           key: section.key,
           label: section.label,
-          records: matchingRecords.slice(0, 4),
-          hiddenCount: Math.max(0, matchingRecords.length - 4),
+          allRecords: matchingRecords,
         };
       })
-      .filter(section => section.records.length > 0 || section.hiddenCount > 0);
+      .filter(section => section.allRecords.length > 0);
   }
 
   private renderEvidenceMap(selected: SelectedEvidence): void {
