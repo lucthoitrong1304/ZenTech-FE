@@ -98,7 +98,7 @@ export const managementRoutes: Routes = [
           description: 'Phê duyệt các yêu cầu nghỉ phép, đổi ca, và chỉnh công từ nhân viên.',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.APPROVAL_VIEW, () =>
-          import('./pages/approvals/approvals.component').then(
+          import('./approvals/pages/approvals-page/approvals-page.component').then(
             m => m.ApprovalsComponent
           )),
       },
