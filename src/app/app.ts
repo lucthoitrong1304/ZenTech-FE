@@ -35,7 +35,7 @@ export class App {
   private static readonly RECORDING_MAX_PENDING_BATCHES = 12;
   private static readonly RECORDING_MAX_RETRY_ATTEMPTS = 3;
   private static readonly RECORDING_RETRY_DELAY_MS = 5_000;
-  private static readonly RECORDING_MAX_ANONYMOUS_EVENTS = 1_000;
+  private static readonly RECORDING_MAX_ANONYMOUS_EVENTS = 2_500;
   private static readonly RECORDING_EXCLUDED_ROUTE_PREFIXES = [
     '/admin/logs',
     '/admin/activity-logs',
@@ -163,7 +163,9 @@ export class App {
           this.uploadRecording(email, batch);
         } else if (!isAuthenticated || !email) {
           if (this.recordingEvents.length > App.RECORDING_MAX_ANONYMOUS_EVENTS) {
-            this.recordingEvents = this.recordingEvents.slice(-App.RECORDING_MAX_ANONYMOUS_EVENTS);
+            stopRecording();
+            sessionStorage.removeItem('recordingSessionId');
+            startRecording();
           }
         }
         this.flushRecordingQueue();

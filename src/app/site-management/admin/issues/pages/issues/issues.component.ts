@@ -935,9 +935,10 @@ export class IssuesComponent implements OnInit, OnDestroy {
     if (!candidate.includes('*')) return candidate;
 
     const currentEmail = this.authStorageService.getSession()?.email || '';
-    return currentEmail && this.maskEmailForComparison(currentEmail).toLowerCase() === candidate.toLowerCase()
-      ? currentEmail
-      : '';
+    if (currentEmail && this.maskEmailForComparison(currentEmail).toLowerCase() === candidate.toLowerCase()) {
+      return currentEmail;
+    }
+    return candidate;
   }
 
   private maskEmailForComparison(email: string): string {

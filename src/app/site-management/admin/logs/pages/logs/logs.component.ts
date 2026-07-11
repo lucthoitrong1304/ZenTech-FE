@@ -964,8 +964,6 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   private journeyDedupeKey(log: SystemLog): string {
     const context = this.parseClientLogStack(log.details);
-    const timestamp = new Date(log.timestamp).getTime();
-    const roundedSecond = Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : 0;
     const traceId = this.recordingTraceIdForLog(log);
     const eventType = context?.eventType || '';
     const method = context?.method || this.extractHttpMethodFromText(log.details || log.message || '');
@@ -973,7 +971,7 @@ export class LogsComponent implements OnInit, OnDestroy {
     const statusCode = this.getLogStatusCode(log) ?? '';
     const summary = this.extractLogMessageSummary(log).toLowerCase().replace(/\s+/g, ' ').trim();
 
-    return [roundedSecond, traceId, log.category, log.level, eventType, method, apiPath, statusCode, summary].join('|');
+    return [traceId, log.category, log.level, eventType, method, apiPath, statusCode, summary].join('|');
   }
 
   private compareJourneyLogs(left: SystemLog, right: SystemLog): number {
@@ -1246,9 +1244,10 @@ export class LogsComponent implements OnInit, OnDestroy {
     if (!candidate.includes('*')) return candidate;
 
     const currentEmail = this.authStorageService.getSession()?.email || '';
-    return currentEmail && this.maskEmailForComparison(currentEmail).toLowerCase() === candidate.toLowerCase()
-      ? currentEmail
-      : '';
+    if (currentEmail && this.maskEmailForComparison(currentEmail).toLowerCase() === candidate.toLowerCase()) {
+      return currentEmail;
+    }
+    return candidate;
   }
 
   private maskEmailForComparison(email: string): string {
