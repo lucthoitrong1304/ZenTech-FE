@@ -7,7 +7,7 @@ import { AuthSessionStore } from '@/site-management/identity/data-access/store/a
 import { CartStore } from '@/site-management/customer/cart/data-access/store/cart.store';
 import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
 import { HeaderNavItem } from '@/site-management/customer/shell/models/site-navigation.models';
-import { SiteHeaderComponent } from '@/site-management/customer/shell/components/site-header/site-header.component';
+import { SiteHeaderContainerComponent } from '@/site-management/customer/shell/components/site-header/site-header-container.component';
 
 interface StatItem {
   label: string;
@@ -71,7 +71,7 @@ interface CommunityMember {
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, RouterLink, SiteHeaderComponent],
+  imports: [CommonModule, RouterLink, SiteHeaderContainerComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })

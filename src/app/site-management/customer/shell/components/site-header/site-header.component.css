@@ -51,6 +51,7 @@
   gap: 0.3rem;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .site-header__nav-item {
@@ -107,6 +108,7 @@
   letter-spacing: 0.14em;
   text-decoration: none;
   text-transform: uppercase;
+  cursor: pointer;
 }
 
 .site-header__category-dropdown-item:hover,

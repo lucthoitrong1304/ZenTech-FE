@@ -213,7 +213,7 @@
         <div>
           <h2 class="text-lg font-black text-white uppercase tracking-wider">Giỏ Hàng</h2>
           <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">
-            {{ isAuthenticated() ? cartStore.itemCount() + ' sản phẩm' : 'Chưa đăng nhập' }}
+            {{ isAuthenticated() ? cartItemCount() + ' sản phẩm' : 'Chưa đăng nhập' }}
           </p>
         </div>
       </div>
@@ -248,7 +248,7 @@
       </div>
     } @else {
       <div class="flex-1 overflow-y-auto py-4 px-2">
-        @if (cartStore.isEmpty()) {
+        @if (cartIsEmpty()) {
           <div class="flex flex-col items-center justify-center h-full px-6 py-12 text-center">
             <div class="mb-6 rounded-full bg-white/5 p-6 ring-1 ring-white/10">
               <svg lucideShoppingCart class="h-12 w-12 text-white/40" [attr.stroke-width]="1.5"></svg>
@@ -267,7 +267,7 @@
           </div>
         } @else {
           <div class="flex flex-col gap-4">
-            @for (item of cartStore.items(); track item.variantId) {
+            @for (item of cartItems(); track item.variantId) {
               <div
                 class="group relative flex gap-4 rounded-lg bg-white/5 p-3 ring-1 ring-white/10 transition hover:bg-white/10">
                 <a (click)="closeAndNavigate(['/products', item.productSlug])"
@@ -293,7 +293,7 @@
                         type="button"
                         class="grid h-8 w-8 place-items-center text-white/70 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                         [disabled]="item.quantity <= 1"
-                        (click)="cartStore.decrementItem(item.variantId)"
+                        (click)="cartDecremented.emit(item.variantId)"
                       >
                         <svg lucideMinus class="h-3 w-3" [attr.stroke-width]="2.5"></svg>
                       </button>
@@ -304,7 +304,7 @@
                         type="button"
                         class="grid h-8 w-8 place-items-center text-white/70 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                         [disabled]="item.quantity >= item.maxQuantity"
-                        (click)="cartStore.incrementItem(item.variantId)"
+                        (click)="cartIncremented.emit(item.variantId)"
                       >
                         <svg lucidePlus class="h-3 w-3" [attr.stroke-width]="2.5"></svg>
                       </button>
@@ -319,7 +319,7 @@
                 <button
                   type="button"
                   class="absolute top-2 right-2 text-white/40 hover:text-red-500 transition cursor-pointer"
-                  (click)="cartStore.removeItem(item.variantId)"
+                  (click)="cartRemoved.emit(item.variantId)"
                   aria-label="Remove item"
                 >
                   <svg lucideTrash2 class="h-4 w-4" [attr.stroke-width]="2"></svg>
@@ -330,12 +330,12 @@
         }
       </div>
 
-      @if (!cartStore.isEmpty()) {
+      @if (!cartIsEmpty()) {
         <div class="border-t border-white/10 bg-black/40 p-4 space-y-4 shrink-0">
           <div class="flex items-center justify-between text-sm font-bold text-white">
             <span class="uppercase tracking-wider text-white/60">Tạm tính:</span>
             <span class="text-lg font-black text-[#ffc700] tabular-nums">
-              {{ cartStore.total() | currency: 'VND' : '' : '1.0-0' }} đ
+              {{ cartTotal() | currency: 'VND' : '' : '1.0-0' }} đ
             </span>
           </div>
 
@@ -387,7 +387,7 @@
 
       <!-- Search Results Area -->
       <div class="site-search-body">
-        @if (loadingResults()) {
+        @if (searchLoading()) {
           <div class="site-search-loading">
             <div class="site-search-spinner"></div>
             <span class="site-search-loading-text">Đang tìm kiếm sản phẩm...</span>
@@ -398,7 +398,7 @@
             <p class="site-search-placeholder-title">Tìm kiếm trên ZenTech</p>
             <p class="site-search-placeholder-desc">Nhập tên sản phẩm để tìm kiếm nhanh chóng</p>
           </div>
-        } @else if (instantResults().length === 0) {
+        } @else if (searchResults().length === 0) {
           <div class="site-search-empty">
             <p class="site-search-empty-title">Không tìm thấy kết quả</p>
             <p class="site-search-empty-desc">Không có sản phẩm nào phù hợp với từ khóa "{{ searchQuery() }}"</p>
@@ -407,7 +407,7 @@
           <div class="site-search-results-section">
             <h3 class="site-search-section-title">Sản phẩm gợi ý</h3>
             <div class="site-search-list">
-              @for (product of instantResults(); track product.id) {
+              @for (product of searchResults(); track product.id) {
                 <div class="site-search-item" (click)="onInstantResultClick(product.slug)">
                   <div class="site-search-item-image-wrapper">
                     <img [src]="product.image" [alt]="product.name" class="site-search-item-image"/>

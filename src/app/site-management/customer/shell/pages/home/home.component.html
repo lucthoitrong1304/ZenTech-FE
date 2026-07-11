@@ -25,15 +25,7 @@
     </div>
   </div>
 
-  <app-site-header
-    [transparent]="true"
-    [navItems]="navItems()"
-    [activeNavLabel]="activeNavLabel()"
-    [cartCount]="cartStore.itemCount()"
-    [currentUser]="currentUser()"
-    (navSelect)="onNavSelect($event)"
-    (logout)="onLogout()"
-  />
+  <app-site-header-container [transparent]="true" />
 
   <main>
     <section

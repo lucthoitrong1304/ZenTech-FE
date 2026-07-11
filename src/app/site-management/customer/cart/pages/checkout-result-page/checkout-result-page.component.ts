@@ -3,7 +3,7 @@ import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@a
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CheckoutResultStore } from '@/site-management/customer/cart/data-access/store/checkout-result.store';
 import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
-import { SiteHeaderComponent } from '@/site-management/customer/shell/components/site-header/site-header.component';
+import { SiteHeaderContainerComponent } from '@/site-management/customer/shell/components/site-header/site-header-container.component';
 import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
 import { CartStore } from '@/site-management/customer/cart/data-access/store/cart.store';
 
@@ -12,7 +12,7 @@ import { CartStore } from '@/site-management/customer/cart/data-access/store/car
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   providers: [CheckoutResultStore],
-  imports: [CommonModule, RouterLink, CurrencyPipe, DatePipe, SiteHeaderComponent],
+  imports: [CommonModule, RouterLink, CurrencyPipe, DatePipe, SiteHeaderContainerComponent],
   templateUrl: './checkout-result-page.component.html',
 })
 export class CheckoutResultPageComponent {

@@ -4,7 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { ToastService } from '@/shared/components/toast/toast.service';
 import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
 import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
-import { SiteHeaderComponent } from '@/site-management/customer/shell/components/site-header/site-header.component';
+import { SiteHeaderContainerComponent } from '@/site-management/customer/shell/components/site-header/site-header-container.component';
 import { CartItemRowComponent } from '@/site-management/customer/cart/components/cart-item-row/cart-item-row.component';
 import { CartSummaryComponent } from '@/site-management/customer/cart/components/cart-summary/cart-summary.component';
 import { CartStore } from '@/site-management/customer/cart/data-access/store/cart.store';
@@ -18,7 +18,7 @@ import { LucideArrowLeft, LucideShoppingCart } from '@lucide/angular';
   imports: [
     CommonModule,
     RouterLink,
-    SiteHeaderComponent,
+    SiteHeaderContainerComponent,
     CartItemRowComponent,
     CartSummaryComponent,
     LucideArrowLeft,

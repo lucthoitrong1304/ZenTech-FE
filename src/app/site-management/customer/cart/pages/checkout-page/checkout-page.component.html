@@ -1,11 +1,5 @@
 <div class="min-h-screen bg-[#fcf9f8] text-[#1c1b1b]">
-  <app-site-header
-    [navItems]="navItems()"
-    [activeNavLabel]="null"
-    [cartCount]="cartStore.itemCount()"
-    [currentUser]="currentUser()"
-    (logout)="onLogout()"
-  />
+  <app-site-header-container />
 
   <main class="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:px-8 lg:py-14 xl:grid-cols-[minmax(0,1fr)_26rem]">
     <section class="min-w-0">

@@ -13,7 +13,7 @@ import { CustomerMessageTimelineComponent } from '@/site-management/customer/cha
 import { CustomerSharedContentSidebarComponent } from '@/site-management/customer/chat/components/customer-shared-content-sidebar/customer-shared-content-sidebar.component';
 import { CustomerUploadQueueComponent } from '@/site-management/customer/chat/components/customer-upload-queue/customer-upload-queue.component';
 import { CustomerChatStore } from '@/site-management/customer/chat/data-access/store/customer-chat.store';
-import { CustomerTicketStatus } from '@/site-management/shared/chat/data-access/models/customer-chat.models';
+import { toCustomerTicketBanner } from '@/site-management/customer/chat/components/customer-ticket-banner.viewmodel';
 
 @Component({
   selector: 'app-customer-chat-popup',
@@ -43,6 +43,7 @@ export class CustomerChatPopupComponent {
   private readonly router = inject(Router);
   protected readonly store = inject(CustomerChatStore);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
+  protected readonly ticketBanner = computed(() => toCustomerTicketBanner(this.store.activeTicketStatusToShow()));
   protected readonly loginQueryParams = computed(() => ({ returnUrl: this.router.url || '/' }));
   private readonly currentUrl = toSignal(
     this.router.events.pipe(
@@ -66,60 +67,6 @@ export class CustomerChatPopupComponent {
 
   protected closePreview(): void {
     this.previewItem.set(null);
-  }
-
-  protected isTicketResolved(ticketStatus: CustomerTicketStatus): boolean {
-    return ticketStatus.status === 'RESOLVED' || ticketStatus.status === 'CLOSED';
-  }
-
-  protected getTicketStatusTitle(ticketStatus: CustomerTicketStatus): string {
-    if (this.isTicketResolved(ticketStatus)) {
-      return 'Sự cố đã được khắc phục';
-    }
-    if (this.isIncident(ticketStatus)) {
-      return 'Phát hiện sự cố hệ thống';
-    }
-    return 'Đội kỹ thuật đang khắc phục';
-  }
-
-  protected isIncident(ticketStatus: CustomerTicketStatus): boolean {
-    return !!ticketStatus.ticketCode && ticketStatus.ticketCode.startsWith('INC-');
-  }
-
-  protected isTicket(ticketStatus: CustomerTicketStatus): boolean {
-    return !!ticketStatus.ticketCode && ticketStatus.ticketCode.startsWith('TCK-');
-  }
-
-  protected getFriendlyTicketMessage(message: string | null | undefined): string {
-    if (!message) {
-      return 'Tụi mình đang kiểm tra. Bạn có thể nhắn thêm thông tin nếu cần.';
-    }
-
-    let friendly = message;
-    
-    if (friendly.includes('Cannot create MoMo payment') || friendly.includes('momo')) {
-      friendly = friendly.replace(/Cannot create MoMo payment/i, 'Không thể khởi tạo thanh toán qua ví MoMo');
-    }
-    if (friendly.includes('checkout') || friendly.includes('Cannot checkout')) {
-      friendly = friendly.replace(/Cannot checkout/i, 'Lỗi tiến trình đặt hàng & thanh toán (Checkout)');
-    }
-    if (friendly.includes('login') || friendly.includes('auth')) {
-      friendly = friendly.replace(/login/i, 'Đăng nhập hệ thống').replace(/auth/i, 'Xác thực tài khoản');
-    }
-    
-    // Clean up technical ticket title prefixes inside quotes for customers
-    friendly = friendly.replace(/(?:Sửa lỗi sự cố|Khắc phục lỗi)\s+INC-\d+:\s*/gi, '');
-    
-    return friendly;
-  }
-
-  protected getTicketStatusMessage(ticketStatus: CustomerTicketStatus): string {
-    if (ticketStatus.message) {
-      return this.getFriendlyTicketMessage(ticketStatus.message);
-    }
-    return this.isTicketResolved(ticketStatus)
-      ? 'Bạn có thể thử lại. Nếu vẫn chưa ổn, hãy nhắn nhân viên hỗ trợ.'
-      : 'Tụi mình đang kiểm tra. Bạn có thể nhắn thêm thông tin nếu cần.';
   }
 
   private updateRouteContext(route: string): void {

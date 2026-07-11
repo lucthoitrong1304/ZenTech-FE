@@ -14,7 +14,7 @@ import {
   ProductReview,
 } from '@/site-management/customer/catalog/data-access/models/product-catalog.models';
 import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
-import { SiteHeaderComponent } from '@/site-management/customer/shell/components/site-header/site-header.component';
+import { SiteHeaderContainerComponent } from '@/site-management/customer/shell/components/site-header/site-header-container.component';
 import { CustomerChatStore } from '@/site-management/customer/chat/data-access/store/customer-chat.store';
 import { ProductCardComponent } from '@/site-management/customer/catalog/listing/components/product-card/product-card.component';
 import { ProductDetailStore } from '@/site-management/customer/catalog/detail/data-access/store/product-detail.store';
@@ -33,7 +33,7 @@ import { setupLogoutMessageEffects } from '@/site-management/identity/data-acces
   imports: [
     CommonModule,
     RouterLink,
-    SiteHeaderComponent,
+    SiteHeaderContainerComponent,
     ProductCardComponent,
     AddReviewModalComponent,
     ProductDetailGalleryComponent,

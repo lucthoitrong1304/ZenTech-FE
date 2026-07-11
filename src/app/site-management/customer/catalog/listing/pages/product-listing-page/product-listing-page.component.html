@@ -1,11 +1,5 @@
 <div class="product-listing-page min-h-screen bg-[#fcf9f8] text-[#1c1b1b]">
-  <app-site-header
-    [navItems]="navItems()"
-    [activeNavLabel]="productListingStore.category()?.label || null"
-    [cartCount]="cartStore.itemCount()"
-    [currentUser]="currentUser()"
-    (logout)="onLogout()"
-  />
+  <app-site-header-container />
 
   <main>
     <!-- 1. Loading state -->
@@ -32,10 +26,8 @@
           }
         </div>
       </section>
-    }
-    
-    <!-- 2. Category view -->
-    @else if (productListingStore.category(); as category) {
+    } @else if (productListingStore.category(); as category) {
+      <!-- 2. Category view -->
       <app-product-listing-hero
         [category]="category"
         [productCount]="productListingStore.sortedProducts().length"
@@ -77,10 +69,8 @@
           </section>
         }
       }
-    }
-
-    <!-- 3. Search results view -->
-    @else if (productListingStore.searchQuery() !== null) {
+    } @else if (productListingStore.searchQuery() !== null) {
+      <!-- 3. Search results view -->
       <section class="relative overflow-hidden bg-[#101010]">
         <div class="absolute inset-0 bg-[linear-gradient(100deg,rgba(16,16,16,0.98),rgba(16,16,16,0.84)_46%,rgba(75,65,225,0.28)_100%)]"></div>
         <div class="relative mx-auto flex min-h-[20rem] max-w-7xl items-end px-4 py-14 sm:px-6 lg:px-8">
@@ -107,7 +97,7 @@
             [class.border-[#4b41e1]]="productListingStore.minRating() === null"
             [class.bg-[#4b41e1]]="productListingStore.minRating() === null"
             [class.text-white]="productListingStore.minRating() === null"
-            [class.border-[#d2c5ab]/60]="productListingStore.minRating() !== null"
+            [class]="productListingStore.minRating() !== null ? 'border-[#d2c5ab]/60' : ''"
             [class.bg-white]="productListingStore.minRating() !== null"
             [class.text-[#4f4632]]="productListingStore.minRating() !== null"
           >
@@ -121,7 +111,7 @@
               [class.border-[#4b41e1]]="productListingStore.minRating() === rating"
               [class.bg-[#4b41e1]]="productListingStore.minRating() === rating"
               [class.text-white]="productListingStore.minRating() === rating"
-              [class.border-[#d2c5ab]/60]="productListingStore.minRating() !== rating"
+              [class]="productListingStore.minRating() !== rating ? 'border-[#d2c5ab]/60' : ''"
               [class.bg-white]="productListingStore.minRating() !== rating"
               [class.text-[#4f4632]]="productListingStore.minRating() !== rating"
             >
@@ -160,7 +150,7 @@
                 type="button"
                 (click)="onSortChange(option.value); searchSortDropdownOpen = false"
                 class="flex w-full items-center justify-between rounded-[8px] px-3.5 py-2.5 text-left text-xs font-bold uppercase tracking-[0.1em] transition-colors cursor-pointer"
-                [class.bg-[#4b41e1]/6]="option.value === productListingStore.sortBy()"
+                [class]="option.value === productListingStore.sortBy() ? 'bg-[#4b41e1]/6' : ''"
                 [class.text-[#4b41e1]]="option.value === productListingStore.sortBy()"
                 [class.text-[#4f4632]]="option.value !== productListingStore.sortBy()"
                 [class.hover:bg-[#fcf9f8]]="option.value !== productListingStore.sortBy()"
@@ -204,10 +194,8 @@
           </section>
         }
       }
-    }
-
-    <!-- 4. Category not found or general error -->
-    @else {
+    } @else {
+      <!-- 4. Category not found or general error -->
       <app-product-empty-state
         [isInvalidCategory]="productListingStore.isInvalidCategory()"
         title="Không tìm thấy danh mục phù hợp"

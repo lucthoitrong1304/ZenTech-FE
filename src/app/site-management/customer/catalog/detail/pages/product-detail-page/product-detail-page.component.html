@@ -1,11 +1,5 @@
 <div class="product-detail-page min-h-screen bg-white text-[#1c1b1b]">
-  <app-site-header
-    [navItems]="navItems()"
-    [activeNavLabel]="null"
-    [cartCount]="cartStore.itemCount()"
-    [currentUser]="currentUser()"
-    (logout)="onLogout()"
-  />
+  <app-site-header-container />
 
   <main class="pt-4">
     @if (productDetailStore.loading()) {

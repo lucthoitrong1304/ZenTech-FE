@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectionStrategy, computed, input, output, ViewChild, inject, OnDestroy, HostListener, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, ChangeDetectionStrategy, computed, input, output, ViewChild, OnDestroy, HostListener, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import {
   LucideChevronDown,
   LucideCircleUserRound,
@@ -20,13 +20,18 @@ import { PopoverModule } from 'primeng/popover';
 import { DrawerModule } from 'primeng/drawer';
 import { HeaderNavItem } from '@/site-management/customer/shell/models/site-navigation.models';
 import { NotificationBellComponent } from '@/shared/components/notification-bell/notification-bell.component';
-import { CartStore } from '@/site-management/customer/cart/data-access/store/cart.store';
-import { CustomerShellStore } from '../../data-access/store/customer-shell.store';
+import { CartItem } from '@/site-management/customer/cart/data-access/models/cart.model';
+import { ProductListItem } from '@/site-management/customer/catalog/data-access/models/product-catalog.models';
 
 export interface HeaderUser {
   isAuthenticated: boolean;
   fullName?: string;
   avatarUrl?: string | null;
+}
+
+export interface HeaderNavigationIntent {
+  commands: string[];
+  queryParams?: Record<string, string>;
 }
 
 @Component({
@@ -57,14 +62,8 @@ export interface HeaderUser {
   styleUrl: './site-header.component.css'
 })
 export class SiteHeaderComponent implements OnDestroy {
-  private readonly router = inject(Router);
-  protected readonly cartStore = inject(CartStore);
-  private readonly customerShellStore = inject(CustomerShellStore);
-
   protected readonly searchVisible = signal(false);
   protected readonly searchQuery = signal('');
-  protected readonly instantResults = this.customerShellStore.instantResults;
-  protected readonly loadingResults = this.customerShellStore.loadingResults;
 
   protected readonly isHovered = signal(false);
   protected readonly isScrolled = signal(false);
@@ -74,7 +73,6 @@ export class SiteHeaderComponent implements OnDestroy {
       const scrollY = window.scrollY || document.documentElement.scrollTop;
       this.isScrolled.set(scrollY > 20);
     }
-
   }
 
   @HostListener('window:scroll', [])
@@ -91,9 +89,20 @@ export class SiteHeaderComponent implements OnDestroy {
   readonly navItems = input<HeaderNavItem[]>([]);
   readonly activeNavLabel = input<string | null>(null);
   readonly cartCount = input(0);
+  readonly cartItems = input<readonly CartItem[]>([]);
+  readonly cartTotal = input(0);
+  readonly searchResults = input<readonly ProductListItem[]>([]);
+  readonly searchLoading = input(false);
   readonly currentUser = input<HeaderUser | null>(null);
+
   readonly navSelect = output<HeaderNavItem>();
   readonly logout = output<void>();
+  readonly navigationRequested = output<HeaderNavigationIntent>();
+  readonly searchChanged = output<string>();
+  readonly searchCleared = output<void>();
+  readonly cartIncremented = output<string>();
+  readonly cartDecremented = output<string>();
+  readonly cartRemoved = output<string>();
 
   protected cartDrawerVisible = false;
 
@@ -122,44 +131,44 @@ export class SiteHeaderComponent implements OnDestroy {
     return this.currentUser()?.fullName || 'Quản lý tài khoản';
   });
 
+  protected readonly cartIsEmpty = computed(() => this.cartItems().length === 0);
+  protected readonly cartItemCount = computed(() => this.cartItems().length);
+
   isActive(item: HeaderNavItem): boolean {
     return this.activeNavLabel() === item.label;
   }
 
   onNavSelect(item: HeaderNavItem): void {
     this.navSelect.emit(item);
+    this.navigationRequested.emit({ commands: [item.link] });
   }
 
   onLogout(): void {
     this.logout.emit();
   }
 
-  toggleAccountMenu(event: MouseEvent, accountMenu: any, accountTrigger: any): void {
+  toggleAccountMenu(event: MouseEvent, accountMenu: { toggle(event: Event, target?: EventTarget | null): void }, accountTrigger: EventTarget | null): void {
     if (this.bellComponent) {
       this.bellComponent.hide();
     }
     accountMenu.toggle(event, accountTrigger);
   }
 
-  closeAndNavigate(commands: any[], queryParams?: any): void {
+  closeAndNavigate(commands: string[], queryParams?: Record<string, string>): void {
     this.cartDrawerVisible = false;
     setTimeout(() => {
-      this.router.navigate(commands, { queryParams });
+      this.navigationRequested.emit({ commands, queryParams });
     }, 200);
   }
 
   navigateToLogin(): void {
-    this.closeAndNavigate(['/auth/login'], { returnUrl: this.router.url });
-  }
-
-  trackByLabel(_: number, item: HeaderNavItem): string {
-    return item.slug;
+    this.closeAndNavigate(['/auth/login']);
   }
 
   openSearch(): void {
     this.searchVisible.set(true);
     this.searchQuery.set('');
-    this.customerShellStore.clearSearch();
+    this.searchCleared.emit();
     document.body.classList.add('p-overflow-hidden');
   }
 
@@ -171,20 +180,20 @@ export class SiteHeaderComponent implements OnDestroy {
   onSearchInput(event: Event): void {
     const query = (event.target as HTMLInputElement).value;
     this.searchQuery.set(query);
-    this.customerShellStore.searchProducts(query);
+    this.searchChanged.emit(query);
   }
 
   triggerSearch(): void {
     const query = this.searchQuery().trim();
     if (query) {
       this.closeSearch();
-      this.router.navigate(['/products'], { queryParams: { search: query } });
+      this.navigationRequested.emit({ commands: ['/products'], queryParams: { search: query } });
     }
   }
 
   onInstantResultClick(productSlug: string): void {
     this.closeSearch();
-    this.router.navigate(['/products', productSlug]);
+    this.navigationRequested.emit({ commands: ['/products', productSlug] });
   }
 
   @HostListener('document:keydown.escape')
@@ -194,13 +203,15 @@ export class SiteHeaderComponent implements OnDestroy {
     }
   }
 
+  trackByLabel(_: number, item: HeaderNavItem): string {
+    return item.slug;
+  }
+
   ngOnDestroy(): void {
-    // Clean up PrimeNG drawer mask if it's left in the DOM on navigation
     const masks = document.querySelectorAll('.p-drawer-mask, .p-overlay-mask');
     masks.forEach(mask => {
       mask.remove();
     });
-    // Restore body scroll and styles
     document.body.classList.remove('p-overflow-hidden');
     document.documentElement.classList.remove('p-overflow-hidden');
     document.body.style.removeProperty('overflow');

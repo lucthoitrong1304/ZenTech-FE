@@ -11,7 +11,7 @@ import { ToastService } from '@/shared/components/toast/toast.service';
 import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
 import { CartStore } from '@/site-management/customer/cart/data-access/store/cart.store';
 import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
-import { SiteHeaderComponent } from '@/site-management/customer/shell/components/site-header/site-header.component';
+import { SiteHeaderContainerComponent } from '@/site-management/customer/shell/components/site-header/site-header-container.component';
 
 interface AccountNavItem {
   label: string;
@@ -28,7 +28,7 @@ interface AccountNavItem {
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
-    SiteHeaderComponent,
+    SiteHeaderContainerComponent,
     LucideLayoutDashboard,
     LucideReceiptText,
     LucideMapPin,

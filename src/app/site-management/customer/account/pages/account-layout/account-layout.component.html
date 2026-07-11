@@ -1,10 +1,5 @@
 <div class="account-shell min-h-screen bg-[#fcf9f8] text-[#1c1b1b]">
-  <app-site-header
-    [navItems]="navItems()"
-    [cartCount]="cartStore.itemCount()"
-    [currentUser]="currentUser()"
-    (logout)="onLogout()"
-  />
+  <app-site-header-container />
 
   <div class="account-shell__body">
     <aside class="account-shell__sidebar" aria-label="Account navigation">

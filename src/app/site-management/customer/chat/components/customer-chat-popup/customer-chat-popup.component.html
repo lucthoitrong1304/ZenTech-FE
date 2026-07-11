@@ -99,30 +99,30 @@
           </div>
         </div>
       } @else {
-        @if (store.activeTicketStatusToShow(); as ticketStatus) {
+        @if (ticketBanner(); as ticket) {
           <div
             class="customer-ticket-popup-banner"
-            [class.customer-ticket-popup-banner--resolved]="isTicketResolved(ticketStatus)"
-            [class.customer-ticket-popup-banner--incident]="!isTicketResolved(ticketStatus) && isIncident(ticketStatus)"
-            [class.customer-ticket-popup-banner--ticket]="!isTicketResolved(ticketStatus) && isTicket(ticketStatus)"
+            [class.customer-ticket-popup-banner--resolved]="ticket.tone === 'resolved'"
+            [class.customer-ticket-popup-banner--incident]="ticket.tone === 'incident'"
+            [class.customer-ticket-popup-banner--ticket]="ticket.tone === 'ticket'"
           >
             <span class="customer-ticket-popup-banner__icon" aria-hidden="true">
-              @if (isTicketResolved(ticketStatus)) {
+              @if (ticket.tone === 'resolved') {
                 <svg lucideCheckCircle class="w-3.5 h-3.5" [attr.stroke-width]="2.5"></svg>
-              } @else if (isIncident(ticketStatus)) {
+              } @else if (ticket.tone === 'incident') {
                 <svg lucideAlertTriangle class="w-3.5 h-3.5 animate-pulse" [attr.stroke-width]="2.5"></svg>
               } @else {
                 <svg lucideWrench class="w-3.5 h-3.5" [attr.stroke-width]="2.5"></svg>
               }
             </span>
             <span class="customer-ticket-popup-banner__content">
-              <strong>{{ getTicketStatusTitle(ticketStatus) }}</strong>
-              <span>{{ getTicketStatusMessage(ticketStatus) }}</span>
+              <strong>{{ ticket.title }}</strong>
+              <span>{{ ticket.message }}</span>
             </span>
             <button
               type="button"
               class="customer-ticket-popup-banner__close"
-              (click)="store.dismissTicketStatus(ticketStatus.ticketCode || '', ticketStatus.status)"
+              (click)="store.dismissTicketStatus(ticket.ticketCode, ticket.ticketStatus)"
               title="Đóng thông báo"
             >
               <svg lucideX class="customer-ticket-popup-banner__close-icon" [attr.stroke-width]="2.5"></svg>

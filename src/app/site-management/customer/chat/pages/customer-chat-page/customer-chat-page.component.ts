@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, ChangeDetectionStrategy, OnInit, effect, inject, signal, untracked, HostListener } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  OnInit,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  HostListener,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import {
   LucideArchive,
@@ -25,18 +35,19 @@ import { ToastService } from '@/shared/components/toast/toast.service';
 import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
 import { CartStore } from '@/site-management/customer/cart/data-access/store/cart.store';
 import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
-import { SiteHeaderComponent } from '@/site-management/customer/shell/components/site-header/site-header.component';
+import { SiteHeaderContainerComponent } from '@/site-management/customer/shell/components/site-header/site-header-container.component';
 import { CustomerChatComposerComponent } from '@/site-management/customer/chat/components/customer-chat-composer/customer-chat-composer.component';
 import { CustomerChatHeaderComponent } from '@/site-management/customer/chat/components/customer-chat-header/customer-chat-header.component';
 import { CustomerMessageTimelineComponent } from '@/site-management/customer/chat/components/customer-message-timeline/customer-message-timeline.component';
 import { CustomerSharedContentSidebarComponent } from '@/site-management/customer/chat/components/customer-shared-content-sidebar/customer-shared-content-sidebar.component';
 import { CustomerChatSearchSidebarComponent } from '@/site-management/customer/chat/components/customer-chat-search-sidebar/customer-chat-search-sidebar.component';
 import { CustomerUploadQueueComponent } from '@/site-management/customer/chat/components/customer-upload-queue/customer-upload-queue.component';
-import { CustomerChatSharedItem, CustomerTicketStatus } from '@/site-management/shared/chat/data-access/models/customer-chat.models';
+import { CustomerChatSharedItem } from '@/site-management/shared/chat/data-access/models/customer-chat.models';
 import { CustomerChatEventType } from '@/site-management/shared/chat/data-access/models/customer-chat.event';
 import { CustomerChatStore } from '@/site-management/customer/chat/data-access/store/customer-chat.store';
 import { ConfirmService } from '@/shared/components/confirm/confirm.service';
 import { firstValueFrom } from 'rxjs';
+import { toCustomerTicketBanner } from '@/site-management/customer/chat/components/customer-ticket-banner.viewmodel';
 
 @Component({
   selector: 'app-customer-chat-page',
@@ -44,7 +55,7 @@ import { firstValueFrom } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule,
-    SiteHeaderComponent,
+    SiteHeaderContainerComponent,
     CustomerChatComposerComponent,
     CustomerChatHeaderComponent,
     CustomerMessageTimelineComponent,
@@ -85,6 +96,9 @@ export class CustomerChatPageComponent implements OnInit {
   protected readonly currentUser = this.authSessionStore.currentUser;
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
   protected readonly activeDropdownId = signal<string | null>(null);
+  protected readonly ticketBanner = computed(() =>
+    toCustomerTicketBanner(this.store.activeTicketStatusToShow()),
+  );
 
   constructor() {
     effect(() => {
@@ -118,7 +132,6 @@ export class CustomerChatPageComponent implements OnInit {
     if (!this.store.session()) {
       this.store.loadSession();
     }
-
   }
 
   protected openSearch(): void {
@@ -160,67 +173,15 @@ export class CustomerChatPageComponent implements OnInit {
   }
 
   protected async confirmDelete(id?: string): Promise<void> {
-    const confirmed = await firstValueFrom(this.confirmService.open({
-      title: 'Xóa hội thoại',
-      content: 'Bạn có chắc chắn muốn xóa vĩnh viễn cuộc hội thoại này không?',
-    }));
+    const confirmed = await firstValueFrom(
+      this.confirmService.open({
+        title: 'Xóa hội thoại',
+        content: 'Bạn có chắc chắn muốn xóa vĩnh viễn cuộc hội thoại này không?',
+      }),
+    );
 
     if (confirmed) {
       this.store.deleteConversation(id);
     }
-  }
-
-  protected isTicketResolved(ticketStatus: CustomerTicketStatus): boolean {
-    return ticketStatus.status === 'RESOLVED' || ticketStatus.status === 'CLOSED';
-  }
-
-  protected getTicketStatusTitle(ticketStatus: CustomerTicketStatus): string {
-    if (this.isTicketResolved(ticketStatus)) {
-      return 'Sự cố đã được khắc phục';
-    }
-    if (this.isIncident(ticketStatus)) {
-      return 'Phát hiện sự cố hệ thống';
-    }
-    return 'Đội kỹ thuật đang khắc phục';
-  }
-
-  protected isIncident(ticketStatus: CustomerTicketStatus): boolean {
-    return !!ticketStatus.ticketCode && ticketStatus.ticketCode.startsWith('INC-');
-  }
-
-  protected isTicket(ticketStatus: CustomerTicketStatus): boolean {
-    return !!ticketStatus.ticketCode && ticketStatus.ticketCode.startsWith('TCK-');
-  }
-
-  protected getFriendlyTicketMessage(message: string | null | undefined): string {
-    if (!message) {
-      return 'Tụi mình đang kiểm tra và sẽ cập nhật khi có kết quả. Bạn vẫn có thể nhắn thêm thông tin nếu cần.';
-    }
-
-    let friendly = message;
-    
-    if (friendly.includes('Cannot create MoMo payment') || friendly.includes('momo')) {
-      friendly = friendly.replace(/Cannot create MoMo payment/i, 'Không thể khởi tạo thanh toán qua ví MoMo');
-    }
-    if (friendly.includes('checkout') || friendly.includes('Cannot checkout')) {
-      friendly = friendly.replace(/Cannot checkout/i, 'Lỗi tiến trình đặt hàng & thanh toán (Checkout)');
-    }
-    if (friendly.includes('login') || friendly.includes('auth')) {
-      friendly = friendly.replace(/login/i, 'Đăng nhập hệ thống').replace(/auth/i, 'Xác thực tài khoản');
-    }
-    
-    // Clean up technical ticket title prefixes inside quotes for customers
-    friendly = friendly.replace(/(?:Sửa lỗi sự cố|Khắc phục lỗi)\s+INC-\d+:\s*/gi, '');
-    
-    return friendly;
-  }
-
-  protected getTicketStatusMessage(ticketStatus: CustomerTicketStatus): string {
-    if (ticketStatus.message) {
-      return this.getFriendlyTicketMessage(ticketStatus.message);
-    }
-    return this.isTicketResolved(ticketStatus)
-      ? 'Bạn có thể thử lại thao tác vừa gặp lỗi. Nếu vẫn chưa ổn, hãy nhắn với nhân viên hỗ trợ.'
-      : 'Tụi mình đang kiểm tra và sẽ cập nhật khi có kết quả. Bạn vẫn có thể nhắn thêm thông tin nếu cần.';
   }
 }

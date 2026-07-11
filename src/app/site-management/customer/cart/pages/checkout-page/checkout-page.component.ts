@@ -10,7 +10,7 @@ import { CheckoutPaymentMethod } from '@/site-management/customer/cart/data-acce
 import { CheckoutStore } from '@/site-management/customer/cart/data-access/store/checkout.store';
 import { CartStore } from '@/site-management/customer/cart/data-access/store/cart.store';
 import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
-import { SiteHeaderComponent } from '@/site-management/customer/shell/components/site-header/site-header.component';
+import { SiteHeaderContainerComponent } from '@/site-management/customer/shell/components/site-header/site-header-container.component';
 
 @Component({
   selector: 'app-checkout-page',
@@ -21,7 +21,7 @@ import { SiteHeaderComponent } from '@/site-management/customer/shell/components
     CommonModule,
     FormsModule,
     RouterLink,
-    SiteHeaderComponent,
+    SiteHeaderContainerComponent,
     CartSummaryComponent,
     LucideArrowLeft,
     LucideCreditCard,

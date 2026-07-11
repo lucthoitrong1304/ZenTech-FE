@@ -8,7 +8,7 @@ import { AuthSessionStore } from '@/site-management/identity/data-access/store/a
 import { CartStore } from '@/site-management/customer/cart/data-access/store/cart.store';
 import { ProductListItem } from '@/site-management/customer/catalog/data-access/models/product-catalog.models';
 import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
-import { SiteHeaderComponent } from '@/site-management/customer/shell/components/site-header/site-header.component';
+import { SiteHeaderContainerComponent } from '@/site-management/customer/shell/components/site-header/site-header-container.component';
 import {
   PRODUCT_SORT_OPTIONS,
   ProductSortOptionValue,
@@ -26,7 +26,7 @@ import { setupLogoutMessageEffects } from '@/site-management/identity/data-acces
   standalone: true,
   imports: [
     CommonModule,
-    SiteHeaderComponent,
+    SiteHeaderContainerComponent,
     ProductEmptyStateComponent,
     ProductGridComponent,
     ProductListingHeroComponent,
