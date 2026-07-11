@@ -120,10 +120,21 @@ export class App {
 
         const isAuthenticated = this.authStorageService.isAuthenticated();
         const email = this.authStorageService.getSession()?.email;
-        if (isAuthenticated && email && this.recordingEvents.length > 0) {
-          const batch = [...this.recordingEvents];
-          this.recordingEvents = [];
-          this.uploadRecording(email, batch);
+        if (isAuthenticated && email) {
+          if (this.shouldRotateRecordingSession(email)) {
+            if (this.recordingEvents.length > 0) {
+              const batch = [...this.recordingEvents];
+              this.recordingEvents = [];
+              this.uploadRecording(email, batch);
+            }
+            stopRecording();
+            this.rotateRecordingSession(email);
+            startRecording();
+          } else if (this.recordingEvents.length > 0) {
+            const batch = [...this.recordingEvents];
+            this.recordingEvents = [];
+            this.uploadRecording(email, batch);
+          }
         } else if (!isAuthenticated || !email) {
           if (this.recordingEvents.length > App.RECORDING_MAX_ANONYMOUS_EVENTS) {
             stopRecording();
@@ -154,6 +165,34 @@ export class App {
     }).catch((err: any) => {
       console.error('Failed to load rrweb screen recorder:', err);
     });
+  }
+
+  private shouldRotateRecordingSession(email: string): boolean {
+    const sessionId = sessionStorage.getItem('recordingSessionId');
+    if (!sessionId) return true;
+
+    const storedEmail = sessionStorage.getItem('recordingSessionEmail');
+    if (storedEmail !== email) return true;
+
+    const sessionCreatedAt = Number(sessionStorage.getItem('recordingSessionCreatedAt') || '0');
+    if (sessionCreatedAt <= 0) return true;
+
+    const now = Date.now();
+    if (now - sessionCreatedAt >= App.RECORDING_SESSION_MAX_AGE_MS) return true;
+
+    const sessionLastActiveAt = Number(sessionStorage.getItem('recordingSessionLastActiveAt') || '0');
+    if (sessionLastActiveAt > 0 && now - sessionLastActiveAt >= App.RECORDING_IDLE_BREAK_MS) return true;
+
+    return false;
+  }
+
+  private rotateRecordingSession(email: string): void {
+    const now = Date.now();
+    const newSessionId = this.createRecordingSessionId(now);
+    sessionStorage.setItem('recordingSessionId', newSessionId);
+    sessionStorage.setItem('recordingSessionEmail', email);
+    sessionStorage.setItem('recordingSessionCreatedAt', String(now));
+    sessionStorage.setItem('recordingSessionLastActiveAt', String(now));
   }
 
   private shouldSkipScreenRecording(url: string): boolean {

@@ -67,7 +67,7 @@ export class TicketsComponent implements OnInit {
   protected startDateVal = '';
   protected endDateVal = '';
   protected readonly staffAccounts = signal<any[]>([]);
-  protected readonly dateFilterVal = signal<TicketDateFilterOption>(TicketDateFilterOption.TODAY);
+  protected readonly dateFilterVal = signal<TicketDateFilterOption>(TicketDateFilterOption.LAST_7_DAYS);
 
 
   protected readonly datePresetOptions = [
@@ -235,7 +235,7 @@ export class TicketsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.onDatePresetChange(TicketDateFilterOption.TODAY);
+    this.onDatePresetChange(TicketDateFilterOption.LAST_7_DAYS);
     this.loadStaffAccounts();
   }
 
@@ -311,7 +311,7 @@ export class TicketsComponent implements OnInit {
     return this.searchVal.trim() !== '' ||
            this.priorityVal !== 'ALL' ||
            this.assigneeVal !== 'ALL' ||
-           this.dateFilterVal() !== TicketDateFilterOption.TODAY ||
+           this.dateFilterVal() !== TicketDateFilterOption.LAST_7_DAYS ||
            this.activeFilter() !== 'ALL';
   }
 
@@ -319,10 +319,10 @@ export class TicketsComponent implements OnInit {
     this.searchVal = '';
     this.priorityVal = 'ALL';
     this.assigneeVal = 'ALL';
-    this.dateFilterVal.set(TicketDateFilterOption.TODAY);
+    this.dateFilterVal.set(TicketDateFilterOption.LAST_7_DAYS);
     this.activeFilter.set('ALL');
     this.store.resetTicketFilters();
-    this.onDatePresetChange(TicketDateFilterOption.TODAY);
+    this.onDatePresetChange(TicketDateFilterOption.LAST_7_DAYS);
   }
 
   protected onAssigneeFilterChange(value: string): void {

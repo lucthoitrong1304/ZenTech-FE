@@ -298,6 +298,26 @@ const mockPermissions: PermissionItem[] = [
   }
 ];
 
+const getInitial7DaysRange = () => {
+  const today = new Date();
+  const fromDate = new Date(today);
+  fromDate.setDate(today.getDate() - 6);
+
+  const formatDateInput = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  return {
+    start: formatDateInput(fromDate),
+    end: formatDateInput(today)
+  };
+};
+
+const defaultRange = getInitial7DaysRange();
+
 const initialState: AdminState = {
   logs: [],
   issueLogs: [],
@@ -321,7 +341,7 @@ const initialState: AdminState = {
   activitySeverity: 'ALL',
   activityModule: 'ALL',
   activityAction: 'ALL',
-  activityTimeRange: 'TODAY',
+  activityTimeRange: '7D',
   activityFrom: '',
   activityTo: '',
   activityModulesList: [],
@@ -330,13 +350,13 @@ const initialState: AdminState = {
   incidentSearch: '',
   incidentSeverityFilter: 'ALL',
   incidentAssigneeFilter: 'ALL',
-  incidentStartDate: null,
-  incidentEndDate: null,
+  incidentStartDate: defaultRange.start,
+  incidentEndDate: defaultRange.end,
   ticketSearch: '',
   ticketPriorityFilter: 'ALL',
   ticketAssigneeFilter: 'ALL',
-  ticketStartDate: null,
-  ticketEndDate: null,
+  ticketStartDate: defaultRange.start,
+  ticketEndDate: defaultRange.end,
   // Pagination states
   ticketPage: 0,
   ticketSize: 10,
@@ -950,18 +970,21 @@ export const AdminStore = signalStore(
       },
 
       resetIncidentFilters() {
+        const dRange = getInitial7DaysRange();
         patchState(store, {
           incidentFilter: 'ALL',
           incidentSearch: '',
           incidentSeverityFilter: 'ALL',
           incidentAssigneeFilter: 'ALL',
-          incidentStartDate: null,
-          incidentEndDate: null,
+          incidentStartDate: dRange.start,
+          incidentEndDate: dRange.end,
           incidentPage: 0
         });
         this.loadIncidents({
           page: 0,
-          size: store.incidentSize()
+          size: store.incidentSize(),
+          startDate: dRange.start,
+          endDate: dRange.end
         });
       },
 
@@ -1064,18 +1087,21 @@ export const AdminStore = signalStore(
       },
 
       resetTicketFilters() {
+        const dRange = getInitial7DaysRange();
         patchState(store, {
           ticketFilter: 'ALL',
           ticketSearch: '',
           ticketPriorityFilter: 'ALL',
           ticketAssigneeFilter: 'ALL',
-          ticketStartDate: null,
-          ticketEndDate: null,
+          ticketStartDate: dRange.start,
+          ticketEndDate: dRange.end,
           ticketPage: 0
         });
         this.loadTickets({
           page: 0,
-          size: store.ticketSize()
+          size: store.ticketSize(),
+          startDate: dRange.start,
+          endDate: dRange.end
         });
       },
 

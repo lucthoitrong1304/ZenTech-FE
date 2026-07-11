@@ -133,6 +133,15 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
     return minutes + ':' + seconds.toString().padStart(2, '0');
   }
 
+  protected jumpToError(): void {
+    const data = this.evidence();
+    if (!data || !this.playerInstance) return;
+    const targetTimeMs = 100 + Math.max(0, data.offsetMs - data.clipStartMs);
+    const seekTimeMs = Math.max(100, targetTimeMs - 3000);
+    this.playerInstance.goto(seekTimeMs);
+    this.playerInstance.play?.();
+  }
+
   private renderPlayer(result: RecordingEvidenceResult, requestId: number): void {
     this.loadStyle('/rrweb/zt-player-view.css');
     this.loadScript('/rrweb/zt-player-view.js').then(() => {
@@ -162,7 +171,12 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
               autoPlay: false
             }
           });
-          this.playerInstance.goto(0);
+          
+          // Tự động tua đến 3 giây trước khi xảy ra lỗi để admin xem ngay diễn biến
+          const targetTimeMs = 100 + Math.max(0, result.offsetMs - result.clipStartMs);
+          const seekTimeMs = Math.max(100, targetTimeMs - 3000);
+          this.playerInstance.goto(seekTimeMs);
+          
           this.state.set('ready');
           this.message.set('');
         } catch (err) {

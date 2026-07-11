@@ -72,6 +72,7 @@ interface ClientLogStackContext {
   apiPath?: string;
   statusCode?: number;
   durationMs?: number | null;
+  userId?: string | null;
   userEmail?: string | null;
   userRole?: string | null;
   productId?: string | null;
@@ -898,6 +899,40 @@ export class IssuesComponent implements OnInit, OnDestroy {
     return this.getEffectiveTraceId(log, stackContext).trim();
   }
 
+  protected recordingUserIdForLog(log: SystemLog): string {
+    const stackContext = this.parseClientLogStack(log.details);
+    return (stackContext?.userId || (log as any).userId || this.findCorrelatedRecordingUserId(log) || '').trim();
+  }
+
+  private findCorrelatedRecordingUserId(log: SystemLog): string {
+    const traceId = this.recordingTraceIdForLog(log);
+    if (!traceId) return '';
+
+    const logTime = new Date(log.timestamp).getTime();
+    if (!Number.isFinite(logTime)) return '';
+
+    const correlationWindowMs = 10 * 60 * 1000;
+    return this.store.logs()
+      .map(candidate => {
+        const candidateTraceId = this.recordingTraceIdForLog(candidate);
+        if (candidate.id === log.id || candidateTraceId !== traceId) return null;
+
+        const candidateContext = this.parseClientLogStack(candidate.details);
+        const candidateUserId = (candidateContext?.userId || (candidate as any).userId || '').trim();
+        if (!candidateUserId) return null;
+
+        const candidateTime = new Date(candidate.timestamp).getTime();
+        if (!Number.isFinite(candidateTime)) return null;
+
+        const distanceMs = Math.abs(candidateTime - logTime);
+        if (distanceMs > correlationWindowMs) return null;
+
+        return { userId: candidateUserId, distanceMs };
+      })
+      .filter((item): item is { userId: string; distanceMs: number } => !!item)
+      .sort((a, b) => a.distanceMs - b.distanceMs)[0]?.userId || '';
+  }
+
   private findCorrelatedRecordingEmail(log: SystemLog): string {
     const traceId = this.recordingTraceIdForLog(log);
     if (!traceId) return '';
@@ -968,13 +1003,16 @@ export class IssuesComponent implements OnInit, OnDestroy {
         const context = this.parseClientLogStack(log.details);
         const traceId = this.getEffectiveTraceId(log, context);
         const textMetadata = this.extractHttpMetadataFromText(`${log.message}\n${log.details || ''}`);
+        const correlatedHttp = this.findCorrelatedHttpMetadata(log);
+        const correlatedUser = this.findCorrelatedUserMetadata(log);
+
         const metadata = {
-          apiPath: context?.apiPath ? this.normalizeApiPath(context.apiPath) : textMetadata.apiPath,
-          httpMethod: context?.method || textMetadata.httpMethod,
-          statusCode: context?.statusCode ?? textMetadata.statusCode,
+          apiPath: context?.apiPath ? this.normalizeApiPath(context.apiPath) : (textMetadata.apiPath || correlatedHttp.apiPath),
+          httpMethod: context?.method || textMetadata.httpMethod || correlatedHttp.httpMethod,
+          statusCode: context?.statusCode ?? textMetadata.statusCode ?? correlatedHttp.statusCode ?? this.extractStatusCodeFromText(log.message),
           errorMessage: context?.reason ? this.sanitizeVisibleLogText(context.reason) : this.sanitizeVisibleLogText(log.message.split('|')[0]?.trim() || log.message),
-          userEmail: context?.userEmail ?? null,
-          userRole: context?.userRole ?? null,
+          userEmail: context?.userEmail ?? correlatedUser.userEmail ?? null,
+          userRole: context?.userRole ?? correlatedUser.userRole ?? null,
           latestContext: context,
         };
 
@@ -1039,7 +1077,7 @@ export class IssuesComponent implements OnInit, OnDestroy {
       return journeyTitle;
     }
 
-    return this.toConciseTechnicalIssueTitle(log.message);
+    return this.toConciseTechnicalIssueTitle(log.message, log.details);
   }
 
   protected getIssueDisplaySignature(issue: LogIssue): string {
@@ -1085,9 +1123,98 @@ export class IssuesComponent implements OnInit, OnDestroy {
     return routeLabel ? `Bị chặn truy cập · ${routeLabel}` : 'Bị chặn truy cập';
   }
 
-  private toConciseTechnicalIssueTitle(message: string): string {
+  private extractExceptionLine(details?: string): string | null {
+    if (!details) return null;
+    const lines = details.split('\n').map(line => line.trim());
+    for (const line of lines) {
+      if (line.startsWith('at ') || line.startsWith('\tat')) continue;
+      if (line.includes('GlobalExceptionHandler') || line.includes('[http-') || line.includes(' - Unexpected server error')) continue;
+      if (line.includes('Exception') || line.includes('Error') || (line.includes('.') && line.includes(':'))) {
+        return line;
+      }
+    }
+    return null;
+  }
+
+  private extractStatusCodeFromText(text: string): number | undefined {
+    const match = text.match(/\((\d{3})\)/) || text.match(/\b(?:status|statusCode|HTTP)[:\s]+(\d{3})\b/i);
+    return match?.[1] ? Number(match[1]) : undefined;
+  }
+
+  private findCorrelatedHttpMetadata(log: SystemLog): { httpMethod?: string; apiPath?: string; statusCode?: number } {
+    const traceId = this.recordingTraceIdForLog(log);
+    if (!traceId) return {};
+
+    let bestMetadata: { httpMethod?: string; apiPath?: string; statusCode?: number } | null = null;
+    let bestScore = -1;
+
+    for (const candidate of this.store.logs()) {
+      if (candidate.traceId === traceId && candidate.id !== log.id) {
+        const metadata = this.extractHttpMetadataFromText(`${candidate.message}\n${candidate.details || ''}`);
+        if (metadata.httpMethod && metadata.apiPath) {
+          let score = 0;
+          const msgLower = candidate.message.toLowerCase();
+          const pathLower = metadata.apiPath.toLowerCase();
+
+          // Ưu tiên API thực tế, loại trừ các API bổ trợ/tracking
+          if (!pathLower.includes('business-events') && !pathLower.includes('logs') && !pathLower.includes('incidents')) {
+            score += 100;
+          }
+
+          // Ưu tiên các log báo lỗi
+          if (candidate.level === LogLevel.ERROR) {
+            score += 50;
+          } else if (candidate.level === LogLevel.WARN) {
+            score += 20;
+          }
+
+          if (msgLower.includes('failed') || msgLower.includes('thất bại') || msgLower.includes('error')) {
+            score += 30;
+          }
+
+          // Ưu tiên trạng thái lỗi HTTP (>= 400)
+          if (metadata.statusCode && metadata.statusCode >= 400) {
+            score += 40;
+          }
+
+          if (score > bestScore) {
+            bestScore = score;
+            bestMetadata = metadata;
+          }
+        }
+      }
+    }
+    return bestMetadata || {};
+  }
+
+  private findCorrelatedUserMetadata(log: SystemLog): { userEmail?: string | null; userRole?: string | null } {
+    const traceId = this.recordingTraceIdForLog(log);
+    if (!traceId) return {};
+
+    for (const candidate of this.store.logs()) {
+      if (candidate.traceId === traceId && candidate.id !== log.id) {
+        const context = this.parseClientLogStack(candidate.details);
+        const email = context?.userEmail || (candidate as any).userEmail;
+        const role = context?.userRole || (candidate as any).userRole;
+        if (email || role) {
+          return { userEmail: email, userRole: role };
+        }
+      }
+    }
+    return {};
+  }
+
+  private toConciseTechnicalIssueTitle(message: string, details?: string): string {
     const cleaned = this.sanitizeVisibleLogText(message.split('|')[0]?.trim() || message);
     const lower = cleaned.toLowerCase();
+
+    if (lower.startsWith('unexpected server error') && details) {
+      const exceptionLine = this.extractExceptionLine(details);
+      if (exceptionLine) {
+        const parsedException = this.sanitizeVisibleLogText(exceptionLine);
+        return `Unexpected server error (500) · ${parsedException}`;
+      }
+    }
 
     if (lower.includes('error starting tomcat context')) {
       if (lower.includes('entitymanagerfactory') || lower.includes('jpa')) {
@@ -1137,9 +1264,22 @@ export class IssuesComponent implements OnInit, OnDestroy {
 
     return cleaned || 'N/A';
   }
+
   private getIssueSignature(log: SystemLog): string {
     const context = this.parseClientLogStack(log.details);
-    const baseMessage = this.normalizeIssueMessage(log.message);
+    let baseMessage = this.normalizeIssueMessage(log.message);
+
+    const lowerMessage = log.message.toLowerCase();
+    if (lowerMessage.startsWith('unexpected server error') && log.details) {
+      const exceptionLine = this.extractExceptionLine(log.details);
+      if (exceptionLine) {
+        const exceptionClass = exceptionLine.split(':')[0]?.trim();
+        if (exceptionClass) {
+          baseMessage = `UnexpectedServerError:${exceptionClass}`;
+        }
+      }
+    }
+
     const apiPart = context?.apiPath ? this.normalizeApiPath(context.apiPath) : baseMessage;
     const eventPart = context?.eventType || baseMessage;
 
