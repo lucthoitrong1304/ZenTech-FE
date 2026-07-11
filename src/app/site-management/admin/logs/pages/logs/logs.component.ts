@@ -903,6 +903,10 @@ export class LogsComponent implements OnInit, OnDestroy {
   }
 
   protected getUserJourney(log: SystemLog): LogJourneyItem[] {
+    if (!this.hasRequestTrace(log)) {
+      return [];
+    }
+
     const currentContext = this.parseClientLogStack(log.details);
     const currentTime = new Date(log.timestamp).getTime();
     const journeyWindowMs = 10 * 60 * 1000;
@@ -913,7 +917,7 @@ export class LogsComponent implements OnInit, OnDestroy {
       .filter(candidate => candidate.id === log.id || !this.hideNoiseLogs() || !this.isNoiseLog(candidate))
       .filter(candidate => this.isJourneyCandidate(candidate, log, currentContext, currentTime, journeyWindowMs))
       .sort((left, right) => this.compareJourneyLogs(left, right))
-      .slice(0, 8)
+      .slice(0, 50)
       .map((candidate, index, journeyLogs) => this.toJourneyItem(
         candidate,
         log.id,
@@ -1177,7 +1181,12 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   protected recordingTraceIdForLog(log: SystemLog): string {
     const stackContext = this.parseClientLogStack(log.details);
-    return (stackContext?.traceId || log.traceId || '').trim();
+    const traceId = (stackContext?.traceId || log.traceId || '').trim();
+    return traceId.toUpperCase() === 'ZT-AI-SYSTEM' ? '' : traceId;
+  }
+
+  protected hasRequestTrace(log: SystemLog): boolean {
+    return this.recordingTraceIdForLog(log).length > 0;
   }
 
   protected recordingUserIdForLog(log: SystemLog): string {
@@ -1277,14 +1286,12 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   private startRealtimeLogs(): void {
     this.stopRealtimeLogs();
-    console.log('[Logs WS] Khởi tạo kết nối và đăng ký lắng nghe /topic/admin.logs');
     this.wsService.connect();
     
     // Subscribe to websocket log topic
     this.wsSubscription = this.wsService.subscribe<SystemLog>('/topic/admin.logs')
       .subscribe({
         next: (logItem: SystemLog) => {
-          console.log('[Logs WS] Nhận log mới từ WS:', logItem);
           this.ngZone.run(() => {
             this.store.appendLog(logItem);
           });

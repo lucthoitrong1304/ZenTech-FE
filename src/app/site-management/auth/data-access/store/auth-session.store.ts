@@ -24,6 +24,7 @@ import { decodeJwt } from '../../../../shared/utils/jwt.util';
 import { of, timer } from 'rxjs';
 import { Router } from '@angular/router';
 import { NotificationStore } from '../../../../core/store/notification.store';
+import { WebsocketService } from '../../../../core/services/websocket.service';
 
 interface ProfileResponseData {
   fullName?: string;
@@ -69,18 +70,19 @@ export const AuthSessionStore = signalStore(
       authRefreshService = inject(AuthRefreshService),
       router = inject(Router),
       notificationStore = inject(NotificationStore),
+      websocketService = inject(WebsocketService),
     ) => {
       const completeLogout = (
         successMessage: string | null,
         warningMessage: string | null = null,
       ): void => {
+        notificationStore.resetForAccount(null);
         authStorageService.clear();
         patchState(store, {
           currentUser: null,
           logoutSuccessMessage: successMessage,
           logoutWarningMessage: warningMessage,
         });
-        notificationStore.resetForAccount(null);
         startTokenRefreshTimer('');
       };
 
@@ -285,12 +287,13 @@ export const AuthSessionStore = signalStore(
         setSession: _setSession,
         logout: rxMethod<void>(
           pipe(
-            tap(() =>
+            tap(() => {
+              websocketService.disconnect();
               patchState(store, {
                 logoutSuccessMessage: null,
                 logoutWarningMessage: null,
-              }),
-            ),
+              });
+            }),
             switchMap(() => {
               const refreshToken = authStorageService.getRefreshToken();
 

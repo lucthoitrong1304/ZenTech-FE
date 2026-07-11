@@ -183,7 +183,11 @@ export const NotificationStore = signalStore(
       },
       resetForAccount(accountId: string | null) {
         if (store.accountId() === accountId) {
-          if (accountId && store.notificationEntities().length === 0) {
+          if (!accountId) {
+            stopWebSocket();
+            return;
+          }
+          if (store.notificationEntities().length === 0) {
             loadNotifications();
             loadUnreadCount();
             startWebSocket();
