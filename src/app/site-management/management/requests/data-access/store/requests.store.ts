@@ -3,7 +3,7 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { setAllEntities, withEntities } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, exhaustMap, pipe, switchMap, tap } from 'rxjs';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
 import {
   AttendanceAdjustment,
   CreateAttendanceAdjustment,
@@ -17,8 +17,8 @@ import {
   RequestsMutation,
   ShiftDto,
   ShiftSwapRequest,
-} from '../models/requests.models';
-import { RequestsService } from '../services/requests.service';
+} from '@/site-management/management/requests/data-access/models/requests.models';
+import { RequestsService } from '@/site-management/management/requests/data-access/services/requests.service';
 
 interface RequestsState {
   loadingInitial: boolean;

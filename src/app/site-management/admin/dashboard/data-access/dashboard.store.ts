@@ -2,12 +2,12 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
-import { AdminDashboardService } from './dashboard.service';
+import { AdminDashboardService } from '@/site-management/admin/dashboard/data-access/dashboard.service';
 import {
   AdminDashboardData,
   AdminResourceMetrics,
   DashboardPeriod,
-} from './dashboard.models';
+} from '@/site-management/admin/dashboard/data-access/dashboard.models';
 
 interface DashboardState {
   period: DashboardPeriod;

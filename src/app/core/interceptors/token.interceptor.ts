@@ -1,9 +1,9 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthStorageService } from '../services/auth-storage.service';
-import { SKIP_AUTH_TOKEN } from '../tokens/api-context.token';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { SKIP_AUTH_TOKEN } from '@/core/tokens/api-context.token';
 // Import environment nếu bạn có config sẵn (tùy chọn)
-// import { environment } from '../../environments/environment';
+// import { environment } from '@env/environment';
 
 export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const authStorageService = inject(AuthStorageService);

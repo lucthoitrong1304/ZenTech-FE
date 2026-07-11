@@ -16,7 +16,7 @@ import {
   AttendanceLocationPolicy,
   AttendanceRecordResponse,
   AttendanceShiftBreakdownResponse,
-} from '../../../../../data-access/models/attendance.model';
+} from '@/site-management/management/data-access/models/attendance.model';
 import {
   LucideChevronLeft,
   LucideChevronRight,
@@ -26,7 +26,7 @@ import {
   LucideX,
 } from '@lucide/angular';
 import * as L from 'leaflet';
-import { environment } from '../../../../../../../../environments/environment';
+import { environment } from '@env/environment';
 
 interface GroupedDateRecord {
   date: string;

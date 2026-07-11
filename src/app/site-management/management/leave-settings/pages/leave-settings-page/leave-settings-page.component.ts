@@ -10,13 +10,13 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideLoader2, LucidePlus, LucideSave } from '@lucide/angular';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
 import {
   LeaveQuota,
   LeaveType,
   LeaveTypePayload,
-} from '../../data-access/models/leave-settings.models';
-import { LeaveSettingsStore } from '../../data-access/store/leave-settings.store';
+} from '@/site-management/management/leave-settings/data-access/models/leave-settings.models';
+import { LeaveSettingsStore } from '@/site-management/management/leave-settings/data-access/store/leave-settings.store';
 
 @Component({
   selector: 'app-leave-settings',

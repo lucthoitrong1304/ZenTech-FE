@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
 import {
   ApiResponse,
   AttendanceAdjustment,
@@ -15,7 +15,7 @@ import {
   LeaveType,
   ShiftDto,
   ShiftSwapRequest,
-} from '../models/requests.models';
+} from '@/site-management/management/requests/data-access/models/requests.models';
 
 @Injectable()
 export class RequestsService {

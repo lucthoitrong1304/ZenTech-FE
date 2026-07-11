@@ -3,7 +3,7 @@ import { LucideFilter, LucideSearch, LucideX } from '@lucide/angular';
 import {
   ManagementProductCategory,
   ManagementProductQuery,
-} from '../../data-access/models/management-product.models';
+} from '@/site-management/management/products/data-access/models/management-product.models';
 
 @Component({
   selector: 'app-product-toolbar',

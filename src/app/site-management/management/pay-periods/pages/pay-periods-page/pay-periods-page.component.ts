@@ -2,11 +2,11 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideLoader2, LucideLock, LucidePlus, LucideUnlock } from '@lucide/angular';
-import { PermissionCode } from '../../../../../core/permissions/permission.models';
-import { PermissionService } from '../../../../../core/permissions/permission.service';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { PayPeriod } from '../../data-access/models/pay-period.models';
-import { PayPeriodStore } from '../../data-access/store/pay-period.store';
+import { PermissionCode } from '@/core/permissions/permission.models';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { PayPeriod } from '@/site-management/management/pay-periods/data-access/models/pay-period.models';
+import { PayPeriodStore } from '@/site-management/management/pay-periods/data-access/store/pay-period.store';
 
 @Component({
   selector: 'app-pay-periods',

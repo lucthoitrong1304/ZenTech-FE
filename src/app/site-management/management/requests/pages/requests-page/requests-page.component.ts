@@ -12,8 +12,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideLoader2 } from '@lucide/angular';
 import { firstValueFrom } from 'rxjs';
-import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { ConfirmService } from '@/shared/components/confirm/confirm.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
 import {
   ApprovalStatus,
   AttendanceAdjustment,
@@ -25,9 +25,9 @@ import {
   ShiftDto,
   ShiftSwapRequest,
   SwapRequestType,
-} from '../../data-access/models/requests.models';
-import { RequestsService } from '../../data-access/services/requests.service';
-import { RequestsStore } from '../../data-access/store/requests.store';
+} from '@/site-management/management/requests/data-access/models/requests.models';
+import { RequestsService } from '@/site-management/management/requests/data-access/services/requests.service';
+import { RequestsStore } from '@/site-management/management/requests/data-access/store/requests.store';
 
 type RequestsTab = 'leave' | 'swap' | 'adjust';
 

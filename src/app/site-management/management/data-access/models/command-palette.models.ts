@@ -1,4 +1,4 @@
-import { PermissionCode } from '../../../../core/permissions/permission.models';
+import { PermissionCode } from '@/core/permissions/permission.models';
 
 export interface CommandPaletteItem {
   id: string;

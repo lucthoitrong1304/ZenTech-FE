@@ -11,9 +11,9 @@ import {
   ManagementEmployeeRole,
   ManagementEmployeeSort,
   ManagementEmployeeUpdateDraft,
-} from '../models/management-employee.models';
-import { ManagementEmployeeEvent, ManagementEmployeeEventType } from '../models/management-employee.event';
-import { ManagementEmployeeService } from '../services/management-employee.service';
+} from '@/site-management/management/employees/data-access/models/management-employee.models';
+import { ManagementEmployeeEvent, ManagementEmployeeEventType } from '@/site-management/management/employees/data-access/models/management-employee.event';
+import { ManagementEmployeeService } from '@/site-management/management/employees/data-access/services/management-employee.service';
 
 const DEFAULT_QUERY: ManagementEmployeeQuery = {
   page: 0,

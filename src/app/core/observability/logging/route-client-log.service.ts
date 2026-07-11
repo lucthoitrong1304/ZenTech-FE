@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
-import { ClientLogEventType } from './client-log.model';
-import { ClientLogService } from './client-log.service';
+import { ClientLogEventType } from '@/core/observability/logging/client-log.model';
+import { ClientLogService } from '@/core/observability/logging/client-log.service';
 
 @Injectable({ providedIn: 'root' })
 export class RouteClientLogService {

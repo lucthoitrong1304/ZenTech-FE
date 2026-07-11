@@ -16,15 +16,15 @@ import {
 } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
 import { filter, take } from 'rxjs';
-import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
-import { ManagementPageShellComponent } from '../../../../../shared/components/management-ui';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { ConfirmService } from '@/shared/components/confirm/confirm.service';
+import { ManagementPageShellComponent } from '@/shared/components/management-ui';
+import { ToastService } from '@/shared/components/toast/toast.service';
 import {
   ManagementCategory,
   ManagementCategoryDraft,
   ManagementCategoryQuery,
-} from '../../data-access/models/management-category.models';
-import { ManagementCategoriesStore } from '../../data-access/store/management-categories.store';
+} from '@/site-management/management/categories/data-access/models/management-category.models';
+import { ManagementCategoriesStore } from '@/site-management/management/categories/data-access/store/management-categories.store';
 
 @Component({
   selector: 'app-management-categories-page',

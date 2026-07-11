@@ -13,17 +13,17 @@ import {
 } from '@lucide/angular';
 import { Select } from 'primeng/select';
 import { filter, take } from 'rxjs';
-import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { CouponDialogComponent } from '../../components/coupon-dialog/coupon-dialog.component';
-import { CouponTableComponent } from '../../components/coupon-table/coupon-table.component';
-import { CouponToolbarComponent } from '../../components/coupon-toolbar/coupon-toolbar.component';
-import { CustomerVoucherTableComponent } from '../../components/customer-voucher-table/customer-voucher-table.component';
-import { IssueVoucherDialogComponent } from '../../components/issue-voucher-dialog/issue-voucher-dialog.component';
-import { CustomerVoucherStatus, ManagementCoupon } from '../../data-access/models/marketing.models';
-import { MarketingStore } from '../../data-access/store/marketing.store';
-import { PermissionService } from '../../../../../core/permissions/permission.service';
-import { PermissionCode } from '../../../../../core/permissions/permission.models';
+import { ConfirmService } from '@/shared/components/confirm/confirm.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { CouponDialogComponent } from '@/site-management/management/marketing/components/coupon-dialog/coupon-dialog.component';
+import { CouponTableComponent } from '@/site-management/management/marketing/components/coupon-table/coupon-table.component';
+import { CouponToolbarComponent } from '@/site-management/management/marketing/components/coupon-toolbar/coupon-toolbar.component';
+import { CustomerVoucherTableComponent } from '@/site-management/management/marketing/components/customer-voucher-table/customer-voucher-table.component';
+import { IssueVoucherDialogComponent } from '@/site-management/management/marketing/components/issue-voucher-dialog/issue-voucher-dialog.component';
+import { CustomerVoucherStatus, ManagementCoupon } from '@/site-management/management/marketing/data-access/models/marketing.models';
+import { MarketingStore } from '@/site-management/management/marketing/data-access/store/marketing.store';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
 
 @Component({
   selector: 'app-marketing-page',

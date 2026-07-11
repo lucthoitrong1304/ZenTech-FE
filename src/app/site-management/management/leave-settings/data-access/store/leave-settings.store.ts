@@ -2,14 +2,14 @@ import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, exhaustMap, forkJoin, pipe, switchMap, tap } from 'rxjs';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
 import {
   LeaveQuota,
   LeaveSettingsEmployee,
   LeaveType,
   LeaveTypePayload,
-} from '../models/leave-settings.models';
-import { LeaveSettingsService } from '../services/leave-settings.service';
+} from '@/site-management/management/leave-settings/data-access/models/leave-settings.models';
+import { LeaveSettingsService } from '@/site-management/management/leave-settings/data-access/services/leave-settings.service';
 
 interface State {
   leaveTypes: LeaveType[];

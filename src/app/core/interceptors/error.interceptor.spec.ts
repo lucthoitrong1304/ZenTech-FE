@@ -6,12 +6,12 @@ import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-
 import { Router } from '@angular/router';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { ErrorStateService } from '../errors/error-state.service';
-import { ClientLogEventType } from '../observability/logging/client-log.model';
-import { ClientLogService } from '../observability/logging/client-log.service';
-import { AuthRefreshService } from '../services/auth-refresh.service';
-import { AuthStorageService } from '../services/auth-storage.service';
-import { errorInterceptor } from './error.interceptor';
+import { ErrorStateService } from '@/core/errors/error-state.service';
+import { ClientLogEventType } from '@/core/observability/logging/client-log.model';
+import { ClientLogService } from '@/core/observability/logging/client-log.service';
+import { AuthRefreshService } from '@/core/services/auth-refresh.service';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { errorInterceptor } from '@/core/interceptors/error.interceptor';
 
 describe('errorInterceptor', () => {
   beforeAll(() => {

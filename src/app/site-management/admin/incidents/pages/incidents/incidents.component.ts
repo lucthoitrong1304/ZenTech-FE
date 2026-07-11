@@ -4,10 +4,10 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LucideEye, LucideRotateCcw, LucideSearch, LucideUser, LucideChevronLeft, LucideChevronRight } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
-import { AdminStore } from '../../../data-access/store/admin.store';
-import { IncidentStatus, IncidentSeverity, SystemIncident } from '../../../data-access/models/admin.models';
-import { AccountService } from '../../../accounts/data-access/services/account.service';
-import { AccountSortField, SortDirection, AccountSummary, AdminAccountRole } from '../../../accounts/data-access/models/account.model';
+import { AdminStore } from '@/site-management/admin/data-access/store/admin.store';
+import { IncidentStatus, IncidentSeverity, SystemIncident } from '@/site-management/admin/data-access/models/admin.models';
+import { AccountService } from '@/site-management/admin/accounts/data-access/services/account.service';
+import { AccountSortField, SortDirection, AccountSummary, AdminAccountRole } from '@/site-management/admin/accounts/data-access/models/account.model';
 
 interface AssigneeProfile {
   email: string;

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LucideSearch } from '@lucide/angular';
-import { ManagementChatConversation } from '../../data-access/models/management-chat.models';
+import { ManagementChatConversation } from '@/site-management/management/chat/data-access/models/management-chat.models';
 
 @Component({
   selector: 'app-conversation-list',

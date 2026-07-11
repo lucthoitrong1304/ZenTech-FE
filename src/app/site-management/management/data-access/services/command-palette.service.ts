@@ -1,13 +1,13 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
-import { ApiService } from '../../../../core/api/api.service';
-import { environment } from '../../../../../environments/environment';
-import { CommandPaletteGroup, ApiResponseDto, GlobalSearchResponse } from '../models/command-palette.models';
-import { PermissionService } from '../../../../core/permissions/permission.service';
-import { PermissionCode } from '../../../../core/permissions/permission.models';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
+import { CommandPaletteGroup, ApiResponseDto, GlobalSearchResponse } from '@/site-management/management/data-access/models/command-palette.models';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
 
-export type { CommandPaletteItem, CommandPaletteGroup } from '../models/command-palette.models';
+export type { CommandPaletteItem, CommandPaletteGroup } from '@/site-management/management/data-access/models/command-palette.models';
 
 @Injectable({
   providedIn: 'root'

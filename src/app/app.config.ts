@@ -2,17 +2,17 @@ import { ApplicationConfig, ErrorHandler, provideBrowserGlobalErrorListeners } f
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { errorInterceptor } from './core/interceptors/error.interceptor';
-import { GlobalErrorHandler } from './core/errors/global-error-handler';
-import { tokenInterceptor } from './core/interceptors/token.interceptor';
-import { traceInterceptor } from './core/observability/tracing/trace.interceptor';
-import { httpClientLogInterceptor } from './core/observability/logging/http-client-log.interceptor';
+import { errorInterceptor } from '@/core/interceptors/error.interceptor';
+import { GlobalErrorHandler } from '@/core/errors/global-error-handler';
+import { tokenInterceptor } from '@/core/interceptors/token.interceptor';
+import { traceInterceptor } from '@/core/observability/tracing/trace.interceptor';
+import { httpClientLogInterceptor } from '@/core/observability/logging/http-client-log.interceptor';
 import Aura from '@primeuix/themes/aura';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { provideMarkdown } from 'ngx-markdown';
 
-import { routes } from './app.routes';
+import { routes } from '@/app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [

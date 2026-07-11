@@ -2,10 +2,10 @@ import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { AuthService } from '../../../auth/data-access/services/auth.service';
-import { ChangePasswordRequest } from '../../../auth/data-access/models/auth.models';
-import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { AuthService } from '@/site-management/identity/data-access/services/auth.service';
+import { ChangePasswordRequest } from '@/site-management/identity/data-access/models/auth.models';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
 
 interface AdminChangePasswordState {
   isSaving: boolean;

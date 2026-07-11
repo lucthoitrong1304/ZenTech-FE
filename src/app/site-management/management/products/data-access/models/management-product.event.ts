@@ -10,7 +10,7 @@ import {
   ManagementProductStats,
   ProductFormValue,
   ProductManagementDetailResponse,
-} from './management-product.models';
+} from '@/site-management/management/products/data-access/models/management-product.models';
 
 export enum ManagementProductEventType {
   ProductsLoadStarted = 'PRODUCTS_LOAD_STARTED',

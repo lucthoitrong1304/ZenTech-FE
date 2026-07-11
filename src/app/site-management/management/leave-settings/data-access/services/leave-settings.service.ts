@@ -1,14 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
 import {
   LeaveQuota,
   LeaveSettingsEmployee,
   LeaveSettingsResponse,
   LeaveType,
   LeaveTypePayload,
-} from '../models/leave-settings.models';
+} from '@/site-management/management/leave-settings/data-access/models/leave-settings.models';
 
 @Injectable({ providedIn: 'root' })
 export class LeaveSettingsService {

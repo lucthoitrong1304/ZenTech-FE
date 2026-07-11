@@ -1,8 +1,8 @@
 import { HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
 import {
   AccountQuery,
   AccountSummary,
@@ -11,7 +11,7 @@ import {
   PageResponse,
   UpdateAccountRolePayload,
   UpdateAccountStatusPayload,
-} from '../models/account.model';
+} from '@/site-management/admin/accounts/data-access/models/account.model';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {

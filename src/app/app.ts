@@ -3,15 +3,15 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { filter, map } from 'rxjs';
-import { ToastComponent } from './shared/components/toast/toast.component';
-import { CustomerChatPopupComponent } from './site-management/customer-chat/components/customer-chat-popup/customer-chat-popup.component';
-import { CategoryNavigationStore } from './site-management/shared/data-access/store/category-navigation.store';
-import { AuthStorageService } from './core/services/auth-storage.service';
-import { RouteClientLogService } from './core/observability/logging/route-client-log.service';
-import { Role } from './site-management/auth/data-access/models/auth.enums';
-import { hasRole } from './site-management/auth/data-access/utils/auth-role.utils';
-import { AdminLogsService } from './site-management/admin/data-access/services/admin-logs.service';
-import { environment } from '../environments/environment';
+import { ToastComponent } from '@/shared/components/toast/toast.component';
+import { CustomerChatPopupComponent } from '@/site-management/customer/chat/components/customer-chat-popup/customer-chat-popup.component';
+import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { RouteClientLogService } from '@/core/observability/logging/route-client-log.service';
+import { Role } from '@/site-management/identity/data-access/models/auth.enums';
+import { hasRole } from '@/site-management/identity/data-access/utils/auth-role.utils';
+import { AdminLogsService } from '@/site-management/admin/data-access/services/admin-logs.service';
+import { environment } from '@env/environment';
 
 interface RecordingUploadBatch {
   email: string;

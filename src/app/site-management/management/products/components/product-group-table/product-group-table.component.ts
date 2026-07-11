@@ -1,4 +1,4 @@
-import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
+import { HasPermissionDirective } from '@/core/permissions/has-permission.directive';
 import { DecimalPipe } from '@angular/common';
 import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import {
@@ -12,7 +12,7 @@ import {
   LucidePencil,
   LucideTrash2,
 } from '@lucide/angular';
-import { ManagementProductGroup } from '../../data-access/models/management-product.models';
+import { ManagementProductGroup } from '@/site-management/management/products/data-access/models/management-product.models';
 
 @Component({
   selector: 'app-product-group-table',

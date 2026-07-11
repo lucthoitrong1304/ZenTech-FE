@@ -2,12 +2,12 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState, withHooks } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, forkJoin, pipe, switchMap, tap, Subscription, debounceTime } from 'rxjs';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { AdminLogsService } from '../services/admin-logs.service';
-import { AdminIncidentsService } from '../../incidents/data-access/services/admin-incidents.service';
-import { AdminTicketsService } from '../../tickets/data-access/services/admin-tickets.service';
-import { WebsocketService } from '../../../../core/services/websocket.service';
-import { normalizeTraceIdInput } from '../../../../core/observability/tracing/trace-id.util';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { AdminLogsService } from '@/site-management/admin/data-access/services/admin-logs.service';
+import { AdminIncidentsService } from '@/site-management/admin/incidents/data-access/services/admin-incidents.service';
+import { AdminTicketsService } from '@/site-management/admin/tickets/data-access/services/admin-tickets.service';
+import { WebsocketService } from '@/core/services/websocket.service';
+import { normalizeTraceIdInput } from '@/core/observability/tracing/trace-id.util';
 import {
   LogLevel,
   SystemLog,
@@ -23,7 +23,7 @@ import {
   ActivityLogRecordPayload,
   PermissionItem,
   PaginatedResult
-} from '../models/admin.models';
+} from '@/site-management/admin/data-access/models/admin.models';
 
 interface AdminState {
   logs: SystemLog[];

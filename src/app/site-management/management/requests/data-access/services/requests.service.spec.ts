@@ -2,10 +2,10 @@ import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of } from 'rxjs';
 import { vi } from 'vitest';
-import { environment } from '../../../../../../environments/environment';
-import { ApiService } from '../../../../../core/api/api.service';
-import { CreateLeaveRequest } from '../models/requests.models';
-import { RequestsService } from './requests.service';
+import { environment } from '@env/environment';
+import { ApiService } from '@/core/api/api.service';
+import { CreateLeaveRequest } from '@/site-management/management/requests/data-access/models/requests.models';
+import { RequestsService } from '@/site-management/management/requests/data-access/services/requests.service';
 
 describe('RequestsService', () => {
   afterEach(() => TestBed.resetTestingModule());

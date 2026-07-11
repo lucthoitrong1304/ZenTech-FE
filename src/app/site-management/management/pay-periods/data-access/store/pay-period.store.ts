@@ -2,9 +2,9 @@ import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, exhaustMap, pipe, switchMap, tap } from 'rxjs';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { CreatePayPeriodPayload, PayPeriod } from '../models/pay-period.models';
-import { PayPeriodService } from '../services/pay-period.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { CreatePayPeriodPayload, PayPeriod } from '@/site-management/management/pay-periods/data-access/models/pay-period.models';
+import { PayPeriodService } from '@/site-management/management/pay-periods/data-access/services/pay-period.service';
 
 interface PayPeriodState {
   periods: PayPeriod[];

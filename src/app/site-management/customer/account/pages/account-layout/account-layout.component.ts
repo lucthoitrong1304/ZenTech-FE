@@ -1,0 +1,85 @@
+import { CommonModule } from '@angular/common';
+import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  LucideLayoutDashboard,
+  LucideMapPin,
+  LucideReceiptText,
+  LucideTicket,
+} from '@lucide/angular';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
+import { CartStore } from '@/site-management/customer/cart/data-access/store/cart.store';
+import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
+import { SiteHeaderComponent } from '@/site-management/customer/shell/components/site-header/site-header.component';
+
+interface AccountNavItem {
+  label: string;
+  link: string;
+  icon: 'overview' | 'orders' | 'addresses' | 'vouchers';
+}
+
+@Component({
+  selector: 'app-account-layout',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    SiteHeaderComponent,
+    LucideLayoutDashboard,
+    LucideReceiptText,
+    LucideMapPin,
+    LucideTicket,
+  ],
+  templateUrl: './account-layout.component.html',
+  styleUrl: './account-layout.component.css',
+})
+export class AccountLayoutComponent {
+  private readonly authSessionStore = inject(AuthSessionStore);
+  private readonly categoryNavigationStore = inject(CategoryNavigationStore);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
+  protected readonly cartStore = inject(CartStore);
+
+  protected readonly currentUser = this.authSessionStore.currentUser;
+  protected readonly navItems = this.categoryNavigationStore.navItems;
+  protected readonly accountNavItems: AccountNavItem[] = [
+    { label: 'Tổng quan', link: '/account/overview', icon: 'overview' },
+    { label: 'Lịch sử đơn hàng', link: '/account/orders', icon: 'orders' },
+    { label: 'Sổ địa chỉ', link: '/account/addresses', icon: 'addresses' },
+    { label: 'Kho voucher', link: '/account/vouchers', icon: 'vouchers' },
+  ];
+
+  constructor() {
+    effect(() => {
+      const message = this.authSessionStore.logoutSuccessMessage();
+
+      if (message) {
+        untracked(() => {
+          this.toastService.success(message);
+          this.authSessionStore.clearLogoutMessages();
+          this.router.navigate(['/']);
+        });
+      }
+    });
+
+    effect(() => {
+      const message = this.authSessionStore.logoutWarningMessage();
+
+      if (message) {
+        untracked(() => {
+          this.toastService.warning(message);
+          this.authSessionStore.clearLogoutMessages();
+          this.router.navigate(['/']);
+        });
+      }
+    });
+  }
+
+  protected onLogout(): void {
+    this.authSessionStore.logout();
+  }
+}

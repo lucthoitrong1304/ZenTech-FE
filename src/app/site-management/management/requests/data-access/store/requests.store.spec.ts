@@ -2,9 +2,9 @@ import '@angular/compiler';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { RequestsService } from '../services/requests.service';
-import { RequestsStore } from './requests.store';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { RequestsService } from '@/site-management/management/requests/data-access/services/requests.service';
+import { RequestsStore } from '@/site-management/management/requests/data-access/store/requests.store';
 
 describe('RequestsStore', () => {
   afterEach(() => TestBed.resetTestingModule());

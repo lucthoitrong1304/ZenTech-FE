@@ -7,7 +7,7 @@ import {
   LucideLock,
   LucideUnlock,
 } from '@lucide/angular';
-import { CustomerSummary } from '../../data-access/models/customer.models';
+import { CustomerSummary } from '@/site-management/management/customers/data-access/models/customer.models';
 
 @Component({
   selector: 'app-customer-table',

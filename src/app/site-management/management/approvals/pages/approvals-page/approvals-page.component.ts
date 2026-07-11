@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { LucideCheck, LucideRefreshCw, LucideX } from '@lucide/angular';
-import { PermissionCode } from '../../../../../core/permissions/permission.models';
-import { PermissionService } from '../../../../../core/permissions/permission.service';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { ApprovalDecision, ApprovalTab, LeaveRequestApproval, ShiftSwapApproval } from '../../data-access/models/approval.models';
-import { ApprovalStore } from '../../data-access/store/approval.store';
+import { PermissionCode } from '@/core/permissions/permission.models';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { ApprovalDecision, ApprovalTab, LeaveRequestApproval, ShiftSwapApproval } from '@/site-management/management/approvals/data-access/models/approval.models';
+import { ApprovalStore } from '@/site-management/management/approvals/data-access/store/approval.store';
 
 @Component({
   selector: 'app-approvals',

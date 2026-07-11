@@ -1,4 +1,4 @@
-import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
+import { HasPermissionDirective } from '@/core/permissions/has-permission.directive';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Component, ChangeDetectionStrategy, effect, inject, untracked, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -25,11 +25,11 @@ import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { DatePicker } from 'primeng/datepicker';
 import { PopoverModule } from 'primeng/popover';
-import { ManagementPageShellComponent } from '../../../../../shared/components/management-ui';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { ManagementInventoryStore } from '../../data-access/store/management-inventory.store';
-import { InventoryAdjustDialogComponent } from '../../components/inventory-adjust-dialog/inventory-adjust-dialog.component';
-import { InventoryAiDialogComponent } from '../../components/inventory-ai-dialog/inventory-ai-dialog.component';
+import { ManagementPageShellComponent } from '@/shared/components/management-ui';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { ManagementInventoryStore } from '@/site-management/management/inventory/data-access/store/management-inventory.store';
+import { InventoryAdjustDialogComponent } from '@/site-management/management/inventory/components/inventory-adjust-dialog/inventory-adjust-dialog.component';
+import { InventoryAiDialogComponent } from '@/site-management/management/inventory/components/inventory-ai-dialog/inventory-ai-dialog.component';
 import {
   InventorySummary,
   InventoryAdjustmentRequest,
@@ -37,7 +37,7 @@ import {
   TransactionTypeFilterOption,
   InventoryTransactionType,
   InventoryTransactionReason,
-} from '../../data-access/models/inventory.model';
+} from '@/site-management/management/inventory/data-access/models/inventory.model';
 
 interface InventoryStaffFilterOption {
   label: string;

@@ -12,9 +12,9 @@ import {
   CustomerPage,
   CustomerSort,
   CustomerSummary,
-} from '../models/customer.models';
-import { CustomerEvent, CustomerEventType } from '../models/customer.event';
-import { CustomerService } from '../services/customer.service';
+} from '@/site-management/management/customers/data-access/models/customer.models';
+import { CustomerEvent, CustomerEventType } from '@/site-management/management/customers/data-access/models/customer.event';
+import { CustomerService } from '@/site-management/management/customers/data-access/services/customer.service';
 
 interface CustomerUiState {
   query: CustomerListQuery;

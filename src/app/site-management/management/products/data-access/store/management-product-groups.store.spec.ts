@@ -7,9 +7,9 @@ import {
   ManagementProductGroupDraft,
   ManagementProductGroupPage,
   ManagementProductGroupQuery,
-} from '../models/management-product.models';
-import { ManagementProductService } from '../services/management-product.service';
-import { ManagementProductGroupsStore } from './management-product-groups.store';
+} from '@/site-management/management/products/data-access/models/management-product.models';
+import { ManagementProductService } from '@/site-management/management/products/data-access/services/management-product.service';
+import { ManagementProductGroupsStore } from '@/site-management/management/products/data-access/store/management-product-groups.store';
 
 describe('ManagementProductGroupsStore', () => {
   beforeAll(() => {

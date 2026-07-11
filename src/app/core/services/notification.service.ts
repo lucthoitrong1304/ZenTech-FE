@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../api/api.service';
-import { NOTIFICATION_API_ENDPOINTS } from '../api/notification-api-endpoints';
-import { INotification, IUnreadCountResponse, IPageResponse } from '../models/notification.model';
+import { ApiService } from '@/core/api/api.service';
+import { NOTIFICATION_API_ENDPOINTS } from '@/core/api/notification-api-endpoints';
+import { INotification, IUnreadCountResponse, IPageResponse } from '@/core/models/notification.model';
 
 @Injectable({
   providedIn: 'root',

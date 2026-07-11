@@ -6,7 +6,7 @@ import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
 import {
   ManagementProductGroupEvent,
   ManagementProductGroupEventType,
-} from '../models/management-product.event';
+} from '@/site-management/management/products/data-access/models/management-product.event';
 import {
   ManagementProductGroup,
   ManagementProductGroupDraft,
@@ -14,8 +14,8 @@ import {
   ManagementProductGroupPage,
   ManagementProductGroupQuery,
   ManagementProductOption,
-} from '../models/management-product.models';
-import { ManagementProductService } from '../services/management-product.service';
+} from '@/site-management/management/products/data-access/models/management-product.models';
+import { ManagementProductService } from '@/site-management/management/products/data-access/services/management-product.service';
 
 export type ManagementProductGroupDialogMode = 'create' | 'edit' | null;
 

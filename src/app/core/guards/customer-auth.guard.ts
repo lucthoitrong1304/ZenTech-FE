@@ -1,8 +1,8 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthStorageService } from '../services/auth-storage.service';
-import { ClientLogService } from '../observability/logging/client-log.service';
-import { ClientLogEventType } from '../observability/logging/client-log.model';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { ClientLogService } from '@/core/observability/logging/client-log.service';
+import { ClientLogEventType } from '@/core/observability/logging/client-log.model';
 
 export const customerAuthGuard: CanActivateFn = (_route, state) => {
   const router = inject(Router);

@@ -3,8 +3,8 @@ import {
   flattenManagementCategories,
   moveCategoryWithinSiblings,
   toManagementCategoryTree,
-} from './management-category.service';
-import { ProductCategorySummaryResponseDto } from '../models/management-category.models';
+} from '@/site-management/management/categories/data-access/services/management-category.service';
+import { ProductCategorySummaryResponseDto } from '@/site-management/management/categories/data-access/models/management-category.models';
 
 describe('management category mapping helpers', () => {
   it('maps nested backend categories with parent id, depth, and children', () => {

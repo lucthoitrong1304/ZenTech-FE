@@ -11,8 +11,8 @@ import {
   signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RecordingEvidenceResult } from './recording-evidence.models';
-import { RecordingEvidenceService } from './recording-evidence.service';
+import { RecordingEvidenceResult } from '@/site-management/admin/shared/recording-evidence/recording-evidence.models';
+import { RecordingEvidenceService } from '@/site-management/admin/shared/recording-evidence/recording-evidence.service';
 import { Subscription } from 'rxjs';
 
 type RecordingEvidenceState = 'idle' | 'loading' | 'ready' | 'empty' | 'error';

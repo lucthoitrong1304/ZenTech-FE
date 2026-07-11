@@ -4,7 +4,7 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { removeEntity, setAllEntities, updateEntity, withEntities } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, forkJoin, map, pipe, switchMap, tap } from 'rxjs';
-import { MarketingEvent, MarketingEventType } from '../models/marketing.event';
+import { MarketingEvent, MarketingEventType } from '@/site-management/management/marketing/data-access/models/marketing.event';
 import {
   ManagementCoupon,
   ManagementCouponQuery,
@@ -17,8 +17,8 @@ import {
   CouponFormValue,
   CouponType,
   CustomerVoucherStatus,
-} from '../models/marketing.models';
-import { MarketingService } from '../services/marketing.service';
+} from '@/site-management/management/marketing/data-access/models/marketing.models';
+import { MarketingService } from '@/site-management/management/marketing/data-access/services/marketing.service';
 
 const DEFAULT_COUPONS_QUERY: ManagementCouponQuery = {
   page: 0,

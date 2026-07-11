@@ -19,12 +19,12 @@ import {
   LucideCalendar,
   LucideAlertTriangle,
 } from '@lucide/angular';
-import { ReportsStore } from '../../data-access/store/reports.store';
-import { ReportPeriod, ReportsTab, IProductReport, ICustomerSegment } from '../../data-access/models/reports.model';
-import { ReportsEvent } from '../../data-access/models/reports.event';
-import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
-import { PermissionService } from '../../../../../core/permissions/permission.service';
-import { PermissionCode } from '../../../../../core/permissions/permission.models';
+import { ReportsStore } from '@/site-management/management/reports/data-access/store/reports.store';
+import { ReportPeriod, ReportsTab, IProductReport, ICustomerSegment } from '@/site-management/management/reports/data-access/models/reports.model';
+import { ReportsEvent } from '@/site-management/management/reports/data-access/models/reports.event';
+import { HasPermissionDirective } from '@/core/permissions/has-permission.directive';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
 
 interface ChartTooltipContext {
   dataset: {

@@ -20,10 +20,10 @@ import {
   LucideTicket,
 } from '@lucide/angular';
 import { Subject, Subscription, debounceTime } from 'rxjs';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { WebsocketService } from '../../../../../core/services/websocket.service';
-import { AdminDashboardStore } from '../../data-access/dashboard.store';
-import { DashboardPeriod } from '../../data-access/dashboard.models';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { WebsocketService } from '@/core/services/websocket.service';
+import { AdminDashboardStore } from '@/site-management/admin/dashboard/data-access/dashboard.store';
+import { DashboardPeriod } from '@/site-management/admin/dashboard/data-access/dashboard.models';
 
 @Component({
   selector: 'app-admin-dashboard',

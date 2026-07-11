@@ -1,6 +1,6 @@
 import { Directive, effect, ElementRef, inject, input, Renderer2 } from '@angular/core';
-import { PermissionCode } from './permission.models';
-import { PermissionService } from './permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
+import { PermissionService } from '@/core/permissions/permission.service';
 
 @Directive({
   selector: '[appHasPermission]',

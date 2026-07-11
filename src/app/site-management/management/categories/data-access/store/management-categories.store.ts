@@ -2,25 +2,25 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
-import { CategoryNavigationStore } from '../../../../shared/data-access/store/category-navigation.store';
+import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
 import {
   ManagementCategoryEvent,
   ManagementCategoryEventType,
-} from '../models/management-category.event';
+} from '@/site-management/management/categories/data-access/models/management-category.event';
 import {
   ManagementCategory,
   ManagementCategoryDialogMode,
   ManagementCategoryDraft,
   ManagementCategoryFormErrors,
   ManagementCategoryQuery,
-} from '../models/management-category.models';
+} from '@/site-management/management/categories/data-access/models/management-category.models';
 import {
   ManagementCategoryService,
   buildCategoryReorderItems,
   flattenManagementCategories,
   moveCategoryWithinSiblings,
   readManagementCategoryError,
-} from '../services/management-category.service';
+} from '@/site-management/management/categories/data-access/services/management-category.service';
 
 const DEFAULT_QUERY: ManagementCategoryQuery = {
   keyword: '',

@@ -12,12 +12,12 @@ import {
   LucideEye
 } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
-import { AdminStore } from '../../../data-access/store/admin.store';
-import { TicketStatus, SupportTicket, TicketPriority, AdminAccountRole } from '../../../data-access/models/admin.models';
-import { AccountService } from '../../../accounts/data-access/services/account.service';
-import { AccountSortField, SortDirection } from '../../../accounts/data-access/models/account.model';
-import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
-import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
+import { AdminStore } from '@/site-management/admin/data-access/store/admin.store';
+import { TicketStatus, SupportTicket, TicketPriority, AdminAccountRole } from '@/site-management/admin/data-access/models/admin.models';
+import { AccountService } from '@/site-management/admin/accounts/data-access/services/account.service';
+import { AccountSortField, SortDirection } from '@/site-management/admin/accounts/data-access/models/account.model';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { AdminRecordingEvidenceComponent } from '@/site-management/admin/shared/recording-evidence/admin-recording-evidence.component';
 
 export enum TicketDateFilterOption {
   ALL = 'ALL',

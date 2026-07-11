@@ -2,14 +2,14 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
 import {
   ACCOUNT_CREATE_DIALOG_OPENED_EVENT,
   ACCOUNT_DIALOG_CLOSED_EVENT,
   ACCOUNT_LOAD_REQUESTED_EVENT,
   AccountEvent,
   AccountEventType,
-} from '../models/account.event';
+} from '@/site-management/admin/accounts/data-access/models/account.event';
 import {
   AccountActiveFilter,
   AccountDialogMode,
@@ -21,8 +21,8 @@ import {
   SortDirection,
   UpdateAccountRolePayload,
   UpdateAccountStatusPayload,
-} from '../models/account.model';
-import { AccountService } from '../services/account.service';
+} from '@/site-management/admin/accounts/data-access/models/account.model';
+import { AccountService } from '@/site-management/admin/accounts/data-access/services/account.service';
 
 interface AccountState {
   accounts: AccountSummary[];

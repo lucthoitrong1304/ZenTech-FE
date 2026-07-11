@@ -1,4 +1,4 @@
-import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
+import { HasPermissionDirective } from '@/core/permissions/has-permission.directive';
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -15,10 +15,10 @@ import {
   LucideCalendar,
   LucideFileDown
 } from '@lucide/angular';
-import { ReturnRequestStore } from '../../data-access/store/return-request.store';
-import { ReturnRequest, ReturnRequestStatus } from '../../data-access/models/return-request.model';
-import { ManagementPageShellComponent } from '../../../../../shared/components/management-ui';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { ReturnRequestStore } from '@/site-management/management/return-requests/data-access/store/return-request.store';
+import { ReturnRequest, ReturnRequestStatus } from '@/site-management/management/return-requests/data-access/models/return-request.model';
+import { ManagementPageShellComponent } from '@/shared/components/management-ui';
+import { ToastService } from '@/shared/components/toast/toast.service';
 
 @Component({
   selector: 'app-return-requests-page',

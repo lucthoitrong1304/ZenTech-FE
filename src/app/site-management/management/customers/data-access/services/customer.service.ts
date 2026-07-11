@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { environment } from '../../../../../../environments/environment';
-import { ApiService } from '../../../../../core/api/api.service';
+import { environment } from '@env/environment';
+import { ApiService } from '@/core/api/api.service';
 import {
   CustomerAddress,
   CustomerDetail,
@@ -11,7 +11,7 @@ import {
   CustomerOrderQuery,
   CustomerPage,
   CustomerSummary,
-} from '../models/customer.models';
+} from '@/site-management/management/customers/data-access/models/customer.models';
 
 @Injectable({
   providedIn: 'root',

@@ -23,14 +23,14 @@ import {
   LucideZap,
 } from '@lucide/angular';
 import { finalize } from 'rxjs';
-import { AdminObservabilityService } from '../../data-access/admin-observability.service';
+import { AdminObservabilityService } from '@/site-management/admin/resource-monitoring/data-access/admin-observability.service';
 import {
   AdminObservabilityData,
   DashboardPeriod,
   ObservabilityDependency,
   ObservabilityDependencyDetail,
   ObservabilityHistoryPoint,
-} from '../../../dashboard/data-access/dashboard.models';
+} from '@/site-management/admin/dashboard/data-access/dashboard.models';
 
 type MetricKey = keyof Pick<ObservabilityHistoryPoint,
   'cpuUsagePercent' | 'ramUsagePercent' | 'diskUsagePercent' | 'jvmHeapUsagePercent' |

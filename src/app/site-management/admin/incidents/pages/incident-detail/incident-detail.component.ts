@@ -23,15 +23,15 @@ import {
 } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
 import { EditorModule } from 'primeng/editor';
-import { AdminStore } from '../../../data-access/store/admin.store';
-import { AdminIncidentsService } from '../../data-access/services/admin-incidents.service';
-import { AdminLogsService } from '../../../data-access/services/admin-logs.service';
-import { AccountService } from '../../../accounts/data-access/services/account.service';
-import { AccountSortField, SortDirection, AccountSummary, AdminAccountRole } from '../../../accounts/data-access/models/account.model';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { AdminProfileService } from '../../../data-access/services/admin-profile.service';
-import { AdminUploadPresignResponseDto } from '../../../data-access/models/admin-profile.model';
-import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
+import { AdminStore } from '@/site-management/admin/data-access/store/admin.store';
+import { AdminIncidentsService } from '@/site-management/admin/incidents/data-access/services/admin-incidents.service';
+import { AdminLogsService } from '@/site-management/admin/data-access/services/admin-logs.service';
+import { AccountService } from '@/site-management/admin/accounts/data-access/services/account.service';
+import { AccountSortField, SortDirection, AccountSummary, AdminAccountRole } from '@/site-management/admin/accounts/data-access/models/account.model';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { AdminProfileService } from '@/site-management/admin/data-access/services/admin-profile.service';
+import { AdminUploadPresignResponseDto } from '@/site-management/admin/data-access/models/admin-profile.model';
+import { AdminRecordingEvidenceComponent } from '@/site-management/admin/shared/recording-evidence/admin-recording-evidence.component';
 import {
   IncidentStatus,
   IncidentSeverity,
@@ -45,7 +45,7 @@ import {
   SystemLog,
   ActivityArea,
   ActivitySeverity
-} from '../../../data-access/models/admin.models';
+} from '@/site-management/admin/data-access/models/admin.models';
 
 interface LogMetadataItem {
   label: string;

@@ -4,7 +4,7 @@ import {
   AccountSummary,
   AdminAccountRole,
   PageResponse,
-} from './account.model';
+} from '@/site-management/admin/accounts/data-access/models/account.model';
 
 export enum AccountEventType {
   LoadRequested = 'LOAD_REQUESTED',

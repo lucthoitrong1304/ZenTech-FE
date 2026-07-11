@@ -2,13 +2,13 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
 import { LucideBot, LucideFileText, LucideImage } from '@lucide/angular';
 import { MarkdownComponent } from 'ngx-markdown';
-import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
-import { ChatProductRecommendationsComponent } from '../../../../../shared/components/chat-product-recommendations/chat-product-recommendations.component';
+import { MediaPreviewItem } from '@/shared/components/media-preview-dialog/media-preview-dialog.model';
+import { ChatProductRecommendationsComponent } from '@/shared/components/chat-product-recommendations/chat-product-recommendations.component';
 import {
   ManagementChatConversation,
   ManagementChatMessageAttachment,
   ManagementChatMessage,
-} from '../../data-access/models/management-chat.models';
+} from '@/site-management/management/chat/data-access/models/management-chat.models';
 
 @Component({
   selector: 'app-message-timeline',

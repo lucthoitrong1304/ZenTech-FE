@@ -1,4 +1,4 @@
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 
 export function buildWebSocketUrl(): string {
   const apiBaseUrl = environment.apiBaseUrl.replace(/\/+$/, '');

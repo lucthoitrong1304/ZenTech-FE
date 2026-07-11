@@ -8,8 +8,8 @@ import {
   LucideShieldAlert,
   LucideShieldCheck,
 } from '@lucide/angular';
-import { ConfigurableRole, PermissionCode } from '../../../../../core/permissions/permission.models';
-import { PermissionMatrixStore } from '../../data-access/permission-matrix.store';
+import { ConfigurableRole, PermissionCode } from '@/core/permissions/permission.models';
+import { PermissionMatrixStore } from '@/site-management/admin/permissions/data-access/permission-matrix.store';
 
 @Component({
   selector: 'app-admin-permissions',

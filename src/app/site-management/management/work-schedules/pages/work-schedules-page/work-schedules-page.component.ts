@@ -29,8 +29,8 @@ import {
   LucideX,
 } from '@lucide/angular';
 import * as L from 'leaflet';
-import { environment } from '../../../../../../environments/environment';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { environment } from '@env/environment';
+import { ToastService } from '@/shared/components/toast/toast.service';
 import {
   AttendanceGeoPoint,
   AttendanceLocationShapeType,
@@ -38,10 +38,10 @@ import {
   EmployeeWeeklySchedule,
   Shift,
   ShiftType,
-} from '../../data-access/models/work-schedule.models';
-import { WorkScheduleStore } from '../../data-access/store/work-schedule.store';
-import { PermissionService } from '../../../../../core/permissions/permission.service';
-import { PermissionCode } from '../../../../../core/permissions/permission.models';
+} from '@/site-management/management/work-schedules/data-access/models/work-schedule.models';
+import { WorkScheduleStore } from '@/site-management/management/work-schedules/data-access/store/work-schedule.store';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
 
 type ShiftSettingsPanel = 'time' | 'rules';
 

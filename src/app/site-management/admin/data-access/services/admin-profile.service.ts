@@ -1,9 +1,9 @@
 import { HttpContext, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../core/api/api.service';
-import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../../../../core/tokens/api-context.token';
-import { environment } from '../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '@/core/tokens/api-context.token';
+import { environment } from '@env/environment';
 import {
   AdminApiResponseDto,
   AdminProfileResponse,
@@ -11,7 +11,7 @@ import {
   AdminUploadPresignRequestDto,
   AdminUploadPresignResponseDto,
   AdminUploadPurpose,
-} from '../models/admin-profile.model';
+} from '@/site-management/admin/data-access/models/admin-profile.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminProfileService {

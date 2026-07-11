@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
-import { ApiResponse, PaginatedResult } from '../../../../admin/data-access/models/admin.models';
-import { ManagementImpactDashboardDto, ManagementIncidentImpactDto, AffectedUserDetail } from '../models/management-business-impact.model';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
+import { ApiResponse, PaginatedResult } from '@/site-management/admin/data-access/models/admin.models';
+import { ManagementImpactDashboardDto, ManagementIncidentImpactDto, AffectedUserDetail } from '@/site-management/management/business-impact/data-access/models/management-business-impact.model';
 
 @Injectable({
   providedIn: 'root',

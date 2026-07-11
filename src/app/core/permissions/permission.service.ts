@@ -1,15 +1,15 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Observable, finalize, map, of, shareReplay, tap } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { ApiService } from '../api/api.service';
-import { AuthStorageService } from '../services/auth-storage.service';
+import { environment } from '@env/environment';
+import { ApiService } from '@/core/api/api.service';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
 import {
   ApiResponse,
   ConfigurableRole,
   CurrentPermissions,
   PermissionCode,
   PermissionMatrix,
-} from './permission.models';
+} from '@/core/permissions/permission.models';
 
 @Injectable({ providedIn: 'root' })
 export class PermissionService {

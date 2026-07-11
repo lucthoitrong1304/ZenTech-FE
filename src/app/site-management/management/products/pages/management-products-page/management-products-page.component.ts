@@ -1,4 +1,4 @@
-import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
+import { HasPermissionDirective } from '@/core/permissions/has-permission.directive';
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import {
@@ -9,22 +9,22 @@ import {
   LucideWarehouse,
 } from '@lucide/angular';
 import { filter, take } from 'rxjs';
-import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
+import { ConfirmService } from '@/shared/components/confirm/confirm.service';
 import {
   ManagementPageHeroComponent,
   ManagementPageShellComponent,
   ManagementStatCardComponent,
   ManagementToolbarSurfaceComponent,
-} from '../../../../../shared/components/management-ui';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { ProductTableComponent } from '../../components/product-table/product-table.component';
-import { ProductToolbarComponent } from '../../components/product-toolbar/product-toolbar.component';
-import { ProductDialogComponent } from '../../components/product-dialog/product-dialog.component';
+} from '@/shared/components/management-ui';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { ProductTableComponent } from '@/site-management/management/products/components/product-table/product-table.component';
+import { ProductToolbarComponent } from '@/site-management/management/products/components/product-toolbar/product-toolbar.component';
+import { ProductDialogComponent } from '@/site-management/management/products/components/product-dialog/product-dialog.component';
 import {
   ManagementProduct,
   ManagementProductQuery,
-} from '../../data-access/models/management-product.models';
-import { ManagementProductsStore } from '../../data-access/store/management-products.store';
+} from '@/site-management/management/products/data-access/models/management-product.models';
+import { ManagementProductsStore } from '@/site-management/management/products/data-access/store/management-products.store';
 
 @Component({
   selector: 'app-management-products-page',

@@ -1,14 +1,14 @@
 import { Routes } from '@angular/router';
-import { managementGuard } from '../../core/guards/management.guard';
-import { PermissionCode } from '../../core/permissions/permission.models';
-import { loadManagementPermissionComponent } from './management-permission-loader';
+import { managementGuard } from '@/core/guards/management.guard';
+import { PermissionCode } from '@/core/permissions/permission.models';
+import { loadManagementPermissionComponent } from '@/site-management/management/management-permission-loader';
 
 export const managementRoutes: Routes = [
   {
     path: '',
     canActivate: [managementGuard],
     loadComponent: () =>
-      import('./pages/management-layout/management-layout.component').then(m => m.ManagementLayoutComponent),
+      import('@/site-management/management/pages/management-layout/management-layout.component').then(m => m.ManagementLayoutComponent),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
@@ -20,7 +20,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Hành động mới',
         },
         loadComponent: () =>
-          import('./dashboard/pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
+          import('@/site-management/management/dashboard/pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'analytics',
@@ -31,7 +31,7 @@ export const managementRoutes: Routes = [
           description: 'Giám sát thiệt hại kinh doanh, số lượng đơn hàng thất thoát và người dùng bị ảnh hưởng do sự cố kỹ thuật.',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.REPORT_VIEW, () =>
-          import('./business-impact/pages/management-business-impact/management-business-impact.component').then(
+          import('@/site-management/management/business-impact/pages/management-business-impact/management-business-impact.component').then(
             m => m.ManagementBusinessImpactComponent
           )),
       },
@@ -45,7 +45,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Thêm nhân viên',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.EMPLOYEE_VIEW, () =>
-          import('./employees/pages/management-employees-page/management-employees-page.component').then(
+          import('@/site-management/management/employees/pages/management-employees-page/management-employees-page.component').then(
             m => m.ManagementEmployeesPageComponent
           )),
       },
@@ -59,7 +59,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Lọc dữ liệu',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.SCHEDULE_VIEW, () =>
-          import('./employees/pages/attendance-report/attendance-report-page.component').then(
+          import('@/site-management/management/employees/pages/attendance-report/attendance-report-page.component').then(
             m => m.AttendanceReportPageComponent
           )),
       },
@@ -73,7 +73,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Gán ca',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.SCHEDULE_VIEW, () =>
-          import('./work-schedules/pages/work-schedules-page/work-schedules-page.component').then(
+          import('@/site-management/management/work-schedules/pages/work-schedules-page/work-schedules-page.component').then(
             m => m.WorkSchedulesPageComponent
           )),
       },
@@ -85,7 +85,7 @@ export const managementRoutes: Routes = [
           description: 'Gửi yêu cầu nghỉ phép, đổi ca, và điều chỉnh giờ công.',
         },
         loadComponent: () =>
-          import('./requests/pages/requests-page/requests-page.component').then(
+          import('@/site-management/management/requests/pages/requests-page/requests-page.component').then(
             m => m.RequestsComponent
           ),
       },
@@ -98,7 +98,7 @@ export const managementRoutes: Routes = [
           description: 'Phê duyệt các yêu cầu nghỉ phép, đổi ca, và chỉnh công từ nhân viên.',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.APPROVAL_VIEW, () =>
-          import('./approvals/pages/approvals-page/approvals-page.component').then(
+          import('@/site-management/management/approvals/pages/approvals-page/approvals-page.component').then(
             m => m.ApprovalsComponent
           )),
       },
@@ -113,7 +113,7 @@ export const managementRoutes: Routes = [
           hidePageHeader: true,
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.CHAT_VIEW, () =>
-          import('./chat/pages/management-chat-page/management-chat-page.component').then(
+          import('@/site-management/management/chat/pages/management-chat-page/management-chat-page.component').then(
             m => m.ManagementChatPageComponent
           )),
       },      {
@@ -125,7 +125,7 @@ export const managementRoutes: Routes = [
           description: 'Theo dõi trạng thái ticket phát sinh từ sự cố để tư vấn khách hàng chính xác.',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.CHAT_VIEW, () =>
-          import('./tickets/pages/management-tickets-page/management-tickets-page.component').then(
+          import('@/site-management/management/tickets/pages/management-tickets-page/management-tickets-page.component').then(
             m => m.ManagementTicketsPageComponent
           )),
       },
@@ -139,7 +139,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Xuất báo cáo',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.ORDER_VIEW, () =>
-          import('./orders/pages/management-orders-page/management-orders-page.component').then(
+          import('@/site-management/management/orders/pages/management-orders-page/management-orders-page.component').then(
             m => m.ManagementOrdersPageComponent
           )),
       },
@@ -152,7 +152,7 @@ export const managementRoutes: Routes = [
           description: 'Xét duyệt các yêu cầu trả hàng và hoàn tiền từ khách hàng.',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.RETURN_VIEW, () =>
-          import('./return-requests/pages/return-requests-page/return-requests-page.component').then(
+          import('@/site-management/management/return-requests/pages/return-requests-page/return-requests-page.component').then(
             m => m.ReturnRequestsPageComponent
           )),
       },
@@ -166,7 +166,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Thêm sản phẩm',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.PRODUCT_VIEW, () =>
-          import('./products/pages/management-products-page/management-products-page.component').then(
+          import('@/site-management/management/products/pages/management-products-page/management-products-page.component').then(
             m => m.ManagementProductsPageComponent
           )),
       },
@@ -180,7 +180,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Thêm danh mục',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.PRODUCT_VIEW, () =>
-          import('./categories/pages/management-categories-page/management-categories-page.component').then(
+          import('@/site-management/management/categories/pages/management-categories-page/management-categories-page.component').then(
             m => m.ManagementCategoriesPageComponent
           )),
       },
@@ -210,7 +210,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Cập nhật kho',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.INVENTORY_VIEW, () =>
-          import('./inventory/pages/management-inventory-page/management-inventory-page.component').then(
+          import('@/site-management/management/inventory/pages/management-inventory-page/management-inventory-page.component').then(
             m => m.ManagementInventoryPageComponent
           )),
       },
@@ -224,7 +224,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Thêm khách hàng',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.CUSTOMER_VIEW, () =>
-          import('./customers/pages/customer-list/customer-list.component').then(
+          import('@/site-management/management/customers/pages/customer-list/customer-list.component').then(
             m => m.CustomerListComponent
           )),
       },
@@ -238,7 +238,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Tạo chiến dịch',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.MARKETING_VIEW, () =>
-          import('./marketing/pages/marketing-page/marketing-page.component').then(
+          import('@/site-management/management/marketing/pages/marketing-page/marketing-page.component').then(
             m => m.MarketingPageComponent
           )),
       },
@@ -252,7 +252,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Thiết lập AI',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.AI_VIEW, () =>
-          import('./ai-management/pages/ai-management-page/ai-management-page.component').then(
+          import('@/site-management/management/ai-management/pages/ai-management-page/ai-management-page.component').then(
             m => m.AiManagementPageComponent
           )),
       },
@@ -266,7 +266,7 @@ export const managementRoutes: Routes = [
           primaryAction: 'Xuất báo cáo',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.REPORT_VIEW, () =>
-          import('./reports/pages/management-reports/management-reports.component').then(
+          import('@/site-management/management/reports/pages/management-reports/management-reports.component').then(
             m => m.ManagementReportsPageComponent
           )),
       },
@@ -279,7 +279,7 @@ export const managementRoutes: Routes = [
           description: 'Quản lý khóa và mở khóa các kỳ tính công hàng tháng.',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.PAY_PERIOD_VIEW, () =>
-          import('./pay-periods/pages/pay-periods-page/pay-periods-page.component').then(
+          import('@/site-management/management/pay-periods/pages/pay-periods-page/pay-periods-page.component').then(
             m => m.PayPeriodsComponent
           )),
       },
@@ -292,7 +292,7 @@ export const managementRoutes: Routes = [
           description: 'Cấu hình loại yêu cầu nghỉ phép và hạn mức theo nhân viên.',
         },
         loadComponent: loadManagementPermissionComponent(PermissionCode.EMPLOYEE_UPDATE, () =>
-          import('./leave-settings/pages/leave-settings-page/leave-settings-page.component').then(
+          import('@/site-management/management/leave-settings/pages/leave-settings-page/leave-settings-page.component').then(
             m => m.LeaveSettingsComponent
           )),
       },
@@ -304,7 +304,7 @@ export const managementRoutes: Routes = [
           description: 'Quản lý thông tin cá nhân và chi tiết tài khoản của bạn.',
         },
         loadComponent: () =>
-          import('./pages/management-profile-page/management-profile-page').then(
+          import('@/site-management/management/pages/management-profile-page/management-profile-page').then(
             m => m.ManagementProfilePage
           ),
       },
@@ -316,7 +316,7 @@ export const managementRoutes: Routes = [
           description: 'Cập nhật mật khẩu mới để bảo mật tài khoản của bạn.',
         },
         loadComponent: () =>
-          import('./pages/management-change-password-page/management-change-password-page').then(
+          import('@/site-management/management/pages/management-change-password-page/management-change-password-page').then(
             m => m.ManagementChangePasswordPage
           ),
       },
@@ -328,7 +328,7 @@ export const managementRoutes: Routes = [
           description: 'Cấu hình các cài đặt hệ thống và tùy chọn hiển thị.',
         },
         loadComponent: () =>
-          import('./pages/management-settings-page/management-settings-page').then(
+          import('@/site-management/management/pages/management-settings-page/management-settings-page').then(
             m => m.ManagementSettingsPage
           ),
       },

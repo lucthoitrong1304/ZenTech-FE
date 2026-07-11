@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
-import { ApprovalDecision, ApprovalResponse, AttendanceAdjustmentApproval, LeaveRequestApproval, ShiftSwapApproval } from '../models/approval.models';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
+import { ApprovalDecision, ApprovalResponse, AttendanceAdjustmentApproval, LeaveRequestApproval, ShiftSwapApproval } from '@/site-management/management/approvals/data-access/models/approval.models';
 
 @Injectable({ providedIn: 'root' })
 export class ApprovalService {

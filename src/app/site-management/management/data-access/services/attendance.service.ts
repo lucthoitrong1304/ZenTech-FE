@@ -1,14 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../core/api/api.service';
-import { environment } from '../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
 import { 
   CheckInRequest, 
   CheckInResponse,
   AttendanceLocationPolicy,
   AttendanceReportApiResponse,
-} from '../models/attendance.model';
-import { ApiResponseDto } from '../models/profile.model';
+} from '@/site-management/management/data-access/models/attendance.model';
+import { ApiResponseDto } from '@/site-management/management/data-access/models/profile.model';
 
 @Injectable({
   providedIn: 'root',

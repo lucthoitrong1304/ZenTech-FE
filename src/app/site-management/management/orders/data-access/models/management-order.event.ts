@@ -6,7 +6,7 @@ import {
   ManagementOrderPage,
   ManagementOrderQuery,
   ManagementOrderStatusFilter,
-} from './management-order.models';
+} from '@/site-management/management/orders/data-access/models/management-order.models';
 
 export enum ManagementOrderEventType {
   OrdersLoadStarted = 'Orders Load Started',

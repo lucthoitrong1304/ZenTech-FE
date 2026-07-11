@@ -25,7 +25,7 @@ import { PasswordModule } from 'primeng/password';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { AccountEventType } from '../../data-access/models/account.event';
+import { AccountEventType } from '@/site-management/admin/accounts/data-access/models/account.event';
 import {
   AccountActiveFilter,
   AccountDialogMode,
@@ -34,8 +34,8 @@ import {
   AccountSummary,
   AdminAccountRole,
   CreateInternalAccountPayload,
-} from '../../data-access/models/account.model';
-import { AccountStore } from '../../data-access/store/account.store';
+} from '@/site-management/admin/accounts/data-access/models/account.model';
+import { AccountStore } from '@/site-management/admin/accounts/data-access/store/account.store';
 
 @Component({
   selector: 'app-admin-accounts',

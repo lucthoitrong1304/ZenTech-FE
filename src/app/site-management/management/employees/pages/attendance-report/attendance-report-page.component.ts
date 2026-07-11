@@ -1,9 +1,9 @@
 import { Component, ChangeDetectionStrategy, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AttendanceReportStore } from '../../../data-access/store/attendance-report.store';
-import { AttendanceStatisticsCardsComponent } from './components/attendance-statistics-cards/attendance-statistics-cards.component';
-import { AttendanceTableComponent } from './components/attendance-table/attendance-table.component';
+import { AttendanceReportStore } from '@/site-management/management/data-access/store/attendance-report.store';
+import { AttendanceStatisticsCardsComponent } from '@/site-management/management/employees/pages/attendance-report/components/attendance-statistics-cards/attendance-statistics-cards.component';
+import { AttendanceTableComponent } from '@/site-management/management/employees/pages/attendance-report/components/attendance-table/attendance-table.component';
 import { LucideAlertCircle, LucideFilter } from '@lucide/angular';
 
 @Component({

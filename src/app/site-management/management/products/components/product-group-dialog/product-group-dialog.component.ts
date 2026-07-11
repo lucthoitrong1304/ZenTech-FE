@@ -8,12 +8,12 @@ import {
 import { DialogModule } from 'primeng/dialog';
 import type {
   ManagementProductGroupDialogMode,
-} from '../../data-access/store/management-product-groups.store';
+} from '@/site-management/management/products/data-access/store/management-product-groups.store';
 import type {
   ManagementProductGroupDraft,
   ManagementProductGroupFormErrors,
   ManagementProductOption,
-} from '../../data-access/models/management-product.models';
+} from '@/site-management/management/products/data-access/models/management-product.models';
 
 @Component({
   selector: 'app-product-group-dialog',

@@ -3,9 +3,9 @@ import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@a
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LucideArrowLeft, LucideEye, LucideEyeOff, LucideKeyRound, LucideLoader2, LucideShieldAlert, LucideShieldCheck } from '@lucide/angular';
-import { ChangePasswordRequest } from '../../../auth/data-access/models/auth.models';
-import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
-import { AdminChangePasswordStore } from '../../data-access/store/admin-change-password.store';
+import { ChangePasswordRequest } from '@/site-management/identity/data-access/models/auth.models';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
+import { AdminChangePasswordStore } from '@/site-management/admin/data-access/store/admin-change-password.store';
 
 enum AdminPasswordField {
   CurrentPassword = 'currentPassword',

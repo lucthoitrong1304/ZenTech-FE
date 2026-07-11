@@ -7,20 +7,20 @@ import {
   IRevenuePoint,
   IProductReport,
   ReportPeriod,
-} from '../../../reports/data-access/models/reports.model';
-import { ReportsService } from '../../../reports/data-access/services/reports.service';
-import { ManagementOrderService } from '../../../orders/data-access/services/management-order.service';
-import { ManagementOrder, ManagementOrderQuery } from '../../../orders/data-access/models/management-order.models';
-import { ManagementBusinessImpactService } from '../../../business-impact/data-access/services/management-business-impact.service';
+} from '@/site-management/management/reports/data-access/models/reports.model';
+import { ReportsService } from '@/site-management/management/reports/data-access/services/reports.service';
+import { ManagementOrderService } from '@/site-management/management/orders/data-access/services/management-order.service';
+import { ManagementOrder, ManagementOrderQuery } from '@/site-management/management/orders/data-access/models/management-order.models';
+import { ManagementBusinessImpactService } from '@/site-management/management/business-impact/data-access/services/management-business-impact.service';
 import {
   ManagementImpactDashboardDto,
   ManagementIncidentImpactDto,
   AffectedUserDetail,
-} from '../../../business-impact/data-access/models/management-business-impact.model';
-import { ManagementTicketService } from '../../../tickets/data-access/services/management-ticket.service';
-import { ManagementTicket, ManagementTicketQuery, TicketStatus } from '../../../tickets/data-access/models/management-ticket.models';
-import { PermissionService } from '../../../../../core/permissions/permission.service';
-import { PermissionCode } from '../../../../../core/permissions/permission.models';
+} from '@/site-management/management/business-impact/data-access/models/management-business-impact.model';
+import { ManagementTicketService } from '@/site-management/management/tickets/data-access/services/management-ticket.service';
+import { ManagementTicket, ManagementTicketQuery, TicketStatus } from '@/site-management/management/tickets/data-access/models/management-ticket.models';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
 
 export interface DashboardUiState {
   period: ReportPeriod;

@@ -2,9 +2,9 @@ import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, Observable, catchError, exhaustMap, forkJoin, pipe, switchMap, tap } from 'rxjs';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { ApprovalDecision, ApprovalResponse, AttendanceAdjustmentApproval, LeaveRequestApproval, ShiftSwapApproval } from '../models/approval.models';
-import { ApprovalService } from '../services/approval.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { ApprovalDecision, ApprovalResponse, AttendanceAdjustmentApproval, LeaveRequestApproval, ShiftSwapApproval } from '@/site-management/management/approvals/data-access/models/approval.models';
+import { ApprovalService } from '@/site-management/management/approvals/data-access/services/approval.service';
 
 interface ApprovalState {
   leaves: LeaveRequestApproval[];

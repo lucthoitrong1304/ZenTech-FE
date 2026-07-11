@@ -1,8 +1,8 @@
-﻿import { Injectable, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
-import { ApiResponse, CustomerTicketStatus, ManagementTicket, ManagementTicketPage, ManagementTicketQuery } from '../models/management-ticket.models';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
+import { ApiResponse, CustomerTicketStatus, ManagementTicket, ManagementTicketPage, ManagementTicketQuery } from '@/site-management/management/tickets/data-access/models/management-ticket.models';
 
 @Injectable({ providedIn: 'root' })
 export class ManagementTicketService {

@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
-import { CreatePayPeriodPayload, PayPeriod, PayPeriodResponse } from '../models/pay-period.models';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
+import { CreatePayPeriodPayload, PayPeriod, PayPeriodResponse } from '@/site-management/management/pay-periods/data-access/models/pay-period.models';
 
 @Injectable({ providedIn: 'root' })
 export class PayPeriodService {

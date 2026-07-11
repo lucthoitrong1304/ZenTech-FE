@@ -2,10 +2,10 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, map, pipe, switchMap, tap } from 'rxjs';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
-import { AdminProfileResponse, AdminProfileUpdateRequest } from '../models/admin-profile.model';
-import { AdminProfileService } from '../services/admin-profile.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
+import { AdminProfileResponse, AdminProfileUpdateRequest } from '@/site-management/admin/data-access/models/admin-profile.model';
+import { AdminProfileService } from '@/site-management/admin/data-access/services/admin-profile.service';
 
 interface AdminProfileState {
   profile: AdminProfileResponse | null;
