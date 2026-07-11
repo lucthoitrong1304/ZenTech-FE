@@ -16,7 +16,6 @@ import {
 } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { catchError, EMPTY, pipe, switchMap, tap } from 'rxjs';
-import { AccountEvent, AccountEventType } from '../models/account.event';
 import {
   AccountProfile,
   UpdateMyProfileRequest,
@@ -69,7 +68,6 @@ const INITIAL_STATE: AccountUiState = {
 };
 
 export const AccountStore = signalStore(
-  { providedIn: 'root' },
   withState<AccountUiState>(INITIAL_STATE),
   withEntities<CustomerVoucherResponse, 'voucher'>({
     entity: {} as CustomerVoucherResponse,
@@ -566,42 +564,7 @@ export const AccountStore = signalStore(
       )
     );
 
-    const handleEvent = (event: AccountEvent): void => {
-      switch (event.type) {
-        case AccountEventType.VoucherTabChanged:
-          patchState(store, { activeVoucherStatus: event.status });
-          break;
-
-        case AccountEventType.OrderFilterChanged:
-          patchState(store, { orderFilter: event.filter });
-          break;
-
-        case AccountEventType.OrderSearchChanged:
-          patchState(store, { orderSearchKeyword: event.keyword });
-          break;
-
-        case AccountEventType.AddressCreateClicked:
-          break;
-
-        case AccountEventType.AddressEditClicked:
-          break;
-
-        case AccountEventType.AddressDeleteClicked:
-          deleteAddress(event.addressId);
-          break;
-
-        case AccountEventType.AddressDefaultChanged:
-          setDefaultAddress(event.addressId);
-          break;
-
-        case AccountEventType.ActionMessageCleared:
-          patchState(store, { actionMessage: null });
-          break;
-      }
-    };
-
     return {
-      dispatch: handleEvent,
       loadProfile,
       updateProfile,
       uploadAvatar,

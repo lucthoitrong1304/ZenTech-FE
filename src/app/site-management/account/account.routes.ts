@@ -1,10 +1,12 @@
 import { Routes } from '@angular/router';
 import { customerAuthGuard } from '../../core/guards/customer-auth.guard';
+import { AccountStore } from './data-access/store/account.store';
 
 export const accountRoutes: Routes = [
   {
     path: '',
     canActivate: [customerAuthGuard],
+    providers: [AccountStore],
     loadComponent: () =>
       import('./pages/account-layout/account-layout.component').then(
         m => m.AccountLayoutComponent

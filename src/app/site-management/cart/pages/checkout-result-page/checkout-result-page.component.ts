@@ -1,8 +1,7 @@
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { CustomerOrderDetailResponse } from '../../../account/data-access/models/account.models';
-import { AccountService } from '../../../account/data-access/services/account.service';
+import { AccountStore } from '../../../account/data-access/store/account.store';
 import { CategoryNavigationStore } from '../../../shared/data-access/store/category-navigation.store';
 import { SiteHeaderComponent } from '../../../shared/site-header/site-header.component';
 import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
@@ -12,62 +11,34 @@ import { CartStore } from '../../data-access/store/cart.store';
   selector: 'app-checkout-result-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
+  providers: [AccountStore],
   imports: [CommonModule, RouterLink, CurrencyPipe, DatePipe, SiteHeaderComponent],
   templateUrl: './checkout-result-page.component.html',
 })
 export class CheckoutResultPageComponent {
-  private static readonly PAYMENT_CONFIRMATION_RETRY_LIMIT = 3;
-  private static readonly PAYMENT_CONFIRMATION_RETRY_DELAY_MS = 1500;
-
   private readonly route = inject(ActivatedRoute);
-  private readonly accountService = inject(AccountService);
+  private readonly accountStore = inject(AccountStore);
   private readonly authSessionStore = inject(AuthSessionStore);
   private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   protected readonly cartStore = inject(CartStore);
 
   protected readonly navItems = this.categoryNavigationStore.navItems;
   protected readonly currentUser = this.authSessionStore.currentUser;
-  protected readonly order = signal<CustomerOrderDetailResponse | null>(null);
-  protected readonly loading = signal(true);
-  protected readonly error = signal<string | null>(null);
+  protected readonly order = this.accountStore.selectedOrderDetail;
+  protected readonly loading = this.accountStore.loading;
+  private readonly routeError = signal<string | null>(null);
+  protected readonly error = computed(() => this.routeError() ?? this.accountStore.error());
   protected readonly gateway = this.route.snapshot.queryParamMap.get('gateway') || 'PAYMENT';
   protected readonly returnStatus = this.route.snapshot.queryParamMap.get('status') || 'pending';
 
   constructor() {
     const orderId = this.route.snapshot.queryParamMap.get('orderId');
     if (!orderId || orderId === 'null') {
-      this.loading.set(false);
-      this.error.set('Không tìm thấy mã đơn hàng trong kết quả thanh toán.');
+      this.routeError.set('Không tìm thấy mã đơn hàng trong kết quả thanh toán.');
       return;
     }
 
-    this.loadOrderDetail(orderId);
-  }
-
-  private loadOrderDetail(orderId: string, attempt = 0): void {
-    this.loading.set(true);
-    this.accountService.getOrderDetail(orderId).subscribe({
-      next: response => {
-        const order = response.data;
-        this.order.set(order);
-        if (
-          this.returnStatus === 'success'
-          && order?.paymentStatus !== 'SUCCESS'
-          && attempt < CheckoutResultPageComponent.PAYMENT_CONFIRMATION_RETRY_LIMIT
-        ) {
-          window.setTimeout(
-            () => this.loadOrderDetail(orderId, attempt + 1),
-            CheckoutResultPageComponent.PAYMENT_CONFIRMATION_RETRY_DELAY_MS
-          );
-        }
-      },
-      error: () => {
-        this.error.set('Không thể tải thông tin đơn hàng. Vui lòng kiểm tra lịch sử đơn hàng.');
-      },
-      complete: () => {
-        this.loading.set(false);
-      },
-    });
+    this.accountStore.loadOrderDetail(orderId);
   }
 
   protected get headline(): string {

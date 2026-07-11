@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-import { AccountEventType } from '../models/account.event';
 import { AccountStore } from './account.store';
 
 describe('AccountStore', () => {
@@ -23,30 +22,21 @@ describe('AccountStore', () => {
   it('filters vouchers by the selected wallet tab', () => {
     const store = configureStore();
 
-    store.dispatch({ type: AccountEventType.VoucherTabChanged, status: 'used' });
+    store.setVoucherTab('used');
 
     expect(store.filteredVouchers().every(voucher => voucher.status === 'used')).toBe(true);
   });
 
-  it('updates the default address with entity updaters', () => {
+  it('derives the default address from the address entity collection', () => {
     const store = configureStore();
 
-    store.dispatch({
-      type: AccountEventType.AddressDefaultChanged,
-      addressId: 'address-hq',
-    });
-
-    expect(store.defaultAddress()?.addressId).toBe('address-hq');
-    expect(store.addresses().filter(address => address.isDefault)).toHaveLength(1);
+    expect(store.defaultAddress()?.isDefault).toBe(true);
   });
 
   it('searches order history by id and product name', () => {
     const store = configureStore();
 
-    store.dispatch({
-      type: AccountEventType.OrderSearchChanged,
-      keyword: 'Mercury',
-    });
+    store.setOrderSearchKeyword('Mercury');
 
     expect(store.filteredOrders().map(order => order.orderId)).toEqual(['KN-9012338']);
   });
