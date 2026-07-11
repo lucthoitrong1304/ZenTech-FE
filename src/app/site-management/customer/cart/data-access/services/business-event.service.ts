@@ -2,6 +2,7 @@ import { HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import { ApiService } from '@/core/api/api.service';
+import { Observable } from 'rxjs';
 
 export enum BusinessEventType {
   VIEW_PRODUCT = 'VIEW_PRODUCT',
@@ -24,13 +25,10 @@ export class BusinessEventService {
   private readonly apiService = inject(ApiService);
   private readonly url = `${environment.apiBaseUrl}/business-events`;
 
-  record(payload: BusinessEventRequest): void {
-    // Fire-and-forget: không block luồng chính, lỗi cũng không ảnh hưởng UX
-    this.apiService
-      .post<BusinessEventRequest, unknown>(this.url, payload, {
-        headers: this.createTraceHeaders(payload.traceId),
-      })
-      .subscribe({ error: () => {} });
+  record(payload: BusinessEventRequest): Observable<unknown> {
+    return this.apiService.post<BusinessEventRequest, unknown>(this.url, payload, {
+      headers: this.createTraceHeaders(payload.traceId),
+    });
   }
 
   private createTraceHeaders(traceId?: string): HttpHeaders | undefined {

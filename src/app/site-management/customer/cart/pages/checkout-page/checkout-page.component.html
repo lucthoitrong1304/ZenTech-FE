@@ -54,7 +54,7 @@
               <p class="rounded-[8px] bg-[#f6f3f2] p-4 text-sm font-semibold text-[#4f4632]">
                 Đang tải địa chỉ...
               </p>
-            } @else if (addresses().length === 0) {
+            } @else if (addressOptions().length === 0) {
               <a
                 routerLink="/account/addresses"
                 class="rounded-[8px] border border-dashed border-[#d2c5ab] p-4 text-sm font-bold text-[#4f4632] transition hover:border-[#4b41e1] hover:text-[#4b41e1]"
@@ -62,14 +62,11 @@
                 Thêm địa chỉ giao hàng trước khi thanh toán
               </a>
             } @else {
-              @for (address of addresses(); track address.addressId) {
+              @for (address of addressOptions(); track address.addressId) {
                 <button
                   type="button"
                   class="rounded-[8px] border p-4 text-left transition"
-                  [class.border-[#4b41e1]]="selectedAddressId() === address.addressId"
-                  [class.bg-[#f3f1ff]]="selectedAddressId() === address.addressId"
-                  [class.border-[#d2c5ab]/40]="selectedAddressId() !== address.addressId"
-                  [class.bg-[#fcf9f8]]="selectedAddressId() !== address.addressId"
+                  [ngClass]="selectedAddressId() === address.addressId ? 'border-[#4b41e1] bg-[#f3f1ff]' : 'border-[#d2c5ab]/40 bg-[#fcf9f8]'"
                   (click)="setSelectedAddress(address.addressId)"
                 >
                   <span class="flex items-center justify-between gap-3">
@@ -81,7 +78,7 @@
                     }
                   </span>
                   <span class="mt-2 block text-sm font-semibold leading-6 text-[#4f4632]">
-                    {{ getAddressText(address) }}
+                    {{ address.displayText }}
                   </span>
                 </button>
               }
@@ -102,10 +99,7 @@
               <button
                 type="button"
                 class="rounded-[8px] border p-4 text-left transition"
-                [class.border-[#4b41e1]]="paymentMethod() === method.value"
-                [class.bg-[#f3f1ff]]="paymentMethod() === method.value"
-                [class.border-[#d2c5ab]/40]="paymentMethod() !== method.value"
-                [class.bg-[#fcf9f8]]="paymentMethod() !== method.value"
+                [ngClass]="paymentMethod() === method.value ? 'border-[#4b41e1] bg-[#f3f1ff]' : 'border-[#d2c5ab]/40 bg-[#fcf9f8]'"
                 (click)="setPaymentMethod(method.value)"
               >
                 <strong class="block text-sm font-black text-[#101010]">{{ method.label }}</strong>
@@ -163,30 +157,27 @@
               <p class="rounded-[8px] bg-[#f6f3f2] p-4 text-sm font-semibold text-[#4f4632]">
                 Đang tải voucher...
               </p>
-            } @else if (vouchers().length === 0) {
+            } @else if (voucherOptions().length === 0) {
               <p class="rounded-[8px] bg-[#f6f3f2] p-4 text-sm font-semibold text-[#4f4632]">
                 Tài khoản chưa có voucher khả dụng.
               </p>
             } @else {
-              @for (voucher of vouchers(); track voucher.voucherId) {
+              @for (voucher of voucherOptions(); track voucher.voucherId) {
                 <button
                   type="button"
                   class="rounded-[8px] border p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-55"
-                  [class.border-[#4b41e1]]="selectedVoucherId() === voucher.voucherId"
-                  [class.bg-[#f3f1ff]]="selectedVoucherId() === voucher.voucherId"
-                  [class.border-[#d2c5ab]/40]="selectedVoucherId() !== voucher.voucherId"
-                  [class.bg-[#fcf9f8]]="selectedVoucherId() !== voucher.voucherId"
-                  [disabled]="!isVoucherEligible(voucher)"
+                  [ngClass]="selectedVoucherId() === voucher.voucherId ? 'border-[#4b41e1] bg-[#f3f1ff]' : 'border-[#d2c5ab]/40 bg-[#fcf9f8]'"
+                  [disabled]="!voucher.eligible"
                   (click)="setSelectedVoucher(voucher.voucherId)"
                 >
                   <span class="flex items-center justify-between gap-3">
                     <strong class="text-sm font-black text-[#101010]">{{ voucher.couponCode }}</strong>
                     <em class="not-italic rounded-full bg-[#ffc700] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#251a00]">
-                      {{ getVoucherLabel(voucher) }}
+                      {{ voucher.label }}
                     </em>
                   </span>
                   <span class="mt-2 block text-xs font-semibold uppercase tracking-[0.08em] text-[#81765f]">
-                    {{ getVoucherDescription(voucher) }}
+                    {{ voucher.description }}
                   </span>
                 </button>
               }
@@ -206,10 +197,10 @@
       <app-cart-summary
         [itemCount]="cartStore.itemCount()"
         [subtotal]="cartStore.subtotal()"
-        [shippingFee]="shippingFeePreview()"
-        [discount]="discountPreview()"
-        [total]="payableTotal()"
-        [canCheckout]="!cartStore.isEmpty() && !!selectedAddressId() && !checkoutSubmitting()"
+        [shippingFee]="shippingFee()"
+        [discount]="discount()"
+        [total]="total()"
+        [canCheckout]="canSubmit()"
         [checkoutLabel]="checkoutSubmitting() ? 'Đang xử lý...' : 'Xác nhận đặt hàng'"
         (checkout)="onCheckout()"
       />

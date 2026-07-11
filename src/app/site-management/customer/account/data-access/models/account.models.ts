@@ -1,5 +1,4 @@
 export type { ApiResponseDto, PageResponseDto } from '@/core/api/api-response.models';
-import type { ApiResponseDto, PageResponseDto } from '@/core/api/api-response.models';
 
 export interface AccountProfile {
   customerId: string;
@@ -21,12 +20,7 @@ export type {
   CustomerOrderHistoryResponse,
   CustomerOrderItemResponse,
 } from '@/site-management/customer/contracts/customer-order.models';
-
-import type {
-  CustomerAddressResponse,
-  CustomerOrderDetailResponse,
-  CustomerOrderHistoryResponse,
-} from '@/site-management/customer/contracts/customer-order.models';
+export type { CustomerVoucherResponse } from '@/site-management/customer/contracts/customer-checkout.models';
 
 export interface CustomerAddressRequest {
   phoneNumber: string;
@@ -34,21 +28,6 @@ export interface CustomerAddressRequest {
   ward: string;
   street: string;
   isDefault: boolean;
-}
-
-export interface CustomerVoucherResponse {
-  voucherId: string;
-  couponId: string;
-  couponCode: string;
-  couponType: string; // PERCENTAGE, FIXED_AMOUNT, FREE_SHIPPING
-  discountValue: number;
-  maxDiscount: number;
-  minOrderAmount: number;
-  startAt: string;
-  endAt: string;
-  status: string; // AVAILABLE, USED, EXPIRED
-  issuedAt: string;
-  usedAt: string | null;
 }
 
 export interface UploadPresignRequestDto {
