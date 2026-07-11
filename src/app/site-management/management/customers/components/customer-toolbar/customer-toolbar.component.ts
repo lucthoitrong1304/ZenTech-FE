@@ -8,7 +8,7 @@ import {
 import {
   CustomerActiveFilter,
   CustomerSort,
-} from '../../data-access/models/customer.models';
+} from '@/site-management/management/customers/data-access/models/customer.models';
 
 @Component({
   selector: 'app-customer-toolbar',

@@ -3,7 +3,7 @@ import {
   ManagementCategoryDraft,
   ManagementCategoryFormErrors,
   ManagementCategoryQuery,
-} from './management-category.models';
+} from '@/site-management/management/categories/data-access/models/management-category.models';
 
 export enum ManagementCategoryEventType {
   CategoriesLoadStarted = 'CategoriesLoadStarted',

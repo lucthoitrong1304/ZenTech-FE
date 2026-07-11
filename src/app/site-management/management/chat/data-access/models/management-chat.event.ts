@@ -5,8 +5,8 @@ import {
   ManagementChatMessage,
   ManagementChatStatusFilter,
   ManagementChatWorkspace,
-} from './management-chat.models';
-import { ChatMessageResponse } from '../../../../customer-chat/data-access/models/customer-chat.models';
+} from '@/site-management/management/chat/data-access/models/management-chat.models';
+import { ChatMessageResponse } from '@/site-management/shared/chat/data-access/models/customer-chat.models';
 
 export enum ManagementChatEventType {
   WorkspaceLoadStarted = 'Workspace Load Started',

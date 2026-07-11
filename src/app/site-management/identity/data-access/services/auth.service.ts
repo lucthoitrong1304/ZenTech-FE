@@ -1,0 +1,93 @@
+import { HttpContext, HttpHeaders } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ApiService } from '@/core/api/api.service';
+import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '@/core/tokens/api-context.token';
+import { environment } from '@env/environment';
+import { Role } from '@/site-management/identity/data-access/models/auth.enums';
+import {
+  AuthResponse,
+  ForgotPasswordRequest,
+  LoginRequest,
+  RegisterCustomerPayload,
+  RegisterRequest,
+  ResetPasswordRequest,
+  TokenRefreshRequest,
+  ChangePasswordRequest,
+} from '@/site-management/identity/data-access/models/auth.models';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthService {
+  private readonly apiService = inject(ApiService);
+  private readonly authBaseUrl = `${environment.apiBaseUrl}/auth`;
+
+  login(payload: LoginRequest, traceId?: string): Observable<AuthResponse> {
+    return this.apiService.post<LoginRequest, AuthResponse>(`${this.authBaseUrl}/login`, payload, {
+      headers: this.createTraceHeaders(traceId),
+      context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
+    });
+  }
+
+  loginWithGoogle(token: string, traceId?: string): Observable<AuthResponse> {
+    return this.apiService.post<{ token: string }, AuthResponse>(
+      `${this.authBaseUrl}/google`,
+      { token },
+      {
+        headers: this.createTraceHeaders(traceId),
+        context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
+      }
+    );
+  }
+
+  registerCustomer(payload: RegisterCustomerPayload): Observable<string> {
+    const request: RegisterRequest = {
+      ...payload,
+      role: Role.CUSTOMER,
+    };
+
+    return this.apiService.postText<RegisterRequest>(`${this.authBaseUrl}/register`, request, {
+      context: new HttpContext().set(SKIP_AUTH_TOKEN, true),
+    });
+  }
+
+  logout(refreshToken: string): Observable<string> {
+    const request: TokenRefreshRequest = { refreshToken };
+
+    return this.apiService.postText<TokenRefreshRequest>(`${this.authBaseUrl}/logout`, request, {
+      context: new HttpContext().set(SKIP_GLOBAL_ERROR, true),
+    });
+  }
+
+  forgotPassword(payload: ForgotPasswordRequest): Observable<string> {
+    return this.apiService.postText<ForgotPasswordRequest>(
+      `${this.authBaseUrl}/forgot-password`,
+      payload,
+      {
+        context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
+      }
+    );
+  }
+
+  resetPassword(payload: ResetPasswordRequest): Observable<string> {
+    return this.apiService.postText<ResetPasswordRequest>(
+      `${this.authBaseUrl}/reset-password`,
+      payload,
+      {
+        context: new HttpContext().set(SKIP_AUTH_TOKEN, true).set(SKIP_GLOBAL_ERROR, true),
+      }
+    );
+  }
+
+  changePassword(payload: ChangePasswordRequest): Observable<string> {
+    return this.apiService.putText<ChangePasswordRequest>(
+      `${this.authBaseUrl}/password`,
+      payload
+    );
+  }
+
+  private createTraceHeaders(traceId?: string): HttpHeaders | undefined {
+    return traceId ? new HttpHeaders({ 'X-Trace-Id': traceId }) : undefined;
+  }
+}

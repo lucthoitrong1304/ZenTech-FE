@@ -1,9 +1,9 @@
 import { HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { SKIP_CLIENT_LOG, SKIP_GLOBAL_ERROR } from '../../../../../core/tokens/api-context.token';
-import { environment } from '../../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { SKIP_CLIENT_LOG, SKIP_GLOBAL_ERROR } from '@/core/tokens/api-context.token';
+import { environment } from '@env/environment';
 import {
   SystemIncident,
   IncidentStatus,
@@ -12,7 +12,7 @@ import {
   ApiResponse,
   AiAnalysis,
   IssueIncidentLink
-} from '../../../data-access/models/admin.models';
+} from '@/site-management/admin/data-access/models/admin.models';
 
 export interface IncidentFromIssuePayload {
   issueSignature: string;

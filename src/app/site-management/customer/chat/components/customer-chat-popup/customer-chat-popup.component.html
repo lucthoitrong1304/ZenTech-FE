@@ -1,0 +1,189 @@
+@if (store.popupOpen()) {
+  <section
+    class="customer-chat-popup fixed bottom-5 right-5 z-40 flex overflow-hidden rounded-[8px] bg-white text-[#101010] shadow-[0_30px_90px_-35px_rgba(16,16,16,0.78)] ring-1 ring-black/10"
+    [class.customer-chat-popup--shared]="store.sharedSidebarOpen()"
+  >
+    <div class="flex h-full min-w-0 flex-1 flex-col">
+      <app-customer-chat-header
+        [staff]="store.staff()"
+        [product]="store.product()"
+        [status]="store.session()?.status || null"
+        [compact]="true"
+        [sharedSidebarOpen]="store.sharedSidebarOpen()"
+        [hideSharedButton]="!store.session() || store.requiresLogin()"
+        (closeClicked)="store.closePopup()"
+        (sharedClicked)="store.toggleSharedSidebar()"
+      />
+
+      @if (store.loading()) {
+        <div class="grid flex-1 place-items-center bg-[#fcf9f8] p-6 text-sm font-semibold text-zinc-500">
+          Đang tải cuộc trò chuyện...
+        </div>
+      } @else if (store.requiresLogin()) {
+        <div class="relative flex flex-1 flex-col items-center justify-center overflow-hidden bg-[#fcf9f8] p-6">
+          
+          <div class="relative z-10 w-full max-w-[280px] rounded-[16px] border border-[#d2c5ab]/40 bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.03)]">
+            <!-- Header -->
+            <div class="mb-3 flex items-center gap-2 border-b border-[#d2c5ab]/30 pb-3">
+              <span class="h-1.5 w-1.5 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.5)] animate-pulse"></span>
+              <h4 class="m-0 text-[11px] font-black uppercase tracking-[0.1em] text-[#4f4632]">Trợ lý AI ZenTech</h4>
+            </div>
+            
+            <!-- Body -->
+            <div class="mb-4">
+              <h3 class="mb-2 mt-0 text-[15px] font-extrabold text-[#101010]">Yêu cầu đăng nhập 🔒</h3>
+              <p class="m-0 text-[12.5px] font-medium leading-relaxed text-[#4f4632]">
+                Vui lòng xác thực tài khoản để AI và tư vấn viên có thể hỗ trợ bạn tốt nhất ạ!
+              </p>
+            </div>
+            
+            <!-- Footer Action -->
+            <div class="border-t border-[#d2c5ab]/30 pt-4">
+              <a
+                class="group relative flex h-10 w-full items-center justify-center gap-2 overflow-hidden rounded-[10px] bg-[#ffc700] text-[13px] font-bold uppercase tracking-[0.05em] text-[#251a00] transition-all hover:bg-[#f5bf00] hover:shadow-[0_4px_15px_rgba(255,199,0,0.3)]"
+                [routerLink]="['/auth/login']"
+                [queryParams]="loginQueryParams()"
+                (click)="store.closePopup()"
+              >
+                <svg lucideLogIn class="h-4 w-4" [attr.stroke-width]="2.5"></svg>
+                <span>Đăng nhập ngay</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      } @else if (!store.session()) {
+        <div class="relative flex flex-1 flex-col items-center justify-center overflow-hidden bg-[#fcf9f8] p-6">
+          
+          <div class="relative z-10 w-full max-w-[280px] rounded-[16px] border border-[#d2c5ab]/40 bg-white p-5 shadow-[0_10px_30px_rgba(0,0,0,0.03)]">
+            <!-- Header -->
+            <div class="mb-3 flex items-center gap-2 border-b border-[#d2c5ab]/30 pb-3">
+              <span class="h-1.5 w-1.5 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.5)] animate-pulse"></span>
+              <h4 class="m-0 text-[11px] font-black uppercase tracking-[0.1em] text-[#4f4632]">Trợ lý AI ZenTech</h4>
+            </div>
+            
+            <!-- Body -->
+            <div class="mb-4">
+              <h3 class="mb-2 mt-0 text-[15px] font-extrabold text-[#101010]">Xin chào! 👋</h3>
+              <p class="m-0 text-[12.5px] font-medium leading-relaxed text-[#4f4632]">
+                Em sẵn lòng hỗ trợ tìm kiếm sản phẩm gaming gear, tư vấn chính sách bảo hành, đổi trả và khuyến mãi ạ!
+              </p>
+            </div>
+            
+            <!-- Footer Actions -->
+            <div class="border-t border-[#d2c5ab]/30 pt-4">
+              @if (store.conversations().length > 0) {
+                <div class="grid gap-2">
+                  <button
+                    class="group relative flex h-9 w-full items-center justify-center gap-2 overflow-hidden rounded-[10px] bg-[#ffc700] text-[11px] font-extrabold uppercase tracking-[0.05em] text-[#251a00] transition-all hover:bg-[#f5bf00] hover:shadow-[0_4px_15px_rgba(255,199,0,0.3)]"
+                    (click)="store.switchConversation(store.conversations()[0].id)"
+                  >
+                    Tiếp tục trò chuyện
+                  </button>
+                  <button
+                    class="flex h-9 w-full items-center justify-center gap-2 rounded-[10px] border border-[#d2c5ab] bg-transparent text-[11px] font-extrabold uppercase tracking-[0.05em] text-[#4f4632] transition-all hover:bg-[#f6f3f2]"
+                    (click)="store.createNewConversation()"
+                  >
+                    Tạo hội thoại mới
+                  </button>
+                </div>
+              } @else {
+                <button
+                  class="group relative flex h-10 w-full items-center justify-center gap-2 overflow-hidden rounded-[10px] bg-[#fff8e1] border border-[#ffc700]/30 text-[13px] font-bold uppercase tracking-[0.05em] text-[#765b00] transition-all hover:bg-[#ffc700] hover:text-[#251a00] hover:shadow-[0_4px_15px_rgba(255,199,0,0.3)]"
+                  (click)="store.createNewConversation()"
+                >
+                  <svg lucideMessageCircle class="h-4 w-4" [attr.stroke-width]="2.5"></svg>
+                  Bắt đầu trò chuyện
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      } @else {
+        @if (ticketBanner(); as ticket) {
+          <div
+            class="customer-ticket-popup-banner"
+            [class.customer-ticket-popup-banner--resolved]="ticket.tone === 'resolved'"
+            [class.customer-ticket-popup-banner--incident]="ticket.tone === 'incident'"
+            [class.customer-ticket-popup-banner--ticket]="ticket.tone === 'ticket'"
+          >
+            <span class="customer-ticket-popup-banner__icon" aria-hidden="true">
+              @if (ticket.tone === 'resolved') {
+                <svg lucideCheckCircle class="w-3.5 h-3.5" [attr.stroke-width]="2.5"></svg>
+              } @else if (ticket.tone === 'incident') {
+                <svg lucideAlertTriangle class="w-3.5 h-3.5 animate-pulse" [attr.stroke-width]="2.5"></svg>
+              } @else {
+                <svg lucideWrench class="w-3.5 h-3.5" [attr.stroke-width]="2.5"></svg>
+              }
+            </span>
+            <span class="customer-ticket-popup-banner__content">
+              <strong>{{ ticket.title }}</strong>
+              <span>{{ ticket.message }}</span>
+            </span>
+            <button
+              type="button"
+              class="customer-ticket-popup-banner__close"
+              (click)="store.dismissTicketStatus(ticket.ticketCode, ticket.ticketStatus)"
+              title="Đóng thông báo"
+            >
+              <svg lucideX class="customer-ticket-popup-banner__close-icon" [attr.stroke-width]="2.5"></svg>
+            </button>
+          </div>
+        }
+
+        <app-customer-message-timeline
+          [messages]="store.messages()"
+          [customer]="store.customer()"
+          [staff]="store.staff()"
+          [aiResponding]="store.aiResponding()"
+          [compact]="true"
+          (previewRequested)="openPreview($event)"
+        />
+
+        <app-customer-upload-queue
+          [uploads]="store.uploads()"
+          (uploadRemoved)="store.removeUpload($event)"
+        />
+
+        <app-customer-chat-composer
+          [hasPendingAttachments]="store.hasPendingAttachments()"
+          (messageSubmitted)="store.sendMessage($event)"
+          (filesSelected)="store.selectFiles($event)"
+        />
+      }
+    </div>
+
+    @if (store.sharedSidebarOpen()) {
+      <button
+        type="button"
+        class="customer-chat-popup__scrim"
+        (click)="store.closeSharedSidebar()"
+        aria-label="Đóng nội dung đã chia sẻ"
+      ></button>
+    }
+
+    <div
+      class="customer-chat-popup__sidebar border-l border-[#d2c5ab]/25"
+      [class.customer-chat-popup__sidebar--open]="store.sharedSidebarOpen()"
+      [attr.aria-hidden]="!store.sharedSidebarOpen()"
+    >
+      <app-customer-shared-content-sidebar
+        [open]="true"
+        [activeTab]="store.activeSharedTab()"
+        [items]="store.selectedSharedItems()"
+        [mediaCount]="store.sharedCounts().media"
+        [fileCount]="store.sharedCounts().files"
+        [linkCount]="store.sharedCounts().links"
+        (tabSelected)="store.setSharedContentTab($event)"
+        (closed)="store.closeSharedSidebar()"
+        (previewRequested)="openPreview($event)"
+      />
+    </div>
+
+    <app-media-preview-dialog [item]="previewItem()" (closed)="closePreview()" />
+  </section>
+} @else {
+  <app-customer-chat-launcher
+    [lastActivityLabel]="store.lastActivityLabel()"
+    (opened)="store.openPopup()"
+  />
+}

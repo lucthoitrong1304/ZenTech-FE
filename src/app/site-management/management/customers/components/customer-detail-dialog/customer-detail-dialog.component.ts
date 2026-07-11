@@ -9,7 +9,7 @@ import {
   LucideUnlock,
 } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
-import { CustomerDetail, CustomerOrderHistory } from '../../data-access/models/customer.models';
+import { CustomerDetail, CustomerOrderHistory } from '@/site-management/management/customers/data-access/models/customer.models';
 
 @Component({
   selector: 'app-customer-detail-dialog',

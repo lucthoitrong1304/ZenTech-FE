@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { environment } from '../../../../../../environments/environment';
-import { ApiService } from '../../../../../core/api/api.service';
+import { environment } from '@env/environment';
+import { ApiService } from '@/core/api/api.service';
 import {
   AiDataset,
   AiDatasetPayload,
@@ -10,7 +10,7 @@ import {
   AiProductVectorFilter,
   AiProductVectorStatus,
   ApiResponseDto,
-} from '../models/ai-management.models';
+} from '@/site-management/management/ai-management/data-access/models/ai-management.models';
 
 @Injectable({
   providedIn: 'root',

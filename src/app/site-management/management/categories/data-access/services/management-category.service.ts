@@ -1,8 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
 import {
   ApiResponseDto,
   CategoryManagementRequestDto,
@@ -10,7 +10,7 @@ import {
   ManagementCategory,
   ManagementCategoryDraft,
   ProductCategorySummaryResponseDto,
-} from '../models/management-category.models';
+} from '@/site-management/management/categories/data-access/models/management-category.models';
 
 @Injectable({
   providedIn: 'root',

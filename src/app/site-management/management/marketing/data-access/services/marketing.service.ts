@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
 import {
   ManagementCoupon,
   ManagementCouponQuery,
@@ -15,7 +15,7 @@ import {
   IssueVoucherRequest,
   ApiResponseDto,
   PageResponseDto,
-} from '../models/marketing.models';
+} from '@/site-management/management/marketing/data-access/models/marketing.models';
 
 @Injectable({
   providedIn: 'root',

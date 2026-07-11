@@ -3,7 +3,7 @@ import { Component, ChangeDetectionStrategy, input, output } from '@angular/core
 import { FormsModule } from '@angular/forms';
 import { LucideSearch, LucideX } from '@lucide/angular';
 import { Select } from 'primeng/select';
-import { CouponType, ManagementCouponQuery } from '../../data-access/models/marketing.models';
+import { CouponType, ManagementCouponQuery } from '@/site-management/management/marketing/data-access/models/marketing.models';
 
 @Component({
   selector: 'app-coupon-toolbar',

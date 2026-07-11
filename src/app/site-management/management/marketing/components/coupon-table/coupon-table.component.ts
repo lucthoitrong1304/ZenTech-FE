@@ -6,7 +6,7 @@ import {
   LucideEdit,
   LucideTrash2,
 } from '@lucide/angular';
-import { CouponType, ManagementCoupon } from '../../data-access/models/marketing.models';
+import { CouponType, ManagementCoupon } from '@/site-management/management/marketing/data-access/models/marketing.models';
 
 @Component({
   selector: 'app-coupon-table',

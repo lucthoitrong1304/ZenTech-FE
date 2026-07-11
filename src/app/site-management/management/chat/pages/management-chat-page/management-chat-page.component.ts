@@ -1,28 +1,28 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MediaPreviewDialogComponent } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.component';
-import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
-import { ChatComposerComponent } from '../../components/chat-composer/chat-composer.component';
-import { ChatEmptyStateComponent } from '../../components/chat-empty-state/chat-empty-state.component';
-import { ChatFilterSidebarComponent } from '../../components/chat-filter-sidebar/chat-filter-sidebar.component';
-import { ChatHeaderComponent } from '../../components/chat-header/chat-header.component';
-import { ChatMediaDrawerComponent } from '../../components/chat-media-drawer/chat-media-drawer.component';
-import { ChatSearchSidebarComponent } from '../../components/chat-search-sidebar/chat-search-sidebar.component';
-import { ConversationListComponent } from '../../components/conversation-list/conversation-list.component';
-import { MessageTimelineComponent } from '../../components/message-timeline/message-timeline.component';
-import { ManagementChatStore } from '../../data-access/store/management-chat.store';
-import { ManagementShellUiState } from '../../../data-access/state/management-shell-ui.state';
-import { WebsocketService } from '../../../../../core/services/websocket.service';
-import { ManagementTicket } from '../../../tickets/data-access/models/management-ticket.models';
-import { ManagementTicketService } from '../../../tickets/data-access/services/management-ticket.service';
+import { MediaPreviewDialogComponent } from '@/shared/components/media-preview-dialog/media-preview-dialog.component';
+import { MediaPreviewItem } from '@/shared/components/media-preview-dialog/media-preview-dialog.model';
+import { ChatComposerComponent } from '@/site-management/management/chat/components/chat-composer/chat-composer.component';
+import { ChatEmptyStateComponent } from '@/site-management/management/chat/components/chat-empty-state/chat-empty-state.component';
+import { ChatFilterSidebarComponent } from '@/site-management/management/chat/components/chat-filter-sidebar/chat-filter-sidebar.component';
+import { ChatHeaderComponent } from '@/site-management/management/chat/components/chat-header/chat-header.component';
+import { ChatMediaDrawerComponent } from '@/site-management/management/chat/components/chat-media-drawer/chat-media-drawer.component';
+import { ChatSearchSidebarComponent } from '@/site-management/management/chat/components/chat-search-sidebar/chat-search-sidebar.component';
+import { ConversationListComponent } from '@/site-management/management/chat/components/conversation-list/conversation-list.component';
+import { MessageTimelineComponent } from '@/site-management/management/chat/components/message-timeline/message-timeline.component';
+import { ManagementChatStore } from '@/site-management/management/chat/data-access/store/management-chat.store';
+import { ManagementShellUiState } from '@/site-management/management/data-access/state/management-shell-ui.state';
+import { WebsocketService } from '@/core/services/websocket.service';
+import { ManagementTicket } from '@/site-management/management/tickets/data-access/models/management-ticket.models';
+import { ManagementTicketService } from '@/site-management/management/tickets/data-access/services/management-ticket.service';
 import { LucideX } from '@lucide/angular';
 
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { PermissionService } from '../../../../../core/permissions/permission.service';
-import { PermissionCode } from '../../../../../core/permissions/permission.models';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
 
 @Component({
   selector: 'app-management-chat-page',

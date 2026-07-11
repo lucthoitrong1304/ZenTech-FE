@@ -5,10 +5,10 @@ import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { of, throwError } from 'rxjs';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { PermissionCode } from '../../core/permissions/permission.models';
-import { PermissionService } from '../../core/permissions/permission.service';
-import { loadManagementPermissionComponent } from './management-permission-loader';
-import { ManagementNoPermissionComponent } from './pages/management-no-permission/management-no-permission.component';
+import { PermissionCode } from '@/core/permissions/permission.models';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { loadManagementPermissionComponent } from '@/site-management/management/management-permission-loader';
+import { ManagementNoPermissionComponent } from '@/site-management/management/pages/management-no-permission/management-no-permission.component';
 
 @Component({
   standalone: true,

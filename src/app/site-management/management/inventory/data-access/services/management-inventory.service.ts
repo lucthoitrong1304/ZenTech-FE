@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
 import {
   InventorySummary,
   InventoryTransaction,
@@ -12,7 +12,7 @@ import {
   ApiResponseDto,
   AiRecommendationResponse,
   InventoryTransactionStats,
-} from '../models/inventory.model';
+} from '@/site-management/management/inventory/data-access/models/inventory.model';
 
 @Injectable({
   providedIn: 'root',

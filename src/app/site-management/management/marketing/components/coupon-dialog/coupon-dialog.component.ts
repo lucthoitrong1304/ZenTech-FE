@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideX, LucideTriangleAlert, LucideSparkles } from '@lucide/angular';
 import { DatePicker } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
-import { CouponFormValue, CouponType } from '../../data-access/models/marketing.models';
+import { CouponFormValue, CouponType } from '@/site-management/management/marketing/data-access/models/marketing.models';
 
 @Component({
   selector: 'app-coupon-dialog',

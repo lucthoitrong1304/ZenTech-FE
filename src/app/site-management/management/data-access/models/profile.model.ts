@@ -1,4 +1,4 @@
-import { Role } from '../../../auth/data-access/models/auth.enums';
+import { Role } from '@/site-management/identity/data-access/models/auth.enums';
 
 export interface ApiResponseDto<T> {
   success: boolean;

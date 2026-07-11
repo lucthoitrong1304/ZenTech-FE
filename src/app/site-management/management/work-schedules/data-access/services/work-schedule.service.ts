@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
 import {
   ApiResponseDto,
   AttendanceLocationPolicy,
@@ -13,7 +13,7 @@ import {
   WeeklyScheduleResponse,
   WorkSchedulePage,
   WorkScheduleQuery,
-} from '../models/work-schedule.models';
+} from '@/site-management/management/work-schedules/data-access/models/work-schedule.models';
 
 @Injectable({
   providedIn: 'root',

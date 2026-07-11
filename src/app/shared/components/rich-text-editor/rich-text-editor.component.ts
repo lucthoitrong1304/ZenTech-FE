@@ -33,7 +33,7 @@ import {
 } from '@lucide/angular';
 import Quill, { Range } from 'quill';
 import type History from 'quill/modules/history';
-import { htmlToMarkdown, markdownToHtml } from './rich-text-markdown.util';
+import { htmlToMarkdown, markdownToHtml } from '@/shared/components/rich-text-editor/rich-text-markdown.util';
 
 type InlineFormat = 'bold' | 'italic' | 'underline' | 'strike';
 type BlockFormat = 'paragraph' | 'header-1' | 'header-2' | 'header-3' | 'bullet' | 'ordered' | 'blockquote' | 'code-block';

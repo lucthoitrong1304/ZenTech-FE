@@ -1,7 +1,7 @@
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { LucideUserCheck, LucideTrash2 } from '@lucide/angular';
-import { CouponType, CustomerVoucherDetail, CustomerVoucherStatus } from '../../data-access/models/marketing.models';
+import { CouponType, CustomerVoucherDetail, CustomerVoucherStatus } from '@/site-management/management/marketing/data-access/models/marketing.models';
 
 @Component({
   selector: 'app-customer-voucher-table',

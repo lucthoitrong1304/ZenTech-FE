@@ -11,7 +11,7 @@ import {
   ManagementProductPage,
   ManagementProductQuery,
   ManagementProductStats,
-} from '../models/management-product.models';
+} from '@/site-management/management/products/data-access/models/management-product.models';
 
 const PRODUCT_CATEGORIES: ManagementProductCategory[] = [
   { categoryId: 'keyboards', name: 'Bàn phím' },

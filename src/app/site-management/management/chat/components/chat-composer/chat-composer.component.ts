@@ -9,8 +9,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideFileUp, LucidePlus, LucideSend, LucideX } from '@lucide/angular';
-import { getImageFilesFromClipboard } from '../../../../../shared/utils/clipboard-image-files.util';
-import { ManagementChatUpload } from '../../data-access/models/management-chat.models';
+import { getImageFilesFromClipboard } from '@/shared/utils/clipboard-image-files.util';
+import { ManagementChatUpload } from '@/site-management/management/chat/data-access/models/management-chat.models';
 
 @Component({
   selector: 'app-chat-composer',

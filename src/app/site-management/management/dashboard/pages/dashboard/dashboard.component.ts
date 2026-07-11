@@ -18,17 +18,17 @@ import {
   LucideFileText,
   LucideBot,
 } from '@lucide/angular';
-import { DashboardStore } from '../../data-access/store/dashboard.store';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { WebsocketService } from '../../../../../core/services/websocket.service';
-import { ReportPeriod } from '../../../reports/data-access/models/reports.model';
-import { ReportsService } from '../../../reports/data-access/services/reports.service';
-import { ManagementBusinessImpactService } from '../../../business-impact/data-access/services/management-business-impact.service';
-import { ManagementOrder } from '../../../orders/data-access/models/management-order.models';
-import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
-import { AuthSessionStore } from '../../../../auth/data-access/store/auth-session.store';
-import { Role } from '../../../../auth/data-access/models/auth.enums';
-import { hasRole } from '../../../../auth/data-access/utils/auth-role.utils';
+import { DashboardStore } from '@/site-management/management/dashboard/data-access/store/dashboard.store';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { WebsocketService } from '@/core/services/websocket.service';
+import { ReportPeriod } from '@/site-management/management/reports/data-access/models/reports.model';
+import { ReportsService } from '@/site-management/management/reports/data-access/services/reports.service';
+import { ManagementBusinessImpactService } from '@/site-management/management/business-impact/data-access/services/management-business-impact.service';
+import { ManagementOrder } from '@/site-management/management/orders/data-access/models/management-order.models';
+import { HasPermissionDirective } from '@/core/permissions/has-permission.directive';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
+import { Role } from '@/site-management/identity/data-access/models/auth.enums';
+import { hasRole } from '@/site-management/identity/data-access/utils/auth-role.utils';
 
 type LiveEventType = 'incident' | 'ticket' | 'resolved' | 'system';
 type LiveChartMarker = 'normal' | 'incident' | 'ticket' | 'resolved';

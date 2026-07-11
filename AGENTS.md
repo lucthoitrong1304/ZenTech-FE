@@ -4,220 +4,159 @@
 
 This project uses:
 
-* **Angular 21 (Standalone APIs & Signal-based Reactivity)**
-* **NgRx SignalStore** (Primary) & **NgRx ComponentStore** (Fallback)
-* **NgRx Entity for SignalStore** (For CRUD collections)
-* **PrimeNG (UI components)**
-* **Lucide Angular (icons)**
-* **Tailwind CSS (styling)**
+* **Angular 21** with Standalone APIs and signal-based reactivity
+* **NgRx SignalStore** and `rxMethod` for feature state and async workflows
+* **NgRx Entity for SignalStore** for CRUD collections with stable IDs
+* **PrimeNG** for complex UI primitives
+* **Lucide Angular** for all icons
+* **Tailwind CSS** for styling
 
-Goal:
+> **Scalability > Clean Architecture > Maintainability > Speed**
 
-> **Scalable · Clean · Maintainable code — no shortcuts**
+Choose the cleanest architecture that fits the feature; do not add ceremony without a state or workflow need.
 
 ---
 
-## 🏗️ Architecture Rules
+## 🏗️ Architecture and Boundaries
 
 ### Layers
 
-* `core/` → global (API, interceptors, config) — **no UI**
-* `shared/` → reusable UI & utils — **no business logic**
-* `site-management/` → feature modules (main logic)
-* `app/` → root config & routing
+* `core/` → application-wide API infrastructure, interceptors, guards, tokens, global stores, and configuration. **No feature UI.**
+* `shared/` → reusable application-wide presentational UI and pure utilities. **No feature business logic or feature state.**
+* `site-management/` → feature capabilities, pages, feature components, data access, and business workflows.
+* `app/` → root shell, application configuration, and routing composition.
 
----
+### Feature boundaries
 
-## 🔁 Flow Definitions
+* A feature owns its `data-access`, `pages`, components, routes, models, and business rules.
+* `site-management/shared` is only for a genuine cross-feature site capability. Its `data-access` may exist only when it is reused by multiple features and does not contain a single feature's business rule.
+* Do not import another feature's internal files. Promote a truly shared contract or presentational component to the appropriate shared boundary instead.
+* Keep feature stores route- or feature-scoped by default. Use `providedIn: 'root'` only for application-wide state such as auth session or notifications.
 
-### 1. Main Flow (MANDATORY for simple cases)
-
-```text
-UI → Page → SignalStore → Service → ApiService → Backend
-```
-
-❗ Never bypass the Store to call Services directly from Components.
-
-### 2. Event-Driven Flow (For complex features)
-
-For screens with complex state interactions, strictly follow the Event-driven pattern:
-
-```text
-UI Event (User clicks Create)
-→ Page calls `store.dispatch({ type: EventType.CreateClicked })`
-→ Store `handleEvent` synchronously updates UI state (opens dialog)
-→ User submits form → Page calls `store.createItem(payload)`
-→ Store `rxMethod` handles API call asynchronously
-→ On success, `rxMethod` dispatches `CreateSucceeded`
-→ Store `handleEvent` adds entity using `addEntity()` and closes dialog.
-
-```
-
----
-
-## 🧩 Feature Structure
+### Suggested feature structure
 
 ```text
 feature/
 ├── data-access/
-│   ├── models/
-│   │   ├── feature.model.ts
-│   │   ├── feature.payload.ts
-│   │   └── feature.event.ts       <-- Event Enums & Types
-│   ├── services/
-│   │   └── feature.service.ts
-│   └── store/
-│       ├── feature.store.ts
-│       ├── feature.store-feature.ts <-- Reusable store chunks
-│       └── feature.store-state.ts
-├── components/
-├── pages/
-├── feature.routes.ts
-
+│   ├── models/       # DTOs, domain models, payloads, view models, optional events
+│   ├── services/     # Feature Service → ApiService
+│   └── store/        # SignalStore and reusable generic store features
+├── components/       # Presentational components
+├── pages/            # Smart route/page components
+└── feature.routes.ts
 ```
 
----
-
-## 🧠 State Management (Signal-First)
-
-Use **NgRx SignalStore** as the primary state management solution.
-
-### 1. The Rules of Reactive State
-
-* **Let Angular Track It:** Strictly use `signal`, `computed`, and `linkedSignal` for reactive state derivation. **Do not** track state changes manually.
-* **Single Source of Truth:** Components must not duplicate business state.
-* **Separation of State:** Clearly separate **Entity State** (collections of data) from **UI State** (loading, pagination, selected IDs, dialog modes).
-
-### 2. Event Handling Rules (`feature.event.ts`)
-
-* Events must describe *what happened*, not command *what to do*.
-* ✅ Good: `CreateClicked`, `SubmitSucceeded`, `SearchKeywordChanged`.
-* ❌ Bad: `OpenDialog`, `CallApi`, `SetLoading`.
-
-
-* Create a central `handleEvent(event: FeatureEvent)` function inside the store.
-* `handleEvent` is for **synchronous state updates only** (using `patchState`). **Never** put API logic inside `handleEvent`.
-
-### 3. Entity Rules (`withEntities`)
-
-Use `withEntities<T>()` when managing collections with CRUD behavior (stable IDs, lists, pagination).
-
-* Use built-in updaters instead of manual array mutations:
-* `setAllEntities(items)`
-* `addEntity(item)`
-* `updateEntity({ id, changes })`
-* `removeEntity(id)`
-
-
-* Avoid manual array mutations like `items.map(...)` or `items.filter(...)` unless the state is strictly not an entity collection.
-
-### 4. Custom Store Features (`withFeature...`)
-
-Extract repeated state patterns into Custom SignalStore Features.
-
-* Create a feature only when the pattern appears in 2-3+ stores (e.g., `withRequestStatus()`, `withPagination()`, `withDialogState()`).
-* Features must be generic, not tied to specific business models, and must not call APIs directly.
-
-### 5. Store Workflows (`rxMethod`)
-
-* API calls and asynchronous operations must be handled within `rxMethod`.
-* `rxMethod` workflows must call the API through the Feature Service, then trigger internal `handleEvent` updates for Success/Failure states.
+Create files only when they add a useful boundary. For example, an event model or separate store-state file is optional, not mandatory.
 
 ---
 
-## 🧱 Component Rules
+## 🔁 Data and State Flow
 
-### Pages (Smart)
+### Default flow
 
-* Inject and use the Store (SignalStore).
-* Dispatch events via `store.dispatch()` and call Store workflow methods (`rxMethod`).
-* Expose state to the template via Signals (`store.vm()`).
-* **Never** call API services directly or contain business logic.
+```text
+UI → Page → SignalStore → Feature Service → ApiService → Backend
+```
 
-### Components (Dumb)
+* Pages never call a feature service, `ApiService`, or `HttpClient` directly.
+* Stores never call `ApiService` or `HttpClient` directly; they call the owning Feature Service.
+* Services return strongly typed DTOs or response models. Convert DTOs to domain/view models at a clear feature boundary.
+* `HttpClient` is used only inside `ApiService`.
 
-* Use Signal Inputs (`input()`, `input.required()`) and Outputs (`output()`) only.
-* Emit user events to the parent (Smart Component).
-* No API calls, no business logic, no service injection.
+### State ownership
+
+* Use component `signal`, `computed`, and `linkedSignal` for local, presentational state that does not need to outlive or coordinate outside the component.
+* Use SignalStore for server state, shared page/feature state, and asynchronous workflows.
+* Keep entity state separate from UI state (loading, errors, pagination, selection, draft, and dialog state).
+* Use `computed` for derived state. Do not duplicate a value that can be derived from source state.
+* Model nullable values explicitly; do not use `any`.
+
+### Collections and entities
+
+Use `withEntities<T>()` for CRUD collections with stable identities. Use named collections when a store contains multiple entity types.
+
+* Use `setAllEntities`, `addEntity`, `updateEntity`, `removeEntity`, and related entity updaters for entity collections.
+* Do not manually `map` or `filter` entity collections to perform CRUD updates.
+* Plain arrays are valid for transient data, ordered display-only data, or data without stable IDs.
+
+### Async workflows
+
+* Put API calls and other asynchronous workflows in `rxMethod`.
+* Each workflow owns its request status: set loading before the request and expose a typed error/success result afterwards.
+* Choose the RxJS flattening operator intentionally: cancel stale reads/searches, queue writes that must preserve order, or ignore duplicate submissions when appropriate.
+* Do not manually `subscribe()` in a component. Components trigger store workflows and render store signals.
+* Extract generic `withFeature...` store features only after the same pattern appears in at least two or three stores. Generic features must not call APIs.
+
+### Event-driven flows
+
+Event reducers are optional and reserved for complex UI flows: multi-step dialogs, optimistic updates, websocket coordination, or workflows with several synchronous UI transitions.
+
+* Events describe facts or user intent, for example `CreateRequested`, `SubmitSucceeded`, or `SearchKeywordChanged`; they do not describe implementation commands.
+* Keep `handleEvent(event)` synchronous and limited to `patchState` and entity updaters.
+* Never place API calls inside `handleEvent`.
+* For ordinary CRUD and simple page interactions, expose typed store methods and `rxMethod` workflows directly instead of adding an event layer.
 
 ---
 
-## 🔌 API Rules
+## 🧱 Components and Templates
 
-* All API calls → **Service → ApiService**
-* Never use `HttpClient` directly in components or stores.
-* Interceptors handle Authentication tokens and Global error handling.
-* Services must return strongly typed DTOs or response models.
+### Pages (smart components)
+
+* Inject the relevant SignalStore and bind its signals or a computed view model to the template.
+* Translate UI events into typed store calls; keep handlers thin.
+* Do not call APIs, feature services, or implement business workflows in a page.
+
+### Presentational components
+
+* Prefer signal inputs (`input`, `input.required`) and outputs (`output`) for the component contract.
+* Emit user intent to the parent; do not own feature state, API calls, or business logic.
+* Framework and UI-only dependencies are allowed when they are purely presentational. Do not inject data-access or business services.
+
+### Template performance rules
+
+* Do not define or call data transformation, filtering, sorting, lookup, or calculation functions from HTML templates.
+* Prepare template data in TypeScript with `computed`, signals, or a memoized view model in the page/store.
+* Templates should bind signals/properties and use thin event handlers only.
+* Use `@for` with a stable `track` expression for rendered collections.
+* Keep expensive work out of template expressions and lifecycle render paths.
 
 ---
 
 ## 🎨 UI Rules
 
-### Tailwind & Aesthetic
-
-* Adhere to the **Kinetic Monolith** design system: minimalist sci-fi aesthetics, high-contrast layouts, clean typography, and eliminate traditional border lines where possible.
-* Favor tonal transitions over line dividers.
-* Use utility classes directly in HTML.
-* Use `@apply` in SCSS only when styles are heavily reused, HTML becomes unreadable, or component-level style grouping is necessary.
-* Favor fixed tech aesthetics over bouncy hover effects (avoid skew/bounce).
-
-### PrimeNG
-
-* Use for common, complex UI elements (dialogs, menus, tables, popovers).
-* Do not rebuild existing components from scratch unless performance dictates raw HTML/CSS refactoring.
-
-### Lucide Angular
-
-* Use exclusively for all icons. Do not mix icon libraries.
+* Follow the **Kinetic Monolith** aesthetic: minimalist sci-fi, high contrast, clean typography, and tonal transitions rather than traditional borders.
+* Prefer Tailwind utility classes in templates. Use `@apply` only for heavily repeated or readability-critical component styles.
+* Favor fixed technical interactions over bouncy or skewed hover effects.
+* Use PrimeNG for common complex controls such as dialogs, menus, tables, and popovers.
+* Use Lucide Angular exclusively for icons.
 
 ---
 
 ## ⚠️ Forbidden
 
-* API calls in components or directly inside `handleEvent()`.
-* Calling `ApiService` directly from a Store (must go through Feature Service).
-* Business logic in `shared/`.
-* Using `any` types.
-* Mixing smart & dumb roles.
-* Duplicating state or bypassing the Store.
-* Manual dependency tracking instead of using `computed()`.
-* Manual array mutations for collections (use `withEntities` updaters instead).
+* Calling `ApiService`, `HttpClient`, or a Feature Service directly from a component.
+* Calling `ApiService` or `HttpClient` directly from a store.
+* API logic inside `handleEvent`.
+* Feature business logic or state inside application `shared/`.
+* Direct imports of another feature's internals.
+* `any`, duplicated derived state, or manual dependency tracking.
+* Manual CRUD array mutations for an entity collection.
+* Manual `subscribe()` in components.
+* Data-processing function calls in HTML templates.
 
 ---
 
-## 🔁 Development Flow
+## ✅ Delivery Checklist
 
-1. Define models, payloads, and response DTOs.
-2. Define Events (`feature.event.ts`) if the UI has complex flows.
-3. Create Feature Service.
-4. Create **SignalStore** (add `withEntities<T>()` and Custom Features if needed).
-5. Add `handleEvent` for synchronous state changes.
-6. Add `rxMethod` workflows for async operations.
-7. Create page (smart component) and connect to Store `vm`.
-8. Create components (dumb components using `input()`).
-9. Bind UI → Store using Signals.
-
----
-
-## ✅ Checklist
-
-* Correct architectural layer?
-* Using SignalStore first?
-* Using `withEntities<T>()` for CRUD lists instead of manual arrays?
-* Do events describe *what happened* (e.g., `SaveClicked`)?
-* Is `handleEvent()` strictly updating state synchronously (no APIs)?
-* Are API calls wrapped inside `rxMethod` workflows?
-* Leveraging `computed()` for derived state?
-* No business logic in UI?
-* Tailwind used properly (Kinetic Monolith aesthetic applied)?
-* PrimeNG used when possible?
-* Lucide icons used exclusively?
-* No unnecessary `any`?
-
----
-
-## 🚀 Principle
-
-> **Scalability > Clean Architecture > Maintainability > Speed**
-
-When unsure → choose the cleaner architecture.
+* Is the code in the correct layer and within its feature boundary?
+* Does UI flow through Page → Store → Feature Service → ApiService?
+* Is the store scoped appropriately: route/feature by default, root only for global state?
+* Are async requests in `rxMethod`, with typed loading/error/success state and deliberate concurrency behavior?
+* Are stable CRUD collections implemented with `withEntities` and entity updaters?
+* Is derived data represented by `computed`/view models rather than duplicated state or template function calls?
+* Does every `@for` use stable tracking?
+* Are components free of API calls and feature business logic?
+* Are DTO/domain/view-model boundaries, nullability, and public types explicit?
+* Are tests present for service mapping, store success/error/entity behavior, page-to-store wiring, and computed view models?
+* Does the affected feature preserve lazy-route boundaries and avoid unrelated feature imports?
+* Does the UI follow Tailwind, PrimeNG, Lucide, and Kinetic Monolith conventions?

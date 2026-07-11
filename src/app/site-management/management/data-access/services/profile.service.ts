@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../core/api/api.service';
-import { environment } from '../../../../../environments/environment';
-import { EmployeeProfileResponse, EmployeeProfileUpdateRequest, ApiResponseDto } from '../models/profile.model';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
+import { EmployeeProfileResponse, EmployeeProfileUpdateRequest, ApiResponseDto } from '@/site-management/management/data-access/models/profile.model';
 import { HttpContext, HttpHeaders } from '@angular/common/http';
-import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../../../../core/tokens/api-context.token';
+import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '@/core/tokens/api-context.token';
 
 @Injectable({
   providedIn: 'root',

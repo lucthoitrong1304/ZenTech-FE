@@ -14,11 +14,11 @@ import {
 import { SelectModule } from 'primeng/select';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { CustomerService } from '../../../customers/data-access/services/customer.service';
-import { ManagementEmployeeService } from '../../../employees/data-access/services/management-employee.service';
-import { ManagementTicket, TicketPriority, TicketStatus } from '../../data-access/models/management-ticket.models';
-import { ManagementTicketService } from '../../data-access/services/management-ticket.service';
-import { ManagementTicketsStore } from '../../data-access/store/management-tickets.store';
+import { CustomerService } from '@/site-management/management/customers/data-access/services/customer.service';
+import { ManagementEmployeeService } from '@/site-management/management/employees/data-access/services/management-employee.service';
+import { ManagementTicket, TicketPriority, TicketStatus } from '@/site-management/management/tickets/data-access/models/management-ticket.models';
+import { ManagementTicketService } from '@/site-management/management/tickets/data-access/services/management-ticket.service';
+import { ManagementTicketsStore } from '@/site-management/management/tickets/data-access/store/management-tickets.store';
 
 interface TicketProfile {
   displayName: string;

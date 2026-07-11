@@ -13,10 +13,10 @@ import {
   LucideShield,
   LucideUser,
 } from '@lucide/angular';
-import { AuthStorageService } from '../../../../core/services/auth-storage.service';
-import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
-import { AdminProfileUpdateRequest } from '../../data-access/models/admin-profile.model';
-import { AdminProfileStore } from '../../data-access/store/admin-profile.store';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
+import { AdminProfileUpdateRequest } from '@/site-management/admin/data-access/models/admin-profile.model';
+import { AdminProfileStore } from '@/site-management/admin/data-access/store/admin-profile.store';
 
 @Component({
   selector: 'app-admin-profile',

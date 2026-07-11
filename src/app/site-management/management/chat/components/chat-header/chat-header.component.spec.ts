@@ -2,8 +2,8 @@ import '@angular/compiler';
 import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { ManagementChatConversation } from '../../data-access/models/management-chat.models';
-import { ChatHeaderComponent } from './chat-header.component';
+import { ManagementChatConversation } from '@/site-management/management/chat/data-access/models/management-chat.models';
+import { ChatHeaderComponent } from '@/site-management/management/chat/components/chat-header/chat-header.component';
 
 describe('ChatHeaderComponent', () => {
   beforeAll(() => {

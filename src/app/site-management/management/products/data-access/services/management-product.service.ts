@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpContext, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../../../../../core/tokens/api-context.token';
-import { environment } from '../../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '@/core/tokens/api-context.token';
+import { environment } from '@env/environment';
 import {
   ApiResponseDto,
   ManagementProduct,
@@ -24,7 +24,7 @@ import {
   ProductCreateRequest,
   ProductUpdateRequest,
   ProductManagementDetailResponse,
-} from '../models/management-product.models';
+} from '@/site-management/management/products/data-access/models/management-product.models';
 
 export interface UploadPresignResponseDto {
   presignedUrl: string;

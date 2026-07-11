@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
-import { environment } from '../../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { environment } from '@env/environment';
 import {
   ApiResponse,
   ConversationResponse,
@@ -14,14 +14,14 @@ import {
   getInitials,
   formatTime,
   resolveParticipantEmail,
-} from '../../../../customer-chat/data-access/models/customer-chat.models';
+} from '@/site-management/shared/chat/data-access/models/customer-chat.models';
 import {
   ManagementChatConversation,
   ManagementChatConversationStatus,
   ManagementChatCustomer,
   ManagementChatWorkspace,
   ChatStaffResponse
-} from '../models/management-chat.models';
+} from '@/site-management/management/chat/data-access/models/management-chat.models';
 
 @Injectable({
   providedIn: 'root',

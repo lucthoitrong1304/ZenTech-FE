@@ -38,27 +38,27 @@ import {
 import { PopoverModule } from 'primeng/popover';
 import { DialogModule } from 'primeng/dialog';
 import { filter, finalize } from 'rxjs';
-import { AuthStorageService } from '../../../../core/services/auth-storage.service';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
 import {
   FaceCheckinData,
   FaceCheckinDialogComponent,
-} from '../../../../shared/components/face-checkin-dialog/face-checkin-dialog.component';
+} from '@/shared/components/face-checkin-dialog/face-checkin-dialog.component';
 import {
   FaceRegisterData,
   FaceRegisterDialogComponent,
-} from '../../../../shared/components/face-register-dialog/face-register-dialog.component';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { Role } from '../../../auth/data-access/models/auth.enums';
-import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
-import { hasRole } from '../../../auth/data-access/utils/auth-role.utils';
-import { ManagementShellUiState } from '../../data-access/state/management-shell-ui.state';
-import { CommandPaletteComponent } from '../../components/command-palette/command-palette.component';
-import { CommandPaletteService } from '../../data-access/services/command-palette.service';
-import { NotificationBellComponent } from '../../../../shared/components/notification-bell/notification-bell.component';
-import { AttendanceService } from '../../data-access/services/attendance.service';
-import { ProfileService } from '../../data-access/services/profile.service';
-import { PermissionCode } from '../../../../core/permissions/permission.models';
-import { PermissionService } from '../../../../core/permissions/permission.service';
+} from '@/shared/components/face-register-dialog/face-register-dialog.component';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { Role } from '@/site-management/identity/data-access/models/auth.enums';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
+import { hasRole } from '@/site-management/identity/data-access/utils/auth-role.utils';
+import { ManagementShellUiState } from '@/site-management/management/data-access/state/management-shell-ui.state';
+import { CommandPaletteComponent } from '@/site-management/management/components/command-palette/command-palette.component';
+import { CommandPaletteService } from '@/site-management/management/data-access/services/command-palette.service';
+import { NotificationBellComponent } from '@/shared/components/notification-bell/notification-bell.component';
+import { AttendanceService } from '@/site-management/management/data-access/services/attendance.service';
+import { ProfileService } from '@/site-management/management/data-access/services/profile.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
+import { PermissionService } from '@/core/permissions/permission.service';
 
 export enum ProfileMenuOption {
   Profile = 'PROFILE',

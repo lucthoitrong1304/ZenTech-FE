@@ -12,7 +12,7 @@ import {
 } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, Subscription, catchError, filter, forkJoin, of, pipe, switchMap, tap, map } from 'rxjs';
-import { ManagementChatEvent, ManagementChatEventType } from '../models/management-chat.event';
+import { ManagementChatEvent, ManagementChatEventType } from '@/site-management/management/chat/data-access/models/management-chat.event';
 import {
   ManagementChatConversation,
   ManagementChatConversationStatus,
@@ -26,13 +26,13 @@ import {
   ManagementChatUpload,
   ManagementChatWorkspace,
   ChatStaffResponse,
-} from '../models/management-chat.models';
-import { ManagementChatService } from '../services/management-chat.service';
-import { CustomerChatService } from '../../../../customer-chat/data-access/services/customer-chat.service';
-import { CustomerChatWebsocketService } from '../../../../customer-chat/data-access/services/customer-chat-websocket.service';
-import { ClientLogEventType } from '../../../../../core/observability/logging/client-log.model';
-import { ClientLogService } from '../../../../../core/observability/logging/client-log.service';
-import { generateTraceId } from '../../../../../core/observability/tracing/trace-id.util';
+} from '@/site-management/management/chat/data-access/models/management-chat.models';
+import { ManagementChatService } from '@/site-management/management/chat/data-access/services/management-chat.service';
+import { CustomerChatService } from '@/site-management/shared/chat/data-access/services/customer-chat.service';
+import { CustomerChatWebsocketService } from '@/site-management/shared/chat/data-access/services/customer-chat-websocket.service';
+import { ClientLogEventType } from '@/core/observability/logging/client-log.model';
+import { ClientLogService } from '@/core/observability/logging/client-log.service';
+import { generateTraceId } from '@/core/observability/tracing/trace-id.util';
 import {
   ChatMessageResponse,
   ConversationResponse,
@@ -43,7 +43,7 @@ import {
   ChatMessageType,
   ChatAttachmentType,
   formatBytes,
-} from '../../../../customer-chat/data-access/models/customer-chat.models';
+} from '@/site-management/shared/chat/data-access/models/customer-chat.models';
 
 interface ManagementChatUiState {
   selectedConversationId: string | null;

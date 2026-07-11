@@ -9,9 +9,9 @@ import {
   LucideShieldCheck,
   LucideLoader2,
 } from '@lucide/angular';
-import { ChangePasswordStore } from '../../data-access/store/change-password.store';
-import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
-import { ChangePasswordRequest } from '../../../auth/data-access/models/auth.models';
+import { ChangePasswordStore } from '@/site-management/management/data-access/store/change-password.store';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
+import { ChangePasswordRequest } from '@/site-management/identity/data-access/models/auth.models';
 
 @Component({
   selector: 'app-management-change-password-page',

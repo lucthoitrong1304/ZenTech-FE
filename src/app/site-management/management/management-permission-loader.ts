@@ -1,7 +1,7 @@
 import { Type, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { PermissionCode } from '../../core/permissions/permission.models';
-import { PermissionService } from '../../core/permissions/permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
+import { PermissionService } from '@/core/permissions/permission.service';
 
 export type ManagementComponentLoader = () => Promise<Type<unknown>>;
 

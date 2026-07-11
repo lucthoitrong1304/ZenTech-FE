@@ -7,9 +7,9 @@ import {
   ManagementOrderEditDraft,
   ManagementOrderPage,
   ManagementOrderQuery,
-} from '../models/management-order.models';
-import { ManagementOrderService } from '../services/management-order.service';
-import { ManagementOrdersStore } from './management-orders.store';
+} from '@/site-management/management/orders/data-access/models/management-order.models';
+import { ManagementOrderService } from '@/site-management/management/orders/data-access/services/management-order.service';
+import { ManagementOrdersStore } from '@/site-management/management/orders/data-access/store/management-orders.store';
 
 describe('ManagementOrdersStore', () => {
   beforeAll(() => {

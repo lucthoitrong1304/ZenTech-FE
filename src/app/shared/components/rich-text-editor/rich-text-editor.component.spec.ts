@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { getTestBed } from '@angular/core/testing';
 import { describe, expect, it, beforeAll, afterEach } from 'vitest';
-import { RichTextEditorComponent } from './rich-text-editor.component';
+import { RichTextEditorComponent } from '@/shared/components/rich-text-editor/rich-text-editor.component';
 
 describe('RichTextEditorComponent', () => {
   beforeAll(() => {

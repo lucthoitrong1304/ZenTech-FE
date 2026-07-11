@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
-import { ToastType } from './toast.model';
+import { ToastType } from '@/shared/components/toast/toast.model';
 
 @Injectable({
   providedIn: 'root',

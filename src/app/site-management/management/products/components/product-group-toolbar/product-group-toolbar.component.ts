@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input, output } from '@angular/core
 import { LucideFilter, LucideSearch, LucideX } from '@lucide/angular';
 import {
   ManagementProductGroupQuery,
-} from '../../data-access/models/management-product.models';
+} from '@/site-management/management/products/data-access/models/management-product.models';
 
 @Component({
   selector: 'app-product-group-toolbar',

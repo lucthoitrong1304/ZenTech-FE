@@ -3,10 +3,10 @@ import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { firstValueFrom, of } from 'rxjs';
 import { vi } from 'vitest';
-import { ApiService } from '../api/api.service';
-import { AuthStorageService } from '../services/auth-storage.service';
-import { PermissionCode } from './permission.models';
-import { PermissionService } from './permission.service';
+import { ApiService } from '@/core/api/api.service';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
+import { PermissionService } from '@/core/permissions/permission.service';
 
 describe('PermissionService', () => {
   beforeAll(() => {

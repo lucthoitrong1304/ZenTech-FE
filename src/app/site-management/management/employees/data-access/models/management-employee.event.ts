@@ -1,4 +1,4 @@
-﻿import {
+import {
   ManagementEmployee,
   ManagementEmployeeCreateDraft,
   ManagementEmployeeFormErrors,
@@ -6,7 +6,7 @@
   ManagementEmployeeQuery,
   ManagementEmployeeRole,
   ManagementEmployeeSort,
-} from './management-employee.models';
+} from '@/site-management/management/employees/data-access/models/management-employee.models';
 
 export enum ManagementEmployeeEventType {
   EmployeesLoadStarted = 'Employees Load Started',

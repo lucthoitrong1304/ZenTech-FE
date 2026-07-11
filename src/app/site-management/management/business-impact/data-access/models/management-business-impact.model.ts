@@ -1,4 +1,4 @@
-import { IncidentStatus, IncidentSeverity } from '../../../../admin/data-access/models/admin.models';
+import { IncidentStatus, IncidentSeverity } from '@/site-management/admin/data-access/models/admin.models';
 
 export interface ManagementIncidentImpactDto {
   incidentId: string;

@@ -15,8 +15,8 @@ import {
   Shift,
   ShiftSettingsDraft,
   WorkScheduleQuery,
-} from '../models/work-schedule.models';
-import { WorkScheduleService } from '../services/work-schedule.service';
+} from '@/site-management/management/work-schedules/data-access/models/work-schedule.models';
+import { WorkScheduleService } from '@/site-management/management/work-schedules/data-access/services/work-schedule.service';
 import {
   addWeeks,
   formatDate,
@@ -24,7 +24,7 @@ import {
   getWeekEndDate,
   getWeekStart,
   parseDate,
-} from './work-schedule-date.utils';
+} from '@/site-management/management/work-schedules/data-access/store/work-schedule-date.utils';
 
 const today = new Date();
 const currentWeekStart = formatDate(getWeekStart(today));

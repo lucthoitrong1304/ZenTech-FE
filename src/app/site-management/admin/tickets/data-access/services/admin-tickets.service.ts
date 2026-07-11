@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
-import { SupportTicket, TicketStatus, TicketPriority, PaginatedResult, ApiResponse } from '../../../data-access/models/admin.models';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
+import { SupportTicket, TicketStatus, TicketPriority, PaginatedResult, ApiResponse } from '@/site-management/admin/data-access/models/admin.models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminTicketsService {

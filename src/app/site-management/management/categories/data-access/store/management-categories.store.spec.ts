@@ -2,10 +2,10 @@ import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
-import { CategoryNavigationStore } from '../../../../shared/data-access/store/category-navigation.store';
-import { ManagementCategory, ManagementCategoryDraft } from '../models/management-category.models';
-import { ManagementCategoryService } from '../services/management-category.service';
-import { ManagementCategoriesStore } from './management-categories.store';
+import { CategoryNavigationStore } from '@/site-management/customer/shell/data-access/store/category-navigation.store';
+import { ManagementCategory, ManagementCategoryDraft } from '@/site-management/management/categories/data-access/models/management-category.models';
+import { ManagementCategoryService } from '@/site-management/management/categories/data-access/services/management-category.service';
+import { ManagementCategoriesStore } from '@/site-management/management/categories/data-access/store/management-categories.store';
 
 describe('ManagementCategoriesStore', () => {
   beforeAll(() => {

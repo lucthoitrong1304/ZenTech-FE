@@ -7,13 +7,13 @@ import {
 import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
-import { ErrorStateService } from '../errors/error-state.service';
-import { AuthRefreshService } from '../services/auth-refresh.service';
-import { AuthStorageService } from '../services/auth-storage.service';
-import { SKIP_AUTH_TOKEN, SKIP_CLIENT_LOG, SKIP_GLOBAL_ERROR } from '../tokens/api-context.token';
-import { AuthSessionStore } from '../../site-management/auth/data-access/store/auth-session.store';
-import { ClientLogEventType } from '../observability/logging/client-log.model';
-import { ClientLogService } from '../observability/logging/client-log.service';
+import { ErrorStateService } from '@/core/errors/error-state.service';
+import { AuthRefreshService } from '@/core/services/auth-refresh.service';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { SKIP_AUTH_TOKEN, SKIP_CLIENT_LOG, SKIP_GLOBAL_ERROR } from '@/core/tokens/api-context.token';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
+import { ClientLogEventType } from '@/core/observability/logging/client-log.model';
+import { ClientLogService } from '@/core/observability/logging/client-log.service';
 
 type RefreshState =
   | { status: 'idle' }

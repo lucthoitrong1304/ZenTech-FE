@@ -3,12 +3,12 @@ import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { forkJoin, pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
-import { AttendanceService } from '../services/attendance.service';
+import { AttendanceService } from '@/site-management/management/data-access/services/attendance.service';
 import {
   AttendanceLocationPolicy,
   AttendanceRecordResponse,
   AttendanceStatisticsResponse
-} from '../models/attendance.model';
+} from '@/site-management/management/data-access/models/attendance.model';
 
 export interface AttendanceReportState {
   records: AttendanceRecordResponse[];

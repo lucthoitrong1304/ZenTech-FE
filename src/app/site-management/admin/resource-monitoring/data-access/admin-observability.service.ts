@@ -1,13 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../core/api/api.service';
-import { environment } from '../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
 import {
   AdminObservabilityData,
   ObservabilityDependencyDetail,
   ApiResponse,
   DashboardPeriod,
-} from '../../dashboard/data-access/dashboard.models';
+} from '@/site-management/admin/dashboard/data-access/dashboard.models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminObservabilityService {

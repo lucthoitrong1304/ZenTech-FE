@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of } from 'rxjs';
 import { vi } from 'vitest';
-import { environment } from '../../../../../../environments/environment';
-import { ApiService } from '../../../../../core/api/api.service';
-import { CustomerService } from './customer.service';
+import { environment } from '@env/environment';
+import { ApiService } from '@/core/api/api.service';
+import { CustomerService } from '@/site-management/management/customers/data-access/services/customer.service';
 
 describe('CustomerService', () => {
   const customersUrl = `${environment.apiBaseUrl}/management/customers`;

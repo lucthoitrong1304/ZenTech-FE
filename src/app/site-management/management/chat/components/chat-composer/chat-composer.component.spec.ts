@@ -2,7 +2,7 @@ import '@angular/compiler';
 import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ChatComposerComponent } from './chat-composer.component';
+import { ChatComposerComponent } from '@/site-management/management/chat/components/chat-composer/chat-composer.component';
 
 describe('ChatComposerComponent', () => {
   let component: ChatComposerComponent;

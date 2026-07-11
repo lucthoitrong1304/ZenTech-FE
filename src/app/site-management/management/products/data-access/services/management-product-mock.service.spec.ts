@@ -1,5 +1,5 @@
 import { firstValueFrom } from 'rxjs';
-import { ManagementProductMockService } from './management-product-mock.service';
+import { ManagementProductMockService } from '@/site-management/management/products/data-access/services/management-product-mock.service';
 
 describe('ManagementProductMockService', () => {
   let service: ManagementProductMockService;

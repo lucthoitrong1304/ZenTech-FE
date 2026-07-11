@@ -1,10 +1,10 @@
-﻿import { computed, inject } from '@angular/core';
+import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
-import { WebsocketService } from '../../../../../core/services/websocket.service';
-import { ManagementTicket, ManagementTicketQuery } from '../models/management-ticket.models';
-import { ManagementTicketService } from '../services/management-ticket.service';
+import { WebsocketService } from '@/core/services/websocket.service';
+import { ManagementTicket, ManagementTicketQuery } from '@/site-management/management/tickets/data-access/models/management-ticket.models';
+import { ManagementTicketService } from '@/site-management/management/tickets/data-access/services/management-ticket.service';
 
 const DEFAULT_QUERY: ManagementTicketQuery = {
   page: 0,

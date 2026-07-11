@@ -16,9 +16,9 @@ import {
   LucideClock
 } from '@lucide/angular';
 import { PopoverModule } from 'primeng/popover';
-import { NotificationStore } from '../../../core/store/notification.store';
-import { INotification, NotificationType } from '../../../core/models/notification.model';
-import { AuthStorageService } from '../../../core/services/auth-storage.service';
+import { NotificationStore } from '@/core/store/notification.store';
+import { INotification, NotificationType } from '@/core/models/notification.model';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
 
 @Component({
   selector: 'app-notification-bell',

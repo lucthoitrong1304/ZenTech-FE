@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AttendanceStatisticsResponse } from '../../../../../data-access/models/attendance.model';
+import { AttendanceStatisticsResponse } from '@/site-management/management/data-access/models/attendance.model';
 import { LucideUsers, LucideClock, LucideAlertCircle, LucideCheckCircle2, LucideCalendarDays, LucideHeartHandshake } from '@lucide/angular';
 
 @Component({

@@ -13,11 +13,11 @@ import {
   TransactionTypeFilterOption,
   PageResponse,
   InventoryTransactionStats,
-} from '../models/inventory.model';
-import { InventoryEvent, InventoryEventType } from '../models/inventory.event';
-import { ManagementInventoryService } from '../services/management-inventory.service';
-import { ManagementEmployee } from '../../../employees/data-access/models/management-employee.models';
-import { ManagementEmployeeService } from '../../../employees/data-access/services/management-employee.service';
+} from '@/site-management/management/inventory/data-access/models/inventory.model';
+import { InventoryEvent, InventoryEventType } from '@/site-management/management/inventory/data-access/models/inventory.event';
+import { ManagementInventoryService } from '@/site-management/management/inventory/data-access/services/management-inventory.service';
+import { ManagementEmployee } from '@/site-management/management/employees/data-access/models/management-employee.models';
+import { ManagementEmployeeService } from '@/site-management/management/employees/data-access/services/management-employee.service';
 
 const DEFAULT_STOCK_QUERY: InventoryQuery = {
   page: 0,

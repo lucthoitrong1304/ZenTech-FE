@@ -1,17 +1,12 @@
-import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { filter, map } from 'rxjs';
-import { ToastComponent } from './shared/components/toast/toast.component';
-import { CustomerChatPopupComponent } from './site-management/customer-chat/components/customer-chat-popup/customer-chat-popup.component';
-import { CategoryNavigationStore } from './site-management/shared/data-access/store/category-navigation.store';
-import { AuthStorageService } from './core/services/auth-storage.service';
-import { RouteClientLogService } from './core/observability/logging/route-client-log.service';
-import { Role } from './site-management/auth/data-access/models/auth.enums';
-import { hasRole } from './site-management/auth/data-access/utils/auth-role.utils';
-import { AdminLogsService } from './site-management/admin/data-access/services/admin-logs.service';
-import { environment } from '../environments/environment';
+import { filter } from 'rxjs';
+import { ToastComponent } from '@/shared/components/toast/toast.component';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { RouteClientLogService } from '@/core/observability/logging/route-client-log.service';
+import { AdminLogsService } from '@/site-management/admin/data-access/services/admin-logs.service';
+import { environment } from '@env/environment';
 
 interface RecordingUploadBatch {
   email: string;
@@ -23,7 +18,7 @@ interface RecordingUploadBatch {
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, ConfirmDialogModule, ToastComponent, CustomerChatPopupComponent],
+  imports: [RouterOutlet, ConfirmDialogModule, ToastComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -42,7 +37,6 @@ export class App {
     '/admin/resource-monitoring'
   ];
 
-  private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly router = inject(Router);
   private readonly authStorageService = inject(AuthStorageService);
   private readonly routeClientLogService = inject(RouteClientLogService);
@@ -53,39 +47,8 @@ export class App {
   private recordingUploadInFlight = false;
   private recordingRetryTimer: ReturnType<typeof setTimeout> | null = null;
   protected readonly title = signal('ZenTech-FE');
-  protected readonly currentUrl = toSignal(
-    this.router.events.pipe(
-      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-      map(event => event.urlAfterRedirects)
-    ),
-    { initialValue: this.router.url }
-  );
-  protected readonly showCustomerChat = computed(() => {
-    const url = this.currentUrl();
-    const session = this.authStorageService.getSession();
-    const roles = session?.roles ?? [];
-    const isStaff =
-      hasRole(roles, Role.OWNER) ||
-      hasRole(roles, Role.MANAGER) ||
-      hasRole(roles, Role.EMPLOYEE) ||
-      hasRole(roles, Role.ADMIN);
-
-    if (isStaff) {
-      return false;
-    }
-
-    return !(
-      url === '/chat' ||
-      url.startsWith('/management') ||
-      url.startsWith('/admin') ||
-      url.startsWith('/auth') ||
-      url.startsWith('/reset-password') ||
-      url.startsWith('/error')
-    );
-  });
 
   constructor() {
-    this.categoryNavigationStore.loadCategoriesOnce();
     this.routeClientLogService.initialize();
     this.initScreenRecording();
   }

@@ -14,9 +14,9 @@ import {
   IPaymentMethodShare,
   ICategoryShare,
   IInventoryStats,
-} from '../models/reports.model';
-import { ReportsEvent } from '../models/reports.event';
-import { ReportsService } from '../services/reports.service';
+} from '@/site-management/management/reports/data-access/models/reports.model';
+import { ReportsEvent } from '@/site-management/management/reports/data-access/models/reports.event';
+import { ReportsService } from '@/site-management/management/reports/data-access/services/reports.service';
 
 interface ReportsUiState {
   activeTab: ReportsTab;

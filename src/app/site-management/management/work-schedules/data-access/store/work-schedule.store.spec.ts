@@ -7,9 +7,9 @@ import {
   EmployeeWeeklySchedule,
   Shift,
   WorkSchedulePage,
-} from '../models/work-schedule.models';
-import { WorkScheduleService } from '../services/work-schedule.service';
-import { WorkScheduleStore } from './work-schedule.store';
+} from '@/site-management/management/work-schedules/data-access/models/work-schedule.models';
+import { WorkScheduleService } from '@/site-management/management/work-schedules/data-access/services/work-schedule.service';
+import { WorkScheduleStore } from '@/site-management/management/work-schedules/data-access/store/work-schedule.store';
 
 describe('WorkScheduleStore', () => {
   beforeAll(() => {

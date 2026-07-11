@@ -3,7 +3,7 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { removeEntity, setAllEntities, withEntities } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, forkJoin, map, pipe, switchMap, tap } from 'rxjs';
-import { ManagementProductEvent, ManagementProductEventType } from '../models/management-product.event';
+import { ManagementProductEvent, ManagementProductEventType } from '@/site-management/management/products/data-access/models/management-product.event';
 import {
   ManagementProduct,
   ManagementProductCategory,
@@ -15,8 +15,8 @@ import {
   ProductUpdateRequest,
   ProductManagementDetailResponse,
   ManagementProductFormErrors,
-} from '../models/management-product.models';
-import { ManagementProductService } from '../services/management-product.service';
+} from '@/site-management/management/products/data-access/models/management-product.models';
+import { ManagementProductService } from '@/site-management/management/products/data-access/services/management-product.service';
 
 const DEFAULT_QUERY: ManagementProductQuery = {
   page: 0,

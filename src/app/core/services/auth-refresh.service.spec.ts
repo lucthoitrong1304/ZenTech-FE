@@ -3,9 +3,9 @@ import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { firstValueFrom, Subject } from 'rxjs';
 import { vi } from 'vitest';
-import { ApiService } from '../api/api.service';
-import { AuthSessionSource } from './auth-storage.service';
-import { AuthRefreshService } from './auth-refresh.service';
+import { ApiService } from '@/core/api/api.service';
+import { AuthSessionSource } from '@/core/services/auth-storage.service';
+import { AuthRefreshService } from '@/core/services/auth-refresh.service';
 
 describe('AuthRefreshService', () => {
   beforeAll(() => {

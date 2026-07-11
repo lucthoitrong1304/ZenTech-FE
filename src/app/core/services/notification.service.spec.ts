@@ -3,10 +3,10 @@ import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { firstValueFrom, of } from 'rxjs';
 import { vi } from 'vitest';
-import { environment } from '../../../environments/environment';
-import { ApiService } from '../api/api.service';
-import { IPageResponse, INotification, IUnreadCountResponse, NotificationType } from '../models/notification.model';
-import { NotificationService } from './notification.service';
+import { environment } from '@env/environment';
+import { ApiService } from '@/core/api/api.service';
+import { IPageResponse, INotification, IUnreadCountResponse, NotificationType } from '@/core/models/notification.model';
+import { NotificationService } from '@/core/services/notification.service';
 
 describe('NotificationService', () => {
   const baseUrl = `${environment.apiBaseUrl}/notifications`;

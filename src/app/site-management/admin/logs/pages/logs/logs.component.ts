@@ -16,14 +16,14 @@ import {
   LucideUser,
   LucideSend
 } from '@lucide/angular';
-import { AdminStore } from '../../../data-access/store/admin.store';
-import { AdminLogsService } from '../../../data-access/services/admin-logs.service';
-import { ActivityArea, ActivitySeverity, LogLevel, LogServiceCategory, SystemLog } from '../../../data-access/models/admin.models';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { WebsocketService } from '../../../../../core/services/websocket.service';
-import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
-import { normalizeTraceIdInput } from '../../../../../core/observability/tracing/trace-id.util';
-import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
+import { AdminStore } from '@/site-management/admin/data-access/store/admin.store';
+import { AdminLogsService } from '@/site-management/admin/data-access/services/admin-logs.service';
+import { ActivityArea, ActivitySeverity, LogLevel, LogServiceCategory, SystemLog } from '@/site-management/admin/data-access/models/admin.models';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { WebsocketService } from '@/core/services/websocket.service';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { normalizeTraceIdInput } from '@/core/observability/tracing/trace-id.util';
+import { AdminRecordingEvidenceComponent } from '@/site-management/admin/shared/recording-evidence/admin-recording-evidence.component';
 
 interface LogMetadataItem {
   label: string;

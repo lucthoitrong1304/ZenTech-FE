@@ -1,4 +1,4 @@
-import { addWeeks, formatDate, getWeekDates, getWeekEndDate, getWeekStart } from './work-schedule-date.utils';
+import { addWeeks, formatDate, getWeekDates, getWeekEndDate, getWeekStart } from '@/site-management/management/work-schedules/data-access/store/work-schedule-date.utils';
 
 describe('work schedule date utils', () => {
   it('uses monday as the week start', () => {

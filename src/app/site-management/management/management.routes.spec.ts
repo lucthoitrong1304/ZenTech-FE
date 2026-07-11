@@ -1,6 +1,6 @@
 import '@angular/compiler';
-import { managementRoutes } from './management.routes';
-import { PermissionCode } from '../../core/permissions/permission.models';
+import { managementRoutes } from '@/site-management/management/management.routes';
+import { PermissionCode } from '@/core/permissions/permission.models';
 import { describe, expect, it } from 'vitest';
 
 describe('managementRoutes', () => {

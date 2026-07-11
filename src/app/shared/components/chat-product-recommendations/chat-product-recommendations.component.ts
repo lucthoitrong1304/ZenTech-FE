@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideArrowRight, LucideImageOff } from '@lucide/angular';
-import { ChatProductRecommendation } from './chat-product-recommendations.model';
+import { ChatProductRecommendation } from '@/shared/components/chat-product-recommendations/chat-product-recommendations.model';
 
 @Component({
   selector: 'app-chat-product-recommendations',

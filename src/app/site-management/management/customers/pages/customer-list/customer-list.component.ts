@@ -1,22 +1,22 @@
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, computed, effect, inject, untracked } from '@angular/core';
 import { filter, take } from 'rxjs';
-import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
+import { ConfirmService } from '@/shared/components/confirm/confirm.service';
 import {
   ManagementErrorStateComponent,
   ManagementPageHeroComponent,
   ManagementPageShellComponent,
   ManagementStatCardComponent,
   ManagementToolbarSurfaceComponent,
-} from '../../../../../shared/components/management-ui';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { CustomerDetailDialogComponent } from '../../components/customer-detail-dialog/customer-detail-dialog.component';
-import { CustomerTableComponent } from '../../components/customer-table/customer-table.component';
-import { CustomerToolbarComponent } from '../../components/customer-toolbar/customer-toolbar.component';
-import { CustomerActiveFilter, CustomerSort } from '../../data-access/models/customer.models';
-import { CustomerStore } from '../../data-access/store/customer.store';
-import { PermissionService } from '../../../../../core/permissions/permission.service';
-import { PermissionCode } from '../../../../../core/permissions/permission.models';
+} from '@/shared/components/management-ui';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { CustomerDetailDialogComponent } from '@/site-management/management/customers/components/customer-detail-dialog/customer-detail-dialog.component';
+import { CustomerTableComponent } from '@/site-management/management/customers/components/customer-table/customer-table.component';
+import { CustomerToolbarComponent } from '@/site-management/management/customers/components/customer-toolbar/customer-toolbar.component';
+import { CustomerActiveFilter, CustomerSort } from '@/site-management/management/customers/data-access/models/customer.models';
+import { CustomerStore } from '@/site-management/management/customers/data-access/store/customer.store';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
 
 @Component({
   selector: 'app-customer-list',

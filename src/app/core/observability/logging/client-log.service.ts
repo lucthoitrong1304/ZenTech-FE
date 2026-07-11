@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AdminLogsService } from '../../../site-management/admin/data-access/services/admin-logs.service';
-import { ClientLogContext, ClientLogEventType, ClientLogLevel, ClientLogPayload } from './client-log.model';
-import { sanitizeRecord, sanitizeText, sanitizeUrl } from './client-log-sanitizer';
-import { AuthStorageService } from '../../services/auth-storage.service';
-import { generateTraceId } from '../tracing/trace-id.util';
+import { AdminLogsService } from '@/site-management/admin/data-access/services/admin-logs.service';
+import { ClientLogContext, ClientLogEventType, ClientLogLevel, ClientLogPayload } from '@/core/observability/logging/client-log.model';
+import { sanitizeRecord, sanitizeText, sanitizeUrl } from '@/core/observability/logging/client-log-sanitizer';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { generateTraceId } from '@/core/observability/tracing/trace-id.util';
 
 @Injectable({ providedIn: 'root' })
 export class ClientLogService {

@@ -3,7 +3,7 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { setAllEntities, updateEntity, withEntities } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
-import { ManagementOrderEvent, ManagementOrderEventType } from '../models/management-order.event';
+import { ManagementOrderEvent, ManagementOrderEventType } from '@/site-management/management/orders/data-access/models/management-order.event';
 import {
   ManagementOrder,
   ManagementOrderDateFilter,
@@ -13,8 +13,8 @@ import {
   ManagementOrderQuery,
   ManagementOrderSort,
   ManagementOrderStatusFilter,
-} from '../models/management-order.models';
-import { ManagementOrderService } from '../services/management-order.service';
+} from '@/site-management/management/orders/data-access/models/management-order.models';
+import { ManagementOrderService } from '@/site-management/management/orders/data-access/services/management-order.service';
 
 export type ManagementOrderDrawerMode = 'detail' | 'edit' | null;
 
