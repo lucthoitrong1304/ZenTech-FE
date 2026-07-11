@@ -1,8 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, computed, input, output, ViewChild, inject, OnDestroy, HostListener, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { Subject, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, catchError, takeUntil } from 'rxjs/operators';
 import {
   LucideChevronDown,
   LucideCircleUserRound,
@@ -23,8 +21,7 @@ import { DrawerModule } from 'primeng/drawer';
 import { HeaderNavItem } from '@/site-management/customer/shell/models/site-navigation.models';
 import { NotificationBellComponent } from '@/shared/components/notification-bell/notification-bell.component';
 import { CartStore } from '@/site-management/customer/cart/data-access/store/cart.store';
-import { ProductCatalogService } from '@/site-management/customer/catalog/data-access/services/product-catalog.service';
-import { ProductListItem } from '@/site-management/customer/catalog/data-access/models/product-catalog.models';
+import { CustomerShellStore } from '../../data-access/store/customer-shell.store';
 
 export interface HeaderUser {
   isAuthenticated: boolean;
@@ -62,14 +59,12 @@ export interface HeaderUser {
 export class SiteHeaderComponent implements OnDestroy {
   private readonly router = inject(Router);
   protected readonly cartStore = inject(CartStore);
-  private readonly productCatalogService = inject(ProductCatalogService);
-  private readonly searchSubject = new Subject<string>();
-  private readonly destroy$ = new Subject<void>();
+  private readonly customerShellStore = inject(CustomerShellStore);
 
   protected readonly searchVisible = signal(false);
   protected readonly searchQuery = signal('');
-  protected readonly instantResults = signal<ProductListItem[]>([]);
-  protected readonly loadingResults = signal(false);
+  protected readonly instantResults = this.customerShellStore.instantResults;
+  protected readonly loadingResults = this.customerShellStore.loadingResults;
 
   protected readonly isHovered = signal(false);
   protected readonly isScrolled = signal(false);
@@ -80,31 +75,6 @@ export class SiteHeaderComponent implements OnDestroy {
       this.isScrolled.set(scrollY > 20);
     }
 
-    this.searchSubject.pipe(
-      takeUntil(this.destroy$),
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(query => {
-        const trimmedQuery = query.trim();
-        if (!trimmedQuery) {
-          this.instantResults.set([]);
-          this.loadingResults.set(false);
-          return of(null);
-        }
-        this.loadingResults.set(true);
-        return this.productCatalogService.getProducts({ search: trimmedQuery, size: 5 }).pipe(
-          catchError(() => {
-            this.loadingResults.set(false);
-            return of(null);
-          })
-        );
-      })
-    ).subscribe(response => {
-      this.loadingResults.set(false);
-      if (response) {
-        this.instantResults.set(response.items);
-      }
-    });
   }
 
   @HostListener('window:scroll', [])
@@ -189,8 +159,7 @@ export class SiteHeaderComponent implements OnDestroy {
   openSearch(): void {
     this.searchVisible.set(true);
     this.searchQuery.set('');
-    this.instantResults.set([]);
-    this.loadingResults.set(false);
+    this.customerShellStore.clearSearch();
     document.body.classList.add('p-overflow-hidden');
   }
 
@@ -202,7 +171,7 @@ export class SiteHeaderComponent implements OnDestroy {
   onSearchInput(event: Event): void {
     const query = (event.target as HTMLInputElement).value;
     this.searchQuery.set(query);
-    this.searchSubject.next(query.trim());
+    this.customerShellStore.searchProducts(query);
   }
 
   triggerSearch(): void {
@@ -226,9 +195,6 @@ export class SiteHeaderComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-
     // Clean up PrimeNG drawer mask if it's left in the DOM on navigation
     const masks = document.querySelectorAll('.p-drawer-mask, .p-overlay-mask');
     masks.forEach(mask => {

@@ -24,7 +24,6 @@ const INITIAL_STATE: CategoryNavigationState = {
 };
 
 export const CategoryNavigationStore = signalStore(
-  { providedIn: 'root' },
   withState<CategoryNavigationState>(INITIAL_STATE),
   withComputed(({ categories }) => ({
     navItems: computed(() => categories().map(toHeaderNavItem)),

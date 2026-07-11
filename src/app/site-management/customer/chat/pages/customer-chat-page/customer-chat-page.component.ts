@@ -36,6 +36,7 @@ import { CustomerChatSharedItem, CustomerTicketStatus } from '@/site-management/
 import { CustomerChatEventType } from '@/site-management/shared/chat/data-access/models/customer-chat.event';
 import { CustomerChatStore } from '@/site-management/customer/chat/data-access/store/customer-chat.store';
 import { ConfirmService } from '@/shared/components/confirm/confirm.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-customer-chat-page',
@@ -158,19 +159,15 @@ export class CustomerChatPageComponent implements OnInit {
     this.activeDropdownId.set(null);
   }
 
-  protected confirmDelete(id?: string): void {
-    this.confirmService.open({
+  protected async confirmDelete(id?: string): Promise<void> {
+    const confirmed = await firstValueFrom(this.confirmService.open({
       title: 'Xóa hội thoại',
       content: 'Bạn có chắc chắn muốn xóa vĩnh viễn cuộc hội thoại này không?',
-    }).subscribe((confirmed) => {
-      if (confirmed) {
-        if (id) {
-          this.store.deleteConversation(id);
-        } else {
-          this.store.deleteConversation();
-        }
-      }
-    });
+    }));
+
+    if (confirmed) {
+      this.store.deleteConversation(id);
+    }
   }
 
   protected isTicketResolved(ticketStatus: CustomerTicketStatus): boolean {

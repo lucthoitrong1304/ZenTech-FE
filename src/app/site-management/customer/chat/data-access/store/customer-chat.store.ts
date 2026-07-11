@@ -116,7 +116,6 @@ const INITIAL_STATE: CustomerChatUiState = {
 };
 
 export const CustomerChatStore = signalStore(
-  { providedIn: 'root' },
   withState<CustomerChatUiState>(INITIAL_STATE),
   withEntities<CustomerChatMessage, 'message'>({
     entity: {} as CustomerChatMessage,

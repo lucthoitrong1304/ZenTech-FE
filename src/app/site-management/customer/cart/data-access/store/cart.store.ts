@@ -28,7 +28,6 @@ const INITIAL_STATE: CartState = {
 };
 
 export const CartStore = signalStore(
-  { providedIn: 'root' },
   withState<CartState>(INITIAL_STATE),
   withEntities<CartItem, 'cartItem'>({
     entity: {} as CartItem,

@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAlertTriangle, LucideCheckCircle, LucideLogIn, LucideMessageCircle, LucideWrench, LucideX } from '@lucide/angular';
-import { filter } from 'rxjs';
+import { filter, map } from 'rxjs';
 import { MediaPreviewDialogComponent } from '@/shared/components/media-preview-dialog/media-preview-dialog.component';
 import { MediaPreviewItem } from '@/shared/components/media-preview-dialog/media-preview-dialog.model';
 import { CustomerChatComposerComponent } from '@/site-management/customer/chat/components/customer-chat-composer/customer-chat-composer.component';
@@ -39,25 +39,25 @@ import { CustomerTicketStatus } from '@/site-management/shared/chat/data-access/
   styleUrl: './customer-chat-popup.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CustomerChatPopupComponent implements OnInit {
+export class CustomerChatPopupComponent {
   private readonly router = inject(Router);
-  private readonly destroyRef = inject(DestroyRef);
   protected readonly store = inject(CustomerChatStore);
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
   protected readonly loginQueryParams = computed(() => ({ returnUrl: this.router.url || '/' }));
+  private readonly currentUrl = toSignal(
+    this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+      map((event) => event.urlAfterRedirects),
+    ),
+    { initialValue: this.router.url },
+  );
 
-  ngOnInit(): void {
+  constructor() {
     if (!this.store.session()) {
       this.store.loadSession();
     }
 
-    this.updateRouteContext(this.router.url);
-    this.router.events
-      .pipe(
-        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe((event) => this.updateRouteContext(event.urlAfterRedirects));
+    effect(() => this.updateRouteContext(this.currentUrl()), { allowSignalWrites: true });
   }
 
   protected openPreview(item: MediaPreviewItem): void {
