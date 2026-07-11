@@ -15,7 +15,7 @@ import {
   withEntities,
 } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
-import { catchError, EMPTY, pipe, switchMap, tap } from 'rxjs';
+import { catchError, concatMap, EMPTY, exhaustMap, from, map, pipe, switchMap, tap, toArray } from 'rxjs';
 import {
   AccountProfile,
   UpdateMyProfileRequest,
@@ -26,6 +26,8 @@ import {
   CustomerVoucherResponse,
   OrderFilter,
   VoucherStatus,
+  ReturnEvidenceViewModel,
+  SubmitReturnRequest,
 } from '@/site-management/customer/account/data-access/models/account.models';
 import { AccountService } from '@/site-management/customer/account/data-access/services/account.service';
 import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
@@ -39,6 +41,12 @@ interface AccountUiState {
   loading: boolean;
   error: string | null;
   selectedOrderDetail: CustomerOrderDetailResponse | null;
+  returnEvidence: ReturnEvidenceViewModel[];
+  returnUploading: boolean;
+  returnSubmitting: boolean;
+  returnUploadError: string | null;
+  returnSuccessMessage: string | null;
+  returnFailureMessage: string | null;
 }
 
 const VOUCHER_ENTITY_CONFIG = {
@@ -65,6 +73,12 @@ const INITIAL_STATE: AccountUiState = {
   loading: false,
   error: null,
   selectedOrderDetail: null,
+  returnEvidence: [],
+  returnUploading: false,
+  returnSubmitting: false,
+  returnUploadError: null,
+  returnSuccessMessage: null,
+  returnFailureMessage: null,
 };
 
 export const AccountStore = signalStore(
@@ -94,6 +108,12 @@ export const AccountStore = signalStore(
       loading,
       error,
       actionMessage,
+      returnEvidence,
+      returnUploading,
+      returnSubmitting,
+      returnUploadError,
+      returnSuccessMessage,
+      returnFailureMessage,
     }) => ({
       vouchers: computed(() => voucherEntities()),
       addresses: computed(() => addressEntities()),
@@ -194,6 +214,12 @@ export const AccountStore = signalStore(
         loading: loading(),
         error: error(),
         actionMessage: actionMessage(),
+        returnEvidence: returnEvidence(),
+        returnUploading: returnUploading(),
+        returnSubmitting: returnSubmitting(),
+        returnUploadError: returnUploadError(),
+        returnSuccessMessage: returnSuccessMessage(),
+        returnFailureMessage: returnFailureMessage(),
       })),
     })
   ),
@@ -564,6 +590,110 @@ export const AccountStore = signalStore(
       )
     );
 
+    const uploadReturnEvidence = rxMethod<readonly File[]>(
+      pipe(
+        tap(() => patchState(store, { returnUploading: true, returnUploadError: null })),
+        concatMap(files =>
+          from(files).pipe(
+            concatMap(file => {
+              const isVideo = file.type.startsWith('video/');
+              const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+
+              if (file.size > maxSize) {
+                patchState(store, {
+                  returnUploadError: `Tệp ${file.name} vượt quá dung lượng cho phép (${isVideo ? '50MB' : '5MB'}).`,
+                });
+                return EMPTY;
+              }
+
+              return accountService.requestReturnEvidenceUploadPresign(file.name, file.type, file.size).pipe(
+                concatMap(presign =>
+                  accountService.uploadToR2(presign, file).pipe(
+                    map((): ReturnEvidenceViewModel => ({
+                      id: crypto.randomUUID(),
+                      fileKey: presign.fileKey,
+                      fileName: file.name,
+                      contentType: file.type,
+                      previewUrl: URL.createObjectURL(file),
+                    }))
+                  )
+                ),
+                catchError(error => {
+                  patchState(store, {
+                    returnUploadError: `Không thể tải lên tệp ${file.name}: ${errorMessage(error)}`,
+                  });
+                  return EMPTY;
+                })
+              );
+            }),
+            toArray(),
+            tap(evidence =>
+              patchState(store, current => ({
+                returnEvidence: [...current.returnEvidence, ...evidence],
+                returnUploading: false,
+              }))
+            ),
+            catchError(error => {
+              patchState(store, {
+                returnUploading: false,
+                returnUploadError: `Không thể tải bằng chứng: ${errorMessage(error)}`,
+              });
+              return EMPTY;
+            })
+          )
+        )
+      )
+    );
+
+    const submitReturnRequest = rxMethod<SubmitReturnRequest>(
+      pipe(
+        tap(() => patchState(store, {
+          returnSubmitting: true,
+          returnSuccessMessage: null,
+          returnFailureMessage: null,
+          error: null,
+        })),
+        exhaustMap(({ orderId, reason, details }) =>
+          accountService
+            .submitReturnRequest(orderId, {
+              reason,
+              details,
+              proofFileKeys: store.returnEvidence().map(evidence => evidence.fileKey).join(','),
+            })
+            .pipe(
+              tap({
+                next: response => {
+                  if (response.success) {
+                    releaseReturnEvidence(store.returnEvidence());
+                    patchState(store, {
+                      returnEvidence: [],
+                      returnSubmitting: false,
+                      returnSuccessMessage: 'Gửi yêu cầu trả hàng thành công',
+                      actionMessage: 'Gửi yêu cầu trả hàng thành công',
+                    });
+                    loadOrders();
+                    return;
+                  }
+
+                  patchState(store, {
+                    returnSubmitting: false,
+                    error: response.message || 'Gửi yêu cầu trả hàng thất bại',
+                    returnFailureMessage: response.message || 'Gửi yêu cầu trả hàng thất bại',
+                  });
+                },
+                error: error =>
+                  patchState(store, {
+                    returnSubmitting: false,
+                  error: `Đã xảy ra lỗi khi gửi yêu cầu: ${errorMessage(error)}`,
+                  returnFailureMessage: `Đã xảy ra lỗi khi gửi yêu cầu: ${errorMessage(error)}`,
+                  }),
+              }),
+              catchError(() => EMPTY)
+            )
+        )
+      )
+    );
+
     return {
       loadProfile,
       updateProfile,
@@ -577,6 +707,32 @@ export const AccountStore = signalStore(
       loadOrderDetail,
       cancelOrder,
       loadVouchers,
+      uploadReturnEvidence,
+      submitReturnRequest,
+      clearReturnEvidence(): void {
+        releaseReturnEvidence(store.returnEvidence());
+        patchState(store, {
+          returnEvidence: [],
+          returnUploadError: null,
+          returnSuccessMessage: null,
+          returnFailureMessage: null,
+        });
+      },
+      removeReturnEvidence(id: string): void {
+        const evidence = store.returnEvidence().find(item => item.id === id);
+        if (evidence) {
+          URL.revokeObjectURL(evidence.previewUrl);
+        }
+        patchState(store, current => ({
+          returnEvidence: current.returnEvidence.filter(item => item.id !== id),
+        }));
+      },
+      clearReturnSuccessMessage(): void {
+        patchState(store, { returnSuccessMessage: null });
+      },
+      clearReturnFailureMessage(): void {
+        patchState(store, { returnFailureMessage: null });
+      },
       clearActionMessage(): void {
         patchState(store, { actionMessage: null });
       },
@@ -623,5 +779,13 @@ function formatCurrency(num: number): string {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' })
     .format(num)
     .replace(/\s/g, '');
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Lỗi kết nối';
+}
+
+function releaseReturnEvidence(evidence: readonly ReturnEvidenceViewModel[]): void {
+  evidence.forEach(item => URL.revokeObjectURL(item.previewUrl));
 }
 

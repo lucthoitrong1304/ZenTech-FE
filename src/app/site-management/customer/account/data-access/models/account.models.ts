@@ -45,6 +45,20 @@ export interface UploadPresignResponseDto {
   requiredHeaders: Record<string, string>;
 }
 
+export interface ReturnEvidenceViewModel {
+  id: string;
+  fileKey: string;
+  fileName: string;
+  contentType: string;
+  previewUrl: string;
+}
+
+export interface SubmitReturnRequest {
+  orderId: string;
+  reason: string;
+  details: string;
+}
+
 // UI State Filters & Statuses
 export type VoucherStatus = 'active' | 'used' | 'expired';
 export type OrderFilter = 'last30' | 'sixMonths' | 'year2026' | 'all';

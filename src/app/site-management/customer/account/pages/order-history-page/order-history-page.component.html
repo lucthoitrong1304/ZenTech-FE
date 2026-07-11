@@ -88,8 +88,8 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-3 lg:justify-end">
-          <span class="inline-flex h-8 items-center rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.14em]" [ngClass]="statusClass(order.orderStatus, order.paymentStatus)">
-            {{ orderStatusLabel(order.orderStatus, order.paymentStatus) }}
+          <span class="inline-flex h-8 items-center rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.14em]" [ngClass]="order.orderStatus | orderStatusClass: order.paymentStatus">
+            {{ order.orderStatus | orderStatusLabel: order.paymentStatus }}
           </span>
           @if (order.orderStatus === 'COMPLETED') {
             <button
@@ -147,8 +147,8 @@
           </div>
           <div>
             <p class="text-[10px] font-bold uppercase tracking-wider text-[#81765f]">Trạng thái</p>
-            <span class="inline-flex h-7 items-center rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.15em] mt-1" [ngClass]="statusClass(detail.orderStatus, detail.paymentStatus)">
-              {{ orderStatusLabel(detail.orderStatus, detail.paymentStatus) }}
+            <span class="inline-flex h-7 items-center rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.15em] mt-1" [ngClass]="detail.orderStatus | orderStatusClass: detail.paymentStatus">
+              {{ detail.orderStatus | orderStatusLabel: detail.paymentStatus }}
             </span>
           </div>
         </div>
@@ -171,8 +171,8 @@
             <svg lucideCreditCard class="h-5 w-5 text-[#be0037] flex-shrink-0 mt-0.5" [attr.stroke-width]="2"></svg>
             <div>
               <h3 class="font-bold text-sm text-[#1c1b1b]">Thanh toán</h3>
-              <p class="text-xs font-medium text-[#4f4632] mt-1">Phương thức: {{ paymentMethodLabel(detail.paymentMethod) }}</p>
-              <p class="text-xs font-medium text-[#81765f] mt-0.5">Trạng thái: {{ paymentStatusLabel(detail.paymentStatus) }}</p>
+              <p class="text-xs font-medium text-[#4f4632] mt-1">Phương thức: {{ detail.paymentMethod | paymentMethodLabel }}</p>
+              <p class="text-xs font-medium text-[#81765f] mt-0.5">Trạng thái: {{ detail.paymentStatus | paymentStatusLabel }}</p>
             </div>
           </div>
         </div>
@@ -220,7 +220,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white px-4 py-3">
                   <div>
                     <p class="font-mono text-sm font-semibold text-[#3323cc]">{{ coupon.couponCode }}</p>
-                    <p class="mt-1 text-xs font-medium text-[#81765f]">{{ couponTypeLabel(coupon) }}</p>
+                    <p class="mt-1 text-xs font-medium text-[#81765f]">{{ coupon | couponTypeLabel }}</p>
                   </div>
                   <span class="text-sm font-bold tabular-nums text-emerald-700">
                     -{{ coupon.appliedAmount | currency: 'VND' : 'symbol' : '1.0-0' }}
@@ -329,7 +329,7 @@
           </label>
 
           <!-- Upload error -->
-          @if (uploadError) {
+          @if (accountStore.returnUploadError(); as uploadError) {
             <p class="text-red-600 text-xs font-medium mt-2 flex items-center gap-1">
               <svg lucideAlertCircle class="h-4 w-4" [attr.stroke-width]="2"></svg>
               {{ uploadError }}
@@ -337,11 +337,11 @@
           }
 
           <!-- Uploaded files previews -->
-          @if (uploadedFiles.length > 0 || isUploading) {
+          @if (accountStore.returnEvidence().length > 0 || accountStore.returnUploading()) {
             <div class="grid grid-cols-4 gap-3 mt-4">
-              @for (file of uploadedFiles; track file.fileKey; let idx = $index) {
+              @for (file of accountStore.returnEvidence(); track file.id) {
                 <div class="relative group aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
-                  @if (file.type.startsWith('image/')) {
+                  @if (file.contentType.startsWith('image/')) {
                     <img [src]="file.previewUrl" class="w-full h-full object-cover" />
                   } @else {
                     <div class="w-full h-full flex flex-col items-center justify-center p-2 text-center text-[10px] font-bold text-gray-500">
@@ -352,13 +352,13 @@
                   <button
                     type="button"
                     class="absolute top-1 right-1 h-6 w-6 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-md transition opacity-0 group-hover:opacity-100 cursor-pointer"
-                    (click)="removeUploadedFile(idx)"
+                    (click)="removeUploadedFile(file.id)"
                   >
                     <svg lucideTrash2 class="h-3.5 w-3.5" [attr.stroke-width]="2"></svg>
                   </button>
                 </div>
               }
-              @if (isUploading) {
+              @if (accountStore.returnUploading()) {
                 <div class="aspect-square rounded-xl border border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center text-xs font-semibold text-gray-500">
                   <div class="animate-spin rounded-full h-5 w-5 border-2 border-[#4f46e5] border-t-transparent mb-2"></div>
                   Đang tải...
@@ -380,12 +380,12 @@
           <button
             type="button"
             class="px-6 py-2.5 rounded-full bg-[#ffc700] text-[#111827] hover:bg-[#ffd633] text-sm font-bold transition flex items-center gap-2 cursor-pointer"
-            [disabled]="isSubmitting || !returnReason || isUploading"
-            [class.opacity-50]="isSubmitting || !returnReason || isUploading"
-            [class.cursor-not-allowed]="isSubmitting || !returnReason || isUploading"
+            [disabled]="accountStore.returnSubmitting() || !returnReason || accountStore.returnUploading()"
+            [class.opacity-50]="accountStore.returnSubmitting() || !returnReason || accountStore.returnUploading()"
+            [class.cursor-not-allowed]="accountStore.returnSubmitting() || !returnReason || accountStore.returnUploading()"
             (click)="submitReturn()"
           >
-            @if (isSubmitting) {
+            @if (accountStore.returnSubmitting()) {
               <div class="animate-spin rounded-full h-4 w-4 border-2 border-[#111827] border-t-transparent"></div>
             }
             Gửi yêu cầu
