@@ -1,9 +1,9 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../../core/api/api.service';
-import { environment } from '../../../../../../environments/environment';
-import { ReturnRequest } from '../models/return-request.model';
-import { ApiResponseDto } from '../../../../account/data-access/models/account.models';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
+import { ReturnRequest } from '@/site-management/management/return-requests/data-access/models/return-request.model';
+import { ApiResponseDto } from '@/core/api/api-response.models';
 
 @Injectable({
   providedIn: 'root',

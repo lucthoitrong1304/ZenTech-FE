@@ -3,8 +3,8 @@ import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
-import { ManagementBusinessImpactService } from '../services/management-business-impact.service';
-import { ManagementImpactDashboardDto, ManagementIncidentImpactDto, AffectedUserDetail } from '../models/management-business-impact.model';
+import { ManagementBusinessImpactService } from '@/site-management/management/business-impact/data-access/services/management-business-impact.service';
+import { ManagementImpactDashboardDto, ManagementIncidentImpactDto, AffectedUserDetail } from '@/site-management/management/business-impact/data-access/models/management-business-impact.model';
 
 const getInitialDates = () => {
   const end = new Date();

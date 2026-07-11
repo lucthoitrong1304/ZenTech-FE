@@ -1,0 +1,611 @@
+<div class="customer-chat-page min-h-screen bg-[#f6f3f2] text-[#101010]">
+  <app-site-header-container />
+
+  <main class="customer-chat-main flex min-h-0 flex-1 flex-col overflow-hidden px-0 py-0">
+    <section class="customer-chat-full flex min-h-0 flex-1 overflow-hidden bg-white">
+      <div class="flex min-w-0 flex-1 flex-col">
+        <app-customer-chat-header
+          [staff]="store.staff()"
+          [product]="store.product()"
+          [status]="store.session()?.status || null"
+          [sharedSidebarOpen]="store.fullSidebarMode() === 'SHARED'"
+          [hideSharedButton]="!store.session()"
+          (closeClicked)="closePage()"
+          (sharedClicked)="store.requestSharedContent()"
+        />
+
+        @if (store.loading() && store.conversations().length === 0 && !store.session()) {
+          <div
+            class="grid flex-1 place-items-center bg-[#fcf9f8] text-sm font-semibold text-[#4f4632]"
+          >
+            Đang tải cuộc trò chuyện...
+          </div>
+        } @else if (!store.errorMessage()) {
+          <div class="flex min-h-0 flex-1 overflow-hidden">
+            <aside
+              class="chat-scrollbar hidden w-72 shrink-0 flex-col gap-6 overflow-y-auto bg-[#f6f3f2] p-6 text-sm text-[#1c1b1b] xl:flex"
+            >
+              <button type="button" class="new-conv-btn" (click)="store.createNewConversation()">
+                <svg lucidePlus class="h-5 w-5" [attr.stroke-width]="2.2"></svg>
+                Tạo hội thoại mới
+              </button>
+
+              <div class="grid gap-2">
+                <p class="recent-convs-header">Hội thoại gần đây</p>
+
+                <div class="conversation-filter-tabs">
+                  <button
+                    type="button"
+                    class="conversation-filter-tab"
+                    [class.active]="store.conversationArchiveFilter() === 'ACTIVE'"
+                    (click)="store.setConversationArchiveFilter('ACTIVE')"
+                  >
+                    Đang hoạt động
+                  </button>
+                  <button
+                    type="button"
+                    class="conversation-filter-tab"
+                    [class.active]="store.conversationArchiveFilter() === 'ARCHIVED'"
+                    (click)="store.setConversationArchiveFilter('ARCHIVED')"
+                  >
+                    Đã lưu trữ
+                  </button>
+                </div>
+
+                @for (conv of store.conversations(); track conv.id) {
+                  <div
+                    class="sidebar-conv-wrapper group relative flex min-w-0 cursor-pointer items-center gap-3 rounded-[8px] px-4 py-3 transition hover:bg-white/70"
+                    [class.bg-white]="store.activeConversationId() === conv.id"
+                    [class.shadow-sm]="store.activeConversationId() === conv.id"
+                    [class.text-[#101010]]="store.activeConversationId() === conv.id"
+                    [class.text-[#4f4632]]="store.activeConversationId() !== conv.id"
+                    [class.z-20]="activeDropdownId() === conv.id"
+                    (click)="store.switchConversation(conv.id)"
+                  >
+                    <svg
+                      lucideMessageCircle
+                      class="h-5 w-5 shrink-0 transition-colors"
+                      [class.text-[#4f4632]]="store.activeConversationId() === conv.id"
+                      [attr.stroke-width]="2"
+                    ></svg>
+                    <div class="min-w-0 flex-1 pr-14 group-hover:pr-16 transition-all">
+                      <strong class="block truncate font-medium text-[14px]">{{
+                        conv.title || 'Product Support'
+                      }}</strong>
+                      <span class="mt-1 block truncate text-xs font-semibold text-[#4f4632]/70">
+                        @switch (conv.status) {
+                          @case ('BOT_CONSULTING') {
+                            Trợ lý ảo
+                          }
+                          @case ('WAITING_FOR_AGENT') {
+                            Chờ kết nối
+                          }
+                          @case ('AGENT_HANDLING') {
+                            Nhân viên hỗ trợ
+                          }
+                          @case ('CLOSED') {
+                            Đã đóng
+                          }
+                          @default {
+                            Hoạt động
+                          }
+                        }
+                      </span>
+                    </div>
+
+                    <!-- Actions dropdown toggle -->
+                    <div
+                      class="absolute right-2 top-1/2 flex -translate-y-1/2 items-center opacity-0 transition-opacity group-hover:opacity-100"
+                      [class.opacity-100]="
+                        store.activeConversationId() === conv.id || activeDropdownId() === conv.id
+                      "
+                    >
+                      <button
+                        type="button"
+                        class="grid h-8 w-8 place-items-center rounded-[8px] hover:bg-gray-200 text-[#4f4632] transition"
+                        (click)="toggleDropdown($event, conv.id)"
+                      >
+                        <svg lucideMoreVertical class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                      </button>
+
+                      <!-- Dropdown menu -->
+                      @if (activeDropdownId() === conv.id) {
+                        <div
+                          class="absolute right-0 top-10 z-10 w-36 rounded-[8px] border border-[#d2c5ab]/30 bg-white py-1 shadow-lg"
+                          (click)="$event.stopPropagation()"
+                        >
+                          @if (store.conversationArchiveFilter() === 'ACTIVE') {
+                            <button
+                              type="button"
+                              class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-[#4f4632] hover:bg-gray-100 transition-colors"
+                              (click)="store.archiveConversation(conv.id); closeDropdown()"
+                            >
+                              <svg lucideArchive class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                              Lưu trữ
+                            </button>
+                          }
+                          @if (store.conversationArchiveFilter() === 'ARCHIVED') {
+                            <button
+                              type="button"
+                              class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-[#4f4632] hover:bg-gray-100 transition-colors"
+                              (click)="store.unarchiveConversation(conv.id); closeDropdown()"
+                            >
+                              <svg lucideRotateCcw class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                              Khôi phục
+                            </button>
+                          }
+                          <button
+                            type="button"
+                            class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-[#b42318] hover:bg-[#fee4e2] transition-colors"
+                            (click)="confirmDelete(conv.id); closeDropdown()"
+                          >
+                            <svg lucideTrash2 class="h-4 w-4" [attr.stroke-width]="2"></svg>
+                            Xóa vĩnh viễn
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                } @empty {
+                  <p class="text-xs text-[#4f4632]/70 font-semibold p-2">Chưa có hội thoại nào</p>
+                }
+              </div>
+            </aside>
+
+            <section class="relative flex min-w-0 flex-1 flex-col bg-[#fcf9f8]">
+              <!-- Loading Overlay -->
+              @if (store.loading()) {
+                <div
+                  class="absolute inset-0 z-50 flex items-center justify-center bg-[#fcf9f8]/60 backdrop-blur-[2px]"
+                >
+                  <div
+                    class="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm border border-[#d2c5ab]/30"
+                  >
+                    <svg
+                      class="h-5 w-5 animate-spin text-[#4f4632]"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span class="text-sm font-semibold text-[#4f4632]">Đang tải...</span>
+                  </div>
+                </div>
+              }
+
+              @if (store.session()) {
+                @if (ticketBanner(); as ticket) {
+                  <div
+                    class="customer-ticket-banner"
+                    [class.customer-ticket-banner--resolved]="ticket.tone === 'resolved'"
+                    [class.customer-ticket-banner--incident]="ticket.tone === 'incident'"
+                    [class.customer-ticket-banner--ticket]="ticket.tone === 'ticket'"
+                  >
+                    <span class="customer-ticket-banner__icon" aria-hidden="true">
+                      @if (ticket.tone === 'resolved') {
+                        <svg lucideCheckCircle class="w-4 h-4" [attr.stroke-width]="2.5"></svg>
+                      } @else if (ticket.tone === 'incident') {
+                        <svg
+                          lucideAlertTriangle
+                          class="w-4 h-4 animate-pulse"
+                          [attr.stroke-width]="2.5"
+                        ></svg>
+                      } @else {
+                        <svg lucideWrench class="w-4 h-4" [attr.stroke-width]="2.5"></svg>
+                      }
+                    </span>
+                    <span class="customer-ticket-banner__content">
+                      <strong>{{ ticket.title }}</strong>
+                      <span>{{ ticket.message }}</span>
+                    </span>
+                    <button
+                      type="button"
+                      class="customer-ticket-banner__close"
+                      (click)="store.dismissTicketStatus(ticket.ticketCode, ticket.ticketStatus)"
+                      title="Đóng thông báo"
+                    >
+                      <svg
+                        lucideX
+                        class="customer-ticket-banner__close-icon"
+                        [attr.stroke-width]="2.5"
+                      ></svg>
+                    </button>
+                  </div>
+                }
+
+                <app-customer-message-timeline
+                  [messages]="store.messages()"
+                  [customer]="store.customer()"
+                  [staff]="store.staff()"
+                  [aiResponding]="store.aiResponding()"
+                  [highlightedMessageId]="store.highlightedMessageId()"
+                  (previewRequested)="openPreview($event)"
+                  (highlightCleared)="store.clearHighlightedMessage()"
+                />
+
+                <app-customer-upload-queue
+                  [uploads]="store.uploads()"
+                  (uploadRemoved)="store.removeUpload($event)"
+                />
+
+                <app-customer-chat-composer
+                  [secureCaption]="true"
+                  [isClosed]="store.session()?.status === 'CLOSED'"
+                  [isArchived]="store.activeConversationArchived()"
+                  [hasPendingAttachments]="store.hasPendingAttachments()"
+                  (messageSubmitted)="store.sendMessage($event)"
+                  (filesSelected)="store.selectFiles($event)"
+                  (reopenClicked)="store.reopenConversation()"
+                  (unarchiveClicked)="store.unarchiveConversation()"
+                />
+              } @else if (
+                store.conversationArchiveFilter() === 'ARCHIVED' &&
+                store.conversations().length === 0
+              ) {
+                <div
+                  class="flex flex-1 flex-col items-center justify-center bg-[#fcf9f8] p-6 text-center"
+                >
+                  <div class="mb-4 rounded-full bg-[#f6f3f2] p-4 text-[#4f4632]/50">
+                    <svg lucideArchive class="h-10 w-10" [attr.stroke-width]="1.5"></svg>
+                  </div>
+                  <h3 class="text-lg font-bold text-[#4f4632]">Không có hội thoại đã lưu trữ</h3>
+                  <p class="mt-2 text-sm text-[#4f4632]/70">
+                    Các cuộc hội thoại bạn đã lưu trữ sẽ xuất hiện ở đây.
+                  </p>
+                </div>
+              } @else {
+                <div
+                  class="relative flex flex-1 flex-col items-center justify-center overflow-hidden bg-[#fcf9f8] p-6"
+                >
+                  <div
+                    class="relative z-10 w-full max-w-[400px] rounded-[16px] border border-[#d2c5ab]/40 bg-white p-8 shadow-[0_10px_40px_rgba(0,0,0,0.03)]"
+                  >
+                    <!-- Header -->
+                    <div class="mb-4 flex items-center gap-2 border-b border-[#d2c5ab]/30 pb-4">
+                      <span
+                        class="h-2 w-2 rounded-full bg-[#22c55e] shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse"
+                      ></span>
+                      <h4
+                        class="m-0 text-[12px] font-black uppercase tracking-[0.15em] text-[#4f4632]"
+                      >
+                        Trợ lý AI ZenTech
+                      </h4>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="mb-6">
+                      <h3 class="mb-3 mt-0 text-[20px] font-extrabold text-[#101010]">
+                        Xin chào! 👋
+                      </h3>
+                      <p class="m-0 text-[14px] font-medium leading-relaxed text-[#4f4632]">
+                        Em sẵn lòng hỗ trợ tìm kiếm sản phẩm gaming gear, tư vấn chính sách bảo
+                        hành, đổi trả và khuyến mãi ạ!
+                      </p>
+                    </div>
+
+                    <!-- Footer Actions -->
+                    <div class="border-t border-[#d2c5ab]/30 pt-5">
+                      @if (store.conversations().length > 0) {
+                        <div class="grid gap-3">
+                          <button
+                            class="group relative flex h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-[10px] bg-[#ffc700] text-[13px] font-extrabold uppercase tracking-[0.05em] text-[#251a00] transition-all hover:bg-[#f5bf00] hover:shadow-[0_4px_15px_rgba(255,199,0,0.3)]"
+                            (click)="store.switchConversation(store.conversations()[0].id)"
+                          >
+                            Tiếp tục trò chuyện
+                          </button>
+                          <button
+                            class="flex h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-[#d2c5ab] bg-transparent text-[13px] font-extrabold uppercase tracking-[0.05em] text-[#4f4632] transition-all hover:bg-[#f6f3f2]"
+                            (click)="store.createNewConversation()"
+                          >
+                            Tạo hội thoại mới
+                          </button>
+                        </div>
+                      } @else {
+                        <button
+                          class="group relative flex h-12 w-full items-center justify-center gap-2 overflow-hidden rounded-[10px] bg-[#fff8e1] border border-[#ffc700]/30 text-[14px] font-bold uppercase tracking-[0.05em] text-[#765b00] transition-all hover:bg-[#ffc700] hover:text-[#251a00] hover:shadow-[0_4px_15px_rgba(255,199,0,0.3)]"
+                          (click)="store.createNewConversation()"
+                        >
+                          <svg lucideMessageCircle class="h-5 w-5" [attr.stroke-width]="2.5"></svg>
+                          Bắt đầu trò chuyện
+                        </button>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </section>
+
+            @if (store.session()) {
+              @if (store.fullSidebarMode() === 'SHARED') {
+                <app-customer-shared-content-sidebar
+                  [open]="true"
+                  mode="expanded"
+                  [activeTab]="store.activeSharedTab()"
+                  [items]="store.selectedSharedItems()"
+                  [mediaCount]="store.sharedCounts().media"
+                  [fileCount]="store.sharedCounts().files"
+                  [linkCount]="store.sharedCounts().links"
+                  (tabSelected)="store.setSharedContentTab($event)"
+                  (closed)="store.requestConversationDetails()"
+                  (previewRequested)="openPreview($event)"
+                />
+              } @else if (store.fullSidebarMode() === 'SEARCH') {
+                <app-customer-chat-search-sidebar
+                  [open]="true"
+                  [isSearching]="store.isSearching()"
+                  [results]="store.searchResults()"
+                  (closed)="store.requestConversationDetails()"
+                  (searchKeywordChanged)="store.searchMessages($event)"
+                  (resultSelected)="store.jumpToMessage($event)"
+                />
+              } @else {
+                <aside
+                  class="customer-chat-details chat-scrollbar hidden w-80 shrink-0 overflow-y-auto bg-white lg:flex lg:flex-col"
+                >
+                  @if (store.staff() || store.assistant(); as currentContact) {
+                    <section class="grid justify-items-center gap-4 px-6 py-7 text-center">
+                      <span
+                        class="relative grid h-20 w-20 place-items-center rounded-[8px] bg-[#645efb] text-2xl font-semibold text-white"
+                      >
+                        {{ currentContact.initials }}
+                        @if (currentContact.online) {
+                          <span
+                            class="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-[#ffc700] ring-2 ring-white"
+                          ></span>
+                        }
+                      </span>
+                      <div class="min-w-0">
+                        <h2 class="truncate text-lg font-semibold text-[#101010]">
+                          {{ currentContact.name }}
+                        </h2>
+                        <p class="mt-1 text-sm font-semibold text-[#4f4632]">
+                          {{ currentContact.roleLabel }}
+                        </p>
+                      </div>
+                      <div class="flex gap-2">
+                        <button
+                          type="button"
+                          class="grid h-10 w-10 place-items-center rounded-[8px] bg-[#f6f3f2] text-[#4f4632] transition hover:bg-[#101010] hover:text-white"
+                          title="Tìm kiếm"
+                          (click)="openSearch()"
+                        >
+                          <svg lucideSearch class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                        </button>
+                      </div>
+                    </section>
+                  }
+
+                  @if (store.session(); as session) {
+                    @if (store.activeConversationArchived()) {
+                      <div class="chat-actions-section">
+                        <button
+                          type="button"
+                          class="restore-conversation-btn"
+                          (click)="store.unarchiveConversation()"
+                        >
+                          Khôi phục cuộc hội thoại
+                        </button>
+                        <button
+                          type="button"
+                          class="delete-conversation-btn"
+                          (click)="confirmDelete()"
+                        >
+                          Xóa vĩnh viễn
+                        </button>
+                      </div>
+                    } @else if (session.status !== 'CLOSED') {
+                      <div class="chat-actions-section">
+                        @if (session.status === 'BOT_CONSULTING') {
+                          <button
+                            type="button"
+                            class="request-agent-btn"
+                            (click)="store.requestAgent()"
+                          >
+                            Yêu cầu gặp nhân viên
+                          </button>
+                        }
+                        <button
+                          type="button"
+                          class="archive-conversation-btn"
+                          (click)="store.archiveConversation()"
+                        >
+                          Lưu trữ cuộc hội thoại
+                        </button>
+                        <button
+                          type="button"
+                          class="close-conversation-btn"
+                          (click)="store.closeConversation()"
+                        >
+                          Đóng cuộc hội thoại
+                        </button>
+                        <button
+                          type="button"
+                          class="delete-conversation-btn"
+                          (click)="confirmDelete()"
+                        >
+                          Xóa vĩnh viễn
+                        </button>
+                      </div>
+                    } @else {
+                      <div class="chat-closed-container">
+                        <span class="closed-badge">Cuộc hội thoại đã đóng</span>
+                      </div>
+                    }
+                  }
+
+                  <div class="grid gap-8 px-6 pt-6 pb-8">
+                    <section class="grid gap-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <h3 class="text-sm font-semibold text-[#101010]">Media đã chia sẻ</h3>
+                        <button
+                          type="button"
+                          class="text-xs font-semibold text-[#4b41e1] transition hover:text-[#3323cc]"
+                          (click)="store.setSharedContentTab('MEDIA')"
+                        >
+                          Xem tất cả
+                        </button>
+                      </div>
+                      <div class="grid grid-cols-3 gap-2">
+                        @for (item of store.sharedMediaItems().slice(0, 6); track item.id) {
+                          <button
+                            type="button"
+                            class="group relative aspect-square w-full overflow-hidden rounded-[8px] border-0 bg-[#f0edec] p-0 text-[#4f4632]"
+                            [title]="item.title"
+                            (click)="openPreview(item)"
+                          >
+                            @if (item.thumbnailUrl) {
+                              <img
+                                [src]="item.thumbnailUrl"
+                                [alt]="item.title"
+                                class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                              />
+                            } @else {
+                              <span class="grid h-full w-full place-items-center">
+                                <svg lucideImage class="h-6 w-6" [attr.stroke-width]="2"></svg>
+                              </span>
+                            }
+                            @if (item.type === 'VIDEO') {
+                              <span
+                                class="absolute inset-0 grid place-items-center bg-black/20 text-white"
+                              >
+                                <svg lucideVideo class="h-6 w-6" [attr.stroke-width]="2"></svg>
+                              </span>
+                            }
+                          </button>
+                        } @empty {
+                          <span
+                            class="col-span-3 rounded-[8px] bg-[#f6f3f2] p-4 text-center text-xs font-medium text-[#4f4632]"
+                          >
+                            Chưa có media nào
+                          </span>
+                        }
+                      </div>
+                    </section>
+
+                    <section class="grid gap-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <h3 class="text-sm font-semibold text-[#101010]">Tệp đã chia sẻ</h3>
+                        <button
+                          type="button"
+                          class="text-xs font-semibold text-[#4b41e1] transition hover:text-[#3323cc]"
+                          (click)="store.setSharedContentTab('FILES')"
+                        >
+                          Xem tất cả
+                        </button>
+                      </div>
+                      <div class="grid gap-2">
+                        @for (item of store.sharedFileItems().slice(0, 3); track item.id) {
+                          <a
+                            [href]="item.url"
+                            [attr.download]="item.title"
+                            rel="noreferrer"
+                            class="flex min-w-0 items-center gap-3 rounded-[8px] p-2 transition hover:bg-[#f6f3f2]"
+                          >
+                            <span
+                              class="grid h-10 w-10 shrink-0 place-items-center rounded-[8px] bg-[#ffdad6] text-[#93000a]"
+                            >
+                              <svg lucideFileText class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                            </span>
+                            <span class="min-w-0">
+                              <strong class="block truncate text-sm font-semibold text-[#101010]">{{
+                                item.title
+                              }}</strong>
+                              <small class="block truncate text-xs font-semibold text-[#4f4632]">
+                                {{ item.subtitle }}
+                              </small>
+                            </span>
+                          </a>
+                        } @empty {
+                          <p
+                            class="rounded-[8px] bg-[#f6f3f2] p-3 text-xs font-medium text-[#4f4632]"
+                          >
+                            Chưa có tệp nào
+                          </p>
+                        }
+                      </div>
+                    </section>
+
+                    <section class="grid gap-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <h3 class="text-sm font-semibold text-[#101010]">Liên kết đã chia sẻ</h3>
+                        <button
+                          type="button"
+                          class="text-xs font-semibold text-[#4b41e1] transition hover:text-[#3323cc]"
+                          (click)="store.setSharedContentTab('LINKS')"
+                        >
+                          Xem tất cả
+                        </button>
+                      </div>
+                      <div class="grid gap-2">
+                        @for (item of store.sharedLinkItems().slice(0, 3); track item.id) {
+                          <a
+                            [href]="item.url"
+                            target="_blank"
+                            rel="noreferrer"
+                            class="flex min-w-0 items-start gap-3 rounded-[8px] p-2 transition hover:bg-[#f6f3f2]"
+                          >
+                            <span
+                              class="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-[8px] bg-[#e2dfff] text-[#3323cc]"
+                            >
+                              <svg lucideLink class="h-5 w-5" [attr.stroke-width]="2"></svg>
+                            </span>
+                            <span class="min-w-0 flex-1">
+                              <strong class="block truncate text-sm font-semibold text-[#101010]">{{
+                                item.title
+                              }}</strong>
+                              <small class="block truncate text-xs font-semibold text-[#3323cc]">
+                                {{ item.subtitle }}
+                              </small>
+                            </span>
+                            <svg
+                              lucideExternalLink
+                              class="h-4 w-4 shrink-0 text-[#4f4632]"
+                              [attr.stroke-width]="2"
+                            ></svg>
+                          </a>
+                        } @empty {
+                          <p
+                            class="rounded-[8px] bg-[#f6f3f2] p-3 text-xs font-medium text-[#4f4632]"
+                          >
+                            Chưa có liên kết nào
+                          </p>
+                        }
+                      </div>
+                    </section>
+                  </div>
+                </aside>
+              }
+            }
+          </div>
+        } @else {
+          <div class="grid flex-1 place-items-center bg-[#fcf9f8] p-8 text-center">
+            <div>
+              <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#4b41e1]">
+                ZenTech Support
+              </p>
+              <h1 class="mt-3 text-2xl font-semibold">Chưa thể mở cuộc trò chuyện.</h1>
+              <p class="mt-2 text-sm font-semibold text-[#4f4632]">
+                {{ store.errorMessage() || 'Vui lòng thử lại sau.' }}
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  </main>
+
+  <app-media-preview-dialog [item]="previewItem()" (closed)="closePreview()" />
+</div>

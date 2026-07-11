@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { htmlToMarkdown, markdownToHtml } from './rich-text-markdown.util';
+import { htmlToMarkdown, markdownToHtml } from '@/shared/components/rich-text-editor/rich-text-markdown.util';
 
 describe('rich text markdown utilities', () => {
   it('converts headings and paragraphs between markdown and html', () => {

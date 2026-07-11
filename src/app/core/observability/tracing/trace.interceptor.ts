@@ -1,5 +1,5 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { generateTraceId } from './trace-id.util';
+import { generateTraceId } from '@/core/observability/tracing/trace-id.util';
 
 export const traceInterceptor: HttpInterceptorFn = (req, next) => {
   // Attach Trace ID to project backend API calls.

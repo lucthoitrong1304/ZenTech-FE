@@ -16,14 +16,14 @@ import {
   LucideUser,
   LucideSend
 } from '@lucide/angular';
-import { AdminStore } from '../../../data-access/store/admin.store';
-import { AdminLogsService } from '../../../data-access/services/admin-logs.service';
-import { ActivityArea, ActivitySeverity, LogLevel, LogServiceCategory, SystemLog } from '../../../data-access/models/admin.models';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { WebsocketService } from '../../../../../core/services/websocket.service';
-import { AuthStorageService } from '../../../../../core/services/auth-storage.service';
-import { normalizeTraceIdInput } from '../../../../../core/observability/tracing/trace-id.util';
-import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
+import { AdminStore } from '@/site-management/admin/data-access/store/admin.store';
+import { AdminLogsService } from '@/site-management/admin/data-access/services/admin-logs.service';
+import { ActivityArea, ActivitySeverity, LogLevel, LogServiceCategory, SystemLog } from '@/site-management/admin/data-access/models/admin.models';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { WebsocketService } from '@/core/services/websocket.service';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { normalizeTraceIdInput } from '@/core/observability/tracing/trace-id.util';
+import { AdminRecordingEvidenceComponent } from '@/site-management/admin/shared/recording-evidence/admin-recording-evidence.component';
 
 interface LogMetadataItem {
   label: string;
@@ -903,6 +903,10 @@ export class LogsComponent implements OnInit, OnDestroy {
   }
 
   protected getUserJourney(log: SystemLog): LogJourneyItem[] {
+    if (!this.hasRequestTrace(log)) {
+      return [];
+    }
+
     const currentContext = this.parseClientLogStack(log.details);
     const currentTime = new Date(log.timestamp).getTime();
     const journeyWindowMs = 10 * 60 * 1000;
@@ -913,7 +917,7 @@ export class LogsComponent implements OnInit, OnDestroy {
       .filter(candidate => candidate.id === log.id || !this.hideNoiseLogs() || !this.isNoiseLog(candidate))
       .filter(candidate => this.isJourneyCandidate(candidate, log, currentContext, currentTime, journeyWindowMs))
       .sort((left, right) => this.compareJourneyLogs(left, right))
-      .slice(0, 8)
+      .slice(0, 50)
       .map((candidate, index, journeyLogs) => this.toJourneyItem(
         candidate,
         log.id,
@@ -960,8 +964,6 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   private journeyDedupeKey(log: SystemLog): string {
     const context = this.parseClientLogStack(log.details);
-    const timestamp = new Date(log.timestamp).getTime();
-    const roundedSecond = Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : 0;
     const traceId = this.recordingTraceIdForLog(log);
     const eventType = context?.eventType || '';
     const method = context?.method || this.extractHttpMethodFromText(log.details || log.message || '');
@@ -969,7 +971,7 @@ export class LogsComponent implements OnInit, OnDestroy {
     const statusCode = this.getLogStatusCode(log) ?? '';
     const summary = this.extractLogMessageSummary(log).toLowerCase().replace(/\s+/g, ' ').trim();
 
-    return [roundedSecond, traceId, log.category, log.level, eventType, method, apiPath, statusCode, summary].join('|');
+    return [traceId, log.category, log.level, eventType, method, apiPath, statusCode, summary].join('|');
   }
 
   private compareJourneyLogs(left: SystemLog, right: SystemLog): number {
@@ -1177,7 +1179,12 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   protected recordingTraceIdForLog(log: SystemLog): string {
     const stackContext = this.parseClientLogStack(log.details);
-    return (stackContext?.traceId || log.traceId || '').trim();
+    const traceId = (stackContext?.traceId || log.traceId || '').trim();
+    return traceId.toUpperCase() === 'ZT-AI-SYSTEM' ? '' : traceId;
+  }
+
+  protected hasRequestTrace(log: SystemLog): boolean {
+    return this.recordingTraceIdForLog(log).length > 0;
   }
 
   protected recordingUserIdForLog(log: SystemLog): string {
@@ -1237,9 +1244,10 @@ export class LogsComponent implements OnInit, OnDestroy {
     if (!candidate.includes('*')) return candidate;
 
     const currentEmail = this.authStorageService.getSession()?.email || '';
-    return currentEmail && this.maskEmailForComparison(currentEmail).toLowerCase() === candidate.toLowerCase()
-      ? currentEmail
-      : '';
+    if (currentEmail && this.maskEmailForComparison(currentEmail).toLowerCase() === candidate.toLowerCase()) {
+      return currentEmail;
+    }
+    return candidate;
   }
 
   private maskEmailForComparison(email: string): string {
@@ -1277,14 +1285,12 @@ export class LogsComponent implements OnInit, OnDestroy {
 
   private startRealtimeLogs(): void {
     this.stopRealtimeLogs();
-    console.log('[Logs WS] Khởi tạo kết nối và đăng ký lắng nghe /topic/admin.logs');
     this.wsService.connect();
     
     // Subscribe to websocket log topic
     this.wsSubscription = this.wsService.subscribe<SystemLog>('/topic/admin.logs')
       .subscribe({
         next: (logItem: SystemLog) => {
-          console.log('[Logs WS] Nhận log mới từ WS:', logItem);
           this.ngZone.run(() => {
             this.store.appendLog(logItem);
           });

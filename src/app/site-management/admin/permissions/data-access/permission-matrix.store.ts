@@ -5,9 +5,9 @@ import {
   PermissionCode,
   PermissionMatrix,
   PermissionModule,
-} from '../../../../core/permissions/permission.models';
-import { PermissionService } from '../../../../core/permissions/permission.service';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
+} from '@/core/permissions/permission.models';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class PermissionMatrixStore {

@@ -6,9 +6,9 @@ import {
   CustomerOrderHistory,
   CustomerPage,
   CustomerSummary,
-} from '../models/customer.models';
-import { CustomerService } from '../services/customer.service';
-import { CustomerStore } from './customer.store';
+} from '@/site-management/management/customers/data-access/models/customer.models';
+import { CustomerService } from '@/site-management/management/customers/data-access/services/customer.service';
+import { CustomerStore } from '@/site-management/management/customers/data-access/store/customer.store';
 
 describe('CustomerStore', () => {
   function configureStore(

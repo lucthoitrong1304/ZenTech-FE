@@ -1,10 +1,10 @@
 import { HttpContext } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { finalize, Observable, shareReplay } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { ApiService } from '../api/api.service';
-import { AuthSessionSource } from './auth-storage.service';
-import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '../tokens/api-context.token';
+import { environment } from '@env/environment';
+import { ApiService } from '@/core/api/api.service';
+import { AuthSessionSource } from '@/core/services/auth-storage.service';
+import { SKIP_AUTH_TOKEN, SKIP_GLOBAL_ERROR } from '@/core/tokens/api-context.token';
 
 interface RefreshTokenRequest {
   refreshToken: string;

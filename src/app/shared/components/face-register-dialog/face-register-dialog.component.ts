@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, ElementRef, OnDestroy, OnInit, ViewChild, computed, effect, inject, input, output, signal } from '@angular/core';
-import { FaceRecognitionService, FaceValidationStatus, HeadPose, FaceBaseline } from '../../../core/services/face-recognition.service';
+import { FaceRecognitionService, FaceValidationStatus, HeadPose, FaceBaseline } from '@/core/services/face-recognition.service';
 import { DialogModule } from 'primeng/dialog';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ConfirmationService } from 'primeng/api';
 import { Observable } from 'rxjs';
-import { ConfirmDialogData, ConfirmSize } from './confirm.model';
+import { ConfirmDialogData, ConfirmSize } from '@/shared/components/confirm/confirm.model';
 
 @Injectable({
   providedIn: 'root',

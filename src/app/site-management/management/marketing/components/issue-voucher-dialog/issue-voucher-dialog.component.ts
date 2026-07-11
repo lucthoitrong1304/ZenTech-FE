@@ -3,7 +3,7 @@ import { Component, ChangeDetectionStrategy, input, output, signal, effect, Host
 import { FormsModule } from '@angular/forms';
 import { LucideX, LucideTriangleAlert, LucideSparkles, LucideSearch, LucideCheck } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
-import { CustomerSummary, ManagementCoupon } from '../../data-access/models/marketing.models';
+import { CustomerSummary, ManagementCoupon } from '@/site-management/management/marketing/data-access/models/marketing.models';
 
 @Component({
   selector: 'app-issue-voucher-dialog',

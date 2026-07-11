@@ -14,7 +14,7 @@ import {
   InventoryTransactionType,
   InventoryTransactionReason,
   InventoryAdjustmentRequest,
-} from '../../data-access/models/inventory.model';
+} from '@/site-management/management/inventory/data-access/models/inventory.model';
 
 @Component({
   selector: 'app-inventory-adjust-dialog',

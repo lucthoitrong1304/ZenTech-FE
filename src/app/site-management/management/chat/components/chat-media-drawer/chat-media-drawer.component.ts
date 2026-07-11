@@ -2,11 +2,11 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LucideDownload, LucideFileText, LucideImage, LucideLink, LucidePlayCircle } from '@lucide/angular';
 import { DrawerModule } from 'primeng/drawer';
-import { MediaPreviewItem } from '../../../../../shared/components/media-preview-dialog/media-preview-dialog.model';
+import { MediaPreviewItem } from '@/shared/components/media-preview-dialog/media-preview-dialog.model';
 import {
   ManagementChatMediaItem,
   ManagementChatMediaTab,
-} from '../../data-access/models/management-chat.models';
+} from '@/site-management/management/chat/data-access/models/management-chat.models';
 
 interface MediaTabOption {
   value: ManagementChatMediaTab;

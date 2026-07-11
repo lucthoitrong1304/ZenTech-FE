@@ -1,9 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ErrorHandler, Injectable, Injector, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
-import { ErrorStateService } from './error-state.service';
-import { ClientLogService } from '../observability/logging/client-log.service';
-import { ClientLogEventType } from '../observability/logging/client-log.model';
+import { ErrorStateService } from '@/core/errors/error-state.service';
+import { ClientLogService } from '@/core/observability/logging/client-log.service';
+import { ClientLogEventType } from '@/core/observability/logging/client-log.model';
 
 @Injectable()
 export class GlobalErrorHandler implements ErrorHandler {

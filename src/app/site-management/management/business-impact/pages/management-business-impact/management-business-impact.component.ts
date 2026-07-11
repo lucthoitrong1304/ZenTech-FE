@@ -3,7 +3,7 @@ import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal }
 import { FormsModule } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { WebsocketService } from '../../../../../core/services/websocket.service';
+import { WebsocketService } from '@/core/services/websocket.service';
 import {
   LucideSparkles,
   LucideChevronRight,
@@ -22,9 +22,9 @@ import {
 } from '@lucide/angular';
 import { PaginatorModule } from 'primeng/paginator';
 import { MarkdownComponent } from 'ngx-markdown';
-import { ManagementBusinessImpactStore } from '../../data-access/store/management-business-impact.store';
-import { ManagementIncidentImpactDto } from '../../data-access/models/management-business-impact.model';
-import { IncidentSeverity, IncidentStatus } from '../../../../admin/data-access/models/admin.models';
+import { ManagementBusinessImpactStore } from '@/site-management/management/business-impact/data-access/store/management-business-impact.store';
+import { ManagementIncidentImpactDto } from '@/site-management/management/business-impact/data-access/models/management-business-impact.model';
+import { IncidentSeverity, IncidentStatus } from '@/site-management/admin/data-access/models/admin.models';
 
 function formatDateToYMD(date: Date): string {
   const year = date.getFullYear();

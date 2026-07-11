@@ -1,4 +1,4 @@
-﻿import { CommonModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LucideArrowLeft } from '@lucide/angular';
 import {
@@ -6,7 +6,7 @@ import {
   ManagementChatExpertRequestFilter,
   ManagementChatStatusCount,
   ManagementChatStatusFilter,
-} from '../../data-access/models/management-chat.models';
+} from '@/site-management/management/chat/data-access/models/management-chat.models';
 
 @Component({
   selector: 'app-chat-filter-sidebar',

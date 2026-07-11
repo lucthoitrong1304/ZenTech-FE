@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { AuthStorageService } from './auth-storage.service';
-import { buildWebSocketUrl } from './websocket-url';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { buildWebSocketUrl } from '@/core/services/websocket-url';
 
 @Injectable({
   providedIn: 'root',

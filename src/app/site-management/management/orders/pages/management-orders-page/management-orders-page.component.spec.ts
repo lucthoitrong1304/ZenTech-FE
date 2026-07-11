@@ -2,9 +2,9 @@ import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { ManagementOrderService } from '../../data-access/services/management-order.service';
-import { ManagementOrdersPageComponent } from './management-orders-page.component';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { ManagementOrderService } from '@/site-management/management/orders/data-access/services/management-order.service';
+import { ManagementOrdersPageComponent } from '@/site-management/management/orders/pages/management-orders-page/management-orders-page.component';
 
 describe('ManagementOrdersPageComponent', () => {
   beforeAll(() => {

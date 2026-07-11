@@ -2,8 +2,8 @@ import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
-import { AdminStatisticsData, StatisticsPeriod } from './statistics.models';
-import { AdminStatisticsService } from './statistics.service';
+import { AdminStatisticsData, StatisticsPeriod } from '@/site-management/admin/statistics/data-access/statistics.models';
+import { AdminStatisticsService } from '@/site-management/admin/statistics/data-access/statistics.service';
 
 interface StatisticsState {
   period: StatisticsPeriod;

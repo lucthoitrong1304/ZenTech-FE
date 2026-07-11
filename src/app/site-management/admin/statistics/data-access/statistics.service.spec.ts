@@ -3,10 +3,10 @@ import { getTestBed, TestBed } from '@angular/core/testing';
 import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
 import { firstValueFrom, of } from 'rxjs';
 import { vi } from 'vitest';
-import { ApiService } from '../../../../core/api/api.service';
-import { environment } from '../../../../../environments/environment';
-import { AdminStatisticsData, ApiResponse } from './statistics.models';
-import { AdminStatisticsService } from './statistics.service';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
+import { AdminStatisticsData, ApiResponse } from '@/site-management/admin/statistics/data-access/statistics.models';
+import { AdminStatisticsService } from '@/site-management/admin/statistics/data-access/statistics.service';
 
 describe('AdminStatisticsService', () => {
   beforeAll(() => {

@@ -21,9 +21,9 @@ import {
 } from '@lucide/angular';
 import { PopoverModule } from 'primeng/popover';
 import { filter } from 'rxjs';
-import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
-import { AuthStorageService } from '../../../../core/services/auth-storage.service';
-import { AdminProfileStore } from '../../data-access/store/admin-profile.store';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { AdminProfileStore } from '@/site-management/admin/data-access/store/admin-profile.store';
 
 interface AdminNavItem {
   label: string;

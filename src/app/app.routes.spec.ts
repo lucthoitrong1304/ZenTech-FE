@@ -1,4 +1,4 @@
-import { routes } from './app.routes';
+import { routes } from '@/app.routes';
 
 describe('appRoutes', () => {
   it('keeps the home page route public', () => {

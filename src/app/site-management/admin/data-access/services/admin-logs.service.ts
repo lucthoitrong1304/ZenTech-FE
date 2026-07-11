@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../core/api/api.service';
-import { environment } from '../../../../../environments/environment';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
 import {
   SystemLog,
   ActivityLog,
@@ -10,9 +10,9 @@ import {
   ActivityTimelineSummaryResponse,
   PaginatedResult,
   ApiResponse
-} from '../models/admin.models';
+} from '@/site-management/admin/data-access/models/admin.models';
 import { HttpContext } from '@angular/common/http';
-import { SKIP_AUTH_TOKEN, SKIP_CLIENT_LOG, SKIP_GLOBAL_ERROR } from '../../../../core/tokens/api-context.token';
+import { SKIP_AUTH_TOKEN, SKIP_CLIENT_LOG, SKIP_GLOBAL_ERROR } from '@/core/tokens/api-context.token';
 
 @Injectable({ providedIn: 'root' })
 export class AdminLogsService {

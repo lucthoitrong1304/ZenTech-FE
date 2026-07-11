@@ -4,10 +4,10 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LucideEye, LucideRotateCcw, LucideSearch, LucideUser, LucideChevronLeft, LucideChevronRight } from '@lucide/angular';
 import { SelectModule } from 'primeng/select';
-import { AdminStore } from '../../../data-access/store/admin.store';
-import { IncidentStatus, IncidentSeverity, SystemIncident } from '../../../data-access/models/admin.models';
-import { AccountService } from '../../../accounts/data-access/services/account.service';
-import { AccountSortField, SortDirection, AccountSummary, AdminAccountRole } from '../../../accounts/data-access/models/account.model';
+import { AdminStore } from '@/site-management/admin/data-access/store/admin.store';
+import { IncidentStatus, IncidentSeverity, SystemIncident } from '@/site-management/admin/data-access/models/admin.models';
+import { AccountService } from '@/site-management/admin/accounts/data-access/services/account.service';
+import { AccountSortField, SortDirection, AccountSummary, AdminAccountRole } from '@/site-management/admin/accounts/data-access/models/account.model';
 
 interface AssigneeProfile {
   email: string;
@@ -57,7 +57,7 @@ export class IncidentsComponent implements OnInit {
   protected startDateVal = '';
   protected endDateVal = '';
   protected readonly staffAccounts = signal<AccountSummary[]>([]);
-  protected dateFilterVal = signal<IncidentDateFilterOption>(IncidentDateFilterOption.TODAY);
+  protected dateFilterVal = signal<IncidentDateFilterOption>(IncidentDateFilterOption.LAST_7_DAYS);
 
 
   protected readonly datePresetOptions = [
@@ -97,7 +97,7 @@ export class IncidentsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.onDatePresetChange(IncidentDateFilterOption.TODAY);
+    this.onDatePresetChange(IncidentDateFilterOption.LAST_7_DAYS);
     this.loadStaffAccounts();
   }
 
@@ -172,10 +172,10 @@ export class IncidentsComponent implements OnInit {
     this.searchVal = '';
     this.severityVal = 'ALL';
     this.assigneeVal = 'ALL';
-    this.dateFilterVal.set(IncidentDateFilterOption.TODAY);
+    this.dateFilterVal.set(IncidentDateFilterOption.LAST_7_DAYS);
     this.activeFilter.set('ALL');
     this.store.resetIncidentFilters();
-    this.onDatePresetChange(IncidentDateFilterOption.TODAY);
+    this.onDatePresetChange(IncidentDateFilterOption.LAST_7_DAYS);
   }
 
   protected viewIncidentDetails(incident: SystemIncident): void {

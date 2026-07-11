@@ -1,7 +1,7 @@
-export { ManagementDataPanelComponent } from './management-data-panel.component';
-export { ManagementEmptyStateComponent } from './management-empty-state.component';
-export { ManagementErrorStateComponent } from './management-error-state.component';
-export { ManagementPageHeroComponent } from './management-page-hero.component';
-export { ManagementPageShellComponent } from './management-page-shell.component';
-export { ManagementStatCardComponent } from './management-stat-card.component';
-export { ManagementToolbarSurfaceComponent } from './management-toolbar-surface.component';
+export { ManagementDataPanelComponent } from '@/shared/components/management-ui/management-data-panel.component';
+export { ManagementEmptyStateComponent } from '@/shared/components/management-ui/management-empty-state.component';
+export { ManagementErrorStateComponent } from '@/shared/components/management-ui/management-error-state.component';
+export { ManagementPageHeroComponent } from '@/shared/components/management-ui/management-page-hero.component';
+export { ManagementPageShellComponent } from '@/shared/components/management-ui/management-page-shell.component';
+export { ManagementStatCardComponent } from '@/shared/components/management-ui/management-stat-card.component';
+export { ManagementToolbarSurfaceComponent } from '@/shared/components/management-ui/management-toolbar-surface.component';

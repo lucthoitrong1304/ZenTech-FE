@@ -1,8 +1,8 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../core/api/api.service';
-import { environment } from '../../../../../environments/environment';
-import { AdminStatisticsData, ApiResponse, StatisticsPeriod } from './statistics.models';
+import { ApiService } from '@/core/api/api.service';
+import { environment } from '@env/environment';
+import { AdminStatisticsData, ApiResponse, StatisticsPeriod } from '@/site-management/admin/statistics/data-access/statistics.models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminStatisticsService {

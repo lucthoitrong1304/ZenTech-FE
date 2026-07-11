@@ -13,7 +13,7 @@ import {
   ManagementOrder,
   ManagementOrderStatus,
   ManagementPaymentStatus,
-} from '../../data-access/models/management-order.models';
+} from '@/site-management/management/orders/data-access/models/management-order.models';
 
 @Component({
   selector: 'app-order-detail-drawer',

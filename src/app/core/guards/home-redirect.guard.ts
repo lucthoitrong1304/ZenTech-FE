@@ -1,8 +1,8 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
-import { AuthStorageService } from '../services/auth-storage.service';
-import { Role } from '../../site-management/auth/data-access/models/auth.enums';
-import { hasRole } from '../../site-management/auth/data-access/utils/auth-role.utils';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { Role } from '@/site-management/identity/data-access/models/auth.enums';
+import { hasRole } from '@/site-management/identity/data-access/utils/auth-role.utils';
 
 export const homeRedirectGuard: CanActivateFn = () => {
   const router = inject(Router);

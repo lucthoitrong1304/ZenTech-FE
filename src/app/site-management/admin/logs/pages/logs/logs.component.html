@@ -331,14 +331,16 @@
           }
         </div>
 
-        <app-admin-recording-evidence
-          [email]="recordingEmailForLog(log)"
-          [userId]="recordingUserIdForLog(log)"
-          [timestamp]="log.timestamp"
-          [traceId]="recordingTraceIdForLog(log)"
-          title="Record liên quan"
-          contextLabel="Log evidence"
-        />
+        @if (hasRequestTrace(log)) {
+          <app-admin-recording-evidence
+            [email]="recordingEmailForLog(log)"
+            [userId]="recordingUserIdForLog(log)"
+            [timestamp]="log.timestamp"
+            [traceId]="recordingTraceIdForLog(log)"
+            title="Record liên quan"
+            contextLabel="Log evidence"
+          />
+        }
 
         <div class="logs-details-card logs-details-card--modal">
           <div class="logs-details-header">
@@ -351,18 +353,18 @@
 
           @if (getLogViewMode(log.id) === 'structured') {
             <div class="logs-trace-graph-panel">
-              <span class="logs-graph-title">Vị trí ghi nhận trong request:</span>
+              <span class="logs-graph-title">{{ hasRequestTrace(log) ? 'Vị trí ghi nhận trong request:' : 'Nguồn phát sinh log:' }}</span>
               <div class="logs-trace-timeline">
                 <div class="logs-timeline-node" [class.logs-timeline-node--active]="log.category === 'FRONTEND'">
                   <svg lucideGlobe class="w-4 h-4"></svg>
                   <span>Angular FE</span>
                 </div>
-                <div class="logs-timeline-arrow" [class.logs-timeline-arrow--active]="log.category === 'BACKEND' || log.category === 'AI-SERVICE'"></div>
+                <div class="logs-timeline-arrow" [class.logs-timeline-arrow--active]="hasRequestTrace(log) && (log.category === 'BACKEND' || log.category === 'AI-SERVICE')"></div>
                 <div class="logs-timeline-node" [class.logs-timeline-node--active]="log.category === 'BACKEND'">
                   <svg lucideTerminal class="w-4 h-4"></svg>
                   <span>Spring Boot BE</span>
                 </div>
-                <div class="logs-timeline-arrow" [class.logs-timeline-arrow--active]="log.category === 'AI-SERVICE'"></div>
+                <div class="logs-timeline-arrow" [class.logs-timeline-arrow--active]="hasRequestTrace(log) && log.category === 'AI-SERVICE'"></div>
                 <div class="logs-timeline-node" [class.logs-timeline-node--active]="log.category === 'AI-SERVICE'">
                   <svg lucideBot class="w-4 h-4"></svg>
                   <span>FastAPI AI Service</span>
@@ -419,7 +421,7 @@
             <div class="logs-inspector-section">
               <button type="button" class="logs-inspector-section-title logs-flow-title">
                 <span>v</span>
-                <span>Luồng request</span>
+                <span>{{ hasRequestTrace(log) ? 'Luồng request' : 'Sự kiện hệ thống' }}</span>
                 <span class="logs-flow-order-badge">Từ trên xuống</span>
               </button>
               <div class="logs-journey-list">
@@ -451,7 +453,7 @@
                     </div>
                   </div>
                 } @empty {
-                  <p class="logs-journey-empty">Chưa đủ breadcrumb để dựng lại luồng request.</p>
+                  <p class="logs-journey-empty">{{ hasRequestTrace(log) ? 'Chưa đủ breadcrumb để dựng lại luồng request.' : 'Log lifecycle không thuộc request người dùng nên không có timeline liên kết.' }}</p>
                 }
               </div>
             </div>

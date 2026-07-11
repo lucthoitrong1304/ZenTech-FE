@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { LucideX } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
-import { MediaPreviewItem } from './media-preview-dialog.model';
+import { MediaPreviewItem } from '@/shared/components/media-preview-dialog/media-preview-dialog.model';
 
 @Component({
   selector: 'app-media-preview-dialog',

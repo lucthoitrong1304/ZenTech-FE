@@ -464,6 +464,7 @@
               <div class="incident-recording-panel">
                 <app-admin-recording-evidence
                   [email]="evidenceOcc.userEmail || ''"
+                  [userId]="inc.userId"
                   [timestamp]="evidenceOcc.occurredAt || inc.occurredAt || inc.createdAt"
                   [traceId]="evidenceOcc.traceId || selectedTraceId() || inc.traceId || ''"
                   title="Record theo occurrence"

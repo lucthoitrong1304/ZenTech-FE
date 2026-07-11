@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, input, output, signal } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideX, LucideSearch, LucideLoader2, LucideSearchX, LucideMessageSquare } from '@lucide/angular';
-import { ChatMessageResponse } from '../../../../customer-chat/data-access/models/customer-chat.models';
+import { ChatMessageResponse } from '@/site-management/shared/chat/data-access/models/customer-chat.models';
 
 @Component({
   selector: 'app-chat-search-sidebar',

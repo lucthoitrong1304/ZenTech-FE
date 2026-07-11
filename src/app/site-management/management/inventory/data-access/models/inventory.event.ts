@@ -4,7 +4,7 @@ import {
   InventoryQuery,
   InventoryStats,
   PageResponse,
-} from './inventory.model';
+} from '@/site-management/management/inventory/data-access/models/inventory.model';
 
 export enum InventoryEventType {
   InventoryLoadStarted = 'INVENTORY_LOAD_STARTED',

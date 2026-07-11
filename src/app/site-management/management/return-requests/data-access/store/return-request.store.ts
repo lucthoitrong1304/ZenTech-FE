@@ -3,9 +3,9 @@ import { patchState, signalStore, withComputed, withMethods, withState } from '@
 import { setAllEntities, updateEntity, withEntities } from '@ngrx/signals/entities';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { EMPTY, catchError, pipe, switchMap, tap } from 'rxjs';
-import { ReturnRequest, ReturnRequestStatus } from '../models/return-request.model';
-import { ReturnRequestService } from '../services/return-request.service';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { ReturnRequest, ReturnRequestStatus } from '@/site-management/management/return-requests/data-access/models/return-request.model';
+import { ReturnRequestService } from '@/site-management/management/return-requests/data-access/services/return-request.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
 
 const REQUEST_ENTITY_CONFIG = {
   collection: 'request',

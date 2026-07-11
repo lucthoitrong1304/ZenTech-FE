@@ -1,4 +1,4 @@
-import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
+import { HasPermissionDirective } from '@/core/permissions/has-permission.directive';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import {
@@ -11,7 +11,7 @@ import {
 import {
   ManagementOrder,
   ManagementPaymentMethod,
-} from '../../data-access/models/management-order.models';
+} from '@/site-management/management/orders/data-access/models/management-order.models';
 
 @Component({
   selector: 'app-order-table',

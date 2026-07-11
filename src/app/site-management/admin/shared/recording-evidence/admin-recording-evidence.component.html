@@ -20,6 +20,10 @@
     @if (evidence(); as data) {
       <span>Phiên: <strong>{{ formatDate(data.sessionStartMs) }}</strong></span>
       <span>Đoạn: <strong>{{ formatDuration(data.clipStartMs) }} - {{ formatDuration(data.clipEndMs) }}</strong></span>
+      <span class="recording-evidence__meta-error">Lỗi lúc: <strong>{{ formatDuration(data.offsetMs - data.clipStartMs) }}</strong></span>
+      <button type="button" class="recording-evidence__jump-btn" (click)="jumpToError()">
+        Tới lúc lỗi
+      </button>
     } @else {
       <span>Mốc: <strong>{{ formatDate(timestamp() || null) }}</strong></span>
     }

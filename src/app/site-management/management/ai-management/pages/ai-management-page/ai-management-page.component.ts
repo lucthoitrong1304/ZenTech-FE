@@ -16,7 +16,7 @@ import {
 } from '@lucide/angular';
 import { MarkdownComponent } from 'ngx-markdown';
 import { finalize } from 'rxjs';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
 import {
   AiDataset,
   AiDatasetPayload,
@@ -24,10 +24,10 @@ import {
   AiDocument,
   AiProductVectorFilter,
   AiProductVectorStatus,
-} from '../../data-access/models/ai-management.models';
-import { AiManagementService } from '../../data-access/services/ai-management.service';
-import { PermissionService } from '../../../../../core/permissions/permission.service';
-import { PermissionCode } from '../../../../../core/permissions/permission.models';
+} from '@/site-management/management/ai-management/data-access/models/ai-management.models';
+import { AiManagementService } from '@/site-management/management/ai-management/data-access/services/ai-management.service';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
 
 type AiManagementTab = 'datasets' | 'products' | 'demo';
 type DemoMessageRole = 'customer' | 'assistant';

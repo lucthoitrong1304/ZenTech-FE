@@ -8,7 +8,7 @@ import {
   CouponFormValue,
   ManagementCouponQuery,
   CustomerVoucherQuery,
-} from './marketing.models';
+} from '@/site-management/management/marketing/data-access/models/marketing.models';
 
 export enum MarketingEventType {
   CouponsLoadStarted = 'COUPONS_LOAD_STARTED',

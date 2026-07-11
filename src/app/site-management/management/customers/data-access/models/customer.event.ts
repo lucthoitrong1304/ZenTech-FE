@@ -7,7 +7,7 @@ import {
   CustomerPage,
   CustomerSort,
   CustomerSummary,
-} from './customer.models';
+} from '@/site-management/management/customers/data-access/models/customer.models';
 
 export enum CustomerEventType {
   CustomersLoadStarted = 'Customers Load Started',

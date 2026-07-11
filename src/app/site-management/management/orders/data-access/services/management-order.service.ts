@@ -1,13 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { environment } from '../../../../../../environments/environment';
-import { ApiService } from '../../../../../core/api/api.service';
+import { environment } from '@env/environment';
+import { ApiService } from '@/core/api/api.service';
 import {
   ManagementOrder,
   ManagementOrderEditDraft,
   ManagementOrderPage,
   ManagementOrderQuery,
-} from '../models/management-order.models';
+} from '@/site-management/management/orders/data-access/models/management-order.models';
 
 @Injectable({
   providedIn: 'root',

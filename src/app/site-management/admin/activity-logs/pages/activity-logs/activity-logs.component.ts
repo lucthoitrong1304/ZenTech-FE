@@ -14,17 +14,17 @@ import {
   LucideInfo
 } from '@lucide/angular';
 import { Subscription } from 'rxjs';
-import { AdminStore } from '../../../data-access/store/admin.store';
-import { ActivityArea, ActivityLog, ActivitySeverity } from '../../../data-access/models/admin.models';
-import { AdminRecordingEvidenceComponent } from '../../../shared/recording-evidence/admin-recording-evidence.component';
-import { AdminLogsService } from '../../../data-access/services/admin-logs.service';
-import { WebsocketService } from '../../../../../core/services/websocket.service';
-import { AccountService } from '../../../accounts/data-access/services/account.service';
+import { AdminStore } from '@/site-management/admin/data-access/store/admin.store';
+import { ActivityArea, ActivityLog, ActivitySeverity } from '@/site-management/admin/data-access/models/admin.models';
+import { AdminRecordingEvidenceComponent } from '@/site-management/admin/shared/recording-evidence/admin-recording-evidence.component';
+import { AdminLogsService } from '@/site-management/admin/data-access/services/admin-logs.service';
+import { WebsocketService } from '@/core/services/websocket.service';
+import { AccountService } from '@/site-management/admin/accounts/data-access/services/account.service';
 import {
   AccountSortField,
   AccountSummary,
   SortDirection
-} from '../../../accounts/data-access/models/account.model';
+} from '@/site-management/admin/accounts/data-access/models/account.model';
 
 type ActivityFilter = 'ALL' | string;
 type ActivityViewMode = 'TABLE' | 'TIMELINE';

@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../../../environments/environment';
-import { ApiService } from '../../../../../core/api/api.service';
+import { environment } from '@env/environment';
+import { ApiService } from '@/core/api/api.service';
 import {
   IReportsSummary,
   IRevenuePoint,
@@ -14,7 +14,7 @@ import {
   ICategoryShare,
   IInventoryStats,
   IAIAnalyzeResponse,
-} from '../models/reports.model';
+} from '@/site-management/management/reports/data-access/models/reports.model';
 
 interface ApiResponseDto<T> {
   success: boolean;

@@ -1,4 +1,4 @@
-import { ApiResponseDto, EmployeeProfileResponse } from './profile.model';
+import { ApiResponseDto, EmployeeProfileResponse } from '@/site-management/management/data-access/models/profile.model';
 
 export interface CheckInRequest {
   faceDescriptor: number[];

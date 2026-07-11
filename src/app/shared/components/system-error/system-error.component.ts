@@ -3,10 +3,10 @@ import { Component, ChangeDetectionStrategy, OnInit, inject } from '@angular/cor
 import { Router } from '@angular/router';
 import { LucideTriangleAlert } from '@lucide/angular';
 import { ButtonModule } from 'primeng/button';
-import { ErrorState, ErrorStateService } from '../../../core/errors/error-state.service';
-import { AuthStorageService } from '../../../core/services/auth-storage.service';
-import { Role } from '../../../site-management/auth/data-access/models/auth.enums';
-import { hasRole } from '../../../site-management/auth/data-access/utils/auth-role.utils';
+import { ErrorState, ErrorStateService } from '@/core/errors/error-state.service';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { Role } from '@/site-management/identity/data-access/models/auth.enums';
+import { hasRole } from '@/site-management/identity/data-access/utils/auth-role.utils';
 
 @Component({
   selector: 'app-system-error',

@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
-import { AuthStorageService, StoredAuthSession } from '../services/auth-storage.service';
-import { customerAuthGuard } from './customer-auth.guard';
+import { AuthStorageService, StoredAuthSession } from '@/core/services/auth-storage.service';
+import { customerAuthGuard } from '@/core/guards/customer-auth.guard';
 
 describe('customerAuthGuard', () => {
   function runGuard(authStorageService: Partial<AuthStorageService>): boolean | UrlTree {

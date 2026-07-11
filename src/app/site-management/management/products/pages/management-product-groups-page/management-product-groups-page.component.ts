@@ -1,24 +1,24 @@
-import { HasPermissionDirective } from '../../../../../core/permissions/has-permission.directive';
+import { HasPermissionDirective } from '@/core/permissions/has-permission.directive';
 import { CommonModule } from '@angular/common';
 import { Component, ChangeDetectionStrategy, effect, inject, untracked } from '@angular/core';
 import { LucidePlus } from '@lucide/angular';
 import { filter, take } from 'rxjs';
-import { ConfirmService } from '../../../../../shared/components/confirm/confirm.service';
+import { ConfirmService } from '@/shared/components/confirm/confirm.service';
 import {
   ManagementPageHeroComponent,
   ManagementPageShellComponent,
   ManagementToolbarSurfaceComponent,
-} from '../../../../../shared/components/management-ui';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { ProductGroupDialogComponent } from '../../components/product-group-dialog/product-group-dialog.component';
-import { ProductGroupTableComponent } from '../../components/product-group-table/product-group-table.component';
-import { ProductGroupToolbarComponent } from '../../components/product-group-toolbar/product-group-toolbar.component';
+} from '@/shared/components/management-ui';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { ProductGroupDialogComponent } from '@/site-management/management/products/components/product-group-dialog/product-group-dialog.component';
+import { ProductGroupTableComponent } from '@/site-management/management/products/components/product-group-table/product-group-table.component';
+import { ProductGroupToolbarComponent } from '@/site-management/management/products/components/product-group-toolbar/product-group-toolbar.component';
 import {
   ManagementProductGroup,
   ManagementProductGroupDraft,
   ManagementProductGroupQuery,
-} from '../../data-access/models/management-product.models';
-import { ManagementProductGroupsStore } from '../../data-access/store/management-product-groups.store';
+} from '@/site-management/management/products/data-access/models/management-product.models';
+import { ManagementProductGroupsStore } from '@/site-management/management/products/data-access/store/management-product-groups.store';
 
 @Component({
   selector: 'app-management-product-groups-page',

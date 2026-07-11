@@ -1,16 +1,16 @@
 import { Component, ChangeDetectionStrategy, effect, inject, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ProfileStore } from '../../data-access/store/profile.store';
+import { ProfileStore } from '@/site-management/management/data-access/store/profile.store';
 import { LucideUser, LucideMail, LucideShield, LucidePhone, LucideMapPin, LucideCalendar, LucideCamera, LucideLoader2, LucideScanFace } from '@lucide/angular';
-import { EmployeeProfileUpdateRequest } from '../../data-access/models/profile.model';
-import { Role } from '../../../auth/data-access/models/auth.enums';
-import { AuthSessionStore } from '../../../auth/data-access/store/auth-session.store';
-import { AuthStorageService } from '../../../../core/services/auth-storage.service';
-import { ConfirmService } from '../../../../shared/components/confirm/confirm.service';
-import { ProfileService } from '../../data-access/services/profile.service';
-import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { FaceRegisterDialogComponent, FaceRegisterData } from '../../../../shared/components/face-register-dialog/face-register-dialog.component';
+import { EmployeeProfileUpdateRequest } from '@/site-management/management/data-access/models/profile.model';
+import { Role } from '@/site-management/identity/data-access/models/auth.enums';
+import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { ConfirmService } from '@/shared/components/confirm/confirm.service';
+import { ProfileService } from '@/site-management/management/data-access/services/profile.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { FaceRegisterDialogComponent, FaceRegisterData } from '@/shared/components/face-register-dialog/face-register-dialog.component';
 
 @Component({
   selector: 'app-management-profile-page',

@@ -1,11 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, switchMap, throwError } from 'rxjs';
-import { AdminLogsService } from '../../data-access/services/admin-logs.service';
+import { AdminLogsService } from '@/site-management/admin/data-access/services/admin-logs.service';
 import {
   RecordingEvidenceRequest,
   RecordingEvidenceResult,
   RecordingEvidenceSession
-} from './recording-evidence.models';
+} from '@/site-management/admin/shared/recording-evidence/recording-evidence.models';
 
 interface CachedSessions {
   expiresAt: number;

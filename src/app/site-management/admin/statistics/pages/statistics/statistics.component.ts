@@ -15,10 +15,10 @@ import {
   LucideUsers,
 } from '@lucide/angular';
 import { Subject, Subscription, debounceTime } from 'rxjs';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
-import { WebsocketService } from '../../../../../core/services/websocket.service';
-import { AdminStatisticsStore } from '../../data-access/statistics.store';
-import { StatisticsPeriod } from '../../data-access/statistics.models';
+import { ToastService } from '@/shared/components/toast/toast.service';
+import { WebsocketService } from '@/core/services/websocket.service';
+import { AdminStatisticsStore } from '@/site-management/admin/statistics/data-access/statistics.store';
+import { StatisticsPeriod } from '@/site-management/admin/statistics/data-access/statistics.models';
 
 @Component({
   selector: 'app-admin-statistics',

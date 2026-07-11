@@ -14,17 +14,17 @@ import {
   PageResponse,
   ParticipantStatus,
   ParticipantType,
-} from '../../../../customer-chat/data-access/models/customer-chat.models';
-import { CustomerChatService } from '../../../../customer-chat/data-access/services/customer-chat.service';
-import { CustomerChatWebsocketService } from '../../../../customer-chat/data-access/services/customer-chat-websocket.service';
+} from '@/site-management/shared/chat/data-access/models/customer-chat.models';
+import { CustomerChatService } from '@/site-management/shared/chat/data-access/services/customer-chat.service';
+import { CustomerChatWebsocketService } from '@/site-management/shared/chat/data-access/services/customer-chat-websocket.service';
 import {
   ManagementChatConversation,
   ManagementChatMediaItem,
   ManagementChatMessage,
   ManagementChatWorkspace,
-} from '../models/management-chat.models';
-import { ManagementChatService } from '../services/management-chat.service';
-import { ManagementChatStore } from './management-chat.store';
+} from '@/site-management/management/chat/data-access/models/management-chat.models';
+import { ManagementChatService } from '@/site-management/management/chat/data-access/services/management-chat.service';
+import { ManagementChatStore } from '@/site-management/management/chat/data-access/store/management-chat.store';
 
 describe('ManagementChatStore', () => {
   beforeAll(() => {

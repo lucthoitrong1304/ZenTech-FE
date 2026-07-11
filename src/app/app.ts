@@ -1,17 +1,12 @@
-import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { filter, map } from 'rxjs';
-import { ToastComponent } from './shared/components/toast/toast.component';
-import { CustomerChatPopupComponent } from './site-management/customer-chat/components/customer-chat-popup/customer-chat-popup.component';
-import { CategoryNavigationStore } from './site-management/shared/data-access/store/category-navigation.store';
-import { AuthStorageService } from './core/services/auth-storage.service';
-import { RouteClientLogService } from './core/observability/logging/route-client-log.service';
-import { Role } from './site-management/auth/data-access/models/auth.enums';
-import { hasRole } from './site-management/auth/data-access/utils/auth-role.utils';
-import { AdminLogsService } from './site-management/admin/data-access/services/admin-logs.service';
-import { environment } from '../environments/environment';
+import { filter } from 'rxjs';
+import { ToastComponent } from '@/shared/components/toast/toast.component';
+import { AuthStorageService } from '@/core/services/auth-storage.service';
+import { RouteClientLogService } from '@/core/observability/logging/route-client-log.service';
+import { AdminLogsService } from '@/site-management/admin/data-access/services/admin-logs.service';
+import { environment } from '@env/environment';
 
 interface RecordingUploadBatch {
   email: string;
@@ -23,7 +18,7 @@ interface RecordingUploadBatch {
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, ConfirmDialogModule, ToastComponent, CustomerChatPopupComponent],
+  imports: [RouterOutlet, ConfirmDialogModule, ToastComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -35,14 +30,13 @@ export class App {
   private static readonly RECORDING_MAX_PENDING_BATCHES = 12;
   private static readonly RECORDING_MAX_RETRY_ATTEMPTS = 3;
   private static readonly RECORDING_RETRY_DELAY_MS = 5_000;
-  private static readonly RECORDING_MAX_ANONYMOUS_EVENTS = 1_000;
+  private static readonly RECORDING_MAX_ANONYMOUS_EVENTS = 2_500;
   private static readonly RECORDING_EXCLUDED_ROUTE_PREFIXES = [
     '/admin/logs',
     '/admin/activity-logs',
     '/admin/resource-monitoring'
   ];
 
-  private readonly categoryNavigationStore = inject(CategoryNavigationStore);
   private readonly router = inject(Router);
   private readonly authStorageService = inject(AuthStorageService);
   private readonly routeClientLogService = inject(RouteClientLogService);
@@ -53,39 +47,8 @@ export class App {
   private recordingUploadInFlight = false;
   private recordingRetryTimer: ReturnType<typeof setTimeout> | null = null;
   protected readonly title = signal('ZenTech-FE');
-  protected readonly currentUrl = toSignal(
-    this.router.events.pipe(
-      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-      map(event => event.urlAfterRedirects)
-    ),
-    { initialValue: this.router.url }
-  );
-  protected readonly showCustomerChat = computed(() => {
-    const url = this.currentUrl();
-    const session = this.authStorageService.getSession();
-    const roles = session?.roles ?? [];
-    const isStaff =
-      hasRole(roles, Role.OWNER) ||
-      hasRole(roles, Role.MANAGER) ||
-      hasRole(roles, Role.EMPLOYEE) ||
-      hasRole(roles, Role.ADMIN);
-
-    if (isStaff) {
-      return false;
-    }
-
-    return !(
-      url === '/chat' ||
-      url.startsWith('/management') ||
-      url.startsWith('/admin') ||
-      url.startsWith('/auth') ||
-      url.startsWith('/reset-password') ||
-      url.startsWith('/error')
-    );
-  });
 
   constructor() {
-    this.categoryNavigationStore.loadCategoriesOnce();
     this.routeClientLogService.initialize();
     this.initScreenRecording();
   }
@@ -157,13 +120,26 @@ export class App {
 
         const isAuthenticated = this.authStorageService.isAuthenticated();
         const email = this.authStorageService.getSession()?.email;
-        if (isAuthenticated && email && this.recordingEvents.length > 0) {
-          const batch = [...this.recordingEvents];
-          this.recordingEvents = [];
-          this.uploadRecording(email, batch);
+        if (isAuthenticated && email) {
+          if (this.shouldRotateRecordingSession(email)) {
+            if (this.recordingEvents.length > 0) {
+              const batch = [...this.recordingEvents];
+              this.recordingEvents = [];
+              this.uploadRecording(email, batch);
+            }
+            stopRecording();
+            this.rotateRecordingSession(email);
+            startRecording();
+          } else if (this.recordingEvents.length > 0) {
+            const batch = [...this.recordingEvents];
+            this.recordingEvents = [];
+            this.uploadRecording(email, batch);
+          }
         } else if (!isAuthenticated || !email) {
           if (this.recordingEvents.length > App.RECORDING_MAX_ANONYMOUS_EVENTS) {
-            this.recordingEvents = this.recordingEvents.slice(-App.RECORDING_MAX_ANONYMOUS_EVENTS);
+            stopRecording();
+            sessionStorage.removeItem('recordingSessionId');
+            startRecording();
           }
         }
         this.flushRecordingQueue();
@@ -189,6 +165,34 @@ export class App {
     }).catch((err: any) => {
       console.error('Failed to load rrweb screen recorder:', err);
     });
+  }
+
+  private shouldRotateRecordingSession(email: string): boolean {
+    const sessionId = sessionStorage.getItem('recordingSessionId');
+    if (!sessionId) return true;
+
+    const storedEmail = sessionStorage.getItem('recordingSessionEmail');
+    if (storedEmail !== email) return true;
+
+    const sessionCreatedAt = Number(sessionStorage.getItem('recordingSessionCreatedAt') || '0');
+    if (sessionCreatedAt <= 0) return true;
+
+    const now = Date.now();
+    if (now - sessionCreatedAt >= App.RECORDING_SESSION_MAX_AGE_MS) return true;
+
+    const sessionLastActiveAt = Number(sessionStorage.getItem('recordingSessionLastActiveAt') || '0');
+    if (sessionLastActiveAt > 0 && now - sessionLastActiveAt >= App.RECORDING_IDLE_BREAK_MS) return true;
+
+    return false;
+  }
+
+  private rotateRecordingSession(email: string): void {
+    const now = Date.now();
+    const newSessionId = this.createRecordingSessionId(now);
+    sessionStorage.setItem('recordingSessionId', newSessionId);
+    sessionStorage.setItem('recordingSessionEmail', email);
+    sessionStorage.setItem('recordingSessionCreatedAt', String(now));
+    sessionStorage.setItem('recordingSessionLastActiveAt', String(now));
   }
 
   private shouldSkipScreenRecording(url: string): boolean {

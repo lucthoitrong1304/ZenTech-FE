@@ -11,15 +11,15 @@ import {
 } from '@lucide/angular';
 import { DialogModule } from 'primeng/dialog';
 import { firstValueFrom } from 'rxjs';
-import { RichTextEditorComponent } from '../../../../../shared/components/rich-text-editor/rich-text-editor.component';
+import { RichTextEditorComponent } from '@/shared/components/rich-text-editor/rich-text-editor.component';
 import {
   ManagementProductCategory,
   ManagementProductGroup,
   ManagementProductFormErrors,
   ProductFormValue,
   ProductVariantUpsertRequest,
-} from '../../data-access/models/management-product.models';
-import { ManagementProductService } from '../../data-access/services/management-product.service';
+} from '@/site-management/management/products/data-access/models/management-product.models';
+import { ManagementProductService } from '@/site-management/management/products/data-access/services/management-product.service';
 
 interface ProductImageItem {
   key: string;

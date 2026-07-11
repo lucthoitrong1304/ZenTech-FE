@@ -8,9 +8,9 @@ import {
   ManagementProductQuery,
   ProductCreateRequest,
   ProductManagementDetailResponse,
-} from '../models/management-product.models';
-import { ManagementProductService } from '../services/management-product.service';
-import { ManagementProductsStore } from './management-products.store';
+} from '@/site-management/management/products/data-access/models/management-product.models';
+import { ManagementProductService } from '@/site-management/management/products/data-access/services/management-product.service';
+import { ManagementProductsStore } from '@/site-management/management/products/data-access/store/management-products.store';
 
 describe('ManagementProductsStore', () => {
   beforeAll(() => {

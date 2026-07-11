@@ -1,5 +1,5 @@
-import { TicketPriority, TicketStatus } from '../../../../admin/data-access/models/admin.models';
-import { AffectedUserDetail } from '../../../business-impact/data-access/models/management-business-impact.model';
+import { TicketPriority, TicketStatus } from '@/site-management/admin/data-access/models/admin.models';
+import { AffectedUserDetail } from '@/site-management/management/business-impact/data-access/models/management-business-impact.model';
 
 export { TicketPriority, TicketStatus };
 

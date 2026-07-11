@@ -15,15 +15,15 @@ import {
   LucideUsers,
   LucideX,
 } from '@lucide/angular';
-import { ToastService } from '../../../../../shared/components/toast/toast.service';
+import { ToastService } from '@/shared/components/toast/toast.service';
 import {
   ManagementEmployee,
   ManagementEmployeeRole,
   ManagementEmployeeSort,
-} from '../../data-access/models/management-employee.models';
-import { ManagementEmployeesStore } from '../../data-access/store/management-employees.store';
-import { PermissionService } from '../../../../../core/permissions/permission.service';
-import { PermissionCode } from '../../../../../core/permissions/permission.models';
+} from '@/site-management/management/employees/data-access/models/management-employee.models';
+import { ManagementEmployeesStore } from '@/site-management/management/employees/data-access/store/management-employees.store';
+import { PermissionService } from '@/core/permissions/permission.service';
+import { PermissionCode } from '@/core/permissions/permission.models';
 
 type ActiveFilterValue = 'all' | 'active' | 'inactive';
 type RoleFilterValue = 'all' | ManagementEmployeeRole;

@@ -264,6 +264,7 @@
       @if (getLatestRecordingLog(issue); as evidenceLog) {
         <app-admin-recording-evidence
           [email]="recordingEmailForLog(evidenceLog)"
+          [userId]="recordingUserIdForLog(evidenceLog)"
           [timestamp]="evidenceLog.timestamp"
           [traceId]="recordingTraceIdForLog(evidenceLog)"
           title="Record cấp issue"
@@ -396,6 +397,7 @@
 
         <app-admin-recording-evidence
           [email]="recordingEmailForLog(log)"
+          [userId]="recordingUserIdForLog(log)"
           [timestamp]="log.timestamp"
           [traceId]="recordingTraceIdForLog(log)"
           title="Record liên quan"

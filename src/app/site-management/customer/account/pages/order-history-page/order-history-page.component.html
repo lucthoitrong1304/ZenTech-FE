@@ -1,0 +1,398 @@
+<section class="mx-auto max-w-7xl">
+  <header class="mb-10">
+    <h1 class="text-4xl font-bold leading-none tracking-tight text-[#1c1b1b]">Lịch sử đơn hàng</h1>
+    <p class="mt-3 max-w-2xl text-sm font-medium leading-6 text-[#4f4632]">
+      Theo dõi các đơn hàng đã mua, trạng thái vận chuyển và tổng thanh toán.
+    </p>
+  </header>
+
+  @if (accountStore.actionMessage()) {
+    <div class="mb-6 rounded-[12px] bg-[#d8f5dd] px-5 py-4 text-sm font-semibold text-[#166534] flex justify-between items-center">
+      <span>{{ accountStore.actionMessage() }}</span>
+      <button (click)="accountStore.clearActionMessage()" class="text-xs uppercase tracking-wider opacity-65 font-bold hover:opacity-100 cursor-pointer">Đóng</button>
+    </div>
+  }
+  @if (accountStore.error()) {
+    <div class="mb-6 rounded-[12px] bg-[#ffdad6] px-5 py-4 text-sm font-semibold text-[#93000a]">
+      {{ accountStore.error() }}
+    </div>
+  }
+
+  <section class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center">
+    <div class="flex flex-wrap gap-2 rounded-[14px] bg-[#f6f3f2] p-1">
+      @for (filter of filters; track filter.value) {
+        <button
+          type="button"
+          class="rounded-full px-5 py-2.5 text-sm font-bold transition cursor-pointer"
+          [ngClass]="
+            accountStore.orderFilter() === filter.value
+              ? 'bg-white text-[#1c1b1b] shadow-sm'
+              : 'text-[#4f4632] hover:text-[#1c1b1b]'
+          "
+          (click)="setFilter(filter.value)"
+        >
+          {{ filter.label }}
+        </button>
+      }
+    </div>
+
+    <div class="relative lg:ml-auto">
+      <svg lucideSearch class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#81765f]" [attr.stroke-width]="2"></svg>
+      <input
+        type="search"
+        class="h-12 w-full rounded-full border-0 bg-[#f6f3f2] pl-11 pr-5 text-sm font-medium text-[#1c1b1b] outline-none ring-0 placeholder:text-[#81765f] focus:ring-2 focus:ring-[#ffc700] lg:w-80"
+        placeholder="Tìm đơn hàng..."
+        [value]="accountStore.orderSearchKeyword()"
+        (input)="searchOrders($event)"
+      />
+    </div>
+  </section>
+
+  <div class="space-y-5">
+    @for (order of accountStore.filteredOrders(); track order.orderId) {
+      <article class="flex flex-col gap-5 rounded-[16px] bg-white p-6 shadow-[0_32px_80px_-56px_rgba(28,27,27,0.35)] lg:flex-row lg:items-center">
+        @if (order.items[0]?.productImage) {
+          <img
+            [src]="order.items[0].productImage"
+            [alt]="order.items[0].productName"
+            class="h-24 w-24 rounded-[12px] object-cover"
+          />
+        } @else {
+          <div class="h-24 w-24 rounded-[12px] bg-[#f6f3f2] border border-[#d2c5ab] flex items-center justify-center">
+            <svg lucidePackage class="h-10 w-10 text-gray-400"></svg>
+          </div>
+        }
+
+        <div class="grid min-w-0 flex-1 gap-4 md:grid-cols-4 md:items-center">
+          <div class="min-w-0">
+            <span class="block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#81765f]">Mã đơn hàng</span>
+            <p class="mt-1 font-mono text-sm font-semibold truncate">{{ order.orderId }}</p>
+          </div>
+          <div class="min-w-0">
+            <span class="block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#81765f]">Sản phẩm</span>
+            <p class="mt-1 truncate text-sm font-bold">
+              {{ order.items[0]?.productName || 'Đơn hàng ZenTech' }}
+              @if (order.items.length > 1) {
+                và {{ order.items.length - 1 }} sản phẩm khác
+              }
+            </p>
+          </div>
+          <div>
+            <span class="block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#81765f]">Ngày đặt</span>
+            <p class="mt-1 text-sm font-medium">{{ order.createdAt | date: 'dd/MM/yyyy' }}</p>
+          </div>
+          <div>
+            <span class="block text-[10px] font-semibold uppercase tracking-[0.18em] text-[#81765f]">Tổng tiền</span>
+            <p class="mt-1 text-lg font-bold">{{ order.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 lg:justify-end">
+          <span class="inline-flex h-8 items-center rounded-full px-4 text-[11px] font-semibold uppercase tracking-[0.14em]" [ngClass]="order.orderStatus | orderStatusClass: order.paymentStatus">
+            {{ order.orderStatus | orderStatusLabel: order.paymentStatus }}
+          </span>
+          @if (order.orderStatus === 'COMPLETED') {
+            <button
+              type="button"
+              class="inline-flex h-11 items-center rounded-full border border-[#4f46e5] px-6 text-sm font-bold text-[#4f46e5] transition hover:bg-[#f4f2ff] cursor-pointer"
+              (click)="openReturnDialog(order, $event)"
+            >
+              Yêu cầu trả hàng
+            </button>
+          }
+          @if (order.orderStatus === 'CREATED' && order.paymentStatus === 'PENDING') {
+            <button
+              type="button"
+              class="inline-flex h-11 items-center rounded-full border border-red-600 px-6 text-sm font-bold text-red-600 transition hover:bg-red-50 cursor-pointer"
+              (click)="cancelOrder(order.orderId, $event)"
+            >
+              Hủy đơn
+            </button>
+          }
+          <button
+            type="button"
+            class="inline-flex h-11 items-center rounded-full bg-[#ffc700] px-6 text-sm font-bold text-[#251a00] transition hover:bg-[#f5bf00] cursor-pointer"
+            (click)="openDetail(order.orderId)"
+          >
+            Xem chi tiết
+          </button>
+        </div>
+      </article>
+    } @empty {
+      <div class="rounded-[16px] bg-white p-10 text-center text-sm font-semibold text-[#4f4632]">
+        Không tìm thấy đơn hàng phù hợp.
+      </div>
+    }
+  </div>
+
+  <!-- Order Detail Dialog -->
+  <p-dialog
+    header="Chi tiết đơn hàng"
+    [(visible)]="isDetailOpen"
+    [modal]="true"
+    [style]="{ width: '700px' }"
+    [breakpoints]="{ '960px': '95vw' }"
+  >
+    @if (accountStore.selectedOrderDetail(); as detail) {
+      <div class="space-y-6 py-4">
+        <!-- Summary Header -->
+        <div class="flex flex-wrap justify-between items-center gap-4 bg-[#fcf9f8] p-4 rounded-xl border border-[#e5e7eb]">
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[#81765f]">Mã đơn hàng</p>
+            <p class="font-mono text-sm font-semibold text-[#1c1b1b] mt-1">{{ detail.orderId }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[#81765f]">Ngày đặt hàng</p>
+            <p class="text-sm font-semibold text-[#1c1b1b] mt-1">{{ detail.createdAt | date: 'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[#81765f]">Trạng thái</p>
+            <span class="inline-flex h-7 items-center rounded-full px-3 text-[10px] font-semibold uppercase tracking-[0.15em] mt-1" [ngClass]="detail.orderStatus | orderStatusClass: detail.paymentStatus">
+              {{ detail.orderStatus | orderStatusLabel: detail.paymentStatus }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Address & Payment info -->
+        <div class="grid md:grid-cols-2 gap-4">
+          <!-- Shipping Address -->
+          @if (detail.shippingAddress; as addr) {
+            <div class="p-4 rounded-xl border border-[#e5e7eb] bg-white flex gap-3">
+              <svg lucideMapPin class="h-5 w-5 text-[#4b41e1] flex-shrink-0 mt-0.5" [attr.stroke-width]="2"></svg>
+              <div>
+                <h3 class="font-bold text-sm text-[#1c1b1b]">Địa chỉ giao hàng</h3>
+                <p class="text-xs font-semibold text-[#81765f] mt-1">SĐT: {{ addr.phoneNumber }}</p>
+                <p class="text-xs font-medium text-[#4f4632] mt-0.5">{{ addr.street }}, {{ addr.ward }}, {{ addr.province }}</p>
+              </div>
+            </div>
+          }
+          <!-- Payment Info -->
+          <div class="p-4 rounded-xl border border-[#e5e7eb] bg-white flex gap-3">
+            <svg lucideCreditCard class="h-5 w-5 text-[#be0037] flex-shrink-0 mt-0.5" [attr.stroke-width]="2"></svg>
+            <div>
+              <h3 class="font-bold text-sm text-[#1c1b1b]">Thanh toán</h3>
+              <p class="text-xs font-medium text-[#4f4632] mt-1">Phương thức: {{ detail.paymentMethod | paymentMethodLabel }}</p>
+              <p class="text-xs font-medium text-[#81765f] mt-0.5">Trạng thái: {{ detail.paymentStatus | paymentStatusLabel }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ordered Items -->
+        <div>
+          <h3 class="font-bold text-sm text-[#1c1b1b] mb-3 flex items-center gap-2">
+            <svg lucidePackage class="h-4 w-4 text-[#81765f]"></svg>
+            Sản phẩm đã đặt ({{ detail.items.length }})
+          </h3>
+          <div class="divide-y divide-gray-100 border border-[#e5e7eb] rounded-xl overflow-hidden bg-white">
+            @for (item of detail.items; track item.orderItemId) {
+              <div class="flex items-center gap-4 p-4">
+                @if (item.productImage) {
+                  <img [src]="item.productImage" [alt]="item.productName" class="h-16 w-16 rounded-lg object-cover flex-shrink-0" />
+                } @else {
+                  <div class="h-16 w-16 rounded-lg bg-[#f6f3f2] flex items-center justify-center flex-shrink-0">
+                    <svg lucidePackage class="h-7 w-7 text-gray-400"></svg>
+                  </div>
+                }
+                <div class="min-w-0 flex-1">
+                  <h4 class="font-bold text-sm text-[#1c1b1b] truncate">{{ item.productName }}</h4>
+                  @if (item.variantName) {
+                    <p class="text-xs font-semibold text-[#81765f] mt-0.5">{{ item.variantName }}</p>
+                  }
+                  <p class="text-xs font-medium text-[#4f4632] mt-1">
+                    {{ item.quantity }} x {{ item.priceAtPurchase | currency: 'VND' : 'symbol' : '1.0-0' }}
+                  </p>
+                </div>
+                <div class="text-right">
+                  <span class="font-bold text-sm text-[#1c1b1b]">
+                    {{ item.lineTotal | currency: 'VND' : 'symbol' : '1.0-0' }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        @if (detail.coupons.length > 0) {
+          <div class="rounded-xl border border-[#d7d2ff] bg-[#f4f2ff] p-4">
+            <h3 class="font-bold text-sm text-[#1c1b1b] mb-3">Voucher đã áp dụng</h3>
+            <div class="grid gap-3">
+              @for (coupon of detail.coupons; track coupon.orderCouponId) {
+                <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white px-4 py-3">
+                  <div>
+                    <p class="font-mono text-sm font-semibold text-[#3323cc]">{{ coupon.couponCode }}</p>
+                    <p class="mt-1 text-xs font-medium text-[#81765f]">{{ coupon | couponTypeLabel }}</p>
+                  </div>
+                  <span class="text-sm font-bold tabular-nums text-emerald-700">
+                    -{{ coupon.appliedAmount | currency: 'VND' : 'symbol' : '1.0-0' }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Financial Summary -->
+        <div class="bg-[#fcf9f8] p-5 rounded-xl border border-[#e5e7eb] space-y-2">
+          <div class="flex justify-between text-sm font-medium text-[#4f4632]">
+            <span>Tạm tính</span>
+            <span>{{ detail.originalTotalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+          </div>
+          @if (detail.discountAmount > 0) {
+            <div class="flex justify-between text-sm font-medium text-[#be0037]">
+              <span>Giảm giá</span>
+              <span>-{{ detail.discountAmount | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+            </div>
+          }
+          <div class="flex justify-between text-sm font-medium text-[#4f4632]">
+            <span>Phí vận chuyển</span>
+            <span>{{ detail.shippingFee | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+          </div>
+          <div class="flex justify-between text-base font-bold text-[#1c1b1b] pt-3 border-t border-gray-200">
+            <span>Tổng thanh toán</span>
+            <span>{{ detail.finalPrice | currency: 'VND' : 'symbol' : '1.0-0' }}</span>
+          </div>
+        </div>
+
+        @if (detail.orderStatus === 'CREATED' && detail.paymentStatus === 'PENDING') {
+          <div class="flex justify-end pt-4">
+            <button
+              type="button"
+              class="w-full sm:w-auto inline-flex h-11 items-center justify-center rounded-full border border-red-600 px-6 text-sm font-bold text-red-600 transition hover:bg-red-50 cursor-pointer"
+              (click)="cancelOrder(detail.orderId, $event); isDetailOpen = false;"
+            >
+              Hủy đơn hàng này
+            </button>
+          </div>
+        }
+      </div>
+    } @else if (accountStore.loading()) {
+      <div class="flex h-[200px] items-center justify-center">
+        <div class="text-sm font-semibold text-[#4f4632]">Đang tải chi tiết đơn hàng...</div>
+      </div>
+    }
+  </p-dialog>
+
+  <!-- Return Request Dialog -->
+  <p-dialog
+    header="Yêu cầu trả hàng & hoàn tiền"
+    [(visible)]="isReturnDialogOpen"
+    [modal]="true"
+    [style]="{ width: '650px' }"
+    [breakpoints]="{ '960px': '95vw' }"
+  >
+    @if (returningOrder) {
+      <div class="space-y-6 py-4">
+        <!-- Warning / Information alert -->
+        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium">
+          Lưu ý: Bạn đang gửi yêu cầu trả hàng cho đơn hàng <strong class="font-bold">{{ returningOrder.orderId }}</strong>.
+          Yêu cầu sẽ được gửi tới bộ phận chăm sóc khách hàng và kiểm kho của ZenTech để xét duyệt.
+        </div>
+
+        <!-- Step 1: Reason -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#81765f] mb-3">Lý do trả hàng <span class="text-red-500">*</span></label>
+          <div class="grid grid-cols-2 gap-3">
+            @for (reason of reasonOptions; track reason) {
+              <button
+                type="button"
+                class="px-4 py-3 rounded-xl border transition text-left text-xs font-semibold cursor-pointer"
+                [class]="returnReason === reason ? 'border-[#4f46e5] bg-[#f4f2ff] text-[#4f46e5] ring-2 ring-[#4f46e5]/10' : 'border-gray-200 bg-white hover:border-[#4f46e5] text-gray-700'"
+                (click)="selectReason(reason)"
+              >
+                {{ reason }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Step 2: Description -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#81765f] mb-2">Mô tả chi tiết lỗi</label>
+          <textarea
+            rows="4"
+            class="w-full rounded-xl border border-gray-200 p-4 text-sm outline-none focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] resize-none"
+            placeholder="Mô tả cụ thể tình trạng lỗi, hư hỏng của sản phẩm để được hỗ trợ nhanh nhất..."
+            [(ngModel)]="returnDetails"
+          ></textarea>
+        </div>
+
+        <!-- Step 3: Media upload -->
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-[#81765f] mb-2">Hình ảnh / Video bằng chứng lỗi</label>
+          
+          <!-- Upload Box -->
+          <label class="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-6 bg-gray-50 hover:bg-gray-100 cursor-pointer transition">
+            <svg lucideUploadCloud class="h-10 w-10 text-gray-400 mb-2" [attr.stroke-width]="1.5"></svg>
+            <span class="text-xs font-bold text-gray-700">Tải lên hình ảnh hoặc video bằng chứng</span>
+            <span class="text-[10px] text-gray-500 mt-1">Hỗ trợ JPG, PNG, WEBP (tối đa 5MB) và MP4, WEBM (tối đa 50MB)</span>
+            <input type="file" multiple accept="image/*,video/*" class="hidden" (change)="onFilesSelected($event)" />
+          </label>
+
+          <!-- Upload error -->
+          @if (accountStore.returnUploadError(); as uploadError) {
+            <p class="text-red-600 text-xs font-medium mt-2 flex items-center gap-1">
+              <svg lucideAlertCircle class="h-4 w-4" [attr.stroke-width]="2"></svg>
+              {{ uploadError }}
+            </p>
+          }
+
+          <!-- Uploaded files previews -->
+          @if (accountStore.returnEvidence().length > 0 || accountStore.returnUploading()) {
+            <div class="grid grid-cols-4 gap-3 mt-4">
+              @for (file of accountStore.returnEvidence(); track file.id) {
+                <div class="relative group aspect-square rounded-xl overflow-hidden bg-gray-50 border border-gray-200">
+                  @if (file.contentType.startsWith('image/')) {
+                    <img [src]="file.previewUrl" class="w-full h-full object-cover" />
+                  } @else {
+                    <div class="w-full h-full flex flex-col items-center justify-center p-2 text-center text-[10px] font-bold text-gray-500">
+                      <svg lucidePackage class="h-8 w-8 text-[#4f46e5] mb-1"></svg>
+                      {{ file.fileName | slice:0:15 }}...
+                    </div>
+                  }
+                  <button
+                    type="button"
+                    class="absolute top-1 right-1 h-6 w-6 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-md transition opacity-0 group-hover:opacity-100 cursor-pointer"
+                    (click)="removeUploadedFile(file.id)"
+                  >
+                    <svg lucideTrash2 class="h-3.5 w-3.5" [attr.stroke-width]="2"></svg>
+                  </button>
+                </div>
+              }
+              @if (accountStore.returnUploading()) {
+                <div class="aspect-square rounded-xl border border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center text-xs font-semibold text-gray-500">
+                  <div class="animate-spin rounded-full h-5 w-5 border-2 border-[#4f46e5] border-t-transparent mb-2"></div>
+                  Đang tải...
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <button
+            type="button"
+            class="px-5 py-2.5 rounded-full border border-gray-300 hover:bg-gray-50 text-sm font-semibold transition cursor-pointer"
+            (click)="isReturnDialogOpen = false"
+          >
+            Hủy bỏ
+          </button>
+          <button
+            type="button"
+            class="px-6 py-2.5 rounded-full bg-[#ffc700] text-[#111827] hover:bg-[#ffd633] text-sm font-bold transition flex items-center gap-2 cursor-pointer"
+            [disabled]="accountStore.returnSubmitting() || !returnReason || accountStore.returnUploading()"
+            [class.opacity-50]="accountStore.returnSubmitting() || !returnReason || accountStore.returnUploading()"
+            [class.cursor-not-allowed]="accountStore.returnSubmitting() || !returnReason || accountStore.returnUploading()"
+            (click)="submitReturn()"
+          >
+            @if (accountStore.returnSubmitting()) {
+              <div class="animate-spin rounded-full h-4 w-4 border-2 border-[#111827] border-t-transparent"></div>
+            }
+            Gửi yêu cầu
+          </button>
+        </div>
+      </div>
+    }
+  </p-dialog>
+</section>
+
