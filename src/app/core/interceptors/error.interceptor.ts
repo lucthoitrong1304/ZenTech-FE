@@ -50,6 +50,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           return throwError(() => error);
         }
 
+        // A protected request can occasionally be made from a public screen.
+        // Without an existing session this is not an expired login, so it must
+        // not force the visitor away from the current page.
+        if (!authStorageService.getSession() || !authStorageService.getAccessToken()) {
+          return throwError(() => error);
+        }
+
         clientLogService.warn(
           ClientLogEventType.AuthTokenExpired,
           'Phiên đăng nhập hết hạn hoặc không hợp lệ.',

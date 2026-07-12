@@ -68,7 +68,15 @@ describe('errorInterceptor', () => {
         { provide: Router, useValue: { url: '/admin/dashboard', navigate } },
         { provide: ErrorStateService, useValue: { setError: vi.fn() } },
         { provide: AuthRefreshService, useValue: { refresh: vi.fn() } },
-        { provide: AuthStorageService, useValue: { clear, getRefreshToken: vi.fn(() => null) } },
+        {
+          provide: AuthStorageService,
+          useValue: {
+            clear,
+            getAccessToken: vi.fn(() => 'expired-access-token'),
+            getRefreshToken: vi.fn(() => null),
+            getSession: vi.fn(() => ({ accessToken: 'expired-access-token' })),
+          },
+        },
         { provide: ClientLogService, useValue: clientLogService },
       ],
     });
@@ -92,6 +100,40 @@ describe('errorInterceptor', () => {
       expect.any(Object),
     );
     expect(clientLogService.error).not.toHaveBeenCalled();
+  });
+
+  it('does not redirect anonymous visitors when a public screen makes a protected request', async () => {
+    const navigate = vi.fn();
+    const clear = vi.fn();
+    const clientLogService = { warn: vi.fn(), error: vi.fn(), info: vi.fn() };
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: Router, useValue: { url: '/', navigate } },
+        { provide: ErrorStateService, useValue: { setError: vi.fn() } },
+        { provide: AuthRefreshService, useValue: { refresh: vi.fn() } },
+        {
+          provide: AuthStorageService,
+          useValue: {
+            clear,
+            getAccessToken: vi.fn(() => null),
+            getRefreshToken: vi.fn(() => null),
+            getSession: vi.fn(() => null),
+          },
+        },
+        { provide: ClientLogService, useValue: clientLogService },
+      ],
+    });
+    const request = new HttpRequest('GET', '/api/chat/tickets/status');
+    const unauthorized = new HttpErrorResponse({ status: 401, statusText: 'Unauthorized' });
+
+    const result = TestBed.runInInjectionContext(() =>
+      firstValueFrom(errorInterceptor(request, () => throwError(() => unauthorized))),
+    );
+
+    await expect(result).rejects.toBe(unauthorized);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(clear).not.toHaveBeenCalled();
+    expect(clientLogService.warn).not.toHaveBeenCalled();
   });
 
   it('does not expire the session when refresh succeeds but the retried request is still 401', async () => {
@@ -119,7 +161,9 @@ describe('errorInterceptor', () => {
           useValue: {
             clear,
             setSession,
+            getAccessToken: vi.fn(() => 'expired-access-token'),
             getRefreshToken: vi.fn(() => 'valid-refresh-token'),
+            getSession: vi.fn(() => ({ accessToken: 'expired-access-token' })),
           },
         },
         { provide: ClientLogService, useValue: clientLogService },
