@@ -241,19 +241,13 @@
                       </div>
                     } @else {
                       <div class="tck-operator-avatar-wrapper">
-                        @if (ticket.createdByImageUrl) {
-                          <img class="tck-operator-avatar-img" [src]="ticket.createdByImageUrl" [alt]="ticket.createdByName || 'Khách hàng'" referrerpolicy="no-referrer" />
-                        } @else {
-                          <span [style.background]="getAvatarGradient(ticket.createdByEmail || ticket.createdByName)">
-                            {{ getInitials(ticket.createdByName || ticket.createdByEmail || 'Khách hàng') }}
-                          </span>
-                        }
+                        <span [style.background]="getAvatarGradient('system')">ZT</span>
                       </div>
                       <div class="tck-operator-info">
                         <div class="tck-customer-line">
-                          <span class="tck-operator-name">{{ ticket.createdByName || 'Khách hàng' }}</span>
+                          <span class="tck-operator-name">Ảnh hưởng hệ thống</span>
                         </div>
-                        <span class="tck-operator-email">{{ ticket.createdByEmail || 'N/A' }}</span>
+                        <span class="tck-operator-email">Sự cố ảnh hưởng chung</span>
                       </div>
                     }
                   </div>
@@ -337,12 +331,17 @@
       </div>
 
       <div class="tck-modal-body">
-        <div class="tck-modal-operator-card">
-          <div class="tck-modal-row">
-            <span class="tck-modal-label">Tr&#7841;ng th&#225;i x&#7917; l&#253;</span>
-            <span class="tck-modal-readonly-value">{{ statusLabel(ticket.status) }}</span>
+        <div class="tck-status-banner" [class]="'tck-status-banner--' + ticket.status.toLowerCase()">
+          <div class="tck-status-banner-info">
+            <span class="tck-status-banner-label">Trạng thái xử lý</span>
+            <span class="tck-status-banner-value">{{ statusLabel(ticket.status) }}</span>
           </div>
-          <span class="tck-badge-status" [class]="'status-' + ticket.status.toLowerCase()">{{ statusLabel(ticket.status) }}</span>
+          <div class="tck-status-banner-indicator">
+            <span class="tck-status-banner-dot" [class]="'tck-status-banner-dot--' + ticket.status.toLowerCase()"></span>
+            <span class="tck-status-banner-badge" [class]="'tck-status-banner-badge--' + ticket.status.toLowerCase()">
+              {{ statusLabel(ticket.status) }}
+            </span>
+          </div>
         </div>
 
         <div class="tck-modal-row">
@@ -407,16 +406,12 @@
               } @else {
                 <div class="tck-rank-card tck-rank-card--first">
                   <div class="tck-avatar-relative">
-                    @if (ticket.createdByImageUrl || profileFor(ticket.createdByEmail)?.imageUrl) {
-                    <img class="tck-profile-avatar-img" [src]="ticket.createdByImageUrl || profileFor(ticket.createdByEmail)?.imageUrl" [alt]="displayCustomerName(ticket)" referrerpolicy="no-referrer" />
-                  } @else {
-                    <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient(ticket.createdByEmail || ticket.createdByName)">{{ getInitials(displayCustomerName(ticket)) }}</div>
-                  }
+                    <div class="tck-profile-avatar-placeholder" [style.background]="getAvatarGradient('system')">ZT</div>
                     <span class="tck-rank-badge-overlay tck-rank-badge-overlay--first">1</span>
                   </div>
                   <div class="tck-profile-info">
-                    <span class="tck-profile-name">{{ displayCustomerName(ticket) }}</span>
-                    <span class="tck-profile-email">{{ ticket.createdByEmail || 'N/A' }}</span>
+                    <span class="tck-profile-name">Toàn hệ thống</span>
+                    <span class="tck-profile-email">Sự cố ảnh hưởng chung</span>
                   </div>
                 </div>
               }

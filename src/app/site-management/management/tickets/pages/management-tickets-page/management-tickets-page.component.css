@@ -1075,3 +1075,126 @@
     font-size: 19px;
   }
 }
+
+/* Premium Support Ticket Status Banner */
+.tck-status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+}
+
+.tck-status-banner--open {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+.tck-status-banner--open .tck-status-banner-value {
+  color: #166534;
+}
+
+.tck-status-banner--in_progress {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+.tck-status-banner--in_progress .tck-status-banner-value {
+  color: #1e40af;
+}
+
+.tck-status-banner--resolved {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+.tck-status-banner--resolved .tck-status-banner-value {
+  color: #065f46;
+}
+
+.tck-status-banner--closed {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+.tck-status-banner--closed .tck-status-banner-value {
+  color: #334155;
+}
+
+.tck-status-banner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tck-status-banner-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+}
+
+.tck-status-banner-value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.tck-status-banner-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tck-status-banner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.tck-status-banner-dot--open,
+.tck-status-banner-dot--resolved {
+  background-color: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.tck-status-banner-dot--in_progress {
+  background-color: #3b82f6;
+  box-shadow: 0 0 8px #3b82f6;
+}
+
+.tck-status-banner-dot--closed {
+  background-color: #94a3b8;
+}
+
+.tck-status-banner-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tck-status-banner-badge--open {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.tck-status-banner-badge--in_progress {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.tck-status-banner-badge--resolved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.tck-status-banner-badge--closed {
+  background: #f1f5f9;
+  color: #475569;
+}

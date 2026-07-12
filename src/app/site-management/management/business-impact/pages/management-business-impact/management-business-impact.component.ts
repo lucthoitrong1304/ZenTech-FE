@@ -1,5 +1,5 @@
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -7,6 +7,8 @@ import { WebsocketService } from '@/core/services/websocket.service';
 import {
   LucideSparkles,
   LucideChevronRight,
+  LucideChevronDown,
+  LucideChevronUp,
   LucideX,
   LucideActivity,
   LucideUsers,
@@ -26,6 +28,33 @@ import { ManagementBusinessImpactStore } from '@/site-management/management/busi
 import { ManagementIncidentImpactDto } from '@/site-management/management/business-impact/data-access/models/management-business-impact.model';
 import { IncidentSeverity, IncidentStatus } from '@/site-management/admin/data-access/models/admin.models';
 
+export enum BusinessImpactDetailTab {
+  METRICS = 'metrics',
+  USERS = 'users',
+  AI = 'ai',
+}
+
+export enum DatePresetOption {
+  TODAY = 'TODAY',
+  LAST_7_DAYS = 'LAST_7_DAYS',
+  LAST_30_DAYS = 'LAST_30_DAYS',
+  CUSTOM = 'CUSTOM',
+  ALL_TIME = 'ALL_TIME',
+}
+
+interface IncidentWsPayload {
+  id?: string;
+  incidentId: string;
+}
+
+interface SimilarIncidentDto {
+  code: string;
+  apiPath: string;
+  serviceName: string;
+  revenueLoss: number;
+  occurredAt: string;
+}
+
 function formatDateToYMD(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -44,6 +73,8 @@ function formatDateToYMD(date: Date): string {
     MarkdownComponent,
     LucideSparkles,
     LucideChevronRight,
+    LucideChevronDown,
+    LucideChevronUp,
     LucideX,
     LucideActivity,
     LucideUsers,
@@ -57,6 +88,7 @@ function formatDateToYMD(date: Date): string {
     LucideLink,
     LucideSearch,
   ],
+  providers: [ManagementBusinessImpactStore],
   templateUrl: './management-business-impact.component.html',
   styleUrl: './management-business-impact.component.css',
 })
@@ -65,22 +97,98 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
   private readonly wsService = inject(WebsocketService);
   private wsSubscription: Subscription | null = null;
   
+  // Expose Enums and Types to Template
+  protected readonly BusinessImpactDetailTab = BusinessImpactDetailTab;
+  protected readonly DatePresetOption = DatePresetOption;
+
   // Local filter states
   protected readonly localSearch = signal<string>('');
-  protected readonly selectedPreset = signal<string>('LAST_7_DAYS');
+  protected readonly selectedPreset = signal<DatePresetOption>(DatePresetOption.LAST_7_DAYS);
   protected readonly localStartDate = signal<string>(formatDateToYMD(new Date(Date.now() - 7 * 86400000)));
   protected readonly localEndDate = signal<string>(formatDateToYMD(new Date()));
   private readonly searchSubject = new Subject<string>();
   private searchSubscription: Subscription | null = null;
   
   // Tab hiện tại trong ngăn kéo chi tiết sự cố ('metrics' | 'users' | 'ai')
-  protected readonly activeDetailTab = signal<'metrics' | 'users' | 'ai'>('metrics');
+  protected readonly activeDetailTab = signal<BusinessImpactDetailTab>(BusinessImpactDetailTab.METRICS);
   
   // Trạng thái mở ngăn kéo chi tiết
   protected readonly isDrawerOpen = signal<boolean>(false);
 
   protected readonly IncidentSeverity = IncidentSeverity;
   protected readonly IncidentStatus = IncidentStatus;
+
+  // Trạng thái lưu trữ các email đang mở rộng xem lịch sử lỗi chi tiết
+  protected readonly expandedEmails = signal<Record<string, boolean>>({});
+
+  protected toggleExpandEmail(email: string): void {
+    const current = this.expandedEmails();
+    this.expandedEmails.set({
+      ...current,
+      [email]: !current[email]
+    });
+  }
+
+  // Gom nhóm khách hàng bị ảnh hưởng để tránh lặp trùng lặp
+  protected readonly groupedAffectedUsers = computed(() => {
+    const list = this.store.affectedUsersList();
+    if (!list) return [];
+    
+    const groups: Record<string, {
+      userId: string | null;
+      email: string;
+      fullName: string;
+      avatarUrl?: string | null;
+      lastEventAt: string;
+      attempts: number;
+      apiPath: string;
+      allAttempts: { lastEventAt: string; apiPath: string; traceId: string }[];
+    }> = {};
+
+    for (const usr of list) {
+      const key = usr.email.toLowerCase();
+      if (!groups[key]) {
+        groups[key] = {
+          userId: usr.userId,
+          email: usr.email,
+          fullName: usr.fullName,
+          avatarUrl: usr.avatarUrl,
+          lastEventAt: usr.lastEventAt,
+          attempts: 1,
+          apiPath: usr.lastEventUrl || '',
+          allAttempts: [{ lastEventAt: usr.lastEventAt, apiPath: usr.lastEventUrl || '', traceId: usr.traceId }]
+        };
+      } else {
+        groups[key].attempts++;
+        groups[key].allAttempts.push({ lastEventAt: usr.lastEventAt, apiPath: usr.lastEventUrl || '', traceId: usr.traceId });
+        if (new Date(usr.lastEventAt) > new Date(groups[key].lastEventAt)) {
+          groups[key].lastEventAt = usr.lastEventAt;
+          if (usr.lastEventUrl) {
+            groups[key].apiPath = usr.lastEventUrl;
+          }
+        }
+      }
+    }
+
+    // Sắp xếp các lượt lỗi bên trong mỗi user theo thứ tự mới nhất đứng trước
+    for (const key of Object.keys(groups)) {
+      groups[key].allAttempts.sort((a, b) => new Date(b.lastEventAt).getTime() - new Date(a.lastEventAt).getTime());
+    }
+
+    return Object.values(groups).sort((a, b) => new Date(b.lastEventAt).getTime() - new Date(a.lastEventAt).getTime());
+  });
+
+  protected getFriendlyActionName(apiPath: string | null | undefined): string {
+    if (!apiPath) return 'Lỗi hệ thống';
+    const path = apiPath.toLowerCase();
+    if (path.includes('/checkout')) return 'Đặt hàng thất bại';
+    if (path.includes('/payments/momo')) return 'Thanh toán MoMo thất bại';
+    if (path.includes('/payments/vnpay')) return 'Thanh toán VNPay thất bại';
+    if (path.includes('/cart')) return 'Lỗi giỏ hàng';
+    if (path.includes('/products')) return 'Lỗi xem sản phẩm';
+    if (path.includes('/login') || path.includes('/auth')) return 'Đăng nhập thất bại';
+    return 'Giao dịch thất bại';
+  }
 
   ngOnInit(): void {
     // Tải dữ liệu dashboard tổng quan và danh sách sự cố lần đầu
@@ -97,9 +205,9 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
 
     // Kết nối WebSocket và nhận cập nhật sự cố thời gian thực
     this.wsService.connect();
-    this.wsSubscription = this.wsService.subscribe<any>('/topic/admin.incidents')
+    this.wsSubscription = this.wsService.subscribe<IncidentWsPayload>('/topic/admin.incidents')
       .subscribe({
-        next: (updatedIncident: any) => {
+        next: (updatedIncident: IncidentWsPayload) => {
           this.store.loadDashboard();
           this.store.loadIncidents();
 
@@ -109,7 +217,7 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
             this.store.loadAffectedUsers(selected.incidentId);
           }
         },
-        error: (err: any) => console.error('[Business Impact WS Error]', err)
+        error: (err: unknown) => console.error('[Business Impact WS Error]', err)
       });
   }
 
@@ -131,7 +239,7 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
   }
 
   protected onPresetChange(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
+    const value = (event.target as HTMLSelectElement).value as DatePresetOption;
     this.selectedPreset.set(value);
     this.applyFilters(this.localSearch(), value);
   }
@@ -148,27 +256,27 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
     this.applyFilters(this.localSearch(), this.selectedPreset());
   }
 
-  private applyFilters(search: string, preset: string): void {
+  private applyFilters(search: string, preset: DatePresetOption): void {
     let startDate: string | null = null;
     let endDate: string | null = null;
     const now = new Date();
 
-    if (preset === 'TODAY') {
+    if (preset === DatePresetOption.TODAY) {
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       startDate = todayStart.toISOString();
       endDate = now.toISOString();
-    } else if (preset === 'LAST_7_DAYS') {
+    } else if (preset === DatePresetOption.LAST_7_DAYS) {
       const start = new Date();
       start.setDate(now.getDate() - 7);
       startDate = start.toISOString();
       endDate = now.toISOString();
-    } else if (preset === 'LAST_30_DAYS') {
+    } else if (preset === DatePresetOption.LAST_30_DAYS) {
       const start = new Date();
       start.setDate(now.getDate() - 30);
       startDate = start.toISOString();
       endDate = now.toISOString();
-    } else if (preset === 'CUSTOM') {
+    } else if (preset === DatePresetOption.CUSTOM) {
       const startStr = this.localStartDate();
       const endStr = this.localEndDate();
       if (startStr) {
@@ -181,7 +289,7 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
         end.setHours(23, 59, 59, 999);
         endDate = end.toISOString();
       }
-    } else if (preset === 'ALL_TIME') {
+    } else if (preset === DatePresetOption.ALL_TIME) {
       startDate = null;
       endDate = null;
     }
@@ -198,15 +306,15 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
     this.store.loadIncidents();
   }
 
-  protected onPageChange(event: any): void {
+  protected onPageChange(event: { page?: number; rows?: number }): void {
     // Cập nhật phân trang
-    const newPage = event.page;
-    const newSize = event.rows;
+    const newPage = event.page ?? 0;
+    const newSize = event.rows ?? 10;
     this.store.updatePagination(newPage, newSize);
     this.store.loadIncidents();
   }
 
-  protected openIncidentDetail(incident: ManagementIncidentImpactDto, tab: 'metrics' | 'users' | 'ai' = 'metrics'): void {
+  protected openIncidentDetail(incident: ManagementIncidentImpactDto, tab: BusinessImpactDetailTab = BusinessImpactDetailTab.METRICS): void {
     this.store.setSelectedIncident(incident);
     this.activeDetailTab.set(tab);
     this.isDrawerOpen.set(true);
@@ -261,16 +369,65 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
     return incident.expectedOrders || 0;
   }
 
-  protected getFriendlyErrorName(apiPath: string | null | undefined): string {
-    if (!apiPath) return 'Lỗi hệ thống không xác định';
-    const path = apiPath.toLowerCase();
-    if (path.includes('/checkout')) return 'Lỗi đặt hàng & thanh toán (Checkout)';
-    if (path.includes('/payments/momo')) return 'Lỗi cổng thanh toán MoMo';
-    if (path.includes('/payments/vnpay')) return 'Lỗi cổng thanh toán VNPay';
-    if (path.includes('/cart')) return 'Lỗi giỏ hàng (Cart API)';
-    if (path.includes('/products')) return 'Lỗi xem danh mục & sản phẩm';
-    if (path.includes('/login') || path.includes('/auth')) return 'Lỗi xác thực & đăng nhập';
-    return 'Lỗi dịch vụ hệ thống';
+  protected getFriendlyErrorName(incident: { apiPath?: string | null; serviceName?: string | null; errorMessage?: string | null } | null | undefined): string {
+    if (!incident) return 'Sự cố không xác định';
+    const apiPath = incident.apiPath;
+    const serviceName = incident.serviceName;
+    const errorMsg = incident.errorMessage;
+
+    // 1. Kiểm tra mô tả lỗi thực tế trước
+    if (errorMsg) {
+      const err = errorMsg.toLowerCase();
+      if (err.includes('momo') || err.includes('cannot create momo payment')) {
+        return 'Lỗi kết nối cổng thanh toán ví MoMo';
+      }
+      if (err.includes('vnpay') || err.includes('cannot create vnpay payment')) {
+        return 'Lỗi kết nối cổng thanh toán VNPay';
+      }
+      if (err.includes('checkout') || err.includes('cannot checkout')) {
+        return 'Lỗi đặt hàng & thanh toán (Checkout)';
+      }
+      if (err.includes('explain log') || err.includes('ai-service') || err.includes('explain') || err.includes('connection refused')) {
+        return 'Gián đoạn kết nối AI phân tích sự cố';
+      }
+      if (err.includes('products') || err.includes('no static resource')) {
+        return 'Sự cố tải danh sách & thông tin sản phẩm';
+      }
+      if (err.includes('cart') || err.includes('api/carts')) {
+        return 'Gián đoạn chức năng cập nhật Giỏ hàng';
+      }
+      if (err.includes('unauthorized') || err.includes('401') || err.includes('token') || err.includes('auth')) {
+        return 'Gián đoạn Đăng nhập & Xác thực phiên làm việc';
+      }
+      if (err.includes('database') || err.includes('sql') || err.includes('postgres')) {
+        return 'Sự cố kết nối cơ sở dữ liệu hệ thống';
+      }
+    }
+
+    // 2. Dự phòng theo apiPath
+    if (apiPath) {
+      const path = apiPath.toLowerCase();
+      if (path.includes('/checkout')) return 'Lỗi đặt hàng & thanh toán (Checkout)';
+      if (path.includes('/payments/momo')) return 'Lỗi kết nối cổng thanh toán ví MoMo';
+      if (path.includes('/payments/vnpay')) return 'Lỗi kết nối cổng thanh toán VNPay';
+      if (path.includes('/cart')) return 'Gián đoạn chức năng cập nhật Giỏ hàng';
+      if (path.includes('/products')) return 'Sự cố tải danh sách & thông tin sản phẩm';
+      if (path.includes('/login') || path.includes('/auth')) return 'Gián đoạn Đăng nhập & Xác thực phiên làm việc';
+    }
+
+    // 3. Dự phòng theo serviceName
+    if (serviceName) {
+      const svc = serviceName.toLowerCase();
+      if (svc.includes('ai-service') || svc.includes('ai') || svc.includes('explain') || svc.includes('connection refused')) {
+        return 'Gián đoạn kết nối AI phân tích sự cố';
+      }
+      if (svc.includes('backend')) return 'Lỗi dịch vụ máy chủ Backend';
+      if (svc.includes('database') || svc.includes('sql') || svc.includes('postgres')) {
+        return 'Sự cố kết nối cơ sở dữ liệu hệ thống';
+      }
+    }
+
+    return 'Lỗi vận hành hệ thống chung';
   }
 
   protected getConfidenceScore(incident: ManagementIncidentImpactDto | null | undefined) {
@@ -352,7 +509,7 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
     };
   }
 
-  protected getSimilarIncidents(incident: ManagementIncidentImpactDto | null | undefined): any[] {
+  protected getSimilarIncidents(incident: ManagementIncidentImpactDto | null | undefined): SimilarIncidentDto[] {
     if (!incident) return [];
     return this.store.incidents()
       .filter(inc => inc.incidentId !== incident.incidentId && 
