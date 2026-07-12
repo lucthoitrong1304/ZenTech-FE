@@ -7,6 +7,8 @@ export type ManagementChatExpertRequestStatus = 'WAITING' | 'ACCEPTED' | 'DECLIN
 
 export type ManagementChatStatusFilter = ManagementChatConversationStatus | 'ALL';
 
+export type ManagementChatArchiveFilter = 'ALL' | 'UNARCHIVED' | 'ARCHIVED';
+
 export type ManagementChatExpertRequestFilter = ManagementChatExpertRequestStatus | 'ALL';
 
 export type ManagementChatMessageSender = 'CUSTOMER' | 'AI' | 'STAFF';

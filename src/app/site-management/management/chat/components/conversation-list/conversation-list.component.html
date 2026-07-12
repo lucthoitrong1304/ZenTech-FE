@@ -17,6 +17,36 @@
         (input)="onSearchChange($event)"
       />
     </label>
+
+    <div class="mt-3 flex items-center gap-2">
+      <button
+        type="button"
+        class="h-9 shrink-0 rounded-[8px] px-3 text-xs font-bold transition ring-1 ring-inset"
+        [class.bg-[#ffc700]]="myHandlingOnly()"
+        [class.text-[#1c1b1b]]="myHandlingOnly()"
+        [class.ring-[#ffc700]]="myHandlingOnly()"
+        [class.bg-[#f6f3f2]]="!myHandlingOnly()"
+        [class.text-[#4f4632]]="!myHandlingOnly()"
+        [class.ring-[#d2c5ab]/50]="!myHandlingOnly()"
+        [attr.aria-pressed]="myHandlingOnly()"
+        (click)="myHandlingFilterToggled.emit()"
+      >
+        Tôi đang tư vấn
+      </button>
+
+      <label class="min-w-0 flex-1">
+        <span class="sr-only">Lọc theo lưu trữ</span>
+        <select
+          class="h-9 w-full rounded-[8px] border-0 bg-[#f6f3f2] px-3 text-xs font-bold text-[#4f4632] outline-none ring-1 ring-inset ring-[#d2c5ab]/50 transition focus:bg-white focus:ring-[#ffc700]"
+          [value]="archiveFilter()"
+          (change)="onArchiveFilterChange($event)"
+        >
+          <option value="ALL">Tất cả lưu trữ</option>
+          <option value="UNARCHIVED">Chưa lưu trữ</option>
+          <option value="ARCHIVED">Đã lưu trữ</option>
+        </select>
+      </label>
+    </div>
   </div>
 
   <div class="chat-scrollbar min-h-0 flex-1 overscroll-contain space-y-1 overflow-y-auto p-2">
@@ -68,12 +98,20 @@
               {{ conversation.lastMessageAtLabel }}
             </span>
           </span>
-          <span class="block truncate text-xs font-medium text-[#4f4632]">
-            {{ conversation.lastMessagePreview }}
+          <span class="flex min-w-0 items-center gap-2">
+            <span class="min-w-0 flex-1 truncate text-xs font-medium text-[#4f4632]">
+              {{ conversation.lastMessagePreview }}
+            </span>
+            @if (conversation.archived) {
+              <span
+                class="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#fff3cd] px-2 py-0.5 text-[10px] font-bold text-[#765b00] ring-1 ring-inset ring-[#e8c45c]/50"
+                title="Khách hàng đã lưu trữ hội thoại"
+              >
+                <svg lucideArchive class="h-3 w-3" [attr.stroke-width]="2.5" aria-hidden="true"></svg>
+                Lưu trữ
+              </span>
+            }
           </span>
-          @if (conversation.archived) {
-            <span class="mt-1 inline-flex text-[10px] font-bold uppercase text-[#9a6700]">Đã lưu trữ</span>
-          }
         </span>
 
         @if (conversation.unreadCount > 0) {

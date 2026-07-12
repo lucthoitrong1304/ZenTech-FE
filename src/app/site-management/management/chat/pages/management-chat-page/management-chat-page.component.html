@@ -16,7 +16,11 @@
       [conversations]="store.filteredConversations()"
       [selectedConversationId]="store.selectedConversationId()"
       [searchKeyword]="store.searchKeyword()"
+      [myHandlingOnly]="store.myHandlingOnly()"
+      [archiveFilter]="store.archiveFilter()"
       (searchKeywordChanged)="store.setSearchKeyword($event)"
+      (myHandlingFilterToggled)="store.toggleMyHandlingFilter()"
+      (archiveFilterChanged)="store.setArchiveFilter($event)"
       (conversationSelected)="store.selectConversation($event)"
     />
 

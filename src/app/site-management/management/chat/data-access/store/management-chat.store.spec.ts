@@ -152,6 +152,33 @@ describe('ManagementChatStore', () => {
     ]);
   });
 
+  it('filters conversations by the current staff member and archive state together', () => {
+    const workspace = createWorkspace();
+    workspace.conversations[0] = {
+      ...workspace.conversations[0],
+      status: 'STAFF_HANDLING',
+      currentStaffActive: true,
+      archived: false,
+    };
+    workspace.conversations[1] = {
+      ...workspace.conversations[1],
+      status: 'STAFF_HANDLING',
+      currentStaffActive: true,
+      archived: true,
+    };
+    const { store } = configureStore(workspace);
+
+    store.loadWorkspace();
+    store.toggleMyHandlingFilter();
+    store.setArchiveFilter('UNARCHIVED');
+
+    expect(store.filteredConversations().map(conversation => conversation.id)).toEqual(['conv-1']);
+
+    store.setArchiveFilter('ARCHIVED');
+
+    expect(store.filteredConversations().map(conversation => conversation.id)).toEqual(['conv-2']);
+  });
+
   it('clears the expert request filter when the active request status is selected again', () => {
     const { store } = configureStore();
 
