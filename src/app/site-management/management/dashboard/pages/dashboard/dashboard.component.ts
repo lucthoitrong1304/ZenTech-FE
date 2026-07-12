@@ -508,9 +508,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  protected viewTicketDetails(ticketCode: string): void {
+  protected viewTicketDetails(ticketCode: string, ticketId?: string): void {
     this.router.navigate(['/management/tickets'], {
-      queryParams: { search: ticketCode },
+      queryParams: {
+        search: ticketCode || null,
+        ticketId: ticketId || null,
+      },
     });
   }
 
@@ -662,22 +665,64 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return normalized === 'RESOLVED' || normalized === 'CLOSED' || normalized === 'DONE';
   }
   protected getFriendlyServiceName(inc: ManagementIncidentImpactDto | null | undefined): string {
-    if (!inc) return 'Lỗi hệ thống không xác định';
-    const path = (inc.apiPath || '').toLowerCase();
-    if (path.includes('/checkout')) return 'Lỗi đặt hàng & thanh toán (Checkout)';
-    if (path.includes('/payments/momo')) return 'Lỗi cổng thanh toán MoMo';
-    if (path.includes('/payments/vnpay')) return 'Lỗi cổng thanh toán VNPay';
-    if (path.includes('/cart')) return 'Lỗi giỏ hàng (Cart API)';
-    if (path.includes('/products')) return 'Lỗi xem danh mục & sản phẩm';
-    if (path.includes('/login') || path.includes('/auth')) return 'Lỗi xác thực & đăng nhập';
+    if (!inc) return 'Sự cố không xác định';
+    const apiPath = inc.apiPath;
+    const serviceName = inc.serviceName;
+    const errorMsg = inc.errorMessage;
 
-    if (inc.serviceName === 'backend') {
-      return 'Lỗi dịch vụ hệ thống';
+    // 1. Kiểm tra mô tả lỗi thực tế trước
+    if (errorMsg) {
+      const err = errorMsg.toLowerCase();
+      if (err.includes('momo') || err.includes('cannot create momo payment')) {
+        return 'Lỗi kết nối cổng thanh toán ví MoMo';
+      }
+      if (err.includes('vnpay') || err.includes('cannot create vnpay payment')) {
+        return 'Lỗi kết nối cổng thanh toán VNPay';
+      }
+      if (err.includes('checkout') || err.includes('cannot checkout')) {
+        return 'Lỗi đặt hàng & thanh toán (Checkout)';
+      }
+      if (err.includes('explain log') || err.includes('ai-service') || err.includes('explain') || err.includes('connection refused')) {
+        return 'Gián đoạn kết nối AI phân tích sự cố';
+      }
+      if (err.includes('products') || err.includes('no static resource')) {
+        return 'Sự cố tải danh sách & thông tin sản phẩm';
+      }
+      if (err.includes('cart') || err.includes('api/carts')) {
+        return 'Gián đoạn chức năng cập nhật Giỏ hàng';
+      }
+      if (err.includes('unauthorized') || err.includes('401') || err.includes('token') || err.includes('auth')) {
+        return 'Gián đoạn Đăng nhập & Xác thực phiên làm việc';
+      }
+      if (err.includes('database') || err.includes('sql') || err.includes('postgres')) {
+        return 'Sự cố kết nối cơ sở dữ liệu hệ thống';
+      }
     }
-    if (inc.serviceName === 'ai-service') {
-      return 'Lỗi máy chủ AI';
+
+    // 2. Dự phòng theo apiPath
+    if (apiPath) {
+      const path = apiPath.toLowerCase();
+      if (path.includes('/checkout')) return 'Lỗi đặt hàng & thanh toán (Checkout)';
+      if (path.includes('/payments/momo')) return 'Lỗi kết nối cổng thanh toán ví MoMo';
+      if (path.includes('/payments/vnpay')) return 'Lỗi kết nối cổng thanh toán VNPay';
+      if (path.includes('/cart')) return 'Gián đoạn chức năng cập nhật Giỏ hàng';
+      if (path.includes('/products')) return 'Sự cố tải danh sách & thông tin sản phẩm';
+      if (path.includes('/login') || path.includes('/auth')) return 'Gián đoạn Đăng nhập & Xác thực phiên làm việc';
     }
-    return 'Lỗi hệ thống không xác định';
+
+    // 3. Dự phòng theo serviceName
+    if (serviceName) {
+      const svc = serviceName.toLowerCase();
+      if (svc.includes('ai-service') || svc.includes('ai') || svc.includes('explain') || svc.includes('connection refused')) {
+        return 'Gián đoạn kết nối AI phân tích sự cố';
+      }
+      if (svc.includes('backend')) return 'Lỗi dịch vụ máy chủ Backend';
+      if (svc.includes('database') || svc.includes('sql') || svc.includes('postgres')) {
+        return 'Sự cố kết nối cơ sở dữ liệu hệ thống';
+      }
+    }
+
+    return 'Lỗi vận hành hệ thống chung';
   }
 
   protected stripHtml(html: string | null | undefined): string {
@@ -694,50 +739,82 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected getFriendlyTicketDescription(desc: string | null | undefined): string {
     if (!desc) return '';
     const cleanDesc = this.stripHtml(desc);
-
-    if (cleanDesc.includes('/api/customers/me/checkout') || cleanDesc.includes('/checkout')) {
+    const t = cleanDesc.toLowerCase();
+    
+    // 1. Kiểm tra các mẫu mô tả đã biết trước để dịch ngay
+    if (t.includes('/api/customers/me/checkout') || t.includes('/checkout')) {
       return 'Hệ thống tự động ghi nhận sự cố gián đoạn tại chức năng đặt hàng & thanh toán (Checkout).';
     }
-    if (cleanDesc.includes('/api/payments/momo') || cleanDesc.includes('momo')) {
+    if (t.includes('/api/payments/momo') || t.includes('momo')) {
       return 'Hệ thống tự động ghi nhận lỗi kết nối cổng thanh toán ví điện tử MoMo.';
     }
-    if (cleanDesc.includes('/api/payments/vnpay') || cleanDesc.includes('vnpay')) {
+    if (t.includes('/api/payments/vnpay') || t.includes('vnpay')) {
       return 'Hệ thống tự động ghi nhận lỗi kết nối cổng thanh toán VNPay.';
     }
-    if (cleanDesc.includes('/api/cart') || cleanDesc.includes('/cart')) {
-      return 'Hệ thống tự động ghi nhận lỗi đồng bộ giỏ hàng của khách hàng.';
+    if (t.includes('explain') || t.includes('localhost:8000') || t.includes('connection refused')) {
+      return 'Hệ thống ghi nhận sự cố mất kết nối hoặc phản hồi chậm từ Trợ lý AI phân tích sự cố của Admin.';
     }
-    if (cleanDesc.includes('/api/products') || cleanDesc.includes('/products')) {
-      return 'Hệ thống tự động ghi nhận lỗi tải danh sách hoặc chi tiết sản phẩm.';
+    if (t.includes('products') || t.includes('resource api/products')) {
+      return 'Hệ thống ghi nhận sự cố tải danh mục sản phẩm, khiến khách hàng không thể xem thông tin sản phẩm.';
     }
-    if (cleanDesc.includes('/api/auth') || cleanDesc.includes('/login') || cleanDesc.includes('/auth')) {
-      return 'Hệ thống tự động ghi nhận lỗi gián đoạn xác thực và đăng nhập tài khoản.';
-    }
-    if (cleanDesc.includes('Sự cố phát sinh tại API') || cleanDesc.includes('/api/')) {
-      return 'Hệ thống tự động phát hiện sự cố gián đoạn dịch vụ kỹ thuật.';
+    if (t.includes('database') || t.includes('sql') || t.includes('postgres')) {
+      return 'Hệ thống ghi nhận sự cố kết nối cơ sở dữ liệu làm ảnh hưởng đến việc truy xuất dữ liệu.';
     }
 
-    return cleanDesc;
+    // 2. Nếu mô tả do admin gõ tay và không có từ khóa kỹ thuật -> Giữ nguyên
+    const hasTechnicalKeywords = /[\/\\]|exception|error|failed|refused|connect|post|get|api|http|nullpointer|stacktrace|status\s\d{3}/i.test(cleanDesc);
+    if (!hasTechnicalKeywords) {
+      return cleanDesc;
+    }
+    
+    return 'Hệ thống ghi nhận sự cố gián đoạn vận hành kỹ thuật. Đội ngũ IT đang tiến hành kiểm tra khắc phục.';
   }
 
   protected getFriendlyTicketTitle(title: string | null | undefined): string {
     if (!title) return 'Yêu cầu xử lý kỹ thuật';
-
+    
     let friendly = title;
-
-    if (friendly.includes('Cannot create MoMo payment') || friendly.includes('momo')) {
-      friendly = friendly.replace(/Cannot create MoMo payment/i, 'Không thể khởi tạo thanh toán qua ví MoMo');
+    const t = friendly.toLowerCase();
+    
+    // 1. Kiểm tra các mẫu lỗi kỹ thuật đã biết trước để dịch ngay
+    if (t.includes('cannot create momo payment') || t.includes('momo payment') || t.includes('momo')) {
+      return 'Khắc phục lỗi: Lỗi kết nối cổng thanh toán ví MoMo';
     }
-    if (friendly.includes('checkout') || friendly.includes('Cannot checkout')) {
-      friendly = friendly.replace(/Cannot checkout/i, 'Lỗi tiến trình đặt hàng & thanh toán (Checkout)');
+    if (t.includes('cannot create vnpay payment') || t.includes('vnpay payment') || t.includes('vnpay')) {
+      return 'Khắc phục lỗi: Lỗi kết nối cổng thanh toán VNPay';
     }
-    if (friendly.includes('login') || friendly.includes('auth')) {
-      friendly = friendly.replace(/login/i, 'Đăng nhập hệ thống').replace(/auth/i, 'Xác thực tài khoản');
+    if (t.includes('checkout') || t.includes('cannot checkout')) {
+      return 'Khắc phục lỗi: Lỗi tiến trình đặt hàng & thanh toán (Checkout)';
+    }
+    if (t.includes('explain log') || t.includes('ai-service') || t.includes('explain') || t.includes('connection refused')) {
+      return 'Khắc phục lỗi: Gián đoạn kết nối AI phân tích sự cố';
+    }
+    if (t.includes('no static resource') || t.includes('api/products') || t.includes('products')) {
+      return 'Khắc phục lỗi: Sự cố tải danh sách & thông tin sản phẩm';
+    }
+    if (t.includes('cart') || t.includes('api/carts')) {
+      return 'Khắc phục lỗi: Gián đoạn chức năng cập nhật Giỏ hàng';
+    }
+    if (t.includes('unauthorized') || t.includes('401') || t.includes('token') || t.includes('auth')) {
+      return 'Khắc phục lỗi: Gián đoạn Đăng nhập & Xác thực phiên làm việc';
+    }
+    if (t.includes('database') || t.includes('sql') || t.includes('connection pool') || t.includes('postgres')) {
+      return 'Khắc phục lỗi: Sự cố kết nối cơ sở dữ liệu hệ thống';
     }
 
-    friendly = friendly.replace(/^Sửa lỗi sự cố/i, 'Khắc phục lỗi');
-
-    return friendly;
+    // 2. Kiểm tra xem có chứa từ khóa kỹ thuật lạ khác không
+    const hasTechnicalKeywords = /[\/\\]|exception|error|failed|refused|connect|post|get|api|http|nullpointer|stacktrace|status\s\d{3}|cannot|inc-/i.test(friendly);
+    
+    if (!hasTechnicalKeywords) {
+      // Đã là tiếng Việt sạch sẽ hoặc do Admin viết tay -> Giữ nguyên tiêu đề gốc
+      if (!friendly.toLowerCase().startsWith('khắc phục') && !friendly.toLowerCase().startsWith('sự cố')) {
+        return 'Khắc phục sự cố: ' + friendly;
+      }
+      return friendly;
+    }
+    
+    // 3. Fallback cho các lỗi kỹ thuật lạ khác
+    return 'Khắc phục lỗi: Gián đoạn vận hành kỹ thuật hệ thống';
   }
 
   // Format helpers

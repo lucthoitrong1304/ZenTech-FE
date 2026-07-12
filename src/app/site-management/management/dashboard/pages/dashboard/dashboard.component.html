@@ -429,7 +429,7 @@
             *ngIf="activeIncidentCount() > 0"
             class="ml-1.5 px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[8px] font-bold"
           >
-            {{ store.incidents().length }}
+            {{ activeIncidentCount() }}
           </span>
         </button>
         <button
@@ -578,7 +578,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (inc of store.incidents(); track inc.incidentId) {
+          @for (inc of store.activeIncidents(); track inc.incidentId) {
             <tr>
               <td>
                 <a
@@ -671,7 +671,7 @@
           @empty {
             <tr>
               <td [attr.colspan]="canViewRevenue() ? 6 : 5" class="text-center py-8 text-gray-500">
-                Không phát hiện sự cố hệ thống nào xảy ra trong kỳ báo cáo này.
+                Không có sự cố hệ thống nào đang xảy ra. Hệ thống vận hành ổn định.
               </td>
             </tr>
           }
@@ -699,7 +699,7 @@
               <td>
                 <a
                   href="javascript:void(0)"
-                  (click)="viewTicketDetails(ticket.code)"
+                  (click)="viewTicketDetails(ticket.code, ticket.id)"
                   class="font-semibold text-indigo-600 hover:text-indigo-800"
                 >
                   #{{ ticket.code }}

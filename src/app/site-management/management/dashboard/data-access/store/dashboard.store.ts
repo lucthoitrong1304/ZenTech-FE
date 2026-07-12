@@ -212,7 +212,7 @@ export const DashboardStore = signalStore(
               tap({
                 next: (results) => {
                   const activeTickets = (results.ticketsPage.content || []).filter(
-                    (t) => t.status !== TicketStatus.RESOLVED
+                    (t) => t.status !== TicketStatus.RESOLVED && t.status !== TicketStatus.CLOSED
                   );
                   const activeIncidents = (results.activeIncidentsPage.data.content || []).filter(
                     (incident) => !['RESOLVED', 'CLOSED', 'DONE'].includes(String(incident.status || '').toUpperCase())
