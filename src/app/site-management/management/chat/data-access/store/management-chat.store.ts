@@ -35,6 +35,7 @@ import { ClientLogService } from '@/core/observability/logging/client-log.servic
 import { generateTraceId } from '@/core/observability/tracing/trace-id.util';
 import {
   ChatMessageResponse,
+  ChatConversationEventResponse,
   ConversationResponse,
   ConversationStatus,
   ParticipantType,
@@ -60,6 +61,7 @@ interface ManagementChatUiState {
   isSearching: boolean;
   searchResults: ChatMessageResponse[];
   highlightedMessageId: string | null;
+  lifecycleNotice: string | null;
 }
 
 const CONVERSATION_ENTITY_CONFIG = {
@@ -96,6 +98,7 @@ const INITIAL_STATE: ManagementChatUiState = {
   isSearching: false,
   searchResults: [],
   highlightedMessageId: null,
+  lifecycleNotice: null,
   activeStaffList: [],
 };
 
@@ -250,7 +253,7 @@ export const ManagementChatStore = signalStore(
             !normalizedKeyword || searchableText.includes(normalizedKeyword);
 
           return matchesStatus && matchesExpertRequest && matchesKeyword;
-        });
+        }).sort((a, b) => Date.parse(b.updatedAt || '') - Date.parse(a.updatedAt || ''));
       }),
       selectedConversation: computed(
         () =>
@@ -262,7 +265,7 @@ export const ManagementChatStore = signalStore(
           const conversation = conversationEntities().find(
             item => item.id === selectedConversationId()
           );
-          return conversation?.status === 'STAFF_HANDLING' && conversation.currentStaffActive;
+          return !conversation?.archived && conversation?.status === 'STAFF_HANDLING' && conversation.currentStaffActive;
         }
       ),
       canReplyToSelectedConversation: computed(
@@ -270,7 +273,7 @@ export const ManagementChatStore = signalStore(
           const conversation = conversationEntities().find(
             item => item.id === selectedConversationId()
           );
-          return conversation?.status === 'STAFF_HANDLING' && conversation.currentStaffActive;
+          return !conversation?.archived && conversation?.status === 'STAFF_HANDLING' && conversation.currentStaffActive;
         }
       ),
       selectedMessages: computed(() =>
@@ -385,10 +388,6 @@ export const ManagementChatStore = signalStore(
         case ManagementChatEventType.ConversationSelected:
           patchState(
             store,
-            updateEntity(
-              { id: event.conversationId, changes: { unreadCount: 0 } },
-              CONVERSATION_ENTITY_CONFIG
-            ),
             {
               selectedConversationId: event.conversationId,
               mediaDrawerOpen: false,
@@ -551,15 +550,52 @@ export const ManagementChatStore = signalStore(
                 }
 
                 queueSub = websocketService
-                  .subscribe<ConversationResponse>('/topic/management.chat.queue')
-                  .subscribe((updatedConv) => {
+                  .subscribe<ConversationResponse | ChatConversationEventResponse>('/topic/management.chat.queue')
+                  .subscribe((payload) => {
+                    if ('eventType' in payload) {
+                      const event = payload;
+                      const shouldNotify = !!store.conversationEntities()
+                        .find(item => item.id === event.conversationId)?.currentStaffActive;
+                      if (event.eventType === 'DELETED') {
+                        patchState(store, removeEntity(event.conversationId, CONVERSATION_ENTITY_CONFIG));
+                        if (store.selectedConversationId() === event.conversationId) {
+                          handleEvent({ type: ManagementChatEventType.SelectionCleared });
+                        }
+                        if (shouldNotify) patchState(store, { lifecycleNotice: 'Khách hàng đã xóa cuộc hội thoại.' });
+                        return;
+                      }
+                      if (event.conversation) {
+                        const mappedEventConversation = managementChatService.mapToManagementChatConversation(event.conversation);
+                        const existing = store.conversationEntities().find(item => item.id === event.conversationId);
+                        patchState(store, updateEntity({
+                          id: event.conversationId,
+                          changes: { ...mappedEventConversation, unreadCount: existing?.unreadCount ?? mappedEventConversation.unreadCount },
+                        }, CONVERSATION_ENTITY_CONFIG));
+                      }
+                      if (shouldNotify) {
+                        patchState(store, { lifecycleNotice: event.eventType === 'ARCHIVED'
+                          ? 'Khách hàng đã lưu trữ cuộc hội thoại.'
+                          : 'Khách hàng đã khôi phục cuộc hội thoại.' });
+                      }
+                      return;
+                    }
+                    const updatedConv = payload;
                     const mapped = managementChatService.mapToManagementChatConversation(updatedConv);
                     const exists = store.conversationEntities().some((c) => c.id === mapped.id);
                     if (exists) {
+                      const current = store.conversationEntities().find(c => c.id === mapped.id);
                       patchState(
                         store,
                         updateEntity(
-                          { id: mapped.id, changes: mapped },
+                          {
+                            id: mapped.id,
+                            changes: {
+                              ...mapped,
+                              unreadCount: store.selectedConversationId() === mapped.id
+                                ? current?.unreadCount ?? 0
+                                : (current?.unreadCount ?? 0) + 1,
+                            },
+                          },
                           CONVERSATION_ENTITY_CONFIG
                         )
                       );
@@ -666,10 +702,10 @@ export const ManagementChatStore = signalStore(
                 });
 
               conversationSub = websocketService
-                .subscribe<ConversationResponse>(`/topic/conversations.${id}`)
+                .subscribe<ConversationResponse | ChatConversationEventResponse>(`/topic/conversations.${id}`)
                 .subscribe((updatedConv) => {
                   // Check if this is a conversation status update, not a chat message response
-                  if (!updatedConv || (updatedConv as any).messageType) {
+                  if (!updatedConv || 'eventType' in updatedConv || (updatedConv as any).messageType) {
                     return;
                   }
 
@@ -1006,6 +1042,22 @@ export const ManagementChatStore = signalStore(
       )
     );
 
+    const markSelectedConversationRead = rxMethod<void>(
+      pipe(
+        switchMap(() => {
+          const conversationId = store.selectedConversationId();
+          if (!conversationId) return EMPTY;
+          return managementChatService.markConversationRead(conversationId).pipe(
+            tap(() => patchState(store, updateEntity(
+              { id: conversationId, changes: { unreadCount: 0 } },
+              CONVERSATION_ENTITY_CONFIG
+            ))),
+            catchError(() => EMPTY)
+          );
+        })
+      )
+    );
+
     return {
       dispatch: handleEvent,
       loadWorkspace,
@@ -1074,6 +1126,10 @@ export const ManagementChatStore = signalStore(
       searchMessages,
       jumpToMessage,
       clearHighlightedMessage,
+      markSelectedConversationRead,
+      clearLifecycleNotice(): void {
+        patchState(store, { lifecycleNotice: null });
+      },
       removeStaffUpload(uploadId: string): void {
         patchState(store, removeEntity(uploadId, UPLOAD_ENTITY_CONFIG));
       },

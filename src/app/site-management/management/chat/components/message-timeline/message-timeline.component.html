@@ -1,4 +1,4 @@
-<section class="chat-scrollbar relative min-h-0 flex-1 overscroll-contain overflow-y-auto bg-[#fcf9f8] p-6">
+<section #scrollContainer (scroll)="onScroll($event)" class="chat-scrollbar relative min-h-0 flex-1 overscroll-contain overflow-y-auto bg-[#fcf9f8] p-6">
   <div
     class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(246,243,242,0.92),_rgba(252,249,248,0.72),_rgba(252,249,248,1))]"
   ></div>
@@ -143,4 +143,18 @@
       }
     }
   </div>
+  @if (showJumpToLatest()) {
+    <button
+      type="button"
+      class="sticky bottom-4 z-30 ml-auto mr-2 grid h-11 w-11 place-items-center rounded-full border border-[#d2c5ab]/70 bg-white text-[#1c1b1b] shadow-[0_8px_24px_rgba(28,27,27,0.14)] transition hover:-translate-y-0.5 hover:border-[#ffc700] hover:bg-[#fffaf0] hover:shadow-[0_10px_28px_rgba(28,27,27,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffc700] focus-visible:ring-offset-2 active:translate-y-0"
+      title="Đến tin nhắn mới nhất"
+      aria-label="Đến tin nhắn mới nhất"
+      (click)="scrollToLatest()"
+    >
+      <svg lucideArrowDown class="h-5 w-5" [attr.stroke-width]="2.4"></svg>
+      @if (pendingNewMessages() > 0) {
+        <span class="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full border-2 border-white bg-[#ffc700] px-1 text-[10px] font-extrabold text-[#101010] shadow-sm">{{ pendingNewMessages() }}</span>
+      }
+    </button>
+  }
 </section>

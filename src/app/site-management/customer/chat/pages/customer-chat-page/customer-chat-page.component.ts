@@ -124,6 +124,16 @@ export class CustomerChatPageComponent implements OnInit {
         });
       }
     });
+
+    effect(() => {
+      const message = this.store.lifecycleNotice();
+      if (message) {
+        untracked(() => {
+          this.toastService.warning(message);
+          this.store.clearLifecycleNotice();
+        });
+      }
+    });
   }
 
   ngOnInit(): void {
