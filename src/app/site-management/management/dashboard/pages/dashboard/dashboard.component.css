@@ -1,3 +1,5 @@
+@reference "../../../../../../styles.css";
+
 .dashboard {
   --dashboard-ink: #111827;
   --dashboard-muted: #667085;
@@ -1644,4 +1646,13 @@ td {
   td {
     padding: 14px 16px;
   }
+}
+
+/* Spinner Semantic Classes */
+.dashboard-spinner {
+  @apply animate-spin w-8 h-8 text-indigo-600;
+}
+
+.dashboard-spinner-sm {
+  @apply animate-spin w-5 h-5 mx-auto mb-2 text-indigo-600;
 }

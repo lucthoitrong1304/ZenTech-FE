@@ -3,6 +3,7 @@ import { signalStore, withState, withMethods, patchState } from '@ngrx/signals';
 import { rxMethod } from '@ngrx/signals/rxjs-interop';
 import { pipe, switchMap, tap } from 'rxjs';
 import { tapResponse } from '@ngrx/operators';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ManagementBusinessImpactService } from '@/site-management/management/business-impact/data-access/services/management-business-impact.service';
 import { ManagementImpactDashboardDto, ManagementIncidentImpactDto, AffectedUserDetail } from '@/site-management/management/business-impact/data-access/models/management-business-impact.model';
 
@@ -59,7 +60,6 @@ const initialState: ManagementBusinessImpactState = {
 };
 
 export const ManagementBusinessImpactStore = signalStore(
-  { providedIn: 'root' },
   withState(initialState),
   withMethods((store, impactService = inject(ManagementBusinessImpactService)) => ({
     updatePagination(page: number, size: number) {
@@ -92,8 +92,8 @@ export const ManagementBusinessImpactStore = signalStore(
                   isLoadingDashboard: false,
                 });
               },
-              error: (err: any) => {
-                const errorMsg = err.error?.message || err.message || 'Lỗi tải thống kê dashboard';
+              error: (err: HttpErrorResponse) => {
+                const errorMsg = (err.error as { message?: string })?.message || err.message || 'Lỗi tải thống kê dashboard';
                 patchState(store, { error: errorMsg, isLoadingDashboard: false });
               },
             })
@@ -121,8 +121,8 @@ export const ManagementBusinessImpactStore = signalStore(
                   isLoadingIncidents: false,
                 });
               },
-              error: (err: any) => {
-                const errorMsg = err.error?.message || err.message || 'Lỗi tải danh sách sự cố';
+              error: (err: HttpErrorResponse) => {
+                const errorMsg = (err.error as { message?: string })?.message || err.message || 'Lỗi tải danh sách sự cố';
                 patchState(store, { error: errorMsg, isLoadingIncidents: false });
               },
             })
@@ -143,8 +143,8 @@ export const ManagementBusinessImpactStore = signalStore(
                   isLoadingDetail: false,
                 });
               },
-              error: (err: any) => {
-                const errorMsg = err.error?.message || err.message || 'Lỗi tải chi tiết sự cố';
+              error: (err: HttpErrorResponse) => {
+                const errorMsg = (err.error as { message?: string })?.message || err.message || 'Lỗi tải chi tiết sự cố';
                 patchState(store, { error: errorMsg, isLoadingDetail: false });
               },
             })
@@ -170,8 +170,8 @@ export const ManagementBusinessImpactStore = signalStore(
                 );
                 patchState(store, { incidents: updatedIncidents });
               },
-              error: (err: any) => {
-                const errorMsg = err.error?.message || err.message || 'AI phân tích thất bại';
+              error: (err: HttpErrorResponse) => {
+                const errorMsg = (err.error as { message?: string })?.message || err.message || 'AI phân tích thất bại';
                 patchState(store, { error: errorMsg, isAnalyzingAi: false });
               },
             })
@@ -192,8 +192,8 @@ export const ManagementBusinessImpactStore = signalStore(
                   isLoadingAffectedUsers: false,
                 });
               },
-              error: (err: any) => {
-                const errorMsg = err.error?.message || err.message || 'Lỗi tải danh sách người dùng bị ảnh hưởng';
+              error: (err: HttpErrorResponse) => {
+                const errorMsg = (err.error as { message?: string })?.message || err.message || 'Lỗi tải danh sách người dùng bị ảnh hưởng';
                 patchState(store, { error: errorMsg, isLoadingAffectedUsers: false });
               },
             })

@@ -438,11 +438,11 @@
 }
 
 .mb-user-card__left {
-  @apply flex items-center gap-3;
+  @apply flex items-center gap-3 min-w-0;
 }
 
 .mb-user-card__avatar {
-  @apply w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs select-none;
+  @apply w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs select-none flex-shrink-0;
 }
 
 .mb-user-card__avatar-img {
@@ -450,35 +450,39 @@
 }
 
 .mb-user-card__info {
-  @apply flex flex-col gap-0.5;
+  @apply flex flex-col gap-0.5 min-w-0;
 }
 
 .mb-user-card__name {
-  @apply text-sm font-semibold text-gray-900;
+  @apply text-sm font-semibold text-gray-900 truncate;
 }
 
 .mb-user-card__meta {
-  @apply flex items-center gap-1.5 text-xs text-gray-500 font-mono;
+  @apply flex items-center flex-wrap gap-1.5 text-[11px] text-gray-500 font-mono min-w-0;
 }
 
 .mb-user-card__separator {
   @apply text-gray-300;
 }
 
-.mb-user-card__trace {
-  @apply text-gray-400;
+.mb-user-card__attempts {
+  @apply inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100 whitespace-nowrap;
 }
 
 .mb-user-card__right {
-  @apply flex flex-col items-end gap-1;
+  @apply flex flex-col items-end gap-0.5 flex-shrink-0;
 }
 
 .mb-user-card__time {
-  @apply text-[10px] font-mono text-gray-400 flex items-center gap-1;
+  @apply text-[10px] font-mono text-gray-500 flex items-center gap-1 whitespace-nowrap;
+}
+
+.mb-user-card__date {
+  @apply text-[9px] font-mono text-gray-400 whitespace-nowrap;
 }
 
 .mb-user-card__status {
-  @apply px-1.5 py-0.5 rounded text-[9px] font-semibold bg-rose-50 text-rose-600 border border-rose-100;
+  @apply px-1.5 py-0.5 rounded text-[9px] font-semibold bg-rose-50 text-rose-600 border border-rose-100 whitespace-nowrap;
 }
 
 /* Dynamic funnel step states */
@@ -1090,4 +1094,17 @@
   .mb-btn-icon {
     width: 100%;
   }
+}
+
+/* Loading Pane Semantic Classes */
+.mb-loading-pane {
+  @apply flex flex-col items-center justify-center py-20 text-gray-500 gap-3;
+}
+
+.mb-loading-spinner {
+  @apply animate-spin w-8 h-8 text-indigo-600;
+}
+
+.mb-loading-spinner-sm {
+  @apply animate-spin w-6 h-6 text-indigo-600;
 }

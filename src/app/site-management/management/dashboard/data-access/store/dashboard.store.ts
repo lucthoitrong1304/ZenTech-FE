@@ -22,6 +22,12 @@ import { ManagementTicket, ManagementTicketQuery, TicketStatus } from '@/site-ma
 import { PermissionService } from '@/core/permissions/permission.service';
 import { PermissionCode } from '@/core/permissions/permission.models';
 
+export enum DashboardTab {
+  ORDERS = 'orders',
+  INCIDENTS = 'incidents',
+  TICKETS = 'tickets',
+}
+
 export interface DashboardUiState {
   period: ReportPeriod;
   customStartDate: string | null;
@@ -37,7 +43,7 @@ export interface DashboardUiState {
   incidents: ManagementIncidentImpactDto[];
   activeIncidents: ManagementIncidentImpactDto[];
   activeTickets: ManagementTicket[];
-  activeTab: 'orders' | 'incidents' | 'tickets';
+  activeTab: DashboardTab;
   selectedIncident: ManagementIncidentImpactDto | null;
   affectedUsers: AffectedUserDetail[];
   loadingIncidentDetail: boolean;
@@ -86,7 +92,7 @@ const INITIAL_STATE: DashboardUiState = {
   incidents: [],
   activeIncidents: [],
   activeTickets: [],
-  activeTab: 'orders',
+  activeTab: DashboardTab.ORDERS,
   selectedIncident: null,
   affectedUsers: [],
   loadingIncidentDetail: false,
@@ -312,7 +318,7 @@ export const DashboardStore = signalStore(
       loadDashboardData,
       loadIncidentDetail,
       requestIncidentAiAnalysis,
-      setActiveTab(activeTab: 'orders' | 'incidents' | 'tickets') {
+      setActiveTab(activeTab: DashboardTab) {
         patchState(store, { activeTab });
       },
       setPeriod(period: ReportPeriod) {

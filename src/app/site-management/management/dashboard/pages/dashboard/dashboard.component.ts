@@ -29,35 +29,105 @@ import { HasPermissionDirective } from '@/core/permissions/has-permission.direct
 import { AuthSessionStore } from '@/site-management/identity/data-access/store/auth-session.store';
 import { Role } from '@/site-management/identity/data-access/models/auth.enums';
 import { hasRole } from '@/site-management/identity/data-access/utils/auth-role.utils';
+import { ManagementIncidentImpactDto, AffectedUserDetail } from '@/site-management/management/business-impact/data-access/models/management-business-impact.model';
+import { ManagementTicket } from '@/site-management/management/tickets/data-access/models/management-ticket.models';
+import { DashboardTab } from '@/site-management/management/dashboard/data-access/store/dashboard.store';
 
-type LiveEventType = 'incident' | 'ticket' | 'resolved' | 'system';
-type LiveChartMarker = 'normal' | 'incident' | 'ticket' | 'resolved';
-type LiveStatusState = 'safe' | 'alert' | 'working';
+export enum LiveEventType {
+  INCIDENT = 'incident',
+  TICKET = 'ticket',
+  RESOLVED = 'resolved',
+  SYSTEM = 'system',
+}
+
+export enum LiveChartMarker {
+  NORMAL = 'normal',
+  INCIDENT = 'incident',
+  TICKET = 'ticket',
+  RESOLVED = 'resolved',
+}
+
+export enum LiveStatusState {
+  SAFE = 'safe',
+  ALERT = 'alert',
+  WORKING = 'working',
+}
 
 interface LiveLogItem {
   time: string;
   dateTime: string;
-  type: LiveEventType;
+  type: LiveEventType | `${LiveEventType}`;
   title: string;
   description: string;
   code?: string;
   timestamp?: number;
-  customerKey?: string;
-  customerName?: string;
-  customerEmail?: string;
+  customerKey?: string | null;
+  customerName?: string | null;
+  customerEmail?: string | null;
   customerAvatarUrl?: string | null;
+}
+
+interface LiveChartDataset {
+  label: string;
+  data: number[];
+  borderColor?: string;
+  backgroundColor?: string;
+  borderWidth?: number;
+  fill?: boolean;
+  tension?: number;
+  stepped?: boolean | 'before' | 'after' | 'middle';
+  pointRadius?: number | number[];
+  pointHitRadius?: number | number[];
+  pointHoverRadius?: number | number[];
+  pointBackgroundColor?: string | string[];
+  pointBorderColor?: string | string[];
+  pointBorderWidth?: number | number[];
+  pointStyle?: string | string[];
+}
+
+interface LiveChartData {
+  labels: string[];
+  datasets: LiveChartDataset[];
 }
 
 interface LiveChartPoint {
   label: string;
   value: number;
-  marker: LiveChartMarker;
+  marker: LiveChartMarker | `${LiveChartMarker}`;
   eventTitle: string | null;
   eventDescription: string | null;
   eventDateTime: string | null;
   timestamp: number;
   isRevenueChangePoint?: boolean;
   eventKey?: string;
+}
+
+interface DashboardIncidentPayload extends Partial<ManagementIncidentImpactDto> {
+  title?: string;
+}
+
+interface IssueSourcePayload {
+  apiPath?: string | null;
+  title?: string | null;
+  description?: string | null;
+  message?: string | null;
+  errorMessage?: string | null;
+  serviceName?: string | null;
+  category?: string | null;
+  code?: string | null;
+  incidentCode?: string | null;
+}
+
+interface ChartTooltipItem {
+  dataIndex: number;
+  datasetIndex: number;
+  dataset: {
+    label?: string;
+  };
+  parsed: {
+    y: number | null;
+    x: number | null;
+  };
 }
 
 
@@ -114,10 +184,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   });
 
   // Live Operations Monitor State
+  // Live Operations Monitor State
   protected readonly liveLogs = signal<LiveLogItem[]>([]);
-  protected readonly liveChartData = signal<any>({ labels: [], datasets: [] });
+  protected readonly liveChartData = signal<LiveChartData>({ labels: [], datasets: [] });
   protected readonly liveRecentLogs = computed(() => this.liveLogs()
-    .filter((log) => log.type !== 'system' && this.isTodayTimestamp(log.timestamp))
+    .filter((log) => log.type !== LiveEventType.SYSTEM && this.isTodayTimestamp(log.timestamp))
     .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0)));
   protected readonly liveLatestLogs = computed(() => [...this.liveRecentLogs()]
     .sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0)));
@@ -125,11 +196,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected readonly activeIncidents = computed(() => this.store.activeIncidents());
   protected readonly activeIncidentCount = computed(() => this.activeIncidents().length);
   protected readonly activeAffectedUsers = computed(() => this.activeIncidents()
-    .reduce((total, incident: any) => total + Math.max(0, Number(incident?.affectedUsers ?? 0)), 0));
+    .reduce((total, incident: ManagementIncidentImpactDto) => total + Math.max(0, Number(incident?.affectedUsers ?? 0)), 0));
   protected readonly backlogIncidentSince = computed(() => {
     const todayStart = this.getTodayStart().getTime();
     const backlogDates = this.activeIncidents()
-      .map((incident: any) => this.getEventDate(incident?.firstOccurredAt || incident?.occurredAt || incident?.createdAt))
+      .map((incident: ManagementIncidentImpactDto) => this.getEventDate(incident?.firstOccurredAt || incident?.occurredAt))
       .filter((date): date is Date => date instanceof Date && date.getTime() < todayStart)
       .sort((a, b) => a.getTime() - b.getTime());
     return backlogDates[0] ? this.formatShortDate(backlogDates[0]) : null;
@@ -143,12 +214,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private liveRevenueBaseline: number | null = null;
   private processedLiveEventKeys = new Set<string>();
   private lastOccurrenceFetchByIncident = new Map<string, number>();
-  private liveTimerId: any = null;
-  private liveRefreshTimerId: any = null;
+  private liveTimerId: number | ReturnType<typeof setInterval> | null = null;
+  private liveRefreshTimerId: number | ReturnType<typeof setInterval> | null = null;
 
 
   // Expose enum to template
   protected readonly ReportPeriod = ReportPeriod;
+  protected readonly DashboardTab = DashboardTab;
+  protected readonly LiveStatusState = LiveStatusState;
 
   // Custom date picker range model
   protected dateRange: Date[] | null = null;
@@ -253,7 +326,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         borderColor: 'rgba(255, 255, 255, 0.1)',
         borderWidth: 1,
         callbacks: {
-          label: (context: any) => {
+          label: (context: ChartTooltipItem) => {
             let label = context.dataset.label || '';
             if (label) {
               label += ': ';
@@ -267,7 +340,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             }
             return label;
           },
-          afterBody: (context: any) => {
+          afterBody: (context: ChartTooltipItem[]) => {
             const index = context[0].dataIndex;
             const series = this.store.revenueSeries();
             const p = series[index];
@@ -315,12 +388,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
             family: 'Inter, sans-serif',
             size: 10,
           },
-          callback: (value: any) => {
-            if (value >= 1000000) {
-              return (value / 1000000) + 'M';
+          callback: (value: string | number) => {
+            const num = Number(value);
+            if (num >= 1000000) {
+              return (num / 1000000) + 'M';
             }
-            if (value >= 1000) {
-              return (value / 1000) + 'k';
+            if (num >= 1000) {
+              return (num / 1000) + 'k';
             }
             return value;
           },
@@ -347,7 +421,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     this.subscriptions.push(
-      this.websocketService.subscribe<any>('/topic/admin.incidents').subscribe((payload) => {
+      this.websocketService.subscribe<ManagementIncidentImpactDto>('/topic/admin.incidents').subscribe((payload) => {
         this.reloadDashboardSilently();
 
         if (!payload) {
@@ -359,7 +433,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
 
     this.subscriptions.push(
-      this.websocketService.subscribe<any>('/topic/admin.tickets').subscribe((payload) => {
+      this.websocketService.subscribe<ManagementTicket>('/topic/admin.tickets').subscribe((payload) => {
         this.reloadDashboardSilently();
 
         if (!payload) {
@@ -459,12 +533,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected readonly liveStatusState = computed<LiveStatusState>(() => {
     this.liveStatusRevision();
     if (this.getCurrentActiveTicket()) {
-      return 'working';
+      return LiveStatusState.WORKING;
     }
     if (this.getCurrentActiveIncident()) {
-      return 'alert';
+      return LiveStatusState.ALERT;
     }
-    return 'safe';
+    return LiveStatusState.SAFE;
   });
 
   protected readonly liveStatusTitle = computed(() => {
@@ -483,22 +557,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return 'Hệ thống an toàn';
   });
 
-  private getCurrentActiveTicket(): any | null {
-    const activeTicket = this.store.activeTickets().find((ticket: any) => !this.isResolvedStatus(ticket?.status));
+  private getCurrentActiveTicket(): Partial<ManagementTicket> | null {
+    const activeTicket = this.store.activeTickets().find((ticket: ManagementTicket) => !this.isResolvedStatus(ticket?.status));
     return activeTicket || (this.activeLiveTicketCode ? { code: this.activeLiveTicketCode } : null);
   }
 
-  private getCurrentActiveIncident(): any | null {
+  private getCurrentActiveIncident(): DashboardIncidentPayload | null {
     const activeIncident = this.activeIncidents()[0];
-    return activeIncident || (this.activeLiveIncidentId ? { title: this.activeLiveIncidentTitle, incidentId: this.activeLiveIncidentId } : null);
+    return activeIncident || (this.activeLiveIncidentId ? { title: this.activeLiveIncidentTitle ?? undefined, incidentId: this.activeLiveIncidentId } : null);
   }
 
   private bumpLiveStatus(): void {
     this.liveStatusRevision.update((value) => value + 1);
   }
-  private toBusinessIncident(payload: any): { title: string; description: string; displayCode?: string } {
+  private toBusinessIncident(payload: DashboardIncidentPayload): { title: string; description: string; displayCode?: string } {
     const title = this.getBusinessIssueTitle(payload);
-    const displayCode = this.getSafeDisplayCode(payload.code || payload.incidentCode);
+    const displayCode = this.getSafeDisplayCode(payload.incidentCode);
     return {
       title,
       description: this.getBusinessIssueDescription(title),
@@ -506,7 +580,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     };
   }
 
-  private toBusinessTicket(payload: any): { title: string; description: string; displayCode?: string } {
+  private toBusinessTicket(payload: Partial<ManagementTicket>): { title: string; description: string; displayCode?: string } {
     const title = this.getBusinessIssueTitle(payload);
     const displayCode = this.getSafeDisplayCode(payload.code);
     return {
@@ -517,7 +591,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       displayCode,
     };
   }
-  private getBusinessIssueTitle(source: any): string {
+  private getBusinessIssueTitle(source: IssueSourcePayload): string {
     const haystack = [
       source?.apiPath,
       source?.title,
@@ -579,15 +653,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return text;
   }
 
-  private getIncidentKey(payload: any): string {
-    return String(payload?.incidentId || payload?.id || payload?.code || payload?.incidentCode || 'active-incident');
+  private getIncidentKey(payload: Partial<ManagementIncidentImpactDto>): string {
+    return String(payload?.incidentId || payload?.incidentCode || 'active-incident');
   }
 
   private isResolvedStatus(status: unknown): boolean {
     const normalized = String(status || '').toUpperCase();
     return normalized === 'RESOLVED' || normalized === 'CLOSED' || normalized === 'DONE';
   }
-  protected getFriendlyServiceName(inc: any): string {
+  protected getFriendlyServiceName(inc: ManagementIncidentImpactDto | null | undefined): string {
     if (!inc) return 'Lỗi hệ thống không xác định';
     const path = (inc.apiPath || '').toLowerCase();
     if (path.includes('/checkout')) return 'Lỗi đặt hàng & thanh toán (Checkout)';
@@ -991,7 +1065,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  private syncIncidentOccurrencesFromAffectedUsers(incident: any): void {
+  private syncIncidentOccurrencesFromAffectedUsers(incident: ManagementIncidentImpactDto): void {
     const incidentId = this.getIncidentKey(incident);
     const now = Date.now();
     const lastFetch = this.lastOccurrenceFetchByIncident.get(incidentId) ?? 0;
@@ -1028,7 +1102,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.subscriptions.push(sub);
   }
 
-  private recordIncidentOccurrenceEvent(incident: any, affectedUser: any): void {
+  private recordIncidentOccurrenceEvent(incident: ManagementIncidentImpactDto, affectedUser: AffectedUserDetail): void {
     const eventDate = this.getEventDate(affectedUser?.lastEventAt);
     if (!eventDate || !this.isTodayDate(eventDate)) {
       return;
@@ -1097,13 +1171,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return !sameIncidentMoment;
     });
   }
-  private recordIncidentEvent(payload: any, source: 'store' | 'store-fallback' | 'websocket'): void {
+  private recordIncidentEvent(payload: ManagementIncidentImpactDto, source: 'store' | 'store-fallback' | 'websocket'): void {
     const issue = this.toBusinessIncident(payload);
     const resolved = this.isResolvedStatus(payload?.status);
     const occurredAt = this.getEventDate(
       source === 'store'
-        ? (payload?.firstOccurredAt || payload?.occurredAt || payload?.createdAt)
-        : (payload?.occurredAt || payload?.firstOccurredAt || payload?.createdAt)
+        ? (payload?.firstOccurredAt || payload?.occurredAt)
+        : (payload?.occurredAt || payload?.firstOccurredAt)
     );
     const resolvedAt = this.getEventDate(payload?.resolvedAt);
     const eventDate = resolved ? (resolvedAt || occurredAt || new Date()) : (occurredAt || new Date());
@@ -1120,12 +1194,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
         {
           time: this.formatLiveTime(eventDate),
           dateTime: this.formatLiveDateTime(eventDate),
-          type: 'resolved',
+          type: LiveEventType.RESOLVED,
           title: 'Đã khắc phục sự cố',
           description: `${issue.title} đã được xử lý, doanh thu có thể trở lại bình thường.`,
           code: issue.displayCode,
         },
-        'resolved',
+        LiveChartMarker.RESOLVED,
         eventDate
       );
       if (source === 'websocket') {
@@ -1147,12 +1221,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       {
         time: this.formatLiveTime(eventDate),
         dateTime: this.formatLiveDateTime(eventDate),
-        type: 'incident',
+        type: LiveEventType.INCIDENT,
         title: issue.title,
         description: issue.description,
         code: issue.displayCode,
       },
-      'incident',
+      LiveChartMarker.INCIDENT,
       eventDate
     );
     if (source === 'websocket') {
@@ -1160,13 +1234,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  private recordTicketEvent(payload: any, source: 'store' | 'websocket'): void {
+  private recordTicketEvent(payload: ManagementTicket, source: 'store' | 'websocket'): void {
     const ticket = this.toBusinessTicket(payload);
     const resolved = this.isResolvedStatus(payload?.status);
     const createdAt = this.getEventDate(payload?.createdAt);
     const resolvedAt = this.getEventDate(payload?.resolvedAt);
     const eventDate = resolved ? (resolvedAt || createdAt || new Date()) : (createdAt || new Date());
-    const ticketKey = payload?.id || payload?.code || payload?.incidentId || 'unknown';
+    const ticketKey = payload?.id || payload?.code || 'unknown';
     const eventKey = resolved
       ? `ticket:${ticketKey}:resolved`
       : `ticket:${ticketKey}:created`;
@@ -1213,7 +1287,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private recordLiveEvent(
     eventKey: string,
     logItem: LiveLogItem,
-    marker: Exclude<LiveChartMarker, 'normal'>,
+    marker: LiveChartMarker | `${LiveChartMarker}`,
     eventDate: Date
   ): void {
     if (!this.isTodayDate(eventDate)) {
@@ -1447,7 +1521,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         borderColor: 'rgba(255, 255, 255, 0.1)',
         borderWidth: 1,
         callbacks: {
-          label: (context: any) => {
+          label: (context: ChartTooltipItem) => {
             let label = 'Doanh thu: ';
             if (context.parsed.y !== null) {
               label += new Intl.NumberFormat('vi-VN', {
@@ -1458,7 +1532,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             }
             return label;
           },
-          afterBody: (context: any) => {
+          afterBody: (context: ChartTooltipItem[]) => {
             const index = context[0].dataIndex;
             const point = this.livePoints[index];
             if (!point?.eventTitle) {
@@ -1501,9 +1575,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
             size: 12,
             weight: '700',
           },
-          callback: (value: any) => {
-            if (value >= 1000000) return (value / 1000000) + 'M';
-            if (value >= 1000) return (value / 1000) + 'k';
+          callback: (value: string | number) => {
+            const num = Number(value);
+            if (num >= 1000000) return (num / 1000000) + 'M';
+            if (num >= 1000) return (num / 1000) + 'k';
             return value;
           },
         },
