@@ -1,12 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { LucideSearch } from '@lucide/angular';
-import { ManagementChatConversation } from '@/site-management/management/chat/data-access/models/management-chat.models';
+import { LucideArchive, LucideSearch } from '@lucide/angular';
+import {
+  ManagementChatArchiveFilter,
+  ManagementChatConversation,
+} from '@/site-management/management/chat/data-access/models/management-chat.models';
 
 @Component({
   selector: 'app-conversation-list',
   standalone: true,
-  imports: [CommonModule, LucideSearch],
+  imports: [CommonModule, LucideArchive, LucideSearch],
   templateUrl: './conversation-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -14,13 +17,21 @@ export class ConversationListComponent {
   readonly conversations = input.required<ManagementChatConversation[]>();
   readonly selectedConversationId = input.required<string | null>();
   readonly searchKeyword = input.required<string>();
+  readonly myHandlingOnly = input.required<boolean>();
+  readonly archiveFilter = input.required<ManagementChatArchiveFilter>();
 
   readonly searchKeywordChanged = output<string>();
+  readonly myHandlingFilterToggled = output<void>();
+  readonly archiveFilterChanged = output<ManagementChatArchiveFilter>();
   readonly conversationSelected = output<string>();
 
   protected onSearchChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.searchKeywordChanged.emit(target.value);
+  }
+
+  protected onArchiveFilterChange(event: Event): void {
+    this.archiveFilterChanged.emit((event.target as HTMLSelectElement).value as ManagementChatArchiveFilter);
   }
 
   protected failedImages = new Set<string>();

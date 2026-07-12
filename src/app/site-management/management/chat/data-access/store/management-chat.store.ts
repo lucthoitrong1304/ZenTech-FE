@@ -16,6 +16,7 @@ import { ManagementChatEvent, ManagementChatEventType } from '@/site-management/
 import {
   ManagementChatConversation,
   ManagementChatConversationStatus,
+  ManagementChatArchiveFilter,
   ManagementChatExpertRequestFilter,
   ManagementChatExpertRequestStatus,
   ManagementChatMediaItem,
@@ -49,6 +50,8 @@ import {
 interface ManagementChatUiState {
   selectedConversationId: string | null;
   statusFilter: ManagementChatStatusFilter;
+  myHandlingOnly: boolean;
+  archiveFilter: ManagementChatArchiveFilter;
   expertRequestFilter: ManagementChatExpertRequestFilter;
   searchKeyword: string;
   activeMediaTab: ManagementChatMediaTab;
@@ -87,6 +90,8 @@ const UPLOAD_ENTITY_CONFIG = {
 const INITIAL_STATE: ManagementChatUiState = {
   selectedConversationId: null,
   statusFilter: 'ALL',
+  myHandlingOnly: false,
+  archiveFilter: 'ALL',
   expertRequestFilter: 'ALL',
   searchKeyword: '',
   activeMediaTab: 'ALL',
@@ -216,6 +221,8 @@ export const ManagementChatStore = signalStore(
       uploadEntities,
       selectedConversationId,
       statusFilter,
+      myHandlingOnly,
+      archiveFilter,
       expertRequestFilter,
       searchKeyword,
       activeMediaTab,
@@ -243,6 +250,10 @@ export const ManagementChatStore = signalStore(
         return conversationEntities().filter(conversation => {
           const matchesStatus =
             statusFilter() === 'ALL' || conversation.status === statusFilter();
+          const matchesMyHandling = !myHandlingOnly() || conversation.currentStaffActive;
+          const matchesArchive =
+            archiveFilter() === 'ALL' ||
+            (archiveFilter() === 'ARCHIVED' ? !!conversation.archived : !conversation.archived);
           const matchesExpertRequest =
             expertRequestFilter() === 'ALL' ||
             conversation.expertRequestStatus === expertRequestFilter();
@@ -252,7 +263,7 @@ export const ManagementChatStore = signalStore(
           const matchesKeyword =
             !normalizedKeyword || searchableText.includes(normalizedKeyword);
 
-          return matchesStatus && matchesExpertRequest && matchesKeyword;
+          return matchesStatus && matchesMyHandling && matchesArchive && matchesExpertRequest && matchesKeyword;
         }).sort((a, b) => Date.parse(b.updatedAt || '') - Date.parse(a.updatedAt || ''));
       }),
       selectedConversation: computed(
@@ -407,6 +418,14 @@ export const ManagementChatStore = signalStore(
 
         case ManagementChatEventType.SearchKeywordChanged:
           patchState(store, { searchKeyword: event.searchKeyword });
+          break;
+
+        case ManagementChatEventType.MyHandlingFilterToggled:
+          patchState(store, { myHandlingOnly: !store.myHandlingOnly() });
+          break;
+
+        case ManagementChatEventType.ArchiveFilterChanged:
+          patchState(store, { archiveFilter: event.archiveFilter });
           break;
 
         case ManagementChatEventType.StatusFilterChanged:
@@ -1075,6 +1094,12 @@ export const ManagementChatStore = signalStore(
       },
       setSearchKeyword(searchKeyword: string): void {
         handleEvent({ type: ManagementChatEventType.SearchKeywordChanged, searchKeyword });
+      },
+      toggleMyHandlingFilter(): void {
+        handleEvent({ type: ManagementChatEventType.MyHandlingFilterToggled });
+      },
+      setArchiveFilter(archiveFilter: ManagementChatArchiveFilter): void {
+        handleEvent({ type: ManagementChatEventType.ArchiveFilterChanged, archiveFilter });
       },
       setStatusFilter(statusFilter: ManagementChatStatusFilter): void {
         handleEvent({

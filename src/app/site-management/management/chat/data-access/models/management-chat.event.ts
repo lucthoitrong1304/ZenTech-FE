@@ -1,4 +1,5 @@
 import {
+  ManagementChatArchiveFilter,
   ManagementChatConversation,
   ManagementChatExpertRequestFilter,
   ManagementChatMediaTab,
@@ -15,6 +16,8 @@ export enum ManagementChatEventType {
   ConversationSelected = 'Conversation Selected',
   SelectionCleared = 'Selection Cleared',
   SearchKeywordChanged = 'Search Keyword Changed',
+  MyHandlingFilterToggled = 'My Handling Filter Toggled',
+  ArchiveFilterChanged = 'Archive Filter Changed',
   StatusFilterChanged = 'Status Filter Changed',
   ExpertRequestFilterChanged = 'Expert Request Filter Changed',
   MediaDrawerToggled = 'Media Drawer Toggled',
@@ -38,6 +41,8 @@ export type ManagementChatEvent =
   | { type: ManagementChatEventType.ConversationSelected; conversationId: string }
   | { type: ManagementChatEventType.SelectionCleared }
   | { type: ManagementChatEventType.SearchKeywordChanged; searchKeyword: string }
+  | { type: ManagementChatEventType.MyHandlingFilterToggled }
+  | { type: ManagementChatEventType.ArchiveFilterChanged; archiveFilter: ManagementChatArchiveFilter }
   | { type: ManagementChatEventType.StatusFilterChanged; statusFilter: ManagementChatStatusFilter }
   | {
       type: ManagementChatEventType.ExpertRequestFilterChanged;
