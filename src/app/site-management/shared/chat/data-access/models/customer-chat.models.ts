@@ -202,8 +202,21 @@ export interface ConversationResponse {
   closedAt: string | null;
   archived?: boolean;
   archivedAt?: string | null;
+  unreadCount?: number;
   participants: ParticipantResponse[];
   lastMessagePreview?: string;
+}
+
+export type ChatConversationEventType = 'ARCHIVED' | 'UNARCHIVED' | 'DELETED';
+
+export interface ChatConversationEventResponse {
+  eventType: ChatConversationEventType;
+  conversationId: string;
+  conversation: ConversationResponse | null;
+  actorAccountId: string;
+  actorName: string | null;
+  notifiedAccountIds: string[];
+  occurredAt: string;
 }
 
 export interface ChatAttachmentResponse {

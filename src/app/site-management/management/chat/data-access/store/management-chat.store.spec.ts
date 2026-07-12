@@ -25,6 +25,7 @@ import {
 } from '@/site-management/management/chat/data-access/models/management-chat.models';
 import { ManagementChatService } from '@/site-management/management/chat/data-access/services/management-chat.service';
 import { ManagementChatStore } from '@/site-management/management/chat/data-access/store/management-chat.store';
+import { ClientLogService } from '@/core/observability/logging/client-log.service';
 
 describe('ManagementChatStore', () => {
   beforeAll(() => {
@@ -72,6 +73,7 @@ describe('ManagementChatStore', () => {
       ),
       transferConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.AGENT_HANDLING, { includeStaff: false }))),
       mapToManagementChatConversation: vi.fn(mapConversationResponse),
+      markConversationRead: vi.fn(() => of(undefined)),
     };
     const customerChatService = {
       getMessages: vi.fn(() => of(createPage(createChatMessages()))),
@@ -107,6 +109,10 @@ describe('ManagementChatStore', () => {
         {
           provide: CustomerChatWebsocketService,
           useValue: websocketService,
+        },
+        {
+          provide: ClientLogService,
+          useValue: { info: vi.fn() },
         },
       ],
     });
@@ -168,6 +174,9 @@ describe('ManagementChatStore', () => {
 
     expect(store.selectedConversation()?.id).toBe('conv-1');
     expect(store.hasSelection()).toBe(true);
+    expect(store.conversations()[0].unreadCount).toBe(2);
+
+    store.markSelectedConversationRead();
     expect(store.conversations()[0].unreadCount).toBe(0);
 
     store.clearSelection();

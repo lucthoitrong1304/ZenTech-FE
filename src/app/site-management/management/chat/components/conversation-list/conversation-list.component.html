@@ -61,7 +61,7 @@
 
         <span class="min-w-0 flex-1">
           <span class="mb-0.5 flex min-w-0 items-baseline justify-between gap-3">
-            <strong class="min-w-0 truncate text-sm text-[#1c1b1b]">
+            <strong class="min-w-0 truncate text-sm text-[#1c1b1b]" [class.font-extrabold]="conversation.unreadCount > 0">
               {{ conversation.customer.fullName }}
             </strong>
             <span class="shrink-0 text-[10px] font-bold text-[#765b00]">
@@ -71,6 +71,9 @@
           <span class="block truncate text-xs font-medium text-[#4f4632]">
             {{ conversation.lastMessagePreview }}
           </span>
+          @if (conversation.archived) {
+            <span class="mt-1 inline-flex text-[10px] font-bold uppercase text-[#9a6700]">Đã lưu trữ</span>
+          }
         </span>
 
         @if (conversation.unreadCount > 0) {

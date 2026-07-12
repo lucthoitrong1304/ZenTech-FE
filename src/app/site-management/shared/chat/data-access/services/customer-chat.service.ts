@@ -148,6 +148,12 @@ export class CustomerChatService {
       .pipe(map(() => undefined));
   }
 
+  markConversationRead(conversationId: string): Observable<void> {
+    return this.apiService
+      .post<unknown, ApiResponse<void>>(`${this.baseUrl}/${conversationId}/read`, {})
+      .pipe(map(() => undefined));
+  }
+
   // Quy trình upload file qua presigned URL:
   // 1. Lấy url presigned từ backend
   // 2. PUT file trực tiếp lên R2/S3

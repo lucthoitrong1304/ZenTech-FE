@@ -79,6 +79,7 @@ describe('CustomerChatStore', () => {
         of({ ...conversation, id: conversationId, archived: false, archivedAt: null })
       ),
       deleteConversation: vi.fn(() => of(undefined)),
+      markConversationRead: vi.fn(() => of(undefined)),
     };
     const websocketService = {
       connect: vi.fn(),

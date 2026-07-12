@@ -35,6 +35,8 @@ export interface ManagementChatConversation {
   lastMessagePreview: string;
   lastMessageAtLabel: string;
   unreadCount: number;
+  updatedAt?: string;
+  archived?: boolean;
   productContext: string;
 }
 

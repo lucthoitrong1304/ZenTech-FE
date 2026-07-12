@@ -24,6 +24,7 @@ import {
   ChatAttachmentType,
   ChatMessageRequestPayload,
   ChatMessageResponse,
+  ChatConversationEventResponse,
   ChatMessageType,
   ConversationResponse,
   CustomerChatConversationArchiveFilter,
@@ -48,6 +49,9 @@ import {
 import { CustomerChatService } from '@/site-management/shared/chat/data-access/services/customer-chat.service';
 import { CustomerChatWebsocketService } from '@/site-management/shared/chat/data-access/services/customer-chat-websocket.service';
 
+const sortConversations = (conversations: ConversationResponse[]): ConversationResponse[] =>
+  [...conversations].sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+
 interface CustomerChatUiState {
   session: CustomerChatSession | null;
   conversations: ConversationResponse[];
@@ -68,6 +72,7 @@ interface CustomerChatUiState {
   searchResults: ChatMessageResponse[];
   isSearching: boolean;
   highlightedMessageId: string | null;
+  lifecycleNotice: string | null;
   customerTicketStatus: CustomerTicketStatus | null;
   pageContext: CustomerChatPageContext | null;
   dismissedTicketCode: string | null;
@@ -109,6 +114,7 @@ const INITIAL_STATE: CustomerChatUiState = {
   searchResults: [],
   isSearching: false,
   highlightedMessageId: null,
+  lifecycleNotice: null,
   customerTicketStatus: null,
   pageContext: null,
   dismissedTicketCode: null,
@@ -231,6 +237,7 @@ export const CustomerChatStore = signalStore(
       clientLogService = inject(ClientLogService)
     ) => {
       let messageSub: Subscription | null = null;
+      let customerQueueSub: Subscription | null = null;
       const receivedTraceIds = new Set<string>();
       let conversationSub: Subscription | null = null;
       let ticketStatusSub: Subscription | null = null;
@@ -526,7 +533,7 @@ export const CustomerChatStore = signalStore(
 
       const removeConversationFromCurrentList = (conversationId: string): void => {
         const remaining = store.conversations().filter((c) => c.id !== conversationId);
-        patchState(store, { conversations: remaining });
+        patchState(store, { conversations: sortConversations(remaining) });
 
         if (store.activeConversationId() !== conversationId) {
           patchState(store, { loading: false });
@@ -701,8 +708,10 @@ export const CustomerChatStore = signalStore(
                       });
 
                     conversationSub = websocketService
-                      .subscribe<ConversationResponse>(`/topic/conversations.${id}`)
-                      .subscribe((updatedConv) => {
+                      .subscribe<ConversationResponse | ChatConversationEventResponse>(`/topic/conversations.${id}`)
+                      .subscribe((payload) => {
+                        if ('eventType' in payload) return;
+                        const updatedConv = payload;
                         // Check if this is a conversation status update, not a chat message response
                         if (!updatedConv || (updatedConv as any).messageType) {
                           return;
@@ -712,7 +721,7 @@ export const CustomerChatStore = signalStore(
                         const updatedList = store
                           .conversations()
                           .map((c) => (c.id === updatedConv.id ? updatedConv : c));
-                        patchState(store, { conversations: updatedList });
+                        patchState(store, { conversations: sortConversations(updatedList) });
 
                         if (currentSession && currentSession.id === updatedConv.id) {
                           const newSession = mapToCustomerChatSession(
@@ -756,7 +765,7 @@ export const CustomerChatStore = signalStore(
                   tap({
                     next: (pageResponse) => {
                       const list = pageResponse.content || [];
-                      patchState(store, { conversations: list });
+                      patchState(store, { conversations: sortConversations(list) });
                       switchConversation(newConv.id);
                     },
                     error: () => {
@@ -818,7 +827,47 @@ export const CustomerChatStore = signalStore(
             return customerChatService.getMyConversations(0, 100, archived).pipe(
               switchMap((pageResponse) => {
                 const list = pageResponse.content || [];
-                patchState(store, { conversations: list });
+                patchState(store, { conversations: sortConversations(list) });
+
+                const accountId = authStorageService.getSession()?.accountId;
+                if (accountId) {
+                  websocketService.connect();
+                  customerQueueSub?.unsubscribe();
+                  customerQueueSub = websocketService
+                    .subscribe<ConversationResponse | ChatConversationEventResponse>(`/topic/customer.chat.${accountId}`)
+                    .subscribe(payload => {
+                      if ('eventType' in payload) {
+                        if (payload.eventType === 'DELETED') {
+                          removeConversationFromCurrentList(payload.conversationId);
+                          patchState(store, { lifecycleNotice: 'Cuộc hội thoại đã bị xóa.' });
+                          return;
+                        }
+                        if (!payload.conversation) return;
+                        const existing = store.conversations().find(c => c.id === payload.conversationId);
+                        patchState(store, {
+                          conversations: sortConversations(store.conversations().map(c =>
+                            c.id === payload.conversationId
+                              ? { ...payload.conversation!, unreadCount: existing?.unreadCount ?? payload.conversation!.unreadCount }
+                              : c
+                          )),
+                        });
+                        return;
+                      }
+
+                      const existing = store.conversations().find(c => c.id === payload.id);
+                      const updated: ConversationResponse = {
+                        ...payload,
+                        unreadCount: store.activeConversationId() === payload.id
+                          ? existing?.unreadCount ?? 0
+                          : (existing?.unreadCount ?? 0) + 1,
+                      };
+                      patchState(store, {
+                        conversations: sortConversations(existing
+                          ? store.conversations().map(c => c.id === updated.id ? updated : c)
+                          : [...store.conversations(), updated]),
+                      });
+                    });
+                }
 
                 if (list.length === 0) {
                   if (!archived) {
@@ -987,7 +1036,7 @@ export const CustomerChatStore = signalStore(
                 const updatedList = store
                   .conversations()
                   .map((c) => (c.id === updatedConv.id ? updatedConv : c));
-                patchState(store, { conversations: updatedList });
+                patchState(store, { conversations: sortConversations(updatedList) });
 
                 const currentSession = store.session();
                 if (currentSession && currentSession.id === updatedConv.id) {
@@ -1019,7 +1068,7 @@ export const CustomerChatStore = signalStore(
                 const updatedList = store
                   .conversations()
                   .map((c) => (c.id === updatedConv.id ? updatedConv : c));
-                patchState(store, { conversations: updatedList });
+                patchState(store, { conversations: sortConversations(updatedList) });
 
                 const currentSession = store.session();
                 if (currentSession && currentSession.id === updatedConv.id) {
@@ -1045,7 +1094,7 @@ export const CustomerChatStore = signalStore(
                 const updatedList = store
                   .conversations()
                   .map((c) => (c.id === updatedConv.id ? updatedConv : c));
-                patchState(store, { conversations: updatedList });
+                patchState(store, { conversations: sortConversations(updatedList) });
 
                 const currentSession = store.session();
                 if (currentSession && currentSession.id === updatedConv.id) {
@@ -1206,6 +1255,23 @@ export const CustomerChatStore = signalStore(
         )
       );
 
+      const markActiveConversationRead = rxMethod<void>(
+        pipe(
+          switchMap(() => {
+            const conversationId = store.activeConversationId();
+            if (!conversationId) return EMPTY;
+            return customerChatService.markConversationRead(conversationId).pipe(
+              tap(() => patchState(store, {
+                conversations: store.conversations().map(conversation =>
+                  conversation.id === conversationId ? { ...conversation, unreadCount: 0 } : conversation
+                ),
+              })),
+              catchError(() => EMPTY)
+            );
+          })
+        )
+      );
+
       const clearHighlightedMessage = rxMethod<void>(
         pipe(
           tap(() => patchState(store, { highlightedMessageId: null }))
@@ -1229,6 +1295,10 @@ export const CustomerChatStore = signalStore(
         searchMessages,
         jumpToMessage,
         clearHighlightedMessage,
+        markActiveConversationRead,
+        clearLifecycleNotice(): void {
+          patchState(store, { lifecycleNotice: null });
+        },
         openPopup(): void {
           if (!hasCustomerSession()) {
             patchState(store, {
@@ -1292,7 +1362,7 @@ export const CustomerChatStore = signalStore(
         },
         dismissTicketStatus(ticketCode: string, status: string): void {
           patchState(store, { dismissedTicketCode: ticketCode, dismissedTicketStatus: status });
-          if (ticketCode) {
+          if (ticketCode && typeof localStorage !== 'undefined' && localStorage) {
             localStorage.setItem('dismissed_ticket_code', ticketCode);
             localStorage.setItem('dismissed_ticket_status', status);
           }
@@ -1306,8 +1376,9 @@ export const CustomerChatStore = signalStore(
     
     return {
       onInit() {
-        const code = localStorage.getItem('dismissed_ticket_code');
-        const status = localStorage.getItem('dismissed_ticket_status');
+        const storage = typeof localStorage !== 'undefined' ? localStorage : null;
+        const code = storage?.getItem('dismissed_ticket_code') ?? null;
+        const status = storage?.getItem('dismissed_ticket_status') ?? null;
         patchState(store, { dismissedTicketCode: code, dismissedTicketStatus: status });
 
         effect(() => {

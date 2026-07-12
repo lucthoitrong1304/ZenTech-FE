@@ -39,19 +39,33 @@ export class CustomerShellComponent {
 
   protected readonly showCustomerChat = computed(() => {
     const url = this.currentUrl();
-    const roles = this.authStorageService.getSession()?.roles ?? [];
-    const isStaff =
-      hasRole(roles, Role.OWNER) ||
-      hasRole(roles, Role.MANAGER) ||
-      hasRole(roles, Role.EMPLOYEE) ||
-      hasRole(roles, Role.ADMIN);
 
-    return !isStaff && url !== '/chat' && !url.startsWith('/error');
+    return !this.isStaffSession() && url !== '/chat' && !url.startsWith('/error');
   });
 
   constructor() {
     this.categoryNavigationStore.loadCategoriesOnce();
     this.cartStore.loadForCurrentCustomer();
-    this.customerChatStore.loadCustomerTicketStatus();
+
+    // Ticket status belongs to the signed-in customer. Do not trigger a protected
+    // API request while rendering the public storefront for anonymous visitors.
+    if (
+      this.authStorageService.getSession() &&
+      this.authStorageService.isAuthenticated() &&
+      !this.isStaffSession()
+    ) {
+      this.customerChatStore.loadCustomerTicketStatus();
+    }
+  }
+
+  private isStaffSession(): boolean {
+    const roles = this.authStorageService.getSession()?.roles ?? [];
+
+    return (
+      hasRole(roles, Role.OWNER) ||
+      hasRole(roles, Role.MANAGER) ||
+      hasRole(roles, Role.EMPLOYEE) ||
+      hasRole(roles, Role.ADMIN)
+    );
   }
 }

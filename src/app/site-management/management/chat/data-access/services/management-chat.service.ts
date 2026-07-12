@@ -140,8 +140,16 @@ export class ManagementChatService {
       expertRequestStatus: conv.status === ConversationStatus.WAITING_FOR_AGENT ? 'WAITING' : null,
       lastMessagePreview: conv.title || 'Hội thoại mới',
       lastMessageAtLabel: conv.updatedAt ? formatTime(conv.updatedAt) : 'Vừa xong',
-      unreadCount: 0,
+      unreadCount: conv.unreadCount || 0,
+      updatedAt: conv.updatedAt,
+      archived: !!conv.archived,
       productContext: 'Hỗ trợ khách hàng',
     };
+  }
+
+  markConversationRead(conversationId: string): Observable<void> {
+    return this.apiService
+      .post<unknown, ApiResponse<void>>(`${this.baseUrl}/${conversationId}/read`, {})
+      .pipe(map(() => undefined));
   }
 }

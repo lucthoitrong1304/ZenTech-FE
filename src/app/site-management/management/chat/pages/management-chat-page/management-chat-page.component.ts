@@ -17,6 +17,7 @@ import { WebsocketService } from '@/core/services/websocket.service';
 import { ManagementTicket } from '@/site-management/management/tickets/data-access/models/management-ticket.models';
 import { ManagementTicketService } from '@/site-management/management/tickets/data-access/services/management-ticket.service';
 import { LucideX } from '@lucide/angular';
+import { ToastService } from '@/shared/components/toast/toast.service';
 
 import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
@@ -55,6 +56,7 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
   private readonly ticketService = inject(ManagementTicketService);
   private readonly websocketService = inject(WebsocketService);
   private readonly permissionService = inject(PermissionService);
+  private readonly toastService = inject(ToastService);
   protected readonly canUpdateChat = computed(() => this.permissionService.has(PermissionCode.CHAT_UPDATE));
   protected readonly previewItem = signal<MediaPreviewItem | null>(null);
   protected readonly transferDialogOpen = signal(false);
@@ -85,6 +87,15 @@ export class ManagementChatPageComponent implements OnInit, OnDestroy {
         this.dismissedTicketStatus.set(null);
       });
       this.loadRelatedTickets(email);
+    });
+    effect(() => {
+      const message = this.store.lifecycleNotice();
+      if (message) {
+        untracked(() => {
+          this.toastService.warning(message);
+          this.store.clearLifecycleNotice();
+        });
+      }
     });
   }
 

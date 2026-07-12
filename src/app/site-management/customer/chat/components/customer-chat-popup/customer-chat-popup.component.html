@@ -131,12 +131,14 @@
         }
 
         <app-customer-message-timeline
+          [conversationId]="store.activeConversationId()"
           [messages]="store.messages()"
           [customer]="store.customer()"
           [staff]="store.staff()"
           [aiResponding]="store.aiResponding()"
           [compact]="true"
           (previewRequested)="openPreview($event)"
+          (bottomReached)="store.markActiveConversationRead()"
         />
 
         <app-customer-upload-queue

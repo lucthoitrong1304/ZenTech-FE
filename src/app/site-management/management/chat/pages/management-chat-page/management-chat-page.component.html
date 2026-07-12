@@ -109,6 +109,7 @@
             [highlightedMessageId]="store.highlightedMessageId()"
             (previewRequested)="openPreview($event)"
             (highlightCleared)="store.clearHighlightedMessage()"
+            (bottomReached)="store.markSelectedConversationRead()"
           />
 
           @if (store.messagesLoading()) {
@@ -121,7 +122,11 @@
           }
         </div>
 
-        @if (store.canReplyToSelectedConversation()) {
+        @if (conversation.archived) {
+          <div class="border-t border-[#d2c5ab]/30 bg-[#fff8df] px-5 py-4 text-center text-sm font-bold text-[#765b00]">
+            Cuộc hội thoại này đã được người dùng lưu trữ.
+          </div>
+        } @else if (store.canReplyToSelectedConversation()) {
           <app-chat-composer
             [uploads]="store.uploads()"
             [hasPendingAttachments]="store.hasPendingAttachments()"
