@@ -66,6 +66,21 @@ interface SelectedEvidence {
   workDate: string;
 }
 
+interface AttendanceShiftRow {
+  rowId: string;
+  record: AttendanceRecordResponse;
+  shift: AttendanceShiftBreakdownResponse | null;
+  employeeName: string;
+  shiftName: string;
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  workingHours: number;
+  status: string;
+  isProvisional: boolean;
+  rowspan?: number;
+  isLastShift?: boolean;
+}
+
 @Component({
   selector: 'app-attendance-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -246,6 +261,94 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
     }
   }
 
+  getShiftRows(group: GroupedDateRecord): AttendanceShiftRow[] {
+    const rows: AttendanceShiftRow[] = [];
+    for (const record of group.records) {
+      if (!record.shiftBreakdowns || record.shiftBreakdowns.length === 0) {
+        rows.push({
+          rowId: record.id + '_OFF',
+          record,
+          shift: null,
+          employeeName: record.employeeName,
+          shiftName: 'Nghỉ',
+          checkInTime: null,
+          checkOutTime: null,
+          workingHours: 0,
+          status: 'OFF',
+          isProvisional: false
+        });
+      } else {
+        for (const shift of record.shiftBreakdowns) {
+          rows.push({
+            rowId: record.id + '_' + (shift.shiftId || shift.shiftName),
+            record,
+            shift,
+            employeeName: record.employeeName,
+            shiftName: shift.shiftName,
+            checkInTime: shift.checkInTime ? shift.checkInTime.toString() : null,
+            checkOutTime: shift.checkOutTime ? shift.checkOutTime.toString() : null,
+            workingHours: shift.workingHours,
+            status: shift.status,
+            isProvisional: this.isLiveShift(shift, record.workDate)
+          });
+        }
+      }
+    }
+    return rows;
+  }
+
+  getFilteredShiftRows(group: GroupedDateRecord): AttendanceShiftRow[] {
+    const rows = this.getShiftRows(group);
+    const filterKeys = this.activeDayFilters()[group.date];
+    const filtered = !filterKeys || filterKeys.length === 0 ? rows : rows.filter(row => {
+      return filterKeys.some(key => {
+        switch (key) {
+          case 'earlyArrival':
+            return row.shift?.earlyArrival ?? false;
+          case 'onTime':
+            return this.getDisplayShiftStatus(row) === 'ON_TIME';
+          case 'late':
+            return ['LATE', 'LATE_AND_EARLY'].includes(this.getDisplayShiftStatus(row));
+          case 'early':
+            return ['EARLY_CHECKOUT', 'LATE_AND_EARLY', 'EARLY_AND_EARLY'].includes(this.getDisplayShiftStatus(row));
+          case 'wfh':
+            return row.shift?.isWfh ?? false;
+          case 'missingCheckIn':
+            return row.shift?.status === 'MISSING_CHECK_IN';
+          case 'missingCheckOut':
+            return ['MISSING_CHECK_OUT', 'WFH_MISSING_CHECK_OUT'].includes(this.getDisplayShiftStatus(row));
+          default:
+            return true;
+        }
+      });
+    });
+
+    for (let i = 0; i < filtered.length; i++) {
+      const current = filtered[i];
+      if (current.rowspan !== undefined) continue;
+
+      let count = 1;
+      while (i + count < filtered.length && filtered[i + count].record.id === current.record.id) {
+        filtered[i + count].rowspan = 0;
+        filtered[i + count].isLastShift = false;
+        count++;
+      }
+      current.rowspan = count;
+      current.isLastShift = false;
+      filtered[i + count - 1].isLastShift = true;
+    }
+
+    return filtered;
+  }
+
+  getDisplayShiftStatus(row: AttendanceShiftRow): string {
+    let status = row.status;
+    if (status && status.startsWith('WFH_')) {
+      status = status.substring(4);
+    }
+    return status;
+  }
+
   getFilteredRecords(group: GroupedDateRecord): AttendanceRecordResponse[] {
     const filterKeys = this.activeDayFilters()[group.date];
     if (!filterKeys || filterKeys.length === 0) {
@@ -262,7 +365,7 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
           case 'late':
             return ['LATE', 'LATE_AND_EARLY'].includes(this.getDisplayStatus(record));
           case 'early':
-            return ['EARLY_CHECKOUT', 'LATE_AND_EARLY'].includes(this.getDisplayStatus(record));
+            return ['EARLY_CHECKOUT', 'LATE_AND_EARLY', 'EARLY_AND_EARLY'].includes(this.getDisplayStatus(record));
           case 'wfh':
             return record.shiftBreakdowns?.some(s => s.isWfh) ?? false;
           case 'missingCheckIn':
@@ -367,6 +470,8 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
       case 'LATE': return 'bg-red-100 text-red-700';
       case 'EARLY_CHECKOUT': return 'bg-amber-100 text-amber-700';
       case 'LATE_AND_EARLY': return 'bg-orange-100 text-orange-700';
+      case 'EARLY_AND_EARLY': return 'bg-teal-100 text-teal-700';
+      case 'EARLY_CHECKIN': return 'bg-emerald-100 text-emerald-700';
       case 'MISSING_CHECK_IN': return 'bg-purple-100 text-purple-700';
       case 'MISSING_CHECK_OUT': return 'bg-blue-100 text-blue-700';
       case 'NOT_STARTED': return 'bg-slate-100 text-slate-700';
@@ -387,6 +492,8 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
       case 'LATE': return 'Đi muộn';
       case 'EARLY_CHECKOUT': return 'Về sớm';
       case 'LATE_AND_EARLY': return 'Trễ & Sớm';
+      case 'EARLY_AND_EARLY': return 'Đến sớm & Về sớm';
+      case 'EARLY_CHECKIN': return 'Đến sớm';
       case 'MISSING_CHECK_IN': return 'Thiếu Check-in';
       case 'MISSING_CHECK_OUT': return 'Thiếu Check-out';
       case 'NOT_STARTED': return 'Chưa tới ca';
@@ -504,7 +611,7 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
       summary.totalWorkingHours += this.getDisplayWorkingHours(record);
       summary.totalOnTime += status === 'ON_TIME' ? 1 : 0;
       summary.totalLate += status === 'LATE' || status === 'LATE_AND_EARLY' ? 1 : 0;
-      summary.totalEarly += status === 'EARLY_CHECKOUT' || status === 'LATE_AND_EARLY' ? 1 : 0;
+      summary.totalEarly += status === 'EARLY_CHECKOUT' || status === 'LATE_AND_EARLY' || status === 'EARLY_AND_EARLY' ? 1 : 0;
       summary.totalMissingCheckOut += status === 'MISSING_CHECK_OUT' || status === 'WFH_MISSING_CHECK_OUT' ? 1 : 0;
       summary.totalAbsent += status === 'ABSENT_UNEXCUSED' ? 1 : 0;
       summary.totalLeave += status === 'ABSENT_EXCUSED' ? 1 : 0;
@@ -548,7 +655,7 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
       { key: 'absent', label: 'Vắng', predicate: (record) => this.getDisplayStatus(record) === 'ABSENT_UNEXCUSED' },
       { key: 'leave', label: 'Nghỉ phép', predicate: (record) => this.getDisplayStatus(record) === 'ABSENT_EXCUSED' },
       { key: 'late', label: 'Trễ', predicate: (record) => ['LATE', 'LATE_AND_EARLY'].includes(this.getDisplayStatus(record)) },
-      { key: 'early', label: 'Về sớm', predicate: (record) => ['EARLY_CHECKOUT', 'LATE_AND_EARLY'].includes(this.getDisplayStatus(record)) },
+      { key: 'early', label: 'Về sớm', predicate: (record) => ['EARLY_CHECKOUT', 'LATE_AND_EARLY', 'EARLY_AND_EARLY'].includes(this.getDisplayStatus(record)) },
       { key: 'onTime', label: 'Đúng giờ', predicate: (record) => this.getDisplayStatus(record) === 'ON_TIME' },
     ];
 

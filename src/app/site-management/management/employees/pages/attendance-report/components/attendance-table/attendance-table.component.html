@@ -1,13 +1,12 @@
 <div class="att-wrapper">
   <table class="att-table">
     <colgroup>
-      <col style="width: 25%" />
+      <col style="width: 30%" />
       <col style="width: 14%" />
-      <col style="width: 12%" />
-      <col style="width: 12%" />
-      <col style="width: 12%" />
-      <col style="width: 12%" />
-      <col style="width: 13%" />
+      <col style="width: 14%" />
+      <col style="width: 14%" />
+      <col style="width: 14%" />
+      <col style="width: 14%" />
     </colgroup>
     <thead>
       <tr>
@@ -16,14 +15,13 @@
         <th>Giờ vào</th>
         <th>Giờ ra</th>
         <th>Giờ làm</th>
-        <th>Trễ/Sớm</th>
         <th>Trạng thái</th>
       </tr>
     </thead>
     <tbody>
       @for (group of groupedRecords(); track group.date) {
         <tr class="att-date-sep">
-          <td colspan="7">
+          <td colspan="6">
             <div class="att-day-header">
               <div class="att-day-header__identity">
                 <span class="att-day-header__date">Ngày {{ group.date | date:'dd/MM/yyyy' }}</span>
@@ -97,56 +95,48 @@
           </td>
         </tr>
 
-        @for (record of getFilteredRecords(group); track record.id) {
+        @for (row of getFilteredShiftRows(group); track row.rowId) {
           <tr class="att-row">
-            <td class="att-cell-name">
-              <button (click)="toggleRow(record.id)" class="att-expand-btn" [title]="isExpanded(record.id) ? 'Thu gọn' : 'Xem chi tiết'">
-                @if (isExpanded(record.id)) {
-                  <svg lucideChevronUp class="w-4 h-4"></svg>
-                } @else {
-                  <svg lucideChevronDown class="w-4 h-4"></svg>
-                }
-              </button>
-              <span>{{ record.employeeName }}</span>
-            </td>
+            @if (row.rowspan !== 0) {
+              <td class="att-cell-name" [attr.rowspan]="row.rowspan">
+                <button (click)="toggleRow(row.record.id)" class="att-expand-btn" [title]="isExpanded(row.record.id) ? 'Thu gọn' : 'Xem chi tiết'">
+                  @if (isExpanded(row.record.id)) {
+                    <svg lucideChevronUp class="w-4 h-4"></svg>
+                  } @else {
+                    <svg lucideChevronDown class="w-4 h-4"></svg>
+                  }
+                </button>
+                <span>{{ row.employeeName }}</span>
+              </td>
+            }
             <td>
-              <span class="att-shift-badge">{{ record.shiftName }}</span>
+              <span class="att-shift-badge">{{ row.shiftName }}</span>
             </td>
-            <td class="att-cell-time">{{ record.checkInTime ? (record.checkInTime | date:'HH:mm:ss') : '--:--:--' }}</td>
-            <td class="att-cell-time">{{ record.checkOutTime ? (record.checkOutTime | date:'HH:mm:ss') : '--:--:--' }}</td>
+            <td class="att-cell-time">{{ row.checkInTime ? (row.checkInTime | date:'HH:mm:ss') : '--:--:--' }}</td>
+            <td class="att-cell-time">{{ row.checkOutTime ? (row.checkOutTime | date:'HH:mm:ss') : '--:--:--' }}</td>
             <td class="att-cell-hours">
-              <span>{{ getDisplayWorkingHours(record) | number:'1.1-2' }}h</span>
-              @if (isLiveRecord(record)) {
+              <span>{{ row.workingHours | number:'1.1-2' }}h</span>
+              @if (row.isProvisional) {
                 <span class="att-live-badge">Tạm tính</span>
               }
             </td>
-            <td class="att-cell-penalty">
-              @if (record.lateMinutes > 0) {
-                <span class="att-penalty-late">Trễ: {{ formatPenaltyMinutes(record.lateMinutes) }}</span>
-              }
-              @if (record.earlyMinutes > 0) {
-                <span class="att-penalty-early">Sớm: {{ formatPenaltyMinutes(record.earlyMinutes) }}</span>
-              }
-              @if (record.lateMinutes === 0 && record.earlyMinutes === 0) {
-                <span class="att-penalty-none">--</span>
-              }
-            </td>
+
             <td>
               <span class="att-status-badge px-2.5 py-1 text-xs font-bold rounded-full"
-                    [ngClass]="getStatusBadgeClass(getDisplayStatus(record))">
-                {{ getStatusLabel(getDisplayStatus(record)) }}
+                    [ngClass]="getStatusBadgeClass(row.status)">
+                {{ getStatusLabel(row.status) }}
               </span>
             </td>
           </tr>
-          @if (isExpanded(record.id)) {
+          @if (row.isLastShift && isExpanded(row.record.id)) {
             <tr class="att-detail-row">
-              <td colspan="7">
+              <td colspan="6">
                 <div class="att-timeline">
                   <h4 class="att-timeline-title">Dòng thời gian sự kiện trong ngày</h4>
 
-                  @if (record.shiftBreakdowns && record.shiftBreakdowns.length > 0) {
+                  @if (row.record.shiftBreakdowns && row.record.shiftBreakdowns.length > 0) {
                     <div class="att-timeline-track">
-                      @for (shift of record.shiftBreakdowns; track shift.employeeShiftId || shift.shiftId || shift.shiftName) {
+                      @for (shift of row.record.shiftBreakdowns; track shift.employeeShiftId || shift.shiftId || shift.shiftName) {
                         <!-- 1. Node biểu diễn ca làm việc -->
                         <div class="att-timeline-event">
                           <div class="att-timeline-dot att-timeline-dot--indigo"></div>
@@ -165,8 +155,8 @@
                             </div>
                             <span class="att-timeline-label">
                               Thời gian theo lịch: {{ formatScheduleTime(shift.scheduledStartTime) }} - {{ formatScheduleTime(shift.scheduledEndTime) }}
-                              | Giờ làm: <strong class="text-gray-800">{{ getDisplayShiftWorkingHours(shift, record.workDate) | number:'1.1-2' }}h</strong>
-                              @if (isLiveShift(shift, record.workDate)) {
+                              | Giờ làm: <strong class="text-gray-800">{{ getDisplayShiftWorkingHours(shift, row.record.workDate) | number:'1.1-2' }}h</strong>
+                              @if (isLiveShift(shift, row.record.workDate)) {
                                 <em class="text-blue-600 font-bold ml-1">Tạm tính</em>
                               }
                               @if (shift.lateMinutes > 0) {
@@ -196,7 +186,7 @@
                                       type="button"
                                       class="att-evidence-btn"
                                       title="Xem bằng chứng chấm công"
-                                      (click)="openEvidence(event, record, shift)">
+                                      (click)="openEvidence(event, row.record, shift)">
                                       <svg lucideMapPin class="w-3.5 h-3.5"></svg>
                                       <span>Bằng chứng</span>
                                     </button>
@@ -248,22 +238,22 @@
                   <section class="att-day-summary mt-6 border-t pt-4 flex gap-6 items-center flex-wrap">
                     <div>
                       <span>Tổng ngày:</span>
-                      <strong class="text-base font-bold text-gray-900 ml-1">{{ getDisplayWorkingHours(record) | number:'1.1-2' }}h</strong>
-                      @if (isLiveRecord(record)) {
+                      <strong class="text-base font-bold text-gray-900 ml-1">{{ getDisplayWorkingHours(row.record) | number:'1.1-2' }}h</strong>
+                      @if (isLiveRecord(row.record)) {
                         <em class="text-blue-600 font-bold ml-1">Tạm tính</em>
                       }
                     </div>
                     <div>
                       <span>Thời gian:</span>
                       <strong class="text-sm text-gray-800 ml-1">
-                        {{ record.checkInTime ? (record.checkInTime | date:'HH:mm:ss') : '--:--:--' }}
+                        {{ row.record.checkInTime ? (row.record.checkInTime | date:'HH:mm:ss') : '--:--:--' }}
                         -
-                        {{ record.checkOutTime ? (record.checkOutTime | date:'HH:mm:ss') : '--:--:--' }}
+                        {{ row.record.checkOutTime ? (row.record.checkOutTime | date:'HH:mm:ss') : '--:--:--' }}
                       </strong>
                     </div>
                     <span class="att-status-badge px-2.5 py-1 text-xs font-bold rounded-full animate-fade-in"
-                          [ngClass]="getStatusBadgeClass(getDisplayStatus(record))">
-                      {{ getStatusLabel(getDisplayStatus(record)) }}
+                          [ngClass]="getStatusBadgeClass(getDisplayStatus(row.record))">
+                      {{ getStatusLabel(getDisplayStatus(row.record)) }}
                     </span>
                   </section>
                 </div>
@@ -272,7 +262,7 @@
           }        }
       } @empty {
         <tr>
-          <td colspan="7" class="att-empty">Không có dữ liệu chấm công.</td>
+          <td colspan="6" class="att-empty">Không có dữ liệu chấm công.</td>
         </tr>
       }
     </tbody>
