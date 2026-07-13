@@ -60,7 +60,7 @@ describe('ManagementChatStore', () => {
       getWorkspace: vi.fn(() => of(workspace)),
       getMessages: vi.fn(() => of(createPage(createChatMessages()))),
       claimConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.AGENT_HANDLING))),
-      leaveConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.WAITING_FOR_AGENT))),
+      leaveConversation: vi.fn(() => of(createConversationResponse('conv-1', ConversationStatus.BOT_CONSULTING))),
       getActiveStaffList: vi.fn(() =>
         of([
           {
@@ -468,7 +468,7 @@ describe('ManagementChatStore', () => {
     expect(store.selectedConversationId()).toBe('conv-1');
   });
 
-  it('lets active staff leave a conversation and returns it to the waiting queue', () => {
+  it('lets active staff leave a conversation and returns it to AI consulting', () => {
     const workspace = createWorkspace();
     workspace.conversations[0] = {
       ...workspace.conversations[0],
@@ -485,7 +485,7 @@ describe('ManagementChatStore', () => {
     expect(store.selectedConversation()?.id).toBe('conv-1');
     expect(store.canReplyToSelectedConversation()).toBe(false);
     expect(store.conversations().find((conversation) => conversation.id === 'conv-1')).toMatchObject({
-      status: 'WAITING_STAFF',
+      status: 'AI_ASSISTING',
       currentStaffActive: false,
     });
   });
