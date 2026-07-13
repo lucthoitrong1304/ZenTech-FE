@@ -36,6 +36,7 @@ export class AdminRecordingEvidenceComponent implements AfterViewInit, OnChanges
   readonly contextLabel = input<string | null | undefined>(null);
   readonly clipBeforeMs = input<number>(15_000);
   readonly clipAfterMs = input<number>(45_000);
+  readonly isError = input<boolean>(true);
 
   @ViewChild('playerContainer') private playerContainer?: ElementRef<HTMLDivElement>;
 
