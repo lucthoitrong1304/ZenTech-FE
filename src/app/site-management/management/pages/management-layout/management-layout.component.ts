@@ -546,7 +546,6 @@ export class ManagementLayoutComponent {
         longitude: position.coords.longitude,
         accuracyMeters: Number.isFinite(position.coords.accuracy) ? position.coords.accuracy : null,
         faceImage: normalizeFaceImage(data.faceImage),
-        requestedAction: this.requestedAttendanceAction(),
       })
       .pipe(
         takeUntilDestroyed(this.destroyRef),

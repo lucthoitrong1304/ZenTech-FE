@@ -6,7 +6,7 @@ export interface CheckInRequest {
   longitude: number;
   accuracyMeters: number | null;
   faceImage?: string | null;
-  requestedAction: 'CHECK_IN' | 'CHECK_OUT';
+  requestedAction?: 'CHECK_IN' | 'CHECK_OUT';
 }
 
 export type CheckInResponse = ApiResponseDto<EmployeeProfileResponse>;
