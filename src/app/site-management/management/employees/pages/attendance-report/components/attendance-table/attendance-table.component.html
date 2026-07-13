@@ -1,5 +1,14 @@
 <div class="att-wrapper">
   <table class="att-table">
+    <colgroup>
+      <col style="width: 25%" />
+      <col style="width: 14%" />
+      <col style="width: 12%" />
+      <col style="width: 12%" />
+      <col style="width: 12%" />
+      <col style="width: 12%" />
+      <col style="width: 13%" />
+    </colgroup>
     <thead>
       <tr>
         <th>Nhân viên</th>
@@ -15,14 +24,80 @@
       @for (group of groupedRecords(); track group.date) {
         <tr class="att-date-sep">
           <td colspan="7">
-            <div class="att-date-summary-trigger cursor-pointer hover:opacity-80 transition-opacity" (click)="openSummaryDrawer(group.date)">
-              <span>Ngày {{ group.date | date:'dd/MM/yyyy' }}</span>
-              <span class="att-date-summary-pill">{{ group.summary.totalRecords }} nhân viên</span>
+            <div class="att-day-header">
+              <div class="att-day-header__identity">
+                <span class="att-day-header__date">Ngày {{ group.date | date:'dd/MM/yyyy' }}</span>
+                <span class="att-day-header__meta">{{ group.summary.totalRecords }} nhân viên</span>
+                <span class="att-day-header__meta">{{ group.summary.totalShifts }} ca</span>
+                @if (activeDayFilters()[group.date]) {
+                  <button type="button" class="att-day-header__clear-btn" (click)="clearDayFilter(group.date)" title="Xóa bộ lọc">
+                    <svg lucideX class="w-3 h-3"></svg>
+                    <span>Xóa lọc</span>
+                  </button>
+                }
+              </div>
+              <div class="att-day-header__metrics" aria-label="Tổng quan chấm công trong ngày">
+                <button type="button"
+                  class="att-day-metric att-day-metric--early-arrival"
+                  [class.active]="activeDayFilters()[group.date]?.includes('earlyArrival')"
+                  (click)="toggleDayFilter(group.date, 'earlyArrival')">
+                  <b>Đến sớm</b>
+                  <strong>{{ group.summary.totalEarlyArrival }}</strong>
+                </button>
+
+                <button type="button"
+                  class="att-day-metric att-day-metric--on-time"
+                  [class.active]="activeDayFilters()[group.date]?.includes('onTime')"
+                  (click)="toggleDayFilter(group.date, 'onTime')">
+                  <b>Đúng giờ</b>
+                  <strong>{{ group.summary.totalOnTime }}</strong>
+                </button>
+
+                <button type="button"
+                  class="att-day-metric att-day-metric--late"
+                  [class.active]="activeDayFilters()[group.date]?.includes('late')"
+                  (click)="toggleDayFilter(group.date, 'late')">
+                  <b>Đi trễ</b>
+                  <strong>{{ group.summary.totalLate }}</strong>
+                </button>
+
+                <button type="button"
+                  class="att-day-metric att-day-metric--early"
+                  [class.active]="activeDayFilters()[group.date]?.includes('early')"
+                  (click)="toggleDayFilter(group.date, 'early')">
+                  <b>Về sớm</b>
+                  <strong>{{ group.summary.totalEarly }}</strong>
+                </button>
+
+                <button type="button"
+                  class="att-day-metric att-day-metric--wfh"
+                  [class.active]="activeDayFilters()[group.date]?.includes('wfh')"
+                  (click)="toggleDayFilter(group.date, 'wfh')">
+                  <b>WFH</b>
+                  <strong>{{ group.summary.totalWfh }}</strong>
+                </button>
+
+                <button type="button"
+                  class="att-day-metric att-day-metric--missing-checkin"
+                  [class.active]="activeDayFilters()[group.date]?.includes('missingCheckIn')"
+                  (click)="toggleDayFilter(group.date, 'missingCheckIn')">
+                  <b>Chưa check-in</b>
+                  <strong>{{ group.summary.totalMissingCheckIn }}</strong>
+                </button>
+
+                <button type="button"
+                  class="att-day-metric att-day-metric--missing-checkout"
+                  [class.active]="activeDayFilters()[group.date]?.includes('missingCheckOut')"
+                  (click)="toggleDayFilter(group.date, 'missingCheckOut')">
+                  <b>Chưa check-out</b>
+                  <strong>{{ group.summary.totalMissingCheckOut }}</strong>
+                </button>
+              </div>
             </div>
           </td>
         </tr>
 
-        @for (record of group.records; track record.id) {
+        @for (record of getFilteredRecords(group); track record.id) {
           <tr class="att-row">
             <td class="att-cell-name">
               <button (click)="toggleRow(record.id)" class="att-expand-btn" [title]="isExpanded(record.id) ? 'Thu gọn' : 'Xem chi tiết'">

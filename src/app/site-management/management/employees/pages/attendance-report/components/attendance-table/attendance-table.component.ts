@@ -36,6 +36,10 @@ interface GroupedDateRecord {
 
 interface DateGroupSummary {
   totalRecords: number;
+  totalShifts: number;
+  totalEarlyArrival: number;
+  totalWfh: number;
+  totalMissingCheckIn: number;
   totalWorkingHours: number;
   totalOnTime: number;
   totalLate: number;
@@ -96,6 +100,7 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
   
   openDrawerDate = signal<string | null>(null);
   activeExceptionFilter = signal<SummarySectionKey | null>(null);
+  activeDayFilters = signal<Record<string, string[]>>({});
 
   protected readonly hasMapTilerApiKey = !!environment.mapTilerApiKey;
   private evidenceMap?: L.Map;
@@ -212,6 +217,63 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
     } else {
       this.activeExceptionFilter.set(key);
     }
+  }
+
+  toggleDayFilter(date: string, filterKey: string) {
+    const current = this.activeDayFilters();
+    const next = { ...current };
+    const filtersForDate = next[date] ? [...next[date]] : [];
+    const index = filtersForDate.indexOf(filterKey);
+    if (index > -1) {
+      filtersForDate.splice(index, 1);
+    } else {
+      filtersForDate.push(filterKey);
+    }
+    if (filtersForDate.length === 0) {
+      delete next[date];
+    } else {
+      next[date] = filtersForDate;
+    }
+    this.activeDayFilters.set(next);
+  }
+
+  clearDayFilter(date: string) {
+    const current = this.activeDayFilters();
+    if (current[date]) {
+      const next = { ...current };
+      delete next[date];
+      this.activeDayFilters.set(next);
+    }
+  }
+
+  getFilteredRecords(group: GroupedDateRecord): AttendanceRecordResponse[] {
+    const filterKeys = this.activeDayFilters()[group.date];
+    if (!filterKeys || filterKeys.length === 0) {
+      return group.records;
+    }
+    return group.records.filter(record => {
+      // OR filter: check if record matches ANY of the selected filterKeys
+      return filterKeys.some(key => {
+        switch (key) {
+          case 'earlyArrival':
+            return record.shiftBreakdowns?.some(s => s.earlyArrival) ?? false;
+          case 'onTime':
+            return this.getDisplayStatus(record) === 'ON_TIME';
+          case 'late':
+            return ['LATE', 'LATE_AND_EARLY'].includes(this.getDisplayStatus(record));
+          case 'early':
+            return ['EARLY_CHECKOUT', 'LATE_AND_EARLY'].includes(this.getDisplayStatus(record));
+          case 'wfh':
+            return record.shiftBreakdowns?.some(s => s.isWfh) ?? false;
+          case 'missingCheckIn':
+            return record.shiftBreakdowns?.some(s => s.status === 'MISSING_CHECK_IN') ?? false;
+          case 'missingCheckOut':
+            return ['MISSING_CHECK_OUT', 'WFH_MISSING_CHECK_OUT'].includes(this.getDisplayStatus(record));
+          default:
+            return true;
+        }
+      });
+    });
   }
 
   filteredSummarySections(group: GroupedDateRecord): DateGroupSummarySection[] {
@@ -450,6 +512,10 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
       return summary;
     }, {
       totalRecords: 0,
+      totalShifts: 0,
+      totalEarlyArrival: 0,
+      totalWfh: 0,
+      totalMissingCheckIn: 0,
       totalWorkingHours: 0,
       totalOnTime: 0,
       totalLate: 0,
@@ -462,6 +528,17 @@ export class AttendanceTableComponent implements AfterViewChecked, OnDestroy {
     });
 
     summary.sections = this.buildDateGroupSummarySections(records);
+    const scheduledShiftKeys = new Set<string>();
+    for (const record of records) {
+      for (const shift of record.shiftBreakdowns ?? []) {
+        // Header nói về số loại ca trong ngày, không phải số lượt nhân viên-ca.
+        scheduledShiftKeys.add(shift.shiftId ?? shift.shiftName);
+        summary.totalEarlyArrival += shift.earlyArrival ? 1 : 0;
+        summary.totalWfh += shift.isWfh ? 1 : 0;
+        summary.totalMissingCheckIn += shift.status === 'MISSING_CHECK_IN' ? 1 : 0;
+      }
+    }
+    summary.totalShifts = scheduledShiftKeys.size;
     return summary;
   }
 

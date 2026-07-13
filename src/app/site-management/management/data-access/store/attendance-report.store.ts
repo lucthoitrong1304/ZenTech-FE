@@ -7,11 +7,13 @@ import { AttendanceService } from '@/site-management/management/data-access/serv
 import {
   AttendanceLocationPolicy,
   AttendanceRecordResponse,
-  AttendanceStatisticsResponse
+  AttendanceStatisticsResponse,
+  AttendanceDayGroupResponse
 } from '@/site-management/management/data-access/models/attendance.model';
 
 export interface AttendanceReportState {
   records: AttendanceRecordResponse[];
+  days: AttendanceDayGroupResponse[];
   statistics: AttendanceStatisticsResponse | null;
   isLoading: boolean;
   error: string | null;
@@ -39,12 +41,13 @@ const today = new Date();
 
 const initialState: AttendanceReportState = {
   records: [],
+  days: [],
   statistics: null,
   isLoading: false,
   error: null,
   totalRecords: 0,
   page: 0,
-  size: 10,
+  size: 7,
   startDate: formatDate(today),
   endDate: formatDate(today),
   locationPolicy: null,
@@ -71,8 +74,9 @@ export const AttendanceReportStore = signalStore(
             tapResponse({
               next: ({ report, locationPolicy }) => {
                 patchState(store, {
-                  records: report.data.records.content,
-                  totalRecords: report.data.records.totalElements,
+                  days: report.data.days.content,
+                  records: report.data.days.content.flatMap(day => day.records),
+                  totalRecords: report.data.days.totalElements,
                   statistics: report.data.statistics,
                   locationPolicy: normalizeLocationPolicy(locationPolicy.data),
                   isLoading: false,
