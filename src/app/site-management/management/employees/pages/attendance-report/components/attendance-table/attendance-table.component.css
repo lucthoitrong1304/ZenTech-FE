@@ -6,6 +6,7 @@
 .att-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   text-align: left;
   font-size: 13px;
 }
@@ -29,6 +30,13 @@
   vertical-align: middle;
 }
 
+.att-table th:not(:first-child),
+.att-table td:not(:first-child) {
+  text-align: center;
+}
+
+.att-date-sep td { text-align: left !important; }
+
 /* Date separator */
 .att-date-sep td {
   background: rgba(238, 242, 255, 0.45);
@@ -41,25 +49,200 @@
   letter-spacing: 0.01em;
 }
 
-.att-date-summary-trigger {
-  position: relative;
+.att-day-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; min-height: 34px; }
+.att-day-header__identity { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
+.att-day-header__date { color: #4f46e5; font-size: 13px; font-weight: 800; }
+.att-day-header__meta { padding: 3px 7px; border: 1px solid #dbe3f0; border-radius: 6px; background: #fff; color: #64748b; font-size: 10px; font-weight: 750; }
+
+/* Clear Filter Button */
+.att-day-header__clear-btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 24px;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px dashed #f43f5e;
+  background: #fff5f5;
+  color: #e11d48;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: 8px;
+}
+.att-day-header__clear-btn:hover {
+  background: #ffe4e6;
+  border-color: #e11d48;
+  color: #be123c;
+  box-shadow: 0 2px 4px rgba(225, 29, 72, 0.1);
 }
 
-.att-date-summary-pill {
+.att-day-header__metrics { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
+
+/* Base Metric Chip */
+.att-day-metric {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  gap: 6px;
+  padding: 5px 12px;
   border-radius: 999px;
-  background: #ffffff;
-  color: #475569;
-  border: 1px solid rgba(79, 70, 229, 0.14);
+  font-size: 11px;
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  outline: none;
+}
+.att-day-metric b {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.att-day-metric strong {
+  min-width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 50%;
+  color: currentColor;
   font-size: 10px;
   font-weight: 700;
+  text-align: center;
 }
+
+/* 1. Đến sớm (Early Arrival) */
+.att-day-metric--early-arrival {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+.att-day-metric--early-arrival:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+  box-shadow: 0 4px 6px -1px rgba(22, 101, 52, 0.08);
+}
+.att-day-metric--early-arrival.active {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #ffffff;
+}
+
+/* 2. Đúng giờ (On Time) */
+.att-day-metric--on-time {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+.att-day-metric--on-time:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  box-shadow: 0 4px 6px -1px rgba(6, 95, 70, 0.08);
+}
+.att-day-metric--on-time.active {
+  background: #059669;
+  border-color: #059669;
+  color: #ffffff;
+}
+
+/* 3. Đi trễ (Late) */
+.att-day-metric--late {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+.att-day-metric--late:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  box-shadow: 0 4px 6px -1px rgba(153, 27, 27, 0.08);
+}
+.att-day-metric--late.active {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+/* 4. Về sớm (Early Checkout) */
+.att-day-metric--early {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+.att-day-metric--early:hover {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  box-shadow: 0 4px 6px -1px rgba(146, 64, 14, 0.08);
+}
+.att-day-metric--early.active {
+  background: #d97706;
+  border-color: #d97706;
+  color: #ffffff;
+}
+
+/* 5. WFH */
+.att-day-metric--wfh {
+  background: #e0e7ff;
+  border-color: #c7d2fe;
+  color: #3730a3;
+}
+.att-day-metric--wfh:hover {
+  background: #eef2ff;
+  border-color: #a5b4fc;
+  box-shadow: 0 4px 6px -1px rgba(55, 48, 163, 0.08);
+}
+.att-day-metric--wfh.active {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #ffffff;
+}
+
+/* 6. Chưa check-in */
+.att-day-metric--missing-checkin {
+  background: #faf5ff;
+  border-color: #e9d5ff;
+  color: #6b21a8;
+}
+.att-day-metric--missing-checkin:hover {
+  background: #f3e8ff;
+  border-color: #d8b4fe;
+  box-shadow: 0 4px 6px -1px rgba(107, 33, 168, 0.08);
+}
+.att-day-metric--missing-checkin.active {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  color: #ffffff;
+}
+
+/* 7. Chưa check-out */
+.att-day-metric--missing-checkout {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1e40af;
+}
+.att-day-metric--missing-checkout:hover {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  box-shadow: 0 4px 6px -1px rgba(30, 64, 175, 0.08);
+}
+.att-day-metric--missing-checkout.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+/* Active State Badge style update */
+.att-day-metric.active strong {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+@media (max-width: 960px) { .att-day-header { align-items: flex-start; flex-direction: column; gap: 8px; } .att-day-header__metrics { justify-content: flex-start; } }
 
 .att-date-summary-popover {
   position: absolute;

@@ -6,6 +6,7 @@ export interface CheckInRequest {
   longitude: number;
   accuracyMeters: number | null;
   faceImage?: string | null;
+  requestedAction?: 'CHECK_IN' | 'CHECK_OUT';
 }
 
 export type CheckInResponse = ApiResponseDto<EmployeeProfileResponse>;
@@ -46,6 +47,11 @@ export interface AttendanceShiftBreakdownResponse {
   lateMinutes: number;
   earlyMinutes: number;
   status: string;
+  earlyArrival?: boolean;
+  onTime?: boolean;
+  late?: boolean;
+  earlyCheckout?: boolean;
+  inProgress?: boolean;
   isProvisional: boolean;
   isLeave?: boolean;
   isWfh?: boolean;
@@ -76,6 +82,13 @@ export interface AttendanceStatisticsResponse {
   totalMissingCheckOut: number;
   totalAbsent: number;
   totalLeave: number;
+  totalEmployees?: number;
+  totalShifts?: number;
+  earlyArrival?: number;
+  earlyCheckout?: number;
+  workFromHome?: number;
+  notStarted?: number;
+  provisional?: number;
 }
 
 export interface PageResponse<T> {
@@ -89,8 +102,23 @@ export interface PageResponse<T> {
 
 export interface AttendanceReportResponse {
   statistics: AttendanceStatisticsResponse;
-  records: PageResponse<AttendanceRecordResponse>;
+  days: PageResponse<AttendanceDayGroupResponse>;
 }
+
+export interface AttendanceDaySummaryResponse {
+  totalEmployees: number; totalShifts: number; onTime: number; earlyArrival: number; late: number; earlyCheckout: number;
+  leave: number; workFromHome: number; absent: number; missingCheckIn: number; missingCheckOut: number; notStarted: number;
+  provisional: number; totalWorkingHours: number;
+}
+
+export interface AttendanceDayGroupResponse {
+  workDate: string;
+  summary: AttendanceDaySummaryResponse;
+  records: AttendanceRecordResponse[];
+}
+
+export type AttendanceSummaryMetric = 'onTime' | 'earlyArrival' | 'late' | 'earlyCheckout' | 'leave' | 'workFromHome' | 'absent' | 'missingCheckIn' | 'missingCheckOut' | 'notStarted';
+export interface AttendanceReportPreference { visibleMetrics: AttendanceSummaryMetric[]; updatedAt?: string | null; }
 
 export type AttendanceReportApiResponse = ApiResponseDto<AttendanceReportResponse>;
 

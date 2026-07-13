@@ -156,6 +156,7 @@ export class ManagementLayoutComponent {
   protected readonly checkinDialogVisible = signal(false);
   protected readonly registerDialogVisible = signal(false);
   protected readonly checkinSubmitting = signal(false);
+  protected readonly requestedAttendanceAction = signal<'CHECK_IN' | 'CHECK_OUT'>('CHECK_IN');
   protected readonly expandedNavKeys = signal<ReadonlySet<string>>(new Set(['products']));
   protected readonly chatSidebarActive = computed(
     () =>
@@ -553,7 +554,8 @@ export class ManagementLayoutComponent {
       .subscribe({
         next: (response) => {
           if (response.success) {
-            this.toastService.success(response.message || 'Check-in thành công');
+            this.requestedAttendanceAction.set(this.requestedAttendanceAction() === 'CHECK_IN' ? 'CHECK_OUT' : 'CHECK_IN');
+            this.toastService.success(response.message || 'Chấm công thành công');
             return;
           }
 

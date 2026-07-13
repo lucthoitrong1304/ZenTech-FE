@@ -7,6 +7,7 @@ import {
   CheckInResponse,
   AttendanceLocationPolicy,
   AttendanceReportApiResponse,
+  AttendanceReportPreference,
 } from '@/site-management/management/data-access/models/attendance.model';
 import { ApiResponseDto } from '@/site-management/management/data-access/models/profile.model';
 
@@ -41,5 +42,15 @@ export class AttendanceService {
 
   getLocationPolicy(): Observable<ApiResponseDto<AttendanceLocationPolicy>> {
     return this.apiService.get<ApiResponseDto<AttendanceLocationPolicy>>(this.locationPolicyUrl);
+  }
+
+  getReportPreference(): Observable<ApiResponseDto<AttendanceReportPreference>> {
+    return this.apiService.get<ApiResponseDto<AttendanceReportPreference>>(`${this.baseUrl}/report/preferences`);
+  }
+
+  saveReportPreference(visibleMetrics: string[]): Observable<ApiResponseDto<AttendanceReportPreference>> {
+    return this.apiService.put<{ visibleMetrics: string[] }, ApiResponseDto<AttendanceReportPreference>>(
+      `${this.baseUrl}/report/preferences`, { visibleMetrics }
+    );
   }
 }
