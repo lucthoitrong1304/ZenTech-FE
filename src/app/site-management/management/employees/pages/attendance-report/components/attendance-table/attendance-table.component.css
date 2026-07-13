@@ -31,7 +31,7 @@
 }
 
 .att-table th:not(:first-child),
-.att-table td:not(:first-child) {
+.att-row td:not(.att-cell-name) {
   text-align: center;
 }
 
@@ -661,10 +661,6 @@
 /* Data row */
 .att-row {
   transition: background 0.15s ease;
-}
-
-.att-row:hover {
-  background: rgba(238, 242, 255, 0.4);
 }
 
 /* Name cell */
