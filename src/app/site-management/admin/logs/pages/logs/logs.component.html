@@ -337,6 +337,7 @@
             [userId]="recordingUserIdForLog(log)"
             [timestamp]="log.timestamp"
             [traceId]="recordingTraceIdForLog(log)"
+            [isError]="log.level === 'ERROR' || log.level === 'WARN'"
             title="Record liên quan"
             contextLabel="Log evidence"
           />

@@ -556,6 +556,7 @@
           [email]="ticketRecordingEmail(activeTck)"
           [timestamp]="activeTck.createdAt"
           [traceId]="activeTck.incidentCode || activeTck.code || activeTck.id"
+          [isError]="!!activeTck.incidentId"
           title="Record liên quan"
           [contextLabel]="ticketRecordingContext(activeTck)"
         />      </div>

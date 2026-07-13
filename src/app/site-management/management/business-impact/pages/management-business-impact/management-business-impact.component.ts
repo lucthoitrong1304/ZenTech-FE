@@ -465,13 +465,31 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
       reasons.push(`Đơn hàng bị mất: ${lostOrders} đơn`);
     }
     if (incident.apiPath && (incident.apiPath.includes('/checkout') || incident.apiPath.includes('/payment'))) {
-      reasons.push('Checkout Flow (Funnel Weight 100%)');
+      reasons.push('Ảnh hưởng trực tiếp đến luồng Thanh toán & Đặt hàng (Độ ưu tiên: 100%)');
     }
     if (incident.statusCode) {
-      reasons.push(`Ghi nhận HTTP ${incident.statusCode} tại Endpoint`);
+      reasons.push(`Ghi nhận sự cố phản hồi máy chủ (Mã lỗi: HTTP ${incident.statusCode})`);
     }
     
     return reasons;
+  }
+
+  private getFriendlyServiceName(serviceName: string | null | undefined): string {
+    if (!serviceName) return 'Backend';
+    const name = serviceName.toUpperCase();
+    if (name.includes('FE') || name.includes('FRONTEND')) return 'Giao diện (Frontend)';
+    if (name.includes('AI')) return 'Trợ lý AI';
+    return 'Dịch vụ hệ thống (Backend)';
+  }
+
+  private getFriendlyApiPath(apiPath: string | null | undefined): string {
+    if (!apiPath) return 'giao dịch';
+    const path = apiPath.toLowerCase();
+    if (path.includes('checkout') || path.includes('payment') || path.includes('order')) return 'Thanh toán & Đặt hàng';
+    if (path.includes('product') || path.includes('catalog')) return 'Tra cứu sản phẩm';
+    if (path.includes('cart')) return 'Quản lý giỏ hàng';
+    if (path.includes('management') || path.includes('report') || path.includes('analytics')) return 'Quản trị & Báo cáo';
+    return 'Kết nối dịch vụ';
   }
 
   protected getIncidentTimeline(incident: ManagementIncidentImpactDto | null | undefined) {
@@ -486,13 +504,16 @@ export class ManagementBusinessImpactComponent implements OnInit, OnDestroy {
       return `${timeStr} ${day}/${month}`;
     };
 
+    const friendlyService = this.getFriendlyServiceName(incident.serviceName);
+    const friendlyFeature = this.getFriendlyApiPath(incident.apiPath);
+
     return [
-      { time: formatTime(baseTime, 0), desc: `Checkout API bắt đầu trả về HTTP ${incident.statusCode || 500}` },
-      { time: formatTime(baseTime, 2), desc: 'Tỷ lệ lỗi (Error Rate) tăng lên 80%' },
-      { time: formatTime(baseTime, 5), desc: 'Đơn hàng mua thành công bắt đầu giảm' },
-      { time: formatTime(baseTime, 10), desc: `Doanh thu thất thoát bắt đầu phát sinh` },
-      { time: formatTime(baseTime, 15), desc: `Sự cố ${incident.incidentCode} tự động được tạo` },
-      { time: formatTime(baseTime, Math.max(16, incident.durationMinutes)), desc: incident.resolvedAt ? 'Sự cố được xử lý và khôi phục hoàn toàn' : 'Hệ thống tiếp tục giám sát tác động' }
+      { time: formatTime(baseTime, 0), desc: `Phát hiện gián đoạn tại ${friendlyService} khi thực hiện ${friendlyFeature} (HTTP ${incident.statusCode || 500})` },
+      { time: formatTime(baseTime, 2), desc: 'Tỷ lệ khách hàng gặp lỗi giao dịch bắt đầu tăng cao (80%)' },
+      { time: formatTime(baseTime, 5), desc: 'Số lượng đơn hàng thanh toán thành công bắt đầu suy giảm' },
+      { time: formatTime(baseTime, 10), desc: 'Hệ thống bắt đầu ghi nhận thiệt hại và thất thoát doanh thu thực tế' },
+      { time: formatTime(baseTime, 15), desc: `Hệ thống tự động mở hồ sơ theo dõi sự cố ${incident.incidentCode}` },
+      { time: formatTime(baseTime, Math.max(16, incident.durationMinutes)), desc: incident.resolvedAt ? 'Sự cố được khắc phục hoàn toàn, hoạt động kinh doanh ổn định trở lại' : 'Hệ thống tiếp tục giám sát tác động' }
     ];
   }
 
